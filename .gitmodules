@@ -1,0 +1,6 @@
+[submodule "external/etl"]
+	path = external/etl
+	url = https://github.com/ETLCPP/etl.git
+[submodule "external/gtest"]
+	path = external/gtest
+	url = https://github.com/google/googletest.git

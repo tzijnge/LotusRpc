@@ -25,5 +25,4 @@ target_link_libraries(
   gtest_main
 )
 
-enable_testing()
 gtest_discover_tests(UnitTests XML_OUTPUT_DIR TestResults)

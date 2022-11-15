@@ -4,6 +4,7 @@
 #include <etl/vector.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "Decoder.hpp"
 
 struct CompositeData
 {
@@ -75,10 +76,10 @@ namespace etl
     }
 }
 
-class LotusRpc
+class I0Decoder : public Decoder
 {
 public:
-    void decode(uint8_t byte)
+    void decode(uint8_t byte) override
     {
         messageBuffer.push_back(byte);
 
@@ -114,7 +115,7 @@ private:
     void invokeFunction()
     {
         Reader reader(messageBuffer.begin(), messageBuffer.end(), etl::endian::little);
-        reader.skip<uint8_t>(1); //message size
+        reader.skip<uint8_t>(1); // message size
         auto messageId = reader.read_unchecked<uint8_t>();
         ((this)->*(invokers.at(messageId)))(reader);
     }
@@ -188,23 +189,23 @@ private:
         f10(cd3);
     }
 
-        using Invoker = void (LotusRpc::*)(Reader & reader);
-        inline static const etl::vector<Invoker, 11> invokers{
-            &LotusRpc::invokeF0,
-            &LotusRpc::invokeF1,
-            &LotusRpc::invokeF2,
-            &LotusRpc::invokeF3,
-            &LotusRpc::invokeF4,
-            &LotusRpc::invokeF5,
-            &LotusRpc::invokeF6,
-            &LotusRpc::invokeF7,
-            &LotusRpc::invokeF8,
-            &LotusRpc::invokeF9,
-            &LotusRpc::invokeF10,
-        };
+    using Invoker = void (I0Decoder::*)(Reader &reader);
+    inline static const etl::vector<Invoker, 11> invokers{
+        &I0Decoder::invokeF0,
+        &I0Decoder::invokeF1,
+        &I0Decoder::invokeF2,
+        &I0Decoder::invokeF3,
+        &I0Decoder::invokeF4,
+        &I0Decoder::invokeF5,
+        &I0Decoder::invokeF6,
+        &I0Decoder::invokeF7,
+        &I0Decoder::invokeF8,
+        &I0Decoder::invokeF9,
+        &I0Decoder::invokeF10,
     };
+};
 
-class MockLotusRpc : public LotusRpc
+class MockI0Decoder : public I0Decoder
 {
 public:
     MOCK_METHOD(void, f0, (), (override));
@@ -220,110 +221,110 @@ public:
     MOCK_METHOD(void, f10, (const CompositeData3 &a), (override));
 };
 
-class TestRpc : public ::testing::Test
+class TestDecoder : public ::testing::Test
 {
 public:
-    MockLotusRpc rpc;
+    MockI0Decoder i0Decoder;
 
     void decode(const std::vector<uint8_t> &bytes)
     {
         for (auto b : bytes)
         {
-            rpc.decode(b);
+            i0Decoder.decode(b);
         }
     }
 };
 
 // Decode void function f0. Make sure f1 is not called
-TEST_F(TestRpc, decodeF0)
+TEST_F(TestDecoder, decodeF0)
 {
-    EXPECT_CALL(rpc, f0()).Times(1);
-    EXPECT_CALL(rpc, f1()).Times(0);
+    EXPECT_CALL(i0Decoder, f0()).Times(1);
+    EXPECT_CALL(i0Decoder, f1()).Times(0);
 
     decode({2, 0});
 }
 
 // Decode void function f1. Make sure f0 is not called
-TEST_F(TestRpc, decodeF1)
+TEST_F(TestDecoder, decodeF1)
 {
-    EXPECT_CALL(rpc, f0()).Times(0);
-    EXPECT_CALL(rpc, f1()).Times(1);
+    EXPECT_CALL(i0Decoder, f0()).Times(0);
+    EXPECT_CALL(i0Decoder, f1()).Times(1);
 
     decode({2, 1});
 }
 
 // Decode function f2 with uint8_t arg
-TEST_F(TestRpc, decodeF2)
+TEST_F(TestDecoder, decodeF2)
 {
-    EXPECT_CALL(rpc, f2(123));
+    EXPECT_CALL(i0Decoder, f2(123));
     decode({3, 2, 123});
 }
 
 // Decode two functions
-TEST_F(TestRpc, decodeF1AndF2)
+TEST_F(TestDecoder, decodeF1AndF2)
 {
-    EXPECT_CALL(rpc, f1());
-    EXPECT_CALL(rpc, f2(123));
+    EXPECT_CALL(i0Decoder, f1());
+    EXPECT_CALL(i0Decoder, f2(123));
     decode({2, 1, 3, 2, 123});
 }
 
 // Decode function f3 with uint16_t arg
-TEST_F(TestRpc, decodeF3)
+TEST_F(TestDecoder, decodeF3)
 {
-    EXPECT_CALL(rpc, f3(0xCDAB));
+    EXPECT_CALL(i0Decoder, f3(0xCDAB));
     decode({4, 3, 0xAB, 0xCD});
 }
 
 // Decode function f4 with float arg
-TEST_F(TestRpc, decodeF4)
+TEST_F(TestDecoder, decodeF4)
 {
-    EXPECT_CALL(rpc, f4(123.456));
+    EXPECT_CALL(i0Decoder, f4(123.456));
     decode({6, 4, 0x79, 0xE9, 0xF6, 0x42});
 }
 
 // Decode function f5 with array of uint16_t arg
-TEST_F(TestRpc, decodeF5)
+TEST_F(TestDecoder, decodeF5)
 {
-    EXPECT_CALL(rpc, f5(etl::array<uint16_t, 2>{0xBBAA, 0xDDCC}));
+    EXPECT_CALL(i0Decoder, f5(etl::array<uint16_t, 2>{0xBBAA, 0xDDCC}));
     decode({6, 5, 0xAA, 0xBB, 0xCC, 0xDD});
 }
 
 // Decode function f6 with string arg
-TEST_F(TestRpc, decodeF6)
+TEST_F(TestDecoder, decodeF6)
 {
-    EXPECT_CALL(rpc, f6(etl::string_view("Test")));
+    EXPECT_CALL(i0Decoder, f6(etl::string_view("Test")));
     decode({7, 6, 'T', 'e', 's', 't', '\0'});
 }
 
 // Decode function f7 with custom type
-TEST_F(TestRpc, decodeF7)
+TEST_F(TestDecoder, decodeF7)
 {
     CompositeData expected{{0xBBAA, 0xDDCC}, 123, true};
-    EXPECT_CALL(rpc, f7(expected));
+    EXPECT_CALL(i0Decoder, f7(expected));
     decode({8, 7, 0xAA, 0xBB, 0xCC, 0xDD, 123, 1});
 }
 
 // Decode function f8 with custom enum
-TEST_F(TestRpc, decodeF8)
+TEST_F(TestDecoder, decodeF8)
 {
-    EXPECT_CALL(rpc, f8(MyEnum::V3));
+    EXPECT_CALL(i0Decoder, f8(MyEnum::V3));
     decode({3, 8, 0x03});
 }
 
 // Decode function f9 with array of custom type
-TEST_F(TestRpc, decodeF9)
+TEST_F(TestDecoder, decodeF9)
 {
     etl::array<CompositeData2, 2> expected{
         CompositeData2{0xAA, 0xBB},
         CompositeData2{0xCC, 0xDD}};
-    EXPECT_CALL(rpc, f9(expected));
+    EXPECT_CALL(i0Decoder, f9(expected));
     decode({6, 9, 0xAA, 0xBB, 0xCC, 0xDD});
 }
 
 // Decode function f10 with nested custom types
-TEST_F(TestRpc, decodeF10)
+TEST_F(TestDecoder, decodeF10)
 {
     CompositeData3 expected{{0xAA, 0xBB}};
-    EXPECT_CALL(rpc, f10(expected));
+    EXPECT_CALL(i0Decoder, f10(expected));
     decode({4, 10, 0xAA, 0xBB});
 }

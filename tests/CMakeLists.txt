@@ -13,10 +13,12 @@ mark_as_advanced(
 
 add_subdirectory(../external/gtest External/gtest EXCLUDE_FROM_ALL)
 
-add_executable(UnitTests TestRpc.cpp)
+add_executable(UnitTests
+                TestDecoder.cpp
+                TestServer.cpp)
 
-target_include_directories(UnitTests PRIVATE Stubs)
-target_include_directories(UnitTests PRIVATE ../External/etl/include)
+target_include_directories(UnitTests PRIVATE ../src)
+target_include_directories(UnitTests PRIVATE ../external/etl/include)
 
 target_link_libraries(
   UnitTests

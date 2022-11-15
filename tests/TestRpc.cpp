@@ -26,6 +26,17 @@ struct CompositeData2
     uint8_t b;
 };
 
+struct CompositeData3
+{
+    bool operator==(const CompositeData3 &other) const = default;
+    bool operator!=(const CompositeData3 &other) const
+    {
+        return !(*this == other);
+    }
+
+    CompositeData2 a;
+};
+
 enum class MyEnum
 {
     V0,
@@ -54,6 +65,14 @@ namespace etl
         cd2.b = stream.read_unchecked<uint8_t>();
         return cd2;
     }
+
+    template <>
+    CompositeData3 read_unchecked<CompositeData3>(etl::byte_stream_reader &stream)
+    {
+        CompositeData3 cd3;
+        cd3.a = etl::read_unchecked<CompositeData2>(stream);
+        return cd3;
+    }
 }
 
 class LotusRpc
@@ -70,6 +89,7 @@ public:
         }
     }
 
+protected:
     virtual void f0() = 0;
     virtual void f1() = 0;
     virtual void f2(uint8_t a) = 0;
@@ -80,23 +100,21 @@ public:
     virtual void f7(const CompositeData &a) = 0;
     virtual void f8(MyEnum a) = 0;
     virtual void f9(const etl::array<CompositeData2, 2> &a) = 0;
+    virtual void f10(const CompositeData3 &a) = 0;
 
 private:
     using Reader = etl::byte_stream_reader;
     etl::vector<uint8_t, 256> messageBuffer;
-    inline static const etl::vector<uint8_t, 256> messageSizes{1, 1, 2, 3, 5, 5, 5, 7, 2, 5};
 
     bool messageIsComplete() const
     {
-        auto messageId = messageBuffer.at(0);
-        auto messageSize = messageSizes.at(messageId);
-
-        return messageBuffer.size() == messageSize;
+        return messageBuffer.size() == messageBuffer.at(0);
     }
 
     void invokeFunction()
     {
         Reader reader(messageBuffer.begin(), messageBuffer.end(), etl::endian::little);
+        reader.skip<uint8_t>(1); //message size
         auto messageId = reader.read_unchecked<uint8_t>();
         ((this)->*(invokers.at(messageId)))(reader);
     }
@@ -138,7 +156,7 @@ private:
 
     void invokeF6(Reader &reader)
     {
-        etl::string_view sv(reinterpret_cast<char *>(&messageBuffer[1]), 4);
+        etl::string_view sv(reader.end());
         f6(sv);
     }
 
@@ -164,20 +182,27 @@ private:
         f9(arr);
     }
 
-    using Invoker = void (LotusRpc::*)(Reader &reader);
-    inline static const etl::vector<Invoker, 256> invokers{
-        &LotusRpc::invokeF0,
-        &LotusRpc::invokeF1,
-        &LotusRpc::invokeF2,
-        &LotusRpc::invokeF3,
-        &LotusRpc::invokeF4,
-        &LotusRpc::invokeF5,
-        &LotusRpc::invokeF6,
-        &LotusRpc::invokeF7,
-        &LotusRpc::invokeF8,
-        &LotusRpc::invokeF9,
+    void invokeF10(Reader &reader)
+    {
+        auto cd3 = etl::read_unchecked<CompositeData3>(reader);
+        f10(cd3);
+    }
+
+        using Invoker = void (LotusRpc::*)(Reader & reader);
+        inline static const etl::vector<Invoker, 11> invokers{
+            &LotusRpc::invokeF0,
+            &LotusRpc::invokeF1,
+            &LotusRpc::invokeF2,
+            &LotusRpc::invokeF3,
+            &LotusRpc::invokeF4,
+            &LotusRpc::invokeF5,
+            &LotusRpc::invokeF6,
+            &LotusRpc::invokeF7,
+            &LotusRpc::invokeF8,
+            &LotusRpc::invokeF9,
+            &LotusRpc::invokeF10,
+        };
     };
-};
 
 class MockLotusRpc : public LotusRpc
 {
@@ -192,6 +217,7 @@ public:
     MOCK_METHOD(void, f7, (const CompositeData &a), (override));
     MOCK_METHOD(void, f8, (MyEnum a), (override));
     MOCK_METHOD(void, f9, ((const etl::array<CompositeData2, 2>)&a), (override));
+    MOCK_METHOD(void, f10, (const CompositeData3 &a), (override));
 };
 
 class TestRpc : public ::testing::Test
@@ -208,77 +234,96 @@ public:
     }
 };
 
+// Decode void function f0. Make sure f1 is not called
 TEST_F(TestRpc, decodeF0)
 {
     EXPECT_CALL(rpc, f0()).Times(1);
     EXPECT_CALL(rpc, f1()).Times(0);
 
-    decode({0});
+    decode({2, 0});
 }
 
+// Decode void function f1. Make sure f0 is not called
 TEST_F(TestRpc, decodeF1)
 {
     EXPECT_CALL(rpc, f0()).Times(0);
     EXPECT_CALL(rpc, f1()).Times(1);
 
-    decode({1});
+    decode({2, 1});
 }
 
+// Decode function f2 with uint8_t arg
 TEST_F(TestRpc, decodeF2)
 {
     EXPECT_CALL(rpc, f2(123));
-    decode({2, 123});
+    decode({3, 2, 123});
 }
 
+// Decode two functions
 TEST_F(TestRpc, decodeF1AndF2)
 {
     EXPECT_CALL(rpc, f1());
     EXPECT_CALL(rpc, f2(123));
-    decode({1, 2, 123});
+    decode({2, 1, 3, 2, 123});
 }
 
+// Decode function f3 with uint16_t arg
 TEST_F(TestRpc, decodeF3)
 {
     EXPECT_CALL(rpc, f3(0xCDAB));
-    decode({3, 0xAB, 0xCD});
+    decode({4, 3, 0xAB, 0xCD});
 }
 
+// Decode function f4 with float arg
 TEST_F(TestRpc, decodeF4)
 {
     EXPECT_CALL(rpc, f4(123.456));
-    decode({4, 0x79, 0xE9, 0xF6, 0x42});
+    decode({6, 4, 0x79, 0xE9, 0xF6, 0x42});
 }
 
+// Decode function f5 with array of uint16_t arg
 TEST_F(TestRpc, decodeF5)
 {
     EXPECT_CALL(rpc, f5(etl::array<uint16_t, 2>{0xBBAA, 0xDDCC}));
-    decode({5, 0xAA, 0xBB, 0xCC, 0xDD});
+    decode({6, 5, 0xAA, 0xBB, 0xCC, 0xDD});
 }
 
+// Decode function f6 with string arg
 TEST_F(TestRpc, decodeF6)
 {
     EXPECT_CALL(rpc, f6(etl::string_view("Test")));
-    decode({6, 'T', 'e', 's', 't'});
+    decode({7, 6, 'T', 'e', 's', 't', '\0'});
 }
 
+// Decode function f7 with custom type
 TEST_F(TestRpc, decodeF7)
 {
     CompositeData expected{{0xBBAA, 0xDDCC}, 123, true};
     EXPECT_CALL(rpc, f7(expected));
-    decode({7, 0xAA, 0xBB, 0xCC, 0xDD, 123, 1});
+    decode({8, 7, 0xAA, 0xBB, 0xCC, 0xDD, 123, 1});
 }
 
+// Decode function f8 with custom enum
 TEST_F(TestRpc, decodeF8)
 {
     EXPECT_CALL(rpc, f8(MyEnum::V3));
-    decode({8, 0x03});
+    decode({3, 8, 0x03});
 }
 
+// Decode function f9 with array of custom type
 TEST_F(TestRpc, decodeF9)
 {
     etl::array<CompositeData2, 2> expected{
         CompositeData2{0xAA, 0xBB},
         CompositeData2{0xCC, 0xDD}};
     EXPECT_CALL(rpc, f9(expected));
-    decode({9, 0xAA, 0xBB, 0xCC, 0xDD});
+    decode({6, 9, 0xAA, 0xBB, 0xCC, 0xDD});
+}
+
+// Decode function f10 with nested custom types
+TEST_F(TestRpc, decodeF10)
+{
+    CompositeData3 expected{{0xAA, 0xBB}};
+    EXPECT_CALL(rpc, f10(expected));
+    decode({4, 10, 0xAA, 0xBB});
 }

@@ -28,3 +28,4 @@ target_link_libraries(
 )
 
 gtest_discover_tests(UnitTests XML_OUTPUT_DIR TestResults)
+

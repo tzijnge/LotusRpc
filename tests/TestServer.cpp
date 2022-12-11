@@ -5,7 +5,7 @@
 class DecoderMock : public Decoder
 {
 public:
-    void decode(etl::byte_stream_reader & reader) override
+    void decode(Reader & reader, Writer& writer) override
     {
         while (true)
         {

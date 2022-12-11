@@ -79,15 +79,11 @@ namespace etl
 class I0Decoder : public Decoder
 {
 public:
-    void decode(uint8_t byte) override
+    uint32_t id() const override { return 0; }
+    void decode(etl::byte_stream_reader &reader) override
     {
-        messageBuffer.push_back(byte);
-
-        if (messageIsComplete())
-        {
-            invokeFunction();
-            messageBuffer.clear();
-        }
+        auto messageId = reader.read_unchecked<uint8_t>();
+        ((this)->*(invokers.at(messageId)))(reader);
     }
 
 protected:
@@ -105,20 +101,6 @@ protected:
 
 private:
     using Reader = etl::byte_stream_reader;
-    etl::vector<uint8_t, 256> messageBuffer;
-
-    bool messageIsComplete() const
-    {
-        return messageBuffer.size() == messageBuffer.at(0);
-    }
-
-    void invokeFunction()
-    {
-        Reader reader(messageBuffer.begin(), messageBuffer.end(), etl::endian::little);
-        reader.skip<uint8_t>(1); // message size
-        auto messageId = reader.read_unchecked<uint8_t>();
-        ((this)->*(invokers.at(messageId)))(reader);
-    }
 
     void invokeF0(Reader &reader)
     {
@@ -228,10 +210,9 @@ public:
 
     void decode(const std::vector<uint8_t> &bytes)
     {
-        for (auto b : bytes)
-        {
-            i0Decoder.decode(b);
-        }
+        const etl::span<const uint8_t> s(bytes.begin(), bytes.end());
+        etl::byte_stream_reader reader(s.begin(), s.end(), etl::endian::little);
+        i0Decoder.decode(reader);
     }
 };
 
@@ -241,7 +222,7 @@ TEST_F(TestDecoder, decodeF0)
     EXPECT_CALL(i0Decoder, f0()).Times(1);
     EXPECT_CALL(i0Decoder, f1()).Times(0);
 
-    decode({2, 0});
+    decode({0});
 }
 
 // Decode void function f1. Make sure f0 is not called
@@ -250,50 +231,42 @@ TEST_F(TestDecoder, decodeF1)
     EXPECT_CALL(i0Decoder, f0()).Times(0);
     EXPECT_CALL(i0Decoder, f1()).Times(1);
 
-    decode({2, 1});
+    decode({1});
 }
 
 // Decode function f2 with uint8_t arg
 TEST_F(TestDecoder, decodeF2)
 {
     EXPECT_CALL(i0Decoder, f2(123));
-    decode({3, 2, 123});
-}
-
-// Decode two functions
-TEST_F(TestDecoder, decodeF1AndF2)
-{
-    EXPECT_CALL(i0Decoder, f1());
-    EXPECT_CALL(i0Decoder, f2(123));
-    decode({2, 1, 3, 2, 123});
+    decode({2, 123});
 }
 
 // Decode function f3 with uint16_t arg
 TEST_F(TestDecoder, decodeF3)
 {
     EXPECT_CALL(i0Decoder, f3(0xCDAB));
-    decode({4, 3, 0xAB, 0xCD});
+    decode({3, 0xAB, 0xCD});
 }
 
 // Decode function f4 with float arg
 TEST_F(TestDecoder, decodeF4)
 {
     EXPECT_CALL(i0Decoder, f4(123.456));
-    decode({6, 4, 0x79, 0xE9, 0xF6, 0x42});
+    decode({4, 0x79, 0xE9, 0xF6, 0x42});
 }
 
 // Decode function f5 with array of uint16_t arg
 TEST_F(TestDecoder, decodeF5)
 {
     EXPECT_CALL(i0Decoder, f5(etl::array<uint16_t, 2>{0xBBAA, 0xDDCC}));
-    decode({6, 5, 0xAA, 0xBB, 0xCC, 0xDD});
+    decode({5, 0xAA, 0xBB, 0xCC, 0xDD});
 }
 
 // Decode function f6 with string arg
 TEST_F(TestDecoder, decodeF6)
 {
     EXPECT_CALL(i0Decoder, f6(etl::string_view("Test")));
-    decode({7, 6, 'T', 'e', 's', 't', '\0'});
+    decode({6, 'T', 'e', 's', 't', '\0'});
 }
 
 // Decode function f7 with custom type
@@ -301,14 +274,14 @@ TEST_F(TestDecoder, decodeF7)
 {
     CompositeData expected{{0xBBAA, 0xDDCC}, 123, true};
     EXPECT_CALL(i0Decoder, f7(expected));
-    decode({8, 7, 0xAA, 0xBB, 0xCC, 0xDD, 123, 1});
+    decode({7, 0xAA, 0xBB, 0xCC, 0xDD, 123, 1});
 }
 
 // Decode function f8 with custom enum
 TEST_F(TestDecoder, decodeF8)
 {
     EXPECT_CALL(i0Decoder, f8(MyEnum::V3));
-    decode({3, 8, 0x03});
+    decode({8, 0x03});
 }
 
 // Decode function f9 with array of custom type
@@ -318,7 +291,7 @@ TEST_F(TestDecoder, decodeF9)
         CompositeData2{0xAA, 0xBB},
         CompositeData2{0xCC, 0xDD}};
     EXPECT_CALL(i0Decoder, f9(expected));
-    decode({6, 9, 0xAA, 0xBB, 0xCC, 0xDD});
+    decode({9, 0xAA, 0xBB, 0xCC, 0xDD});
 }
 
 // Decode function f10 with nested custom types
@@ -326,5 +299,5 @@ TEST_F(TestDecoder, decodeF10)
 {
     CompositeData3 expected{{0xAA, 0xBB}};
     EXPECT_CALL(i0Decoder, f10(expected));
-    decode({4, 10, 0xAA, 0xBB});
+    decode({10, 0xAA, 0xBB});
 }

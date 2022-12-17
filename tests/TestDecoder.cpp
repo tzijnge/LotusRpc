@@ -5,6 +5,9 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "Decoder.hpp"
+#include <tuple>
+
+using ::testing::Return;
 
 struct CompositeData
 {
@@ -98,7 +101,17 @@ protected:
     virtual void f8(MyEnum a) = 0;
     virtual void f9(const etl::array<CompositeData2, 2> &a) = 0;
     virtual void f10(const CompositeData3 &a) = 0;
-    virtual uint8_t f11() = 0;
+    virtual void f11(uint8_t a, uint8_t b) = 0;
+    virtual uint8_t f12() = 0;
+    virtual uint16_t f13() = 0;
+    virtual float f14() = 0;
+    virtual etl::array<uint16_t, 2> f15() = 0;
+    virtual etl::string_view f16() = 0;
+    virtual CompositeData f17() = 0;
+    virtual MyEnum f18() = 0;
+    virtual etl::array<CompositeData2, 2> f19() = 0;
+    virtual CompositeData3 f20() = 0;
+    virtual std::tuple<uint8_t, uint8_t> f21() = 0;
 
 private:
     using Reader = etl::byte_stream_reader;
@@ -172,14 +185,61 @@ private:
         f10(cd3);
     }
 
-    void invokeF11(Reader &reader, Writer &writer)
+    void invokef11(Reader &reader, Writer &writer)
     {
-        uint8_t response = f11();
+        auto a = reader.read_unchecked<uint8_t>();
+        auto b = reader.read_unchecked<uint8_t>();
+        f11(a, b);
+    }
+
+    void invokef12(Reader &reader, Writer &writer)
+    {
+        uint8_t response = f12();
         writer.write_unchecked<uint8_t>(response);
     }
 
+    void invokef13(Reader &reader, Writer &writer)
+    {
+        uint16_t response = f13();
+        writer.write_unchecked<uint16_t>(response);
+    }
+
+    void invokef14(Reader &reader, Writer &writer)
+    {
+        float response = f14();
+        writer.write_unchecked<float>(response);
+    }
+
+    void invokef15(Reader &reader, Writer &writer)
+    {
+    }
+
+    void invokef16(Reader &reader, Writer &writer)
+    {
+    }
+
+    void invokef17(Reader &reader, Writer &writer)
+    {
+    }
+
+    void invokef18(Reader &reader, Writer &writer)
+    {
+    }
+
+    void invokef19(Reader &reader, Writer &writer)
+    {
+    }
+
+    void invokef20(Reader &reader, Writer &writer)
+    {
+    }
+
+    void invokef21(Reader &reader, Writer &writer)
+    {
+    }
+
     using Invoker = void (I0Decoder::*)(Reader &reader, Writer& writer);
-    inline static const etl::vector<Invoker, 12> invokers{
+    inline static const etl::vector<Invoker, 22> invokers{
         &I0Decoder::invokeF0,
         &I0Decoder::invokeF1,
         &I0Decoder::invokeF2,
@@ -191,7 +251,17 @@ private:
         &I0Decoder::invokeF8,
         &I0Decoder::invokeF9,
         &I0Decoder::invokeF10,
-        &I0Decoder::invokeF11,
+        &I0Decoder::invokef11,
+        &I0Decoder::invokef12,
+        &I0Decoder::invokef13,
+        &I0Decoder::invokef14,
+        &I0Decoder::invokef15,
+        &I0Decoder::invokef16,
+        &I0Decoder::invokef17,
+        &I0Decoder::invokef18,
+        &I0Decoder::invokef19,
+        &I0Decoder::invokef20,
+        &I0Decoder::invokef21,
     };
 };
 
@@ -209,7 +279,17 @@ public:
     MOCK_METHOD(void, f8, (MyEnum a), (override));
     MOCK_METHOD(void, f9, ((const etl::array<CompositeData2, 2>)&a), (override));
     MOCK_METHOD(void, f10, (const CompositeData3 &a), (override));
-    MOCK_METHOD(uint8_t, f11, (), (override));
+    MOCK_METHOD(void, f11, (uint8_t a, uint8_t b), (override));
+    MOCK_METHOD(uint8_t, f12, (), (override));
+    MOCK_METHOD(uint16_t, f13, (), (override));
+    MOCK_METHOD(float, f14, (), (override));
+    MOCK_METHOD((etl::array<uint16_t, 2>), f15, (), (override));
+    MOCK_METHOD(etl::string_view, f16, (), (override));
+    MOCK_METHOD(CompositeData, f17, (), (override));
+    MOCK_METHOD(MyEnum, f18, (), (override));
+    MOCK_METHOD((etl::array<CompositeData2, 2>), f19, (), (override));
+    MOCK_METHOD(CompositeData3, f20, (), (override));
+    MOCK_METHOD((std::tuple<uint8_t, uint8_t>), f21, (), (override));
 };
 
 class TestDecoder : public ::testing::Test
@@ -226,6 +306,12 @@ public:
         i0Decoder.decode(reader, writer);
 
         return { response.begin(), writer.size_bytes()};
+    }
+
+    void EXPECT_RESPONSE(const std::vector<uint8_t> &expected, const etl::span<uint8_t> actual)
+    {
+        std::vector<uint8_t> actualVec {actual.begin(), actual.end()};
+        EXPECT_EQ(expected, actualVec);
     }
 
 private:
@@ -329,11 +415,34 @@ TEST_F(TestDecoder, decodeF10)
     EXPECT_TRUE(response.empty());
 }
 
-// Decode function f11 which returns uint8_t
-TEST_F(TestDecoder, decodeF11)
+// Decode function f11 with two uint8_t args
+TEST_F(TestDecoder, decodef11)
 {
-    EXPECT_CALL(i0Decoder, f11()).WillOnce(::testing::Return(0xAB));
-    auto response = decode({11});
-    ASSERT_EQ(1, response.size());
-    EXPECT_EQ(0xAB, response[0]);
+    EXPECT_CALL(i0Decoder, f11(123, 111));
+    auto response = decode({11, 123, 111});
+    EXPECT_TRUE(response.empty());
+}
+
+// Decode function f12 which returns uint8_t
+TEST_F(TestDecoder, decodef12)
+{
+    EXPECT_CALL(i0Decoder, f12()).WillOnce(Return(0xAB));
+    auto response = decode({12});
+    EXPECT_RESPONSE({0xAB}, response);
+}
+
+// Decode function f13 which returns uint16_t
+TEST_F(TestDecoder, decodef13)
+{
+    EXPECT_CALL(i0Decoder, f13()).WillOnce(Return(0xABCD));
+    auto response = decode({13});
+    EXPECT_RESPONSE({0xCD, 0xAB}, response);
+}
+
+// Decode function f14 which returns float
+TEST_F(TestDecoder, decodeF14)
+{
+    EXPECT_CALL(i0Decoder, f14()).WillOnce(Return(123.456));
+    auto response = decode({14});
+    EXPECT_RESPONSE({0x79, 0xE9, 0xF6, 0x42}, response);
 }

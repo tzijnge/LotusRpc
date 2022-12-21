@@ -77,6 +77,16 @@ namespace etl
         cd3.a = etl::read_unchecked<CompositeData2>(stream);
         return cd3;
     }
+
+    template <>
+    void write_unchecked<etl::string_view>(etl::byte_stream_writer &stream, const etl::string_view& sv)
+    {
+        for (auto c : sv)
+        {
+            stream.write_unchecked(c);
+        }
+        stream.write_unchecked('\0');
+    }
 }
 
 class I0Decoder : public Decoder
@@ -128,19 +138,19 @@ private:
 
     void invokeF2(Reader &reader, Writer &writer)
     {
-        auto a = reader.read_unchecked<uint8_t>();
+        const auto a = reader.read_unchecked<uint8_t>();
         f2(a);
     }
 
     void invokeF3(Reader &reader, Writer &writer)
     {
-        auto a = reader.read_unchecked<uint16_t>();
+        const auto a = reader.read_unchecked<uint16_t>();
         f3(a);
     }
 
     void invokeF4(Reader &reader, Writer &writer)
     {
-        auto a = reader.read_unchecked<float>();
+        const auto a = reader.read_unchecked<float>();
         f4(a);
     }
 
@@ -159,13 +169,13 @@ private:
 
     void invokeF7(Reader &reader, Writer &writer)
     {
-        auto cd = etl::read_unchecked<CompositeData>(reader);
+        const auto cd = etl::read_unchecked<CompositeData>(reader);
         f7(cd);
     }
 
     void invokeF8(Reader &reader, Writer &writer)
     {
-        auto a = reader.read_unchecked<uint8_t>();
+        const auto a = reader.read_unchecked<uint8_t>();
         f8(static_cast<MyEnum>(a));
     }
 
@@ -181,41 +191,45 @@ private:
 
     void invokeF10(Reader &reader, Writer &writer)
     {
-        auto cd3 = etl::read_unchecked<CompositeData3>(reader);
+        const auto cd3 = etl::read_unchecked<CompositeData3>(reader);
         f10(cd3);
     }
 
     void invokef11(Reader &reader, Writer &writer)
     {
-        auto a = reader.read_unchecked<uint8_t>();
-        auto b = reader.read_unchecked<uint8_t>();
+        const auto a = reader.read_unchecked<uint8_t>();
+        const auto b = reader.read_unchecked<uint8_t>();
         f11(a, b);
     }
 
     void invokef12(Reader &reader, Writer &writer)
     {
-        uint8_t response = f12();
-        writer.write_unchecked<uint8_t>(response);
+        const uint8_t response = f12();
+        writer.write_unchecked(response);
     }
 
     void invokef13(Reader &reader, Writer &writer)
     {
-        uint16_t response = f13();
-        writer.write_unchecked<uint16_t>(response);
+        const uint16_t response = f13();
+        writer.write_unchecked(response);
     }
 
     void invokef14(Reader &reader, Writer &writer)
     {
-        float response = f14();
-        writer.write_unchecked<float>(response);
+        const float response = f14();
+        writer.write_unchecked(response);
     }
 
     void invokef15(Reader &reader, Writer &writer)
     {
+        etl::array<uint16_t, 2> response = f15();
+        writer.write_unchecked<uint16_t>(response);
     }
 
     void invokef16(Reader &reader, Writer &writer)
     {
+        const etl::string_view response = f16();
+        etl::write_unchecked(writer, response);
     }
 
     void invokef17(Reader &reader, Writer &writer)
@@ -445,4 +459,20 @@ TEST_F(TestDecoder, decodeF14)
     EXPECT_CALL(i0Decoder, f14()).WillOnce(Return(123.456));
     auto response = decode({14});
     EXPECT_RESPONSE({0x79, 0xE9, 0xF6, 0x42}, response);
+}
+
+// Decode function f15 which return array of uint16_t
+TEST_F(TestDecoder, decodeF15)
+{
+    EXPECT_CALL(i0Decoder, f15()).WillOnce(Return(etl::array<uint16_t, 2>{0xBBAA, 0xDDCC}));
+    auto response = decode({15});
+    EXPECT_RESPONSE({0xAA, 0xBB, 0xCC, 0xDD}, response);
+}
+
+// Decode function f16 which returns a string
+TEST_F(TestDecoder, decodeF16)
+{
+    EXPECT_CALL(i0Decoder, f16()).WillOnce(Return(etl::string_view("Test")));
+    auto response = decode({16});
+    EXPECT_RESPONSE({'T', 'e', 's', 't', '\0'}, response);
 }

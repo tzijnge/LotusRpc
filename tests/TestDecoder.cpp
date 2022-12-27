@@ -68,46 +68,73 @@ enum class MyEnum {
 namespace etl
 {
     template <>
-    CompositeData read_unchecked<CompositeData>(etl::byte_stream_reader &stream)
+    CompositeData read_unchecked<CompositeData>(byte_stream_reader &stream)
     {
         CompositeData cd;
         stream.read_unchecked<uint16_t>(cd.a);
-        cd.b = stream.read_unchecked<uint8_t>();
-        cd.c = stream.read_unchecked<bool>();
+        cd.b = read_unchecked<uint8_t>(stream);
+        cd.c = read_unchecked<bool>(stream);
         return cd;
     }
 
     template <>
-    CompositeData2 read_unchecked<CompositeData2>(etl::byte_stream_reader &stream)
+    void write_unchecked<CompositeData>(byte_stream_writer &stream, const CompositeData &cd)
+    {
+        stream.write_unchecked<uint16_t>(cd.a.begin(), cd.a.size());
+        write_unchecked<uint8_t>(stream, cd.b);
+        write_unchecked<bool>(stream, cd.c);
+    }
+
+    template <>
+    CompositeData2 read_unchecked<CompositeData2>(byte_stream_reader &stream)
     {
         CompositeData2 cd2;
-        cd2.a = stream.read_unchecked<uint8_t>();
-        cd2.b = stream.read_unchecked<uint8_t>();
+        cd2.a = read_unchecked<uint8_t>(stream);
+        cd2.b = read_unchecked<uint8_t>(stream);
         return cd2;
     }
 
     template <>
-    CompositeData3 read_unchecked<CompositeData3>(etl::byte_stream_reader &stream)
+    void write_unchecked<CompositeData2>(byte_stream_writer &stream, const CompositeData2 &cd)
+    {
+        write_unchecked<uint8_t>(stream, cd.a);
+        write_unchecked<uint8_t>(stream, cd.b);
+    }
+
+    template <>
+    CompositeData3 read_unchecked<CompositeData3>(byte_stream_reader &stream)
     {
         CompositeData3 cd3;
-        cd3.a = etl::read_unchecked<CompositeData2>(stream);
+        cd3.a = read_unchecked<CompositeData2>(stream);
         return cd3;
     }
 
     template <>
-    MyEnum read_unchecked<MyEnum>(etl::byte_stream_reader &stream)
+    void write_unchecked<CompositeData3>(byte_stream_writer &stream, const CompositeData3 &cd)
     {
-        return static_cast<MyEnum>(etl::read_unchecked<uint8_t>(stream));
+        write_unchecked<CompositeData2>(stream, cd.a);
     }
 
     template <>
-    void write_unchecked<etl::string_view>(etl::byte_stream_writer &stream, const etl::string_view& sv)
+    MyEnum read_unchecked<MyEnum>(byte_stream_reader &stream)
+    {
+        return static_cast<MyEnum>(read_unchecked<uint8_t>(stream));
+    }
+
+    template <>
+    void write_unchecked<MyEnum>(byte_stream_writer &stream, const MyEnum &me)
+    {
+        write_unchecked<uint8_t>(stream, static_cast<uint8_t>(me));
+    }
+
+    template <>
+    void write_unchecked<string_view>(byte_stream_writer &stream, const string_view& sv)
     {
         for (auto c : sv)
         {
-            stream.write_unchecked(c);
+            write_unchecked(stream, c);
         }
-        stream.write_unchecked('\0');
+        write_unchecked(stream, '\0');
     }
 }
 
@@ -247,7 +274,7 @@ private:
 
     void invokef15(Reader &r, Writer &w)
     {
-        etl::span<uint16_t> response = f15();
+        const auto response = f15();
         w.write_unchecked<uint16_t>(response);
     }
 
@@ -259,26 +286,40 @@ private:
 
     void invokef17(Reader &r, Writer &w)
     {
+        const auto response = f17();
+        etl::write_unchecked<CompositeData>(w, response);
     }
 
     void invokef18(Reader &r, Writer &w)
     {
+        const auto response = f18();
+        etl::write_unchecked<MyEnum>(w, response);
     }
 
     void invokef19(Reader &r, Writer &w)
     {
+        auto response = f19();
+        for (const auto& e : response)
+        {
+            etl::write_unchecked<CompositeData2>(w, e);
+        }
     }
 
     void invokef20(Reader &r, Writer &w)
     {
+        const auto response = f20();
+        etl::write_unchecked<CompositeData3>(w, response);
     }
 
     void invokef21(Reader &r, Writer &w)
     {
+        const auto response = f21();
+        etl::write_unchecked<uint8_t>(w, std::get<0>(response));
+        etl::write_unchecked<uint8_t>(w, std::get<1>(response));
     }
 
     using Invoker = void (I0Decoder::*)(Reader &reader, Writer& writer);
-    inline static const etl::vector<Invoker, 22> invokers{
+    inline static const etl::array invokers{
         &I0Decoder::invokeF0,
         &I0Decoder::invokeF1,
         &I0Decoder::invokeF2,
@@ -502,4 +543,47 @@ TEST_F(TestDecoder, decodeF16)
     EXPECT_CALL(i0Decoder, f16()).WillOnce(Return(etl::string_view("Test")));
     auto response = decode({16});
     EXPECT_RESPONSE({'T', 'e', 's', 't', '\0'}, response);
+}
+
+// Decode function f17 which returns custom type
+TEST_F(TestDecoder, decodeF17)
+{
+    EXPECT_CALL(i0Decoder, f17()).WillOnce(Return(CompositeData {{0xBBAA, 0xDDCC}, 123, true}));
+    auto response = decode({17});
+    EXPECT_RESPONSE({0xAA, 0xBB, 0xCC, 0xDD, 123, 1}, response);
+}
+
+// Decode function f18 which returns custom enum
+TEST_F(TestDecoder, decodeF18)
+{
+    EXPECT_CALL(i0Decoder, f18()).WillOnce(Return(MyEnum::V3));
+    auto response = decode({18});
+    EXPECT_RESPONSE({0x03}, response);
+}
+
+// Decode function f19 which returns array of custom type
+TEST_F(TestDecoder, decodeF19)
+{
+    std::vector<CompositeData2> expected{
+        CompositeData2{0xAA, 0xBB},
+        CompositeData2{0xCC, 0xDD}};
+    EXPECT_CALL(i0Decoder, f19()).WillOnce(Return(etl::span<CompositeData2>(expected)));
+    auto response = decode({19});
+    EXPECT_RESPONSE({0xAA, 0xBB, 0xCC, 0xDD}, response);
+}
+
+// Decode function f20 which returns nested custom types
+TEST_F(TestDecoder, decodeF20)
+{
+    EXPECT_CALL(i0Decoder, f20()).WillOnce(Return(CompositeData3 {{0xAA, 0xBB}}));
+    auto response = decode({20});
+    EXPECT_RESPONSE({0xAA, 0xBB}, response);
+}
+
+// Decode function f21 which return two uint8_t args
+TEST_F(TestDecoder, decodef21)
+{
+    EXPECT_CALL(i0Decoder, f21()).WillOnce(Return(std::tuple{123, 111}));
+    auto response = decode({21});
+    EXPECT_RESPONSE({123, 111}, response);
 }

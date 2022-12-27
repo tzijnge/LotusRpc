@@ -41,13 +41,29 @@ struct CompositeData3
     CompositeData2 a;
 };
 
-enum class MyEnum
+MATCHER_P(SPAN_EQ, e, "Equality matcher for etl::span")
 {
-    V0,
-    V1,
-    V2,
-    V3
-};
+    if (e.size() != arg.size())
+    {
+        return false;
+    }
+    for (auto i = 0; i < e.size(); ++i)
+    {
+        if (e[i] != arg[i])
+        {
+            return false;
+        }
+    }
+    return true;
+
+}
+
+enum class MyEnum {
+        V0,
+        V1,
+        V2,
+        V3
+    };
 
 namespace etl
 {
@@ -105,21 +121,21 @@ protected:
     virtual void f2(uint8_t a) = 0;
     virtual void f3(uint16_t a) = 0;
     virtual void f4(float a) = 0;
-    virtual void f5(const etl::array<uint16_t, 2> &a) = 0;
+    virtual void f5(const etl::span<uint16_t> &a) = 0;
     virtual void f6(const etl::string_view &a) = 0;
     virtual void f7(const CompositeData &a) = 0;
     virtual void f8(MyEnum a) = 0;
-    virtual void f9(const etl::array<CompositeData2, 2> &a) = 0;
+    virtual void f9(const etl::span<CompositeData2> &a) = 0;
     virtual void f10(const CompositeData3 &a) = 0;
     virtual void f11(uint8_t a, uint8_t b) = 0;
     virtual uint8_t f12() = 0;
     virtual uint16_t f13() = 0;
     virtual float f14() = 0;
-    virtual etl::array<uint16_t, 2> f15() = 0;
+    virtual etl::span<uint16_t> f15() = 0;
     virtual etl::string_view f16() = 0;
     virtual CompositeData f17() = 0;
     virtual MyEnum f18() = 0;
-    virtual etl::array<CompositeData2, 2> f19() = 0;
+    virtual etl::span<CompositeData2> f19() = 0;
     virtual CompositeData3 f20() = 0;
     virtual std::tuple<uint8_t, uint8_t> f21() = 0;
 
@@ -222,7 +238,7 @@ private:
 
     void invokef15(Reader &reader, Writer &writer)
     {
-        etl::array<uint16_t, 2> response = f15();
+        etl::span<uint16_t> response = f15();
         writer.write_unchecked<uint16_t>(response);
     }
 
@@ -287,21 +303,21 @@ public:
     MOCK_METHOD(void, f2, (uint8_t a), (override));
     MOCK_METHOD(void, f3, (uint16_t a), (override));
     MOCK_METHOD(void, f4, (float a), (override));
-    MOCK_METHOD(void, f5, ((const etl::array<uint16_t, 2>)&a), (override));
+    MOCK_METHOD(void, f5, ((const etl::span<uint16_t>)&a), (override));
     MOCK_METHOD(void, f6, (const etl::string_view &a), (override));
     MOCK_METHOD(void, f7, (const CompositeData &a), (override));
     MOCK_METHOD(void, f8, (MyEnum a), (override));
-    MOCK_METHOD(void, f9, ((const etl::array<CompositeData2, 2>)&a), (override));
+    MOCK_METHOD(void, f9, ((const etl::span<CompositeData2>)&a), (override));
     MOCK_METHOD(void, f10, (const CompositeData3 &a), (override));
     MOCK_METHOD(void, f11, (uint8_t a, uint8_t b), (override));
     MOCK_METHOD(uint8_t, f12, (), (override));
     MOCK_METHOD(uint16_t, f13, (), (override));
     MOCK_METHOD(float, f14, (), (override));
-    MOCK_METHOD((etl::array<uint16_t, 2>), f15, (), (override));
+    MOCK_METHOD((etl::span<uint16_t>), f15, (), (override));
     MOCK_METHOD(etl::string_view, f16, (), (override));
     MOCK_METHOD(CompositeData, f17, (), (override));
     MOCK_METHOD(MyEnum, f18, (), (override));
-    MOCK_METHOD((etl::array<CompositeData2, 2>), f19, (), (override));
+    MOCK_METHOD((etl::span<CompositeData2>), f19, (), (override));
     MOCK_METHOD(CompositeData3, f20, (), (override));
     MOCK_METHOD((std::tuple<uint8_t, uint8_t>), f21, (), (override));
 };
@@ -379,7 +395,8 @@ TEST_F(TestDecoder, decodeF4)
 // Decode function f5 with array of uint16_t arg
 TEST_F(TestDecoder, decodeF5)
 {
-    EXPECT_CALL(i0Decoder, f5(etl::array<uint16_t, 2>{0xBBAA, 0xDDCC}));
+    std::vector<uint16_t> expected {0xBBAA, 0xDDCC};
+    EXPECT_CALL(i0Decoder, f5(SPAN_EQ(expected)));
     auto response = decode({5, 0xAA, 0xBB, 0xCC, 0xDD});
     EXPECT_TRUE(response.empty());
 }
@@ -412,10 +429,10 @@ TEST_F(TestDecoder, decodeF8)
 // Decode function f9 with array of custom type
 TEST_F(TestDecoder, decodeF9)
 {
-    etl::array<CompositeData2, 2> expected{
+    std::vector<CompositeData2> expected{
         CompositeData2{0xAA, 0xBB},
         CompositeData2{0xCC, 0xDD}};
-    EXPECT_CALL(i0Decoder, f9(expected));
+    EXPECT_CALL(i0Decoder, f9(SPAN_EQ(expected)));
     auto response = decode({9, 0xAA, 0xBB, 0xCC, 0xDD});
     EXPECT_TRUE(response.empty());
 }
@@ -464,7 +481,8 @@ TEST_F(TestDecoder, decodeF14)
 // Decode function f15 which return array of uint16_t
 TEST_F(TestDecoder, decodeF15)
 {
-    EXPECT_CALL(i0Decoder, f15()).WillOnce(Return(etl::array<uint16_t, 2>{0xBBAA, 0xDDCC}));
+    std::vector<uint16_t> expected{0xBBAA, 0xDDCC};
+    EXPECT_CALL(i0Decoder, f15()).WillOnce(Return(etl::span<uint16_t>(expected)));
     auto response = decode({15});
     EXPECT_RESPONSE({0xAA, 0xBB, 0xCC, 0xDD}, response);
 }

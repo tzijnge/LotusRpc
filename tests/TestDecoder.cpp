@@ -95,6 +95,12 @@ namespace etl
     }
 
     template <>
+    MyEnum read_unchecked<MyEnum>(etl::byte_stream_reader &stream)
+    {
+        return static_cast<MyEnum>(etl::read_unchecked<uint8_t>(stream));
+    }
+
+    template <>
     void write_unchecked<etl::string_view>(etl::byte_stream_writer &stream, const etl::string_view& sv)
     {
         for (auto c : sv)
@@ -194,8 +200,8 @@ private:
 
     void invokeF8(Reader &r, Writer &w)
     {
-        const auto a = etl::read_unchecked<uint8_t>(r);
-        f8(static_cast<MyEnum>(a));
+        const auto a = etl::read_unchecked<MyEnum>(r);
+        f8(a);
     }
 
     void invokeF9(Reader &r, Writer &w)

@@ -142,129 +142,132 @@ protected:
 private:
     using Reader = etl::byte_stream_reader;
 
-    void invokeF0(Reader &reader, Writer &writer)
+    void invokeF0(Reader &r, Writer &w)
     {
         f0();
     }
 
-    void invokeF1(Reader &reader, Writer &writer)
+    void invokeF1(Reader &r, Writer &w)
     {
         f1();
     }
 
-    void invokeF2(Reader &reader, Writer &writer)
+    void invokeF2(Reader &r, Writer &w)
     {
-        const auto a = reader.read_unchecked<uint8_t>();
+        const auto a = etl::read_unchecked<uint8_t>(r);
         f2(a);
     }
 
-    void invokeF3(Reader &reader, Writer &writer)
+    void invokeF3(Reader &r, Writer &w)
     {
-        const auto a = reader.read_unchecked<uint16_t>();
+        const auto a = etl::read_unchecked<uint16_t>(r);
         f3(a);
     }
 
-    void invokeF4(Reader &reader, Writer &writer)
+    void invokeF4(Reader &r, Writer &w)
     {
-        const auto a = reader.read_unchecked<float>();
+        const auto a = etl::read_unchecked<float>(r);
         f4(a);
     }
 
-    void invokeF5(Reader &reader, Writer &writer)
+    void invokeF5(Reader &r, Writer &w)
     {
         etl::array<uint16_t, 2> arr;
-        reader.read_unchecked<uint16_t>(arr);
+        for (auto &element : arr)
+        {
+            element = etl::read_unchecked<uint16_t>(r);
+        }
         f5(arr);
     }
 
-    void invokeF6(Reader &reader, Writer &writer)
+    void invokeF6(Reader &r, Writer &w)
     {
-        etl::string_view sv(reader.end());
+        etl::string_view sv(r.end());
         f6(sv);
     }
 
-    void invokeF7(Reader &reader, Writer &writer)
+    void invokeF7(Reader &r, Writer &w)
     {
-        const auto cd = etl::read_unchecked<CompositeData>(reader);
+        const auto cd = etl::read_unchecked<CompositeData>(r);
         f7(cd);
     }
 
-    void invokeF8(Reader &reader, Writer &writer)
+    void invokeF8(Reader &r, Writer &w)
     {
-        const auto a = reader.read_unchecked<uint8_t>();
+        const auto a = etl::read_unchecked<uint8_t>(r);
         f8(static_cast<MyEnum>(a));
     }
 
-    void invokeF9(Reader &reader, Writer &writer)
+    void invokeF9(Reader &r, Writer &w)
     {
         etl::array<CompositeData2, 2> arr;
         for (auto &element : arr)
         {
-            element = etl::read_unchecked<CompositeData2>(reader);
+            element = etl::read_unchecked<CompositeData2>(r);
         }
         f9(arr);
     }
 
-    void invokeF10(Reader &reader, Writer &writer)
+    void invokeF10(Reader &r, Writer &w)
     {
-        const auto cd3 = etl::read_unchecked<CompositeData3>(reader);
+        const auto cd3 = etl::read_unchecked<CompositeData3>(r);
         f10(cd3);
     }
 
-    void invokef11(Reader &reader, Writer &writer)
+    void invokef11(Reader &r, Writer &w)
     {
-        const auto a = reader.read_unchecked<uint8_t>();
-        const auto b = reader.read_unchecked<uint8_t>();
+        const auto a = etl::read_unchecked<uint8_t>(r);
+        const auto b = etl::read_unchecked<uint8_t>(r);
         f11(a, b);
     }
 
-    void invokef12(Reader &reader, Writer &writer)
+    void invokef12(Reader &r, Writer &w)
     {
-        const uint8_t response = f12();
-        writer.write_unchecked(response);
+        const auto response = f12();
+        etl::write_unchecked<uint8_t>(w, response);
     }
 
-    void invokef13(Reader &reader, Writer &writer)
+    void invokef13(Reader &r, Writer &w)
     {
-        const uint16_t response = f13();
-        writer.write_unchecked(response);
+        const auto response = f13();
+        etl::write_unchecked<uint16_t>(w, response);
     }
 
-    void invokef14(Reader &reader, Writer &writer)
+    void invokef14(Reader &r, Writer &w)
     {
-        const float response = f14();
-        writer.write_unchecked(response);
+        const auto response = f14();
+        etl::write_unchecked<float>(w, response);
     }
 
-    void invokef15(Reader &reader, Writer &writer)
+    void invokef15(Reader &r, Writer &w)
     {
         etl::span<uint16_t> response = f15();
-        writer.write_unchecked<uint16_t>(response);
+        w.write_unchecked<uint16_t>(response);
     }
 
-    void invokef16(Reader &reader, Writer &writer)
+    void invokef16(Reader &r, Writer &w)
     {
-        const etl::string_view response = f16();
-        etl::write_unchecked(writer, response);
+        const auto response = f16();
+        etl::write_unchecked<etl::string_view>(w, response);
     }
 
-    void invokef17(Reader &reader, Writer &writer)
-    {
-    }
-
-    void invokef18(Reader &reader, Writer &writer)
+    void invokef17(Reader &r, Writer &w)
     {
     }
 
-    void invokef19(Reader &reader, Writer &writer)
+    void invokef18(Reader &r, Writer &w)
     {
     }
 
-    void invokef20(Reader &reader, Writer &writer)
+    void invokef19(Reader &r, Writer &w)
     {
     }
 
-    void invokef21(Reader &reader, Writer &writer)
+    void invokef20(Reader &r, Writer &w)
+    {
+    }
+
+    void invokef21(Reader &r, Writer &w)
     {
     }
 

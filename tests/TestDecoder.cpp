@@ -11,7 +11,12 @@ using ::testing::Return;
 
 struct CompositeData
 {
-    bool operator==(const CompositeData &other) const = default;
+    bool operator==(const CompositeData &other) const
+    {
+        return this->a == other.a &&
+                this->b == other.b &&
+                this->c == other.c;
+    };
 
     etl::array<uint16_t, 2> a;
     uint8_t b;
@@ -20,7 +25,11 @@ struct CompositeData
 
 struct CompositeData2
 {
-    bool operator==(const CompositeData2 &other) const = default;
+    bool operator==(const CompositeData2 &other) const
+    {
+        return this->a == other.a &&
+                this->b == other.b;
+    };
     bool operator!=(const CompositeData2 &other) const
     {
         return !(*this == other);
@@ -32,7 +41,10 @@ struct CompositeData2
 
 struct CompositeData3
 {
-    bool operator==(const CompositeData3 &other) const = default;
+    bool operator==(const CompositeData3 &other) const
+    {
+        return this->a == other.a;
+    };
     bool operator!=(const CompositeData3 &other) const
     {
         return !(*this == other);

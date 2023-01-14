@@ -89,6 +89,23 @@ namespace etl
         return cd;
     }
 
+    template <class T, size_t N>
+    array<T, N> read_unchecked(byte_stream_reader &stream)
+    {
+        array<T, N> a;
+        for (auto &element : a)
+        {
+            element = etl::read_unchecked<T>(stream);
+        }
+        return a;
+    }
+
+    template <>
+    string_view read_unchecked(byte_stream_reader &stream)
+    {
+        return {stream.end()};
+    }
+
     template <>
     void write_unchecked<CompositeData>(byte_stream_writer &stream, const CompositeData &cd)
     {
@@ -147,6 +164,15 @@ namespace etl
             write_unchecked(stream, c);
         }
         write_unchecked(stream, '\0');
+    }
+
+    template <class T>
+    void write_unchecked(byte_stream_writer &stream, const span<T> &s)
+    {
+        for (auto v : s)
+        {
+            write_unchecked(stream, v);
+        }
     }
 }
 
@@ -217,18 +243,14 @@ private:
 
     void invokeF5(Reader &r, Writer &w)
     {
-        etl::array<uint16_t, 2> arr;
-        for (auto &element : arr)
-        {
-            element = etl::read_unchecked<uint16_t>(r);
-        }
-        f5(arr);
+        auto a = etl::read_unchecked<uint16_t, 2>(r);
+        f5(a);
     }
 
     void invokeF6(Reader &r, Writer &w)
     {
-        etl::string_view sv(r.end());
-        f6(sv);
+        auto a = etl::read_unchecked<etl::string_view>(r);
+        f6(a);
     }
 
     void invokeF7(Reader &r, Writer &w)
@@ -245,12 +267,8 @@ private:
 
     void invokeF9(Reader &r, Writer &w)
     {
-        etl::array<CompositeData2, 2> arr;
-        for (auto &element : arr)
-        {
-            element = etl::read_unchecked<CompositeData2>(r);
-        }
-        f9(arr);
+        auto a = etl::read_unchecked<CompositeData2, 2>(r);
+        f9(a);
     }
 
     void invokeF10(Reader &r, Writer &w)
@@ -310,11 +328,8 @@ private:
 
     void invokef19(Reader &r, Writer &w)
     {
-        auto response = f19();
-        for (const auto& e : response)
-        {
-            etl::write_unchecked<CompositeData2>(w, e);
-        }
+        const auto response = f19();
+        etl::write_unchecked<CompositeData2>(w, response);
     }
 
     void invokef20(Reader &r, Writer &w)

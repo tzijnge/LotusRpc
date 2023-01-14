@@ -39,6 +39,6 @@ jobs:
       run: ctest -C ${{env.BUILD_TYPE}}
       
     - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action/composite@v2
-        with:
-          junit_files: "build/tests/TestResults/*.xml"
+      uses: EnricoMi/publish-unit-test-result-action/composite@v2
+      with:
+        junit_files: "build/tests/TestResults/*.xml"

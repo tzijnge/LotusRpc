@@ -103,7 +103,9 @@ namespace etl
     template <>
     string_view read_unchecked(byte_stream_reader &stream)
     {
-        return {stream.end()};
+        const string_view s{stream.end()};
+        stream.read_unchecked<uint8_t>(s.size() + 1);
+        return s;
     }
 
     template <>
@@ -209,6 +211,7 @@ protected:
     virtual etl::span<CompositeData2> f19() = 0;
     virtual CompositeData3 f20() = 0;
     virtual std::tuple<uint8_t, uint8_t> f21() = 0;
+    virtual std::tuple<etl::string_view, etl::string_view> f22(const etl::string_view& s1, const etl::string_view& s2) = 0;
 
 private:
     using Reader = etl::byte_stream_reader;
@@ -345,6 +348,15 @@ private:
         etl::write_unchecked<uint8_t>(w, std::get<1>(response));
     }
 
+    void invokef22(Reader &r, Writer &w)
+    {
+        const auto a1 = etl::read_unchecked<etl::string_view>(r);
+        const auto a2 = etl::read_unchecked<etl::string_view>(r);
+        const auto response = f22(a1, a2);
+        etl::write_unchecked<etl::string_view>(w, std::get<0>(response));
+        etl::write_unchecked<etl::string_view>(w, std::get<1>(response));
+    }
+
     using Invoker = void (I0Decoder::*)(Reader &reader, Writer& writer);
     inline static const etl::array invokers{
         &I0Decoder::invokeF0,
@@ -369,6 +381,7 @@ private:
         &I0Decoder::invokef19,
         &I0Decoder::invokef20,
         &I0Decoder::invokef21,
+        &I0Decoder::invokef22,
     };
 };
 
@@ -397,6 +410,7 @@ public:
     MOCK_METHOD((etl::span<CompositeData2>), f19, (), (override));
     MOCK_METHOD(CompositeData3, f20, (), (override));
     MOCK_METHOD((std::tuple<uint8_t, uint8_t>), f21, (), (override));
+    MOCK_METHOD((std::tuple<etl::string_view, etl::string_view>), f22, (const etl::string_view &s1, const etl::string_view &s2), (override));
 };
 
 class TestDecoder : public ::testing::Test
@@ -614,3 +628,17 @@ TEST_F(TestDecoder, decodef21)
     auto response = decode({21});
     EXPECT_RESPONSE({123, 111}, response);
 }
+
+// Decode function f22 that takes two string arguments and returns two strings
+TEST_F(TestDecoder, decodef22)
+{
+    etl::string_view arg1{"arg1"};
+    etl::string_view arg2{"arg2"};
+    etl::string_view ret1{"ret1"};
+    etl::string_view ret2{"ret2"};
+
+    EXPECT_CALL(i0Decoder, f22(arg1, arg2)).WillOnce(Return(std::tuple{ret1, ret2}));
+    auto response = decode({22, 'a', 'r', 'g', '1', '\0', 'a', 'r', 'g', '2', '\0'});
+    EXPECT_RESPONSE({'r','e','t','1','\0','r','e','t','2','\0',}, response);
+}
+

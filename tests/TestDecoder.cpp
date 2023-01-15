@@ -194,28 +194,26 @@ protected:
     virtual void f2(uint8_t a) = 0;
     virtual void f3(uint16_t a) = 0;
     virtual void f4(float a) = 0;
-    virtual void f5(const etl::span<uint16_t> &a) = 0;
+    virtual void f5(const etl::span<const uint16_t> &a) = 0;
     virtual void f6(const etl::string_view &a) = 0;
     virtual void f7(const CompositeData &a) = 0;
     virtual void f8(MyEnum a) = 0;
-    virtual void f9(const etl::span<CompositeData2> &a) = 0;
+    virtual void f9(const etl::span<const CompositeData2> &a) = 0;
     virtual void f10(const CompositeData3 &a) = 0;
     virtual void f11(uint8_t a, uint8_t b) = 0;
     virtual uint8_t f12() = 0;
     virtual uint16_t f13() = 0;
     virtual float f14() = 0;
-    virtual etl::span<uint16_t> f15() = 0;
+    virtual etl::span<const uint16_t> f15() = 0;
     virtual etl::string_view f16() = 0;
     virtual CompositeData f17() = 0;
     virtual MyEnum f18() = 0;
-    virtual etl::span<CompositeData2> f19() = 0;
+    virtual etl::span<const CompositeData2> f19() = 0;
     virtual CompositeData3 f20() = 0;
     virtual std::tuple<uint8_t, uint8_t> f21() = 0;
     virtual std::tuple<etl::string_view, etl::string_view> f22(const etl::string_view& s1, const etl::string_view& s2) = 0;
 
 private:
-    using Reader = etl::byte_stream_reader;
-
     void invokeF0(Reader &r, Writer &w)
     {
         f0();
@@ -246,13 +244,13 @@ private:
 
     void invokeF5(Reader &r, Writer &w)
     {
-        auto a = etl::read_unchecked<uint16_t, 2>(r);
+        const auto a = etl::read_unchecked<uint16_t, 2>(r);
         f5(a);
     }
 
     void invokeF6(Reader &r, Writer &w)
     {
-        auto a = etl::read_unchecked<etl::string_view>(r);
+        const auto a = etl::read_unchecked<etl::string_view>(r);
         f6(a);
     }
 
@@ -308,7 +306,7 @@ private:
     void invokef15(Reader &r, Writer &w)
     {
         const auto response = f15();
-        w.write_unchecked<uint16_t>(response);
+        w.write_unchecked<const uint16_t>(response);
     }
 
     void invokef16(Reader &r, Writer &w)
@@ -332,7 +330,7 @@ private:
     void invokef19(Reader &r, Writer &w)
     {
         const auto response = f19();
-        etl::write_unchecked<CompositeData2>(w, response);
+        etl::write_unchecked<const CompositeData2>(w, response);
     }
 
     void invokef20(Reader &r, Writer &w)
@@ -393,21 +391,21 @@ public:
     MOCK_METHOD(void, f2, (uint8_t a), (override));
     MOCK_METHOD(void, f3, (uint16_t a), (override));
     MOCK_METHOD(void, f4, (float a), (override));
-    MOCK_METHOD(void, f5, ((const etl::span<uint16_t>)&a), (override));
+    MOCK_METHOD(void, f5, ((const etl::span<const uint16_t>)&a), (override));
     MOCK_METHOD(void, f6, (const etl::string_view &a), (override));
     MOCK_METHOD(void, f7, (const CompositeData &a), (override));
     MOCK_METHOD(void, f8, (MyEnum a), (override));
-    MOCK_METHOD(void, f9, ((const etl::span<CompositeData2>)&a), (override));
+    MOCK_METHOD(void, f9, ((const etl::span<const CompositeData2>)&a), (override));
     MOCK_METHOD(void, f10, (const CompositeData3 &a), (override));
     MOCK_METHOD(void, f11, (uint8_t a, uint8_t b), (override));
     MOCK_METHOD(uint8_t, f12, (), (override));
     MOCK_METHOD(uint16_t, f13, (), (override));
     MOCK_METHOD(float, f14, (), (override));
-    MOCK_METHOD((etl::span<uint16_t>), f15, (), (override));
+    MOCK_METHOD((etl::span<const uint16_t>), f15, (), (override));
     MOCK_METHOD(etl::string_view, f16, (), (override));
     MOCK_METHOD(CompositeData, f17, (), (override));
     MOCK_METHOD(MyEnum, f18, (), (override));
-    MOCK_METHOD((etl::span<CompositeData2>), f19, (), (override));
+    MOCK_METHOD((etl::span<const CompositeData2>), f19, (), (override));
     MOCK_METHOD(CompositeData3, f20, (), (override));
     MOCK_METHOD((std::tuple<uint8_t, uint8_t>), f21, (), (override));
     MOCK_METHOD((std::tuple<etl::string_view, etl::string_view>), f22, (const etl::string_view &s1, const etl::string_view &s2), (override));
@@ -641,4 +639,3 @@ TEST_F(TestDecoder, decodef22)
     auto response = decode({22, 'a', 'r', 'g', '1', '\0', 'a', 'r', 'g', '2', '\0'});
     EXPECT_RESPONSE({'r','e','t','1','\0','r','e','t','2','\0',}, response);
 }
-

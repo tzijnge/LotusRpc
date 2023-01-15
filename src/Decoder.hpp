@@ -1,6 +1,6 @@
 #pragma once
-#include <stdint.h>
 #include <etl/byte_stream.h>
+#include <stdint.h>
 
 class Decoder
 {

@@ -14,6 +14,7 @@ mark_as_advanced(
 add_subdirectory(../external/gtest External/gtest EXCLUDE_FROM_ALL)
 
 add_executable(UnitTests
+                ../src/EtlRwExtensions.cpp
                 TestDecoder.cpp
                 TestServer.cpp)
 

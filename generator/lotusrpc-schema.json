@@ -1,0 +1,128 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Lotus RPC",
+  "description": "JSON Schema for Lotus RPC, a RPC code generation tool",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "namespace",
+    "interfaces"
+  ],
+  "properties": {
+    "namespace": {
+      "type": "string",
+      "description": "C++ namespace to be generate code in"
+    },
+    "interfaces": {
+      "type": "array",
+      "description": "A list of interfaces",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "id",
+          "functions"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Interface name"
+          },
+          "id": {
+            "type": "integer",
+            "description": "Interface identifier (0-255)",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "functions": {
+            "type": "array",
+            "description": "A list of functions in the interface",
+            "items": {
+              "type": "object",
+              "required": [
+                "name",
+                "id",
+                "params",
+                "returns"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Function name"
+                },
+                "id": {
+                  "type": "integer",
+                  "description": "Function identifier (0-255)",
+                  "minimum": 0,
+                  "maximum": 255
+                },
+                "params": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "name",
+                      "type"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "description": "Argument name"
+                      },
+                      "type": {
+                        "type": "string",
+                        "description": "Argument type"
+                      },
+                      "length": {
+                        "type": "integer",
+                        "description": "String or array length",
+                        "minimum": 0
+                      },
+                      "arraytype": {
+                        "type": "string",
+                        "description": "Array type. Must be one of the system types or a previously defined custom type"
+                      }
+                    }
+                  }
+                },
+                "returns": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "name",
+                      "type"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "description": "Argument name"
+                      },
+                      "type": {
+                        "type": "string",
+                        "description": "Argument type"
+                      },
+                      "length": {
+                        "type": "integer",
+                        "description": "String or array length",
+                        "minimum": 0
+                      },
+                      "arraytype": {
+                        "type": "string",
+                        "description": "Array type. Must be one of the system types or a previously defined custom type"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

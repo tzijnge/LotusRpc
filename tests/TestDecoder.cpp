@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include "Decoder.hpp"
 #include <tuple>
+#include <iterator>
 
 using ::testing::Return;
 
@@ -103,8 +104,23 @@ namespace etl
     template <>
     string_view read_unchecked(byte_stream_reader &stream)
     {
-        const string_view s{stream.end()};
-        stream.read_unchecked<uint8_t>(s.size() + 1);
+        auto found = reinterpret_cast<const char*>(memchr(stream.end(), '\0', stream.available_bytes()));
+
+        size_t stringSize = 0;
+        size_t skipSize = 0;
+        if (found != nullptr)
+        {
+            stringSize = std::distance(stream.end(), found);
+            skipSize = stringSize + 1;
+        }
+        else
+        {
+            stringSize = stream.available_bytes();
+            skipSize = stringSize;
+        }
+
+        const string_view s{stream.end(), stringSize};
+        stream.read_unchecked<uint8_t>(skipSize);
         return s;
     }
 
@@ -638,4 +654,12 @@ TEST_F(TestDecoder, decodef22)
     EXPECT_CALL(i0Decoder, f22(arg1, arg2)).WillOnce(Return(std::tuple{ret1, ret2}));
     auto response = decode({22, 'a', 'r', 'g', '1', '\0', 'a', 'r', 'g', '2', '\0'});
     EXPECT_RESPONSE({'r','e','t','1','\0','r','e','t','2','\0',}, response);
+}
+
+// Decode function f6 with string arg
+TEST_F(TestDecoder, decodeF6WithMissingStringTerminator)
+{
+    EXPECT_CALL(i0Decoder, f6(etl::string_view("Test")));
+    auto response = decode({6, 'T', 'e', 's', 't'});
+    EXPECT_TRUE(response.empty());
 }

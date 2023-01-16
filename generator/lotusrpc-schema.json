@@ -1,128 +1,115 @@
 {
+  "$defs": {
+    "cppid": {
+      "type": "string",
+      "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+      "description": "A valid C++ identifier"
+    },
+    "uint8": {
+      "type": "integer",
+      "description": "Unsigned 8-bit integer (0-255)",
+      "minimum": 0,
+      "maximum": 255
+    },
+    "enum_field":{
+      "type": "object",
+      "description": "Enumeration field consisting of a name and an ID",
+      "additionalProperties": false,
+      "required": [ "id", "name"],
+      "properties": {
+        "name": { "$ref": "#/$defs/cppid"},
+        "id": { "$ref": "#/$defs/uint8"}
+      }
+    },
+    "enum_decl":{
+      "type": "object",
+      "description": "An enum declaration",
+      "required": ["name", "fields"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "$ref": "#/$defs/cppid" },
+        "fields": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/enum_field" }, "description": "List of enum fields" }
+      }
+    },
+    "var_decl": {
+      "type": "object",
+      "description": "Variable declaration with name and type. Specifying 'count' makes it an array of the specified type. Type can be any of the C++ standard types (u)intx_t, float, double or bool. It can also be 'string_x' for a fixed size string or 'string_auto' for a variable size string. Finally, it can be any custom struct or enum defined in the specification",
+      "additionalProperties": false,
+      "required": [ "name", "type" ],
+      "properties": {
+        "name": { "$ref": "#/$defs/cppid" },
+        "type": {
+          "oneOf": [
+            {"enum": ["uint8_t", "int8_t", "uint16_t", "int16_t", "uint32_t", "int32_t", "uint64_t", "int64_t", "float", "double", "bool"]},
+            {"type": "string", "pattern": "^string_(0*[1-9]+|auto)$"},
+            {"type": "string", "pattern": "^@[a-zA-Z_][a-zA-Z0-9_]*$"}
+          ]
+        },
+        "count": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "struct_decl":{
+      "type": "object",
+      "description": "A struct declaration",
+      "required": [ "name", "fields" ],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "$ref": "#/$defs/cppid" },
+        "fields": {"type": "array", "minItems": 1, "items": { "$ref": "#/$defs/var_decl" }, "description": "List of struct fields"
+        }
+      }
+    },
+    "function_decl":{
+      "type": "object",
+      "required": ["name", "id"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "$ref": "#/$defs/cppid" },
+        "id": { "$ref": "#/$defs/uint8" },
+        "params": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/var_decl" }, "description": "List of function parameters"},
+        "returns": {"type": "array", "minItems": 1, "items": { "$ref": "#/$defs/var_decl" }, "description": "List of function returns"}
+      }
+    },
+    "interface_decl": {
+      "type": "object",
+      "required": [ "name", "id", "functions"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "$ref": "#/$defs/cppid" },
+        "id": { "$ref": "#/$defs/uint8" },
+        "functions": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/function_decl" }, "description": "List of functions in the interface" }
+      }
+    }
+  },
+
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Lotus RPC",
   "description": "JSON Schema for Lotus RPC, a RPC code generation tool",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "namespace",
-    "interfaces"
-  ],
+  "required": ["namespace", "interfaces"],
   "properties": {
     "namespace": {
-      "type": "string",
+      "$ref": "#/$defs/cppid",
       "description": "C++ namespace to be generate code in"
     },
     "interfaces": {
       "type": "array",
+      "minItems": 1,
       "description": "A list of interfaces",
-      "items": {
-        "type": "object",
-        "required": [
-          "name",
-          "id",
-          "functions"
-        ],
-        "additionalProperties": false,
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Interface name"
-          },
-          "id": {
-            "type": "integer",
-            "description": "Interface identifier (0-255)",
-            "minimum": 0,
-            "maximum": 255
-          },
-          "functions": {
-            "type": "array",
-            "description": "A list of functions in the interface",
-            "items": {
-              "type": "object",
-              "required": [
-                "name",
-                "id",
-                "params",
-                "returns"
-              ],
-              "additionalProperties": false,
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "description": "Function name"
-                },
-                "id": {
-                  "type": "integer",
-                  "description": "Function identifier (0-255)",
-                  "minimum": 0,
-                  "maximum": 255
-                },
-                "params": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "required": [
-                      "name",
-                      "type"
-                    ],
-                    "additionalProperties": false,
-                    "properties": {
-                      "name": {
-                        "type": "string",
-                        "description": "Argument name"
-                      },
-                      "type": {
-                        "type": "string",
-                        "description": "Argument type"
-                      },
-                      "length": {
-                        "type": "integer",
-                        "description": "String or array length",
-                        "minimum": 0
-                      },
-                      "arraytype": {
-                        "type": "string",
-                        "description": "Array type. Must be one of the system types or a previously defined custom type"
-                      }
-                    }
-                  }
-                },
-                "returns": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "required": [
-                      "name",
-                      "type"
-                    ],
-                    "additionalProperties": false,
-                    "properties": {
-                      "name": {
-                        "type": "string",
-                        "description": "Argument name"
-                      },
-                      "type": {
-                        "type": "string",
-                        "description": "Argument type"
-                      },
-                      "length": {
-                        "type": "integer",
-                        "description": "String or array length",
-                        "minimum": 0
-                      },
-                      "arraytype": {
-                        "type": "string",
-                        "description": "Array type. Must be one of the system types or a previously defined custom type"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+      "items": { "$ref": "#/$defs/interface_decl" }
+    },
+    "structs":{
+      "type": "array",
+      "minItems": 1,
+      "description": "A list of custom structs",
+      "items": { "$ref": "#/$defs/struct_decl" }
+    },
+    "enums": {
+      "type": "array",
+      "minItems": 1,
+      "description": "A list of custom enums",
+      "items": { "$ref": "#/$defs/enum_decl" }
     }
   }
 }

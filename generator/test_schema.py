@@ -8,9 +8,31 @@ def test_missing_namespace():
         schema = yaml.safe_load(schema_file)
         jsonschema.validate(definition, schema)
 
-        with open('generator/test.lrpc.yaml', 'r') as stream:
-            try:
-                a= yaml.safe_load(stream)
-                print(a)
-            except yaml.YAMLError as exc:
-                print(exc)
+
+def test_duplicate_enum_fields():
+    rpc_def = \
+        '''namespace: "a"
+interfaces:
+  - name: "a"
+    id: 0
+    functions:
+      - name: "a"
+        id: 0
+enums:
+  - name: "e"
+    fields:
+      - name: "f"
+        id: 0
+      - name: "f"
+        id: 1
+'''
+
+    with open('generator/lotusrpc-schema.json') as schema_file:
+        definition = yaml.safe_load(rpc_def)
+        schema = yaml.safe_load(schema_file)
+        jsonschema.validate(definition, schema)
+
+        fields = definition["enums"][0]["fields"]
+        field_names = [field["name"] for field in fields]
+        unique_field_names = set(field_names)
+        print(fields)

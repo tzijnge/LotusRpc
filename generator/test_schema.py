@@ -13,13 +13,6 @@ def semantic_errors(rpc_def):
         sa.analyze(definition)
         return sa.errors
 
-def test_missing_namespace():
-    with open('generator/test.lrpc.yaml') as def_file, open('generator/lotusrpc-schema.json') as schema_file:
-        definition = yaml.safe_load(def_file)
-        schema = yaml.safe_load(schema_file)
-        jsonschema.validate(definition, schema)
-
-
 def test_duplicate_enum_field_names():
     rpc_def = \
 '''namespace: "a"

@@ -39,5 +39,5 @@ jobs:
       uses: EnricoMi/publish-unit-test-result-action/composite@v2
       with:
         junit_files: |
-          "build/tests/TestResults/*.xml"
           "pytestresults.xml"
+          "build/tests/TestResults/*.xml"

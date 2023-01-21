@@ -38,5 +38,4 @@ jobs:
     - name: Publish Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v2
       with:
-        junit_files: |
-          "pytestresults.xml"
+        junit_files: "pytestresults.xml"

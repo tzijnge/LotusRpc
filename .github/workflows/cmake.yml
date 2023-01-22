@@ -30,7 +30,7 @@ jobs:
 
     - name: C++ tests
       working-directory: ${{github.workspace}}/build
-      run: ctest -C ${{env.BUILD_TYPE}} --output-junit testresults/cpptestresults.xml
+      run: ctest -C ${{env.BUILD_TYPE}} --output-junit ../testresults/cpptestresults.xml
 
     - name: Python tests
       run: pytest generator -v --junitxml=testresults/pytestresults.xml

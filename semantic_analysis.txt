@@ -1,14 +1,13 @@
 semantic analysis
 - [error] auto string not allowed as struct field
 - [error] auto string only allowed as last function param or return
-- [error] custom data type must be in the list of structs or enums
+- [error] [done] custom data type must be in the list of structs or enums
 - [warning] custom enum or struct not referenced in any function or any other custom type
-- [error] duplicate interface IDs
-- [error] duplicate function IDs (in same interface)
-- [error] duplicate enum field IDs (in same enum)
-- [error] duplicate interface names
-- [error] duplicate function names (in same interface)
-- [error] duplicate enum names
-- [error] duplicate enum field names (in same enum)
-- [error] duplicate struct names
-- [error] duplicate struct field names (in same struct)
+- [error] [done] duplicate interface IDs
+- [error] [done] duplicate function IDs (in same interface)
+- [error] [done] duplicate enum field IDs (in same enum)
+- [error] [done] duplicate interface names
+- [error] [done] duplicate function names (in same interface)
+- [error] [done] duplicate struct/enum names
+- [error] [done] duplicate enum field names (in same enum)
+- [error] [done] duplicate struct field names (in same struct)

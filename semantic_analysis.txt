@@ -1,5 +1,5 @@
 semantic analysis
-- [error] auto string not allowed as struct field
+- [error] [done] auto string not allowed as struct field
 - [error] auto string only allowed as last function param or return
 - [error] [done] custom data type must be in the list of structs or enums
 - [warning] custom enum or struct not referenced in any function or any other custom type

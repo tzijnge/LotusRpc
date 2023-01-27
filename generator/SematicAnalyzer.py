@@ -107,6 +107,14 @@ class SemanticAnalyzer(object):
         if len(all_undeclared_types) > 0:
             self.errors.append(f'Undeclared custom type(s): {sorted(set(all_undeclared_types))}')
 
+    def __check_auto_string_in_struct(self):
+        auto_string_struct_fields = list()
+        for s in self.__structs:
+            auto_strings = [(s['name'], f['name']) for f in s['fields'] if f['type'] == 'string_auto']
+            auto_string_struct_fields.extend(auto_strings)
+
+        if len(auto_string_struct_fields) > 0:
+            self.errors.append(f'Auto string not allowed in struct: {auto_string_struct_fields}')
 
     def analyze(self, definition) -> None:
         self.__interfaces = definition['interfaces']
@@ -124,3 +132,4 @@ class SemanticAnalyzer(object):
         self.__check_duplicate_enum_field_names()
         self.__check_duplicate_struct_field_names()
         self.__check_undeclared_custom_types()
+        self.__check_auto_string_in_struct()

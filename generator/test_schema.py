@@ -289,3 +289,26 @@ enums:
 
     errors = semantic_errors(rpc_def)
     assert "Undeclared custom type(s): ['MyType1', 'MyType2', 'MyType3']" in errors
+
+def test_auto_string_not_allowed_in_struct():
+    rpc_def = \
+'''namespace: "a"
+interfaces:
+  - name: "i0"
+    id: 0
+    functions:
+      - name: "f0"
+        id: 111
+structs:
+  - name: "s0"
+    fields:
+      - name: "f0"
+        type: "string_auto"
+  - name: "s1"
+    fields:
+      - name: "f1"
+        type: "string_auto"
+'''
+
+    errors = semantic_errors(rpc_def)
+    assert "Auto string not allowed in struct: [('s0', 'f0'), ('s1', 'f1')]" in errors

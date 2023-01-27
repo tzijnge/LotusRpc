@@ -93,6 +93,11 @@
       "$ref": "#/$defs/cppid",
       "description": "C++ namespace to be generate code in"
     },
+    "max_auto_string_size": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Maximum size that a string_auto variable can have. Defaults to 255 bytes if not specified"
+    },
     "interfaces": {
       "type": "array",
       "minItems": 1,

@@ -94,8 +94,8 @@ class SemanticAnalyzer(object):
         all_used_types = list()
         for i in self.__interfaces:
             for f in i['functions']:
-                all_used_types.extend([p['type'] for p in f['params']])
-                all_used_types.extend([r['type'] for r in f['returns']])
+                all_used_types.extend([p['type'] for p in f.get('params', list())])
+                all_used_types.extend([r['type'] for r in f.get('returns', list())])
 
         for s in self.__structs:
             all_used_types.extend([f['type'] for f in s['fields']])

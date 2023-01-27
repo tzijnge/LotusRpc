@@ -21,6 +21,12 @@ class SemanticAnalyzer(object):
 
         return duplicates
 
+    def __params(self, function):
+        return function.get('params', list())
+
+    def __returns(self, function):
+        return function.get('returns', list())
+
     def __check_duplicate_interface_ids(self):
         ids = [i['id'] for i in self.__interfaces]
         duplicate_ids = self.__duplicates(ids)
@@ -94,8 +100,8 @@ class SemanticAnalyzer(object):
         all_used_types = list()
         for i in self.__interfaces:
             for f in i['functions']:
-                all_used_types.extend([p['type'] for p in f.get('params', list())])
-                all_used_types.extend([r['type'] for r in f.get('returns', list())])
+                all_used_types.extend([p['type'] for p in self.__params(f)])
+                all_used_types.extend([r['type'] for r in self.__returns(f)])
 
         for s in self.__structs:
             all_used_types.extend([f['type'] for f in s['fields']])
@@ -108,13 +114,45 @@ class SemanticAnalyzer(object):
             self.errors.append(f'Undeclared custom type(s): {sorted(set(all_undeclared_types))}')
 
     def __check_auto_string_in_struct(self):
-        auto_string_struct_fields = list()
+        offenders = list()
         for s in self.__structs:
             auto_strings = [(s['name'], f['name']) for f in s['fields'] if f['type'] == 'string_auto']
-            auto_string_struct_fields.extend(auto_strings)
+            offenders.extend(auto_strings)
 
-        if len(auto_string_struct_fields) > 0:
-            self.errors.append(f'Auto string not allowed in struct: {auto_string_struct_fields}')
+        if len(offenders) > 0:
+            self.errors.append(f'Auto string not allowed in struct: {offenders}')
+
+    def __check_multiple_auto_strings_in_param_list_or_return_list(self):
+        offenders = list()
+        for i in self.__interfaces:
+            for f in i['functions']:
+                auto_string_params = [(f['name'], p['name']) for p in self.__params(f) if p['type'] == 'string_auto']
+                if len(auto_string_params) > 1:
+                    offenders.extend(auto_string_params)
+
+                auto_string_returns = [(f['name'], r['name']) for r in self.__returns(f) if r['type'] == 'string_auto']
+                if len(auto_string_returns) > 1:
+                    offenders.extend(auto_string_returns)
+
+        if len(offenders) > 0:
+            self.errors.append(f'More than one auto string per parameter list or return value list is not allowed: {offenders}')
+
+    def __is_auto_string_array(self, p):
+        return p['type'] == 'string_auto' and p.get('count', 1) > 1
+
+    def __check_array_of_auto_strings(self):
+        offenders = list()
+        for i in self.__interfaces:
+            for f in i['functions']:
+                auto_string_arrays = [(f['name'], p['name']) for p in self.__params(f) if self.__is_auto_string_array(p)]
+                offenders.extend(auto_string_arrays)
+
+                auto_string_arrays = [(f['name'], r['name']) for r in self.__returns(f) if self.__is_auto_string_array(r)]
+                offenders.extend(auto_string_arrays)
+
+        if len(offenders) > 0:
+            self.errors.append(f'Array of auto strings is not allowed: {offenders}')
+
 
     def analyze(self, definition) -> None:
         self.__interfaces = definition['interfaces']
@@ -133,3 +171,5 @@ class SemanticAnalyzer(object):
         self.__check_duplicate_struct_field_names()
         self.__check_undeclared_custom_types()
         self.__check_auto_string_in_struct()
+        self.__check_multiple_auto_strings_in_param_list_or_return_list()
+        self.__check_array_of_auto_strings()

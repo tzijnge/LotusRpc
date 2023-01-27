@@ -324,3 +324,63 @@ structs:
     errors = semantic_errors(rpc_def)
     assert len(errors) == 1
     assert "Auto string not allowed in struct: [('s0', 'f0'), ('s1', 'f1')]" in errors
+
+def test_only_one_auto_string_param_or_return_allowed():
+    rpc_def = \
+'''namespace: "ns"
+interfaces:
+  - name: "i0"
+    id: 0
+    functions:
+      - name: "f0"
+        id: 0
+        params:
+          - name: "p0"
+            type: string_auto
+          - name: "p1"
+            type: "string_auto"
+        returns:
+          - name: "r0"
+            type: bool
+          - name: "r1"
+            type: "string_auto"
+      - name: "f1"
+        id: 1
+        params:
+          - name: "p0"
+            type: string_auto
+          - name: "p1"
+            type: "bool"
+        returns:
+          - name: "r0"
+            type: string_auto
+          - name: "r1"
+            type: "string_auto"
+'''
+
+    errors = semantic_errors(rpc_def)
+    assert len(errors) == 1
+    assert "More than one auto string per parameter list or return value list is not allowed: [('f0', 'p0'), ('f0', 'p1'), ('f1', 'r0'), ('f1', 'r1')]" in errors
+
+def test_array_of_auto_strings_is_not_allowed():
+    rpc_def = \
+'''namespace: "ns"
+interfaces:
+  - name: "i0"
+    id: 0
+    functions:
+      - name: "f2"
+        id: 2
+        params:
+          - name: "p0"
+            type: string_auto
+            count: 10
+        returns:
+          - name: "r0"
+            type: string_auto
+            count: 10
+'''
+
+    errors = semantic_errors(rpc_def)
+    assert len(errors) == 1
+    assert "Array of auto strings is not allowed: [('f2', 'p0'), ('f2', 'r0')]" in errors

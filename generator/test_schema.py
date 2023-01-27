@@ -37,6 +37,7 @@ enums:
         id: 1
 '''
     errors = semantic_errors(rpc_def)
+    assert len(errors) == 1
     assert "Duplicate enum field name(s): [('e0', 'f'), ('e1', 'g')]" in errors
 
 def test_duplicate_enum_field_ids():
@@ -64,6 +65,7 @@ enums:
 '''
 
     errors = semantic_errors(rpc_def)
+    assert len(errors) == 1
     assert "Duplicate enum field id(s): [('e0', 111), ('e1', 222)]" in errors
 
 def test_duplicate_enum_names():
@@ -87,6 +89,7 @@ enums:
 '''
 
     errors = semantic_errors(rpc_def)
+    assert len(errors) == 1
     assert "Duplicate struct/enum name(s): ['e0']" in errors
 
 def test_duplicate_struct_names():
@@ -110,6 +113,7 @@ structs:
 '''
 
     errors = semantic_errors(rpc_def)
+    assert len(errors) == 1
     assert "Duplicate struct/enum name(s): ['s0']" in errors
 
 def test_duplicate_struct_enum_names():
@@ -134,6 +138,7 @@ enums:
 '''
 
     errors = semantic_errors(rpc_def)
+    assert len(errors) == 1
     assert "Duplicate struct/enum name(s): ['s0']" in errors
 
 def test_duplicate_struct_field_names():
@@ -160,6 +165,7 @@ structs:
         type: uint32_t
 '''
     errors = semantic_errors(rpc_def)
+    assert len(errors) == 1
     assert "Duplicate struct field name(s): [('s0', 'f'), ('s1', 'g')]" in errors
 
 def test_duplicate_interface_names():
@@ -179,6 +185,7 @@ interfaces:
 '''
 
     errors = semantic_errors(rpc_def)
+    assert len(errors) == 1
     assert "Duplicate interface name(s): ['i0']" in errors
 
 def test_duplicate_interface_ids():
@@ -198,6 +205,7 @@ interfaces:
 '''
 
     errors = semantic_errors(rpc_def)
+    assert len(errors) == 1
     assert "Duplicate interface id(s): [111]" in errors
 
 def test_duplicate_function_ids():
@@ -221,6 +229,7 @@ interfaces:
 '''
 
     errors = semantic_errors(rpc_def)
+    assert len(errors) == 1
     assert "Duplicate function id(s): [('i0', 111), ('i1', 111)]" in errors
 
 def test_duplicate_function_names():
@@ -244,6 +253,7 @@ interfaces:
 '''
 
     errors = semantic_errors(rpc_def)
+    assert len(errors) == 1
     assert "Duplicate function name(s): [('i0', 'f0'), ('i1', 'f1')]" in errors
 
 def test_undeclared_custom_type():
@@ -288,6 +298,7 @@ enums:
 '''
 
     errors = semantic_errors(rpc_def)
+    assert len(errors) == 1
     assert "Undeclared custom type(s): ['MyType1', 'MyType2', 'MyType3']" in errors
 
 def test_auto_string_not_allowed_in_struct():
@@ -311,4 +322,5 @@ structs:
 '''
 
     errors = semantic_errors(rpc_def)
+    assert len(errors) == 1
     assert "Auto string not allowed in struct: [('s0', 'f0'), ('s1', 'f1')]" in errors

@@ -3,7 +3,7 @@ semantic analysis
 - [error] [done] only one auto string param or return allowed per function
 - [error] [done] array of auto strings is not allowed
 - [error] [done] custom data type must be in the list of structs or enums
-- [warning] custom enum or struct not referenced in any function or any other custom type
+- [warning] [done] custom enum or struct not referenced in any function or any other custom type
 - [error] [done] duplicate interface IDs
 - [error] [done] duplicate function IDs (in same interface)
 - [error] [done] duplicate enum field IDs (in same enum)

@@ -2,9 +2,11 @@ from typing import List
 
 class SemanticAnalyzer(object):
     errors : List[str]
+    warnings : List[str]
 
     def __init__(self) -> None:
         self.errors = list()
+        self.warnings = list()
         self.__interfaces = list()
         self.__enums = list()
         self.__structs = list()
@@ -93,10 +95,20 @@ class SemanticAnalyzer(object):
             self.errors.append(f'Duplicate struct field name(s): {duplicate_names}')
 
     def __check_undeclared_custom_types(self):
+        custom_types = self.__custom_types()
+        used_custom_types = self.__used_custom_types()
+
+        all_undeclared_types = [t for t in used_custom_types if t not in custom_types]
+
+        if len(all_undeclared_types) > 0:
+            self.errors.append(f'Undeclared custom type(s): {sorted(set(all_undeclared_types))}')
+
+    def __custom_types(self):
         all_declared_structs = [s['name'] for s in self.__structs]
         all_declared_enums = [e['name'] for e in self.__enums]
-        all_declared_types = all_declared_structs + all_declared_enums
-        
+        return all_declared_structs + all_declared_enums
+
+    def __used_custom_types(self):
         all_used_types = list()
         for i in self.__interfaces:
             for f in i['functions']:
@@ -106,12 +118,7 @@ class SemanticAnalyzer(object):
         for s in self.__structs:
             all_used_types.extend([f['type'] for f in s['fields']])
 
-        used_custom_types = [t.strip('@') for t in all_used_types if t.startswith('@')]
-
-        all_undeclared_types = [t for t in used_custom_types if t not in all_declared_types]
-
-        if len(all_undeclared_types) > 0:
-            self.errors.append(f'Undeclared custom type(s): {sorted(set(all_undeclared_types))}')
+        return [t.strip('@') for t in all_used_types if t.startswith('@')]
 
     def __check_auto_string_in_struct(self):
         offenders = list()
@@ -153,6 +160,13 @@ class SemanticAnalyzer(object):
         if len(offenders) > 0:
             self.errors.append(f'Array of auto strings is not allowed: {offenders}')
 
+    def __check_custom_types_not_used(self):
+        custom_types = self.__custom_types()
+        used_custom_types = self.__used_custom_types()
+        unused_custom_types = [t for t in custom_types if t not in used_custom_types]
+
+        if len(unused_custom_types) > 0:
+            self.warnings.append(f'Unused custom type(s): {unused_custom_types}')
 
     def analyze(self, definition) -> None:
         self.__interfaces = definition['interfaces']
@@ -173,3 +187,4 @@ class SemanticAnalyzer(object):
         self.__check_auto_string_in_struct()
         self.__check_multiple_auto_strings_in_param_list_or_return_list()
         self.__check_array_of_auto_strings()
+        self.__check_custom_types_not_used()

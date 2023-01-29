@@ -11,7 +11,7 @@ def semantic_errors(rpc_def):
 
         sa = SemanticAnalyzer()
         sa.analyze(definition)
-        return sa.errors
+        return sa.errors, sa.warnings
 
 def test_duplicate_enum_field_names():
     rpc_def = \
@@ -36,8 +36,9 @@ enums:
       - name: "g"
         id: 1
 '''
-    errors = semantic_errors(rpc_def)
+    errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
+    assert len(warnings) == 1
     assert "Duplicate enum field name(s): [('e0', 'f'), ('e1', 'g')]" in errors
 
 def test_duplicate_enum_field_ids():
@@ -64,8 +65,9 @@ enums:
         id: 222
 '''
 
-    errors = semantic_errors(rpc_def)
+    errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
+    assert len(warnings) == 1
     assert "Duplicate enum field id(s): [('e0', 111), ('e1', 222)]" in errors
 
 def test_duplicate_enum_names():
@@ -88,8 +90,9 @@ enums:
         id: 222
 '''
 
-    errors = semantic_errors(rpc_def)
+    errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
+    assert len(warnings) == 1
     assert "Duplicate struct/enum name(s): ['e0']" in errors
 
 def test_duplicate_struct_names():
@@ -112,8 +115,9 @@ structs:
         type: bool
 '''
 
-    errors = semantic_errors(rpc_def)
+    errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
+    assert len(warnings) == 1
     assert "Duplicate struct/enum name(s): ['s0']" in errors
 
 def test_duplicate_struct_enum_names():
@@ -137,8 +141,9 @@ enums:
         id: 111
 '''
 
-    errors = semantic_errors(rpc_def)
+    errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
+    assert len(warnings) == 1
     assert "Duplicate struct/enum name(s): ['s0']" in errors
 
 def test_duplicate_struct_field_names():
@@ -164,8 +169,9 @@ structs:
       - name: "g"
         type: uint32_t
 '''
-    errors = semantic_errors(rpc_def)
+    errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
+    assert len(warnings) == 1
     assert "Duplicate struct field name(s): [('s0', 'f'), ('s1', 'g')]" in errors
 
 def test_duplicate_interface_names():
@@ -184,8 +190,9 @@ interfaces:
         id: 1
 '''
 
-    errors = semantic_errors(rpc_def)
+    errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
+    assert len(warnings) == 0
     assert "Duplicate interface name(s): ['i0']" in errors
 
 def test_duplicate_interface_ids():
@@ -204,8 +211,9 @@ interfaces:
         id: 1
 '''
 
-    errors = semantic_errors(rpc_def)
+    errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
+    assert len(warnings) == 0
     assert "Duplicate interface id(s): [111]" in errors
 
 def test_duplicate_function_ids():
@@ -228,8 +236,9 @@ interfaces:
         id: 111
 '''
 
-    errors = semantic_errors(rpc_def)
+    errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
+    assert len(warnings) == 0
     assert "Duplicate function id(s): [('i0', 111), ('i1', 111)]" in errors
 
 def test_duplicate_function_names():
@@ -252,8 +261,9 @@ interfaces:
         id: 222
 '''
 
-    errors = semantic_errors(rpc_def)
+    errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
+    assert len(warnings) == 0
     assert "Duplicate function name(s): [('i0', 'f0'), ('i1', 'f1')]" in errors
 
 def test_undeclared_custom_type():
@@ -297,8 +307,9 @@ enums:
         id: 0
 '''
 
-    errors = semantic_errors(rpc_def)
+    errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
+    assert len(warnings) == 0
     assert "Undeclared custom type(s): ['MyType1', 'MyType2', 'MyType3']" in errors
 
 def test_auto_string_not_allowed_in_struct():
@@ -321,8 +332,9 @@ structs:
         type: "string_auto"
 '''
 
-    errors = semantic_errors(rpc_def)
+    errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
+    assert len(warnings) == 1
     assert "Auto string not allowed in struct: [('s0', 'f0'), ('s1', 'f1')]" in errors
 
 def test_only_one_auto_string_param_or_return_allowed():
@@ -358,8 +370,9 @@ interfaces:
             type: "string_auto"
 '''
 
-    errors = semantic_errors(rpc_def)
+    errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
+    assert len(warnings) == 0
     assert "More than one auto string per parameter list or return value list is not allowed: [('f0', 'p0'), ('f0', 'p1'), ('f1', 'r0'), ('f1', 'r1')]" in errors
 
 def test_array_of_auto_strings_is_not_allowed():
@@ -381,6 +394,36 @@ interfaces:
             count: 10
 '''
 
-    errors = semantic_errors(rpc_def)
+    errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
+    assert len(warnings) == 0
     assert "Array of auto strings is not allowed: [('f2', 'p0'), ('f2', 'r0')]" in errors
+
+def test_warning_on_unused_custom_type():
+    rpc_def = \
+'''namespace: "ns"
+interfaces:
+  - name: "i0"
+    id: 0
+    functions:
+      - name: "f0"
+        id: 0
+        params:
+          - name: "p0"
+            type: bool
+structs:
+  - name: "s0"
+    fields:
+      - name: "f0"
+        type: bool
+enums:
+  - name: "e0"
+    fields:
+      - name: "f0"
+        id: 0
+'''
+
+    errors, warnings = semantic_errors(rpc_def)
+    assert len(errors) == 0
+    assert len(warnings) == 1
+    assert "Unused custom type(s): ['s0', 'e0']" in warnings

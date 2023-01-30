@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <etl/array.h>
 #include <etl/byte_stream.h>
+#include "EtlRwExtensions.hpp"
 
 struct CompositeData
 {
@@ -23,7 +24,7 @@ namespace etl
     inline CompositeData read_unchecked<CompositeData>(byte_stream_reader &stream)
     {
         CompositeData cd;
-        stream.read_unchecked<uint16_t>(cd.a);
+        cd.a = read_unchecked<uint16_t, 2>(stream);
         cd.b = read_unchecked<uint8_t>(stream);
         cd.c = read_unchecked<bool>(stream);
         return cd;
@@ -32,7 +33,7 @@ namespace etl
     template <>
     inline void write_unchecked<CompositeData>(byte_stream_writer &stream, const CompositeData &cd)
     {
-        stream.write_unchecked<uint16_t>(cd.a.begin(), cd.a.size());
+        write_unchecked<const uint16_t>(stream, cd.a);
         write_unchecked<uint8_t>(stream, cd.b);
         write_unchecked<bool>(stream, cd.c);
     }

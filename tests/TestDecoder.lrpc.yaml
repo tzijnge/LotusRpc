@@ -1,0 +1,53 @@
+namespace: "ns"
+interfaces:
+  - name: "i0"
+    id: 0
+    functions:
+      - name: "f0"
+        id: 0
+      - name: "f7"
+        id: 7
+        params:
+          - name: "cd"
+            type: "@CompositeData"
+      - name: "f8"
+        id: 8
+        params:
+          - name: "a"
+            type: "@MyEnum"
+      - name: "f10"
+        id: 10
+        params:
+          - name: "a"
+            type: "@CompositeData3"
+structs:
+  - name: "CompositeData"
+    fields:
+      - name: "a"
+        type: uint16_t
+        count: 2
+      - name: "b"
+        type: uint8_t
+      - name: "c"
+        type: bool
+  - name: "CompositeData2"
+    fields:
+      - name: "a"
+        type: uint8_t
+      - name: "b"
+        type: uint8_t
+  - name: "CompositeData3"
+    fields:
+      - name: "a"
+        type: "@CompositeData2"
+enums:
+  - name: "MyEnum"
+    fields:
+      - name: V0
+        id: 0
+      - name: V1
+        id: 1
+      - name: V2
+        id: 2
+      - name: V3
+        id: 3

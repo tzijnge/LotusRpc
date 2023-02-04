@@ -1,7 +1,7 @@
 #pragma once
 #include "Decoder.hpp"
 #include "EtlRwExtensions.hpp"
-#include "TestDecoderAll.hpp"
+#include "TestDecoder_all.hpp"
 #include <etl/string_view.h>
 #include <etl/span.h>
 

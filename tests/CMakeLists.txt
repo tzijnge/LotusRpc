@@ -13,10 +13,18 @@ mark_as_advanced(
 
 add_subdirectory(../external/gtest External/gtest EXCLUDE_FROM_ALL)
 
+add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestDecoder/TestDecoder_all.hpp
+                  COMMENT "Generate TestDecoder LRPC files"
+                  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/TestDecoder.lrpc.yaml
+                  COMMAND python ${CMAKE_SOURCE_DIR}/generator/lotusrpc.py ${CMAKE_CURRENT_SOURCE_DIR}/TestDecoder.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestDecoder)
+
+set_directory_properties(PROPERTIES ADDITIONAL_CLEAN_FILES ${CMAKE_CURRENT_SOURCE_DIR}/generated)
+
 add_executable(UnitTests
                 ../src/EtlRwExtensions.cpp
                 TestDecoder.cpp
-                TestServer.cpp)
+                TestServer.cpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestDecoder/TestDecoder_all.hpp)
 
 target_include_directories(UnitTests PRIVATE ../src)
 target_include_directories(UnitTests PRIVATE ../external/etl/include)

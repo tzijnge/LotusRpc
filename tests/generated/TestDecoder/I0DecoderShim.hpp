@@ -10,6 +10,7 @@ class I0DecoderShim : public Decoder
 {
 public:
     uint32_t id() const override { return 0; }
+
     void decode(Reader &reader, Writer &writer) override
     {
         auto messageId = reader.read_unchecked<uint8_t>();
@@ -42,6 +43,8 @@ protected:
     virtual std::tuple<etl::string_view, etl::string_view> f22(const etl::string_view &s1, const etl::string_view &s2) = 0;
 
 private:
+    constexpr void nullInvoker(Reader &reader, Writer &writer) const {}
+
     void invokeF0(Reader &r, Writer &w)
     {
         f0();
@@ -183,7 +186,6 @@ private:
         etl::write_unchecked<etl::string_view>(w, std::get<1>(response));
     }
 
-    using Invoker = void (I0DecoderShim::*)(Reader &reader, Writer &writer);
     inline static const etl::array invokers{
         &I0DecoderShim::invokeF0,
         &I0DecoderShim::invokeF1,

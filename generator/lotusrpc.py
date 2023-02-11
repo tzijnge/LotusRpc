@@ -3,6 +3,7 @@ from SematicAnalyzer import SemanticAnalyzer
 from StructFileWriter import StructFileWriter
 from EnumFileWriter import EnumFileWriter
 from IncludeAllWriter import IncludeAllWriter
+from DecoderShimWriter import DecoderShimWriter
 import yaml
 import jsonschema
 import jsonschema.exceptions
@@ -55,6 +56,11 @@ def generate_include_all(rpc_name, structs, enums, output):
     writer = IncludeAllWriter(rpc_name, structs, enums, output)
     writer.write()
 
+def generate_shims(interfaces, structs, output):
+    for i in interfaces:
+        writer = DecoderShimWriter(i, structs, output)
+        writer.write()
+
 def generate_rpc(input, output):
     create_dir_if_not_exists(output)
 
@@ -66,6 +72,7 @@ def generate_rpc(input, output):
     generate_include_all(input.name, structs, enums, output)
     generate_structs(structs, output)
     generate_enums(enums, output)
+    generate_shims(definition['interfaces'], structs, output)
 
 @click.command()
 @click.option('-w', '--warnings_as_errors',

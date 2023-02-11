@@ -1,6 +1,6 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "generated/TestDecoder/I0DecoderShim.hpp"
+#include "generated/TestDecoder/i0_DecoderShim.hpp"
 #include <tuple>
 
 using ::testing::Return;
@@ -22,7 +22,7 @@ MATCHER_P(SPAN_EQ, e, "Equality matcher for etl::span")
 
 }
 
-class MockI0Decoder : public I0DecoderShim
+class MockI0Decoder : public i0DecoderShim
 {
 public:
     MOCK_METHOD(void, f0, (), (override));

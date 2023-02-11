@@ -1,8 +1,10 @@
 from code_generation.code_generator import CppFile
+from LrpcVar import LrpcVar
 
 class StructFileWriter(object):
-    def __init__(self, descriptor, output):
+    def __init__(self, descriptor, structs, output):
         self.descriptor = descriptor
+        self.structs = structs
         self.file = CppFile(f'{output}/{self.__name()}.hpp')
 
     def write(self):
@@ -58,67 +60,31 @@ class StructFileWriter(object):
     def __write_decoder_body(self):
         self.file(f'{self.__name()} obj;')
 
-        for f in self.descriptor['fields']:
-            name = f['name']
-            if self.__field_is_array(f):
-                count = f['count']
-                array_type = self.__field_array_type(f)
-                self.file(f'obj.{name} = read_unchecked<{array_type}, {count}>(reader);')
+        for field in self.descriptor['fields']:
+            f = LrpcVar(field, self.structs)
+            if f.is_array():
+                self.file(f'obj.{f.name()} = read_unchecked<{f.read_type()}, {f.array_size()}>(reader);')
             else:
-                self.file(f'obj.{name} = read_unchecked<{self.__field_type(f)}>(reader);')
+                self.file(f'obj.{f.name()} = read_unchecked<{f.read_type()}>(reader);')
 
         self.file('return obj;')
 
     def __write_encoder_body(self):
-        for f in self.descriptor['fields']:
-            name = f['name']
-            if self.__field_is_array(f):
-                array_type = self.__field_array_type(f)
-                self.file(f'write_unchecked<const {array_type}>(writer, obj.{name});')
-            else:
-                self.file(f'write_unchecked<{self.__field_type(f)}>(writer, obj.{name});')
+        for field in self.descriptor['fields']:
+            f = LrpcVar(field, self.structs)
+            self.file(f'write_unchecked<{f.write_type()}>(writer, obj.{f.name()});')
 
     def __write_struct_field(self, field):
-        field_name = field['name']
-        field_type = self.__field_type(field)
-        self.file(f'{field_type} {field_name};')
-
-    def __field_type(self, field):
-        t = field['type'].strip('@')
-
-        if self.__field_is_optional(field):
-            return f'etl::optional<{t}>'
-
-        if self.__field_is_array(field):
-            count = field['count']
-            return f'etl::array<{t}, {count}>'
-
-        return t
-
-    def __field_array_type(self, field):
-        return field['type'].strip('@')
+        f = LrpcVar(field, self.structs)
+        self.file(f'{f.field_type()} {f.name()};')
 
     def __name(self):
         return self.descriptor['name']
 
     def __has_array_fields(self):
-        for f in self.descriptor['fields']:
-            if self.__field_is_array(f):
-                return True
-
-        return False
+        array_fields = [1 for f in self.descriptor['fields'] if LrpcVar(f, self.structs).is_array()]
+        return len(array_fields) != 0
 
     def __has_optional_fields(self):
-        for f in self.descriptor['fields']:
-            if self.__field_is_optional(f):
-                return True
-
-        return False
-
-    def __field_is_optional(self, field):
-        count = field.get('count', 1)
-        return count == '*'
-
-    def __field_is_array(self, field):
-        count = field.get('count', 1)
-        return count != '*' and count > 1
+        optional_fields = [1 for f in self.descriptor['fields'] if LrpcVar(f, self.structs).is_optional()]
+        return len(optional_fields) != 0

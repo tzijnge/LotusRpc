@@ -44,7 +44,7 @@ def check_input(input, warnings_as_errors):
 
 def generate_structs(structs, output):
     for s in structs:
-        sfw = StructFileWriter(s, output)
+        sfw = StructFileWriter(s, structs, output)
         sfw.write()
 
 def generate_enums(enums, output):

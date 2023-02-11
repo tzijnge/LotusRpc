@@ -1,5 +1,6 @@
 from code_generation.code_generator import CppFile
 from LrpcVar import LrpcVar
+from LrpcFun import LrpcFun
 
 class DecoderShimWriter(object):
     def __init__(self, interface, structs, output):
@@ -44,33 +45,29 @@ class DecoderShimWriter(object):
                     self.file(f'&{self.__name()}DecoderShim::{function_name}_shim,')
 
     def __write_function_shim(self, function):
-        function_name = function['name']
+        f = LrpcFun(function, self.structs)
 
-        params = self.__function_params(function)
-        param_names = [p['name'] for p in params]
-        returns = self.__function_returns(function)
-        number_returns = len(returns)
-
-        for p in params:
-            n = p['name']
-            var = LrpcVar(p, self.structs)
-            t = var.read_type()
-            if var.is_array():
-                s = var.array_size()
+        for p in f.params():
+            n = p.name()
+            t = p.read_type()
+            if p.is_array():
+                s = p.array_size()
                 self.file(f'const auto {n} = etl::read_unchecked<{t}, {s}>(r);')
             else:
                 self.file(f'const auto {n} = etl::read_unchecked<{t}>(r);')
 
-        param_list = ', '.join(param_names)
-        response = 'const auto response = ' if number_returns != 0 else ''
-        self.file(f'{response}{function_name}({param_list});')
+        param_list = ', '.join(f.param_names())
 
-        if number_returns == 1:
-            t = LrpcVar(returns[0], self.structs).write_type()
+        response = 'const auto response = ' if f.number_returns() != 0 else ''
+        self.file(f'{response}{f.name()}({param_list});')
+
+        returns = f.returns()
+        if f.number_returns() == 1:
+            t = returns[0].write_type()
             self.file(f'etl::write_unchecked<{t}>(w, response);')
         else:
             for i, r in enumerate(returns):
-                t = LrpcVar(r, self.structs).write_type()
+                t = r.write_type()
                 self.file(f'etl::write_unchecked<{t}>(w, std::get<{i}>(response));')
 
     def __write_function_decl(self, function):
@@ -85,13 +82,13 @@ class DecoderShimWriter(object):
         return ', '.join(params_list)
 
     def __param_string(self, param):
-        t = LrpcVar(param, self.structs).param_type()
-        n = param['name']
+        t = param.param_type()
+        n = param.name()
         return f'{t} {n}'
 
     def __returns_string(self, function):
         returns = self.__function_returns(function)
-        returns_list = [LrpcVar(r, self.structs).return_type() for r in returns]
+        returns_list = [r.return_type() for r in returns]
 
         if len(returns_list) == 0:
             return 'void'
@@ -101,37 +98,26 @@ class DecoderShimWriter(object):
             return 'std::tuple<{}>'.format(', '.join(returns_list))
 
     def __function_params(self, function):
-        return function.get('params', list())
+        return LrpcFun(function, self.structs).params()
 
     def __function_returns(self, function):
-        return function.get('returns', list())
+        return LrpcFun(function, self.structs).returns()
 
     def __write_include_guard(self):
         self.file('#pragma once')
 
-    def __interface_has_strings(self):
+    def required_includes(self):
+        includes = set()
         for f in self.interface['functions']:
-            for p in self.__function_params(f) + self.__function_returns(f):
-                var = LrpcVar(p, self.structs)
-                if var.is_string() or var.is_array_of_strings():
-                    return True
+            func = LrpcFun(f, self.structs)
+            includes.update(func.required_includes())
 
-        return False
-
-    def __interface_has_arrays(self):
-        for f in self.interface['functions']:
-            for p in self.__function_params(f) + self.__function_returns(f):
-                var = LrpcVar(p, self.structs)
-                if var.is_array():
-                    return True
-
-        return False
+        return includes
 
     def __write_includes(self):
-        if self.__interface_has_strings():
-            self.file('#include <etl/string_view.h>')
-        if self.__interface_has_arrays():
-            self.file('#include <etl/span.h>')
+        for i in self.required_includes():
+            self.file(f'#include {i}')
+
         self.file('#include <stdint.h>')
         self.file('#include "Decoder.hpp"')
         self.file('#include "TestDecoder_all.hpp"')

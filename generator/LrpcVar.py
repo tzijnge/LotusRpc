@@ -107,5 +107,17 @@ class LrpcVar(object):
 
         return int(self.raw['count'])
 
+    def required_includes(self):
+        if self.is_array_of_strings():
+            return {'<etl/string_view.h>', '<etl/span.h>'}
+
+        if self.is_array():
+            return {'<etl/span.h>'}
+
+        if self.is_string():
+            return {'<etl/string_view.h>'}
+
+        return {}
+
     def __base_type_is_string(self):
         return self.raw['type'].startswith('string_')

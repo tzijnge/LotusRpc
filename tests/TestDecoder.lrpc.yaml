@@ -1,6 +1,6 @@
 namespace: "ns"
-interfaces:
-  - name: "i0"
+services:
+  - name: "s0"
     id: 0
     functions:
       - name: "f0"

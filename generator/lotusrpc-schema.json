@@ -70,14 +70,14 @@
         "returns": {"type": "array", "minItems": 1, "items": { "$ref": "#/$defs/var_decl" }, "description": "List of function returns"}
       }
     },
-    "interface_decl": {
+    "service_decl": {
       "type": "object",
       "required": [ "name", "id", "functions"],
       "additionalProperties": false,
       "properties": {
         "name": { "$ref": "#/$defs/cppid" },
         "id": { "$ref": "#/$defs/uint8" },
-        "functions": { "type": "array", "minItems": 1, "maxItems": 256, "items": { "$ref": "#/$defs/function_decl" }, "description": "List of functions in the interface (max 256 functions)" }
+        "functions": { "type": "array", "minItems": 1, "maxItems": 256, "items": { "$ref": "#/$defs/function_decl" }, "description": "List of functions in the service (max 256 functions)" }
       }
     }
   },
@@ -87,7 +87,7 @@
   "description": "JSON Schema for Lotus RPC, a RPC code generation tool",
   "type": "object",
   "additionalProperties": false,
-  "required": ["namespace", "interfaces"],
+  "required": ["namespace", "services"],
   "properties": {
     "namespace": {
       "$ref": "#/$defs/cppid",
@@ -98,12 +98,12 @@
       "minimum": 1,
       "description": "Maximum size that a string_auto variable can have. Defaults to 255 bytes if not specified"
     },
-    "interfaces": {
+    "services": {
       "type": "array",
       "minItems": 1,
       "maxItems": 256,
-      "items": { "$ref": "#/$defs/interface_decl" },
-      "description": "A list of interfaces (max 256 interfaces)"
+      "items": { "$ref": "#/$defs/service_decl" },
+      "description": "A list of services (max 256 services)"
     },
     "structs":{
       "type": "array",

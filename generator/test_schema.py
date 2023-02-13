@@ -16,7 +16,7 @@ def semantic_errors(rpc_def):
 def test_duplicate_enum_field_names():
     rpc_def = \
 '''namespace: "a"
-interfaces:
+services:
   - name: "a"
     id: 0
     functions:
@@ -44,7 +44,7 @@ enums:
 def test_duplicate_enum_field_ids():
     rpc_def = \
 '''namespace: "a"
-interfaces:
+services:
   - name: "a"
     id: 0
     functions:
@@ -73,7 +73,7 @@ enums:
 def test_duplicate_enum_names():
     rpc_def = \
 '''namespace: "a"
-interfaces:
+services:
   - name: "a"
     id: 0
     functions:
@@ -98,7 +98,7 @@ enums:
 def test_duplicate_struct_names():
     rpc_def = \
 '''namespace: "a"
-interfaces:
+services:
   - name: "a"
     id: 0
     functions:
@@ -123,7 +123,7 @@ structs:
 def test_duplicate_struct_enum_names():
     rpc_def = \
 '''namespace: "a"
-interfaces:
+services:
   - name: "a"
     id: 0
     functions:
@@ -149,7 +149,7 @@ enums:
 def test_duplicate_struct_field_names():
     rpc_def = \
 '''namespace: "a"
-interfaces:
+services:
   - name: "a"
     id: 0
     functions:
@@ -174,10 +174,10 @@ structs:
     assert len(warnings) == 1
     assert "Duplicate struct field name(s): [('s0', 'f'), ('s1', 'g')]" in errors
 
-def test_duplicate_interface_names():
+def test_duplicate_service_names():
     rpc_def = \
 '''namespace: "a"
-interfaces:
+services:
   - name: "i0"
     id: 0
     functions:
@@ -193,12 +193,12 @@ interfaces:
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
     assert len(warnings) == 0
-    assert "Duplicate interface name(s): ['i0']" in errors
+    assert "Duplicate service name(s): ['i0']" in errors
 
-def test_duplicate_interface_ids():
+def test_duplicate_service_ids():
     rpc_def = \
 '''namespace: "a"
-interfaces:
+services:
   - name: "i0"
     id: 111
     functions:
@@ -214,12 +214,12 @@ interfaces:
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
     assert len(warnings) == 0
-    assert "Duplicate interface id(s): [111]" in errors
+    assert "Duplicate service id(s): [111]" in errors
 
 def test_duplicate_function_ids():
     rpc_def = \
 '''namespace: "a"
-interfaces:
+services:
   - name: "i0"
     id: 0
     functions:
@@ -244,7 +244,7 @@ interfaces:
 def test_duplicate_function_names():
     rpc_def = \
 '''namespace: "a"
-interfaces:
+services:
   - name: "i0"
     id: 0
     functions:
@@ -269,7 +269,7 @@ interfaces:
 def test_undeclared_custom_type():
     rpc_def = \
 '''namespace: "a"
-interfaces:
+services:
   - name: "i0"
     id: 0
     functions:
@@ -315,7 +315,7 @@ enums:
 def test_auto_string_not_allowed_in_struct():
     rpc_def = \
 '''namespace: "a"
-interfaces:
+services:
   - name: "i0"
     id: 0
     functions:
@@ -340,7 +340,7 @@ structs:
 def test_only_one_auto_string_param_or_return_allowed():
     rpc_def = \
 '''namespace: "ns"
-interfaces:
+services:
   - name: "i0"
     id: 0
     functions:
@@ -378,7 +378,7 @@ interfaces:
 def test_array_of_auto_strings_is_not_allowed():
     rpc_def = \
 '''namespace: "ns"
-interfaces:
+services:
   - name: "i0"
     id: 0
     functions:
@@ -402,7 +402,7 @@ interfaces:
 def test_warning_on_unused_custom_type():
     rpc_def = \
 '''namespace: "ns"
-interfaces:
+services:
   - name: "i0"
     id: 0
     functions:

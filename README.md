@@ -48,7 +48,7 @@ The interface definition file is in YAML format. This makes it easy to parse in 
 ### Example
 ``` yaml
 namespace: "ns"
-interfaces:
+services:
   - name: "battery"
     id: 0
     functions:

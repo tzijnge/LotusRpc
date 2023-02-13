@@ -1,6 +1,6 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "generated/TestDecoder/i0_DecoderShim.hpp"
+#include "generated/TestDecoder/s0_DecoderShim.hpp"
 #include <tuple>
 
 using ::testing::Return;
@@ -22,7 +22,7 @@ MATCHER_P(SPAN_EQ, e, "Equality matcher for etl::span")
 
 }
 
-class MockI0Decoder : public i0DecoderShim
+class MockS0Decoder : public s0DecoderShim
 {
 public:
     MOCK_METHOD(void, f0, (), (override));
@@ -53,7 +53,7 @@ public:
 class TestDecoder : public ::testing::Test
 {
 public:
-    MockI0Decoder i0Decoder;
+    MockS0Decoder s0Decoder;
 
     etl::span<uint8_t> decode(const std::vector<uint8_t> &bytes)
     {
@@ -61,7 +61,7 @@ public:
 
         Decoder::Reader reader(s.begin(), s.end(), etl::endian::little);
         Decoder::Writer writer(response.begin(), response.end(), etl::endian::little);
-        i0Decoder.decode(reader, writer);
+        s0Decoder.decode(reader, writer);
 
         return { response.begin(), writer.size_bytes()};
     }
@@ -79,8 +79,8 @@ private:
 // Decode void function f0. Make sure f1 is not called
 TEST_F(TestDecoder, decodeF0)
 {
-    EXPECT_CALL(i0Decoder, f0()).Times(1);
-    EXPECT_CALL(i0Decoder, f1()).Times(0);
+    EXPECT_CALL(s0Decoder, f0()).Times(1);
+    EXPECT_CALL(s0Decoder, f1()).Times(0);
 
     auto response = decode({0});
     EXPECT_TRUE(response.empty());
@@ -89,8 +89,8 @@ TEST_F(TestDecoder, decodeF0)
 // Decode void function f1. Make sure f0 is not called
 TEST_F(TestDecoder, decodeF1)
 {
-    EXPECT_CALL(i0Decoder, f0()).Times(0);
-    EXPECT_CALL(i0Decoder, f1()).Times(1);
+    EXPECT_CALL(s0Decoder, f0()).Times(0);
+    EXPECT_CALL(s0Decoder, f1()).Times(1);
 
     auto response = decode({1});
     EXPECT_TRUE(response.empty());
@@ -99,7 +99,7 @@ TEST_F(TestDecoder, decodeF1)
 // Decode function f2 with uint8_t arg
 TEST_F(TestDecoder, decodeF2)
 {
-    EXPECT_CALL(i0Decoder, f2(123));
+    EXPECT_CALL(s0Decoder, f2(123));
     auto response = decode({2, 123});
     EXPECT_TRUE(response.empty());
 }
@@ -107,7 +107,7 @@ TEST_F(TestDecoder, decodeF2)
 // Decode function f3 with uint16_t arg
 TEST_F(TestDecoder, decodeF3)
 {
-    EXPECT_CALL(i0Decoder, f3(0xCDAB));
+    EXPECT_CALL(s0Decoder, f3(0xCDAB));
     auto response = decode({3, 0xAB, 0xCD});
     EXPECT_TRUE(response.empty());
 }
@@ -115,7 +115,7 @@ TEST_F(TestDecoder, decodeF3)
 // Decode function f4 with float arg
 TEST_F(TestDecoder, decodeF4)
 {
-    EXPECT_CALL(i0Decoder, f4(123.456));
+    EXPECT_CALL(s0Decoder, f4(123.456));
     auto response = decode({4, 0x79, 0xE9, 0xF6, 0x42});
     EXPECT_TRUE(response.empty());
 }
@@ -124,7 +124,7 @@ TEST_F(TestDecoder, decodeF4)
 TEST_F(TestDecoder, decodeF5)
 {
     std::vector<uint16_t> expected {0xBBAA, 0xDDCC};
-    EXPECT_CALL(i0Decoder, f5(SPAN_EQ(expected)));
+    EXPECT_CALL(s0Decoder, f5(SPAN_EQ(expected)));
     auto response = decode({5, 0xAA, 0xBB, 0xCC, 0xDD});
     EXPECT_TRUE(response.empty());
 }
@@ -132,7 +132,7 @@ TEST_F(TestDecoder, decodeF5)
 // Decode function f6 with string arg
 TEST_F(TestDecoder, decodeF6)
 {
-    EXPECT_CALL(i0Decoder, f6(etl::string_view("Test")));
+    EXPECT_CALL(s0Decoder, f6(etl::string_view("Test")));
     auto response = decode({6, 'T', 'e', 's', 't', '\0'});
     EXPECT_TRUE(response.empty());
 }
@@ -141,7 +141,7 @@ TEST_F(TestDecoder, decodeF6)
 TEST_F(TestDecoder, decodeF7)
 {
     CompositeData expected{{0xBBAA, 0xDDCC}, 123, true};
-    EXPECT_CALL(i0Decoder, f7(expected));
+    EXPECT_CALL(s0Decoder, f7(expected));
     auto response = decode({7, 0xAA, 0xBB, 0xCC, 0xDD, 123, 1});
     EXPECT_TRUE(response.empty());
 }
@@ -149,7 +149,7 @@ TEST_F(TestDecoder, decodeF7)
 // Decode function f8 with custom enum
 TEST_F(TestDecoder, decodeF8)
 {
-    EXPECT_CALL(i0Decoder, f8(MyEnum::V3));
+    EXPECT_CALL(s0Decoder, f8(MyEnum::V3));
     auto response = decode({8, 0x03});
     EXPECT_TRUE(response.empty());
 }
@@ -160,7 +160,7 @@ TEST_F(TestDecoder, decodeF9)
     std::vector<CompositeData2> expected{
         CompositeData2{0xAA, 0xBB},
         CompositeData2{0xCC, 0xDD}};
-    EXPECT_CALL(i0Decoder, f9(SPAN_EQ(expected)));
+    EXPECT_CALL(s0Decoder, f9(SPAN_EQ(expected)));
     auto response = decode({9, 0xAA, 0xBB, 0xCC, 0xDD});
     EXPECT_TRUE(response.empty());
 }
@@ -169,7 +169,7 @@ TEST_F(TestDecoder, decodeF9)
 TEST_F(TestDecoder, decodeF10)
 {
     CompositeData3 expected{{0xAA, 0xBB}};
-    EXPECT_CALL(i0Decoder, f10(expected));
+    EXPECT_CALL(s0Decoder, f10(expected));
     auto response = decode({10, 0xAA, 0xBB});
     EXPECT_TRUE(response.empty());
 }
@@ -177,7 +177,7 @@ TEST_F(TestDecoder, decodeF10)
 // Decode function f11 with two uint8_t args
 TEST_F(TestDecoder, decodef11)
 {
-    EXPECT_CALL(i0Decoder, f11(123, 111));
+    EXPECT_CALL(s0Decoder, f11(123, 111));
     auto response = decode({11, 123, 111});
     EXPECT_TRUE(response.empty());
 }
@@ -185,7 +185,7 @@ TEST_F(TestDecoder, decodef11)
 // Decode function f12 which returns uint8_t
 TEST_F(TestDecoder, decodef12)
 {
-    EXPECT_CALL(i0Decoder, f12()).WillOnce(Return(0xAB));
+    EXPECT_CALL(s0Decoder, f12()).WillOnce(Return(0xAB));
     auto response = decode({12});
     EXPECT_RESPONSE({0xAB}, response);
 }
@@ -193,7 +193,7 @@ TEST_F(TestDecoder, decodef12)
 // Decode function f13 which returns uint16_t
 TEST_F(TestDecoder, decodef13)
 {
-    EXPECT_CALL(i0Decoder, f13()).WillOnce(Return(0xABCD));
+    EXPECT_CALL(s0Decoder, f13()).WillOnce(Return(0xABCD));
     auto response = decode({13});
     EXPECT_RESPONSE({0xCD, 0xAB}, response);
 }
@@ -201,7 +201,7 @@ TEST_F(TestDecoder, decodef13)
 // Decode function f14 which returns float
 TEST_F(TestDecoder, decodeF14)
 {
-    EXPECT_CALL(i0Decoder, f14()).WillOnce(Return(123.456));
+    EXPECT_CALL(s0Decoder, f14()).WillOnce(Return(123.456));
     auto response = decode({14});
     EXPECT_RESPONSE({0x79, 0xE9, 0xF6, 0x42}, response);
 }
@@ -210,7 +210,7 @@ TEST_F(TestDecoder, decodeF14)
 TEST_F(TestDecoder, decodeF15)
 {
     std::vector<uint16_t> expected{0xBBAA, 0xDDCC};
-    EXPECT_CALL(i0Decoder, f15()).WillOnce(Return(etl::span<uint16_t>(expected)));
+    EXPECT_CALL(s0Decoder, f15()).WillOnce(Return(etl::span<uint16_t>(expected)));
     auto response = decode({15});
     EXPECT_RESPONSE({0xAA, 0xBB, 0xCC, 0xDD}, response);
 }
@@ -218,7 +218,7 @@ TEST_F(TestDecoder, decodeF15)
 // Decode function f16 which returns a string
 TEST_F(TestDecoder, decodeF16)
 {
-    EXPECT_CALL(i0Decoder, f16()).WillOnce(Return(etl::string_view("Test")));
+    EXPECT_CALL(s0Decoder, f16()).WillOnce(Return(etl::string_view("Test")));
     auto response = decode({16});
     EXPECT_RESPONSE({'T', 'e', 's', 't', '\0'}, response);
 }
@@ -226,7 +226,7 @@ TEST_F(TestDecoder, decodeF16)
 // Decode function f17 which returns custom type
 TEST_F(TestDecoder, decodeF17)
 {
-    EXPECT_CALL(i0Decoder, f17()).WillOnce(Return(CompositeData {{0xBBAA, 0xDDCC}, 123, true}));
+    EXPECT_CALL(s0Decoder, f17()).WillOnce(Return(CompositeData {{0xBBAA, 0xDDCC}, 123, true}));
     auto response = decode({17});
     EXPECT_RESPONSE({0xAA, 0xBB, 0xCC, 0xDD, 123, 1}, response);
 }
@@ -234,7 +234,7 @@ TEST_F(TestDecoder, decodeF17)
 // Decode function f18 which returns custom enum
 TEST_F(TestDecoder, decodeF18)
 {
-    EXPECT_CALL(i0Decoder, f18()).WillOnce(Return(MyEnum::V3));
+    EXPECT_CALL(s0Decoder, f18()).WillOnce(Return(MyEnum::V3));
     auto response = decode({18});
     EXPECT_RESPONSE({0x03}, response);
 }
@@ -245,7 +245,7 @@ TEST_F(TestDecoder, decodeF19)
     std::vector<CompositeData2> expected{
         CompositeData2{0xAA, 0xBB},
         CompositeData2{0xCC, 0xDD}};
-    EXPECT_CALL(i0Decoder, f19()).WillOnce(Return(etl::span<CompositeData2>(expected)));
+    EXPECT_CALL(s0Decoder, f19()).WillOnce(Return(etl::span<CompositeData2>(expected)));
     auto response = decode({19});
     EXPECT_RESPONSE({0xAA, 0xBB, 0xCC, 0xDD}, response);
 }
@@ -253,7 +253,7 @@ TEST_F(TestDecoder, decodeF19)
 // Decode function f20 which returns nested custom types
 TEST_F(TestDecoder, decodeF20)
 {
-    EXPECT_CALL(i0Decoder, f20()).WillOnce(Return(CompositeData3 {{0xAA, 0xBB}}));
+    EXPECT_CALL(s0Decoder, f20()).WillOnce(Return(CompositeData3 {{0xAA, 0xBB}}));
     auto response = decode({20});
     EXPECT_RESPONSE({0xAA, 0xBB}, response);
 }
@@ -261,7 +261,7 @@ TEST_F(TestDecoder, decodeF20)
 // Decode function f21 which return two uint8_t args
 TEST_F(TestDecoder, decodef21)
 {
-    EXPECT_CALL(i0Decoder, f21()).WillOnce(Return(std::tuple{123, 111}));
+    EXPECT_CALL(s0Decoder, f21()).WillOnce(Return(std::tuple{123, 111}));
     auto response = decode({21});
     EXPECT_RESPONSE({123, 111}, response);
 }
@@ -274,7 +274,7 @@ TEST_F(TestDecoder, decodef22)
     etl::string_view ret1{"ret1"};
     etl::string_view ret2{"ret2"};
 
-    EXPECT_CALL(i0Decoder, f22(arg1, arg2)).WillOnce(Return(std::tuple{ret1, ret2}));
+    EXPECT_CALL(s0Decoder, f22(arg1, arg2)).WillOnce(Return(std::tuple{ret1, ret2}));
     auto response = decode({22, 'a', 'r', 'g', '1', '\0', 'a', 'r', 'g', '2', '\0'});
     EXPECT_RESPONSE({'r','e','t','1','\0','r','e','t','2','\0',}, response);
 }
@@ -282,7 +282,7 @@ TEST_F(TestDecoder, decodef22)
 // Decode function f6 with string arg
 TEST_F(TestDecoder, decodeF6WithMissingStringTerminator)
 {
-    EXPECT_CALL(i0Decoder, f6(etl::string_view("Test")));
+    EXPECT_CALL(s0Decoder, f6(etl::string_view("Test")));
     auto response = decode({6, 'T', 'e', 's', 't'});
     EXPECT_TRUE(response.empty());
 }

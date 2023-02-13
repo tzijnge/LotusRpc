@@ -56,8 +56,8 @@ def generate_include_all(rpc_name, structs, enums, output):
     writer = IncludeAllWriter(rpc_name, structs, enums, output)
     writer.write()
 
-def generate_shims(interfaces, structs, output):
-    for i in interfaces:
+def generate_shims(services, structs, output):
+    for i in services:
         writer = DecoderShimWriter(i, structs, output)
         writer.write()
 
@@ -72,7 +72,7 @@ def generate_rpc(input, output):
     generate_include_all(input.name, structs, enums, output)
     generate_structs(structs, output)
     generate_enums(enums, output)
-    generate_shims(definition['interfaces'], structs, output)
+    generate_shims(definition['services'], structs, output)
 
 @click.command()
 @click.option('-w', '--warnings_as_errors',

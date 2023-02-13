@@ -7,7 +7,7 @@ class SemanticAnalyzer(object):
     def __init__(self) -> None:
         self.errors = list()
         self.warnings = list()
-        self.__interfaces = list()
+        self.__services = list()
         self.__enums = list()
         self.__structs = list()
 
@@ -29,15 +29,15 @@ class SemanticAnalyzer(object):
     def __returns(self, function):
         return function.get('returns', list())
 
-    def __check_duplicate_interface_ids(self):
-        ids = [i['id'] for i in self.__interfaces]
+    def __check_duplicate_service_ids(self):
+        ids = [i['id'] for i in self.__services]
         duplicate_ids = self.__duplicates(ids)
         if len(duplicate_ids) > 0:
-            self.errors.append(f'Duplicate interface id(s): {duplicate_ids}')
+            self.errors.append(f'Duplicate service id(s): {duplicate_ids}')
 
     def __check_duplicate_function_ids(self):
         duplicate_ids = list()
-        for i in self.__interfaces:
+        for i in self.__services:
             ids = [(i['name'], f['id']) for f in i['functions']]
             duplicate_ids.extend(self.__duplicates(ids))
 
@@ -53,15 +53,15 @@ class SemanticAnalyzer(object):
         if len(duplicate_ids) > 0:
             self.errors.append(f'Duplicate enum field id(s): {duplicate_ids}')
 
-    def __check_duplicate_interface_names(self):
-        names = [i['name'] for i in self.__interfaces]
+    def __check_duplicate_service_names(self):
+        names = [i['name'] for i in self.__services]
         duplicate_names = self.__duplicates(names)
         if len(duplicate_names) > 0:
-            self.errors.append(f'Duplicate interface name(s): {duplicate_names}')
+            self.errors.append(f'Duplicate service name(s): {duplicate_names}')
 
     def __check_duplicate_function_names(self):
         duplicate_names = list()
-        for i in self.__interfaces:
+        for i in self.__services:
             names = [(i['name'], f['name']) for f in i['functions']]
             duplicate_names.extend(self.__duplicates(names))
 
@@ -110,7 +110,7 @@ class SemanticAnalyzer(object):
 
     def __used_custom_types(self):
         all_used_types = list()
-        for i in self.__interfaces:
+        for i in self.__services:
             for f in i['functions']:
                 all_used_types.extend([p['type'] for p in self.__params(f)])
                 all_used_types.extend([r['type'] for r in self.__returns(f)])
@@ -131,7 +131,7 @@ class SemanticAnalyzer(object):
 
     def __check_multiple_auto_strings_in_param_list_or_return_list(self):
         offenders = list()
-        for i in self.__interfaces:
+        for i in self.__services:
             for f in i['functions']:
                 auto_string_params = [(f['name'], p['name']) for p in self.__params(f) if p['type'] == 'string_auto']
                 if len(auto_string_params) > 1:
@@ -149,7 +149,7 @@ class SemanticAnalyzer(object):
 
     def __check_array_of_auto_strings(self):
         offenders = list()
-        for i in self.__interfaces:
+        for i in self.__services:
             for f in i['functions']:
                 auto_string_arrays = [(f['name'], p['name']) for p in self.__params(f) if self.__is_auto_string_array(p)]
                 offenders.extend(auto_string_arrays)
@@ -169,16 +169,16 @@ class SemanticAnalyzer(object):
             self.warnings.append(f'Unused custom type(s): {unused_custom_types}')
 
     def analyze(self, definition) -> None:
-        self.__interfaces = definition['interfaces']
+        self.__services = definition['services']
         if 'enums' in definition:
             self.__enums = definition['enums']
         if 'structs' in definition:
             self.__structs = definition['structs']
 
-        self.__check_duplicate_interface_ids()
+        self.__check_duplicate_service_ids()
         self.__check_duplicate_function_ids()
         self.__check_duplicate_enum_field_ids()
-        self.__check_duplicate_interface_names()
+        self.__check_duplicate_service_names()
         self.__check_duplicate_function_names()
         self.__check_duplicate_struct_enum_names()
         self.__check_duplicate_enum_field_names()

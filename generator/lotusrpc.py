@@ -9,6 +9,7 @@ import jsonschema
 import jsonschema.exceptions
 from os import path
 import os
+from LrpcDef import LrpcDef
 
 def create_dir_if_not_exists(dir):
     if not path.exists(dir):
@@ -52,13 +53,13 @@ def generate_enums(enums, output):
         sfw = EnumFileWriter(e, output)
         sfw.write()
 
-def generate_include_all(rpc_name, structs, enums, output):
-    writer = IncludeAllWriter(rpc_name, structs, enums, output)
+def generate_include_all(definition, output):
+    writer = IncludeAllWriter(definition, output)
     writer.write()
 
-def generate_shims(services, structs, output):
-    for i in services:
-        writer = DecoderShimWriter(i, structs, output)
+def generate_shims(services, output):
+    for s in services:
+        writer = DecoderShimWriter(s, output)
         writer.write()
 
 def generate_rpc(input, output):
@@ -69,10 +70,10 @@ def generate_rpc(input, output):
     structs = definition.get('structs', list())
     enums = definition.get('enums', list())
 
-    generate_include_all(input.name, structs, enums, output)
+    generate_include_all(LrpcDef(definition), output)
     generate_structs(structs, output)
     generate_enums(enums, output)
-    generate_shims(definition['services'], structs, output)
+    generate_shims(LrpcDef(definition).services(), output)
 
 @click.command()
 @click.option('-w', '--warnings_as_errors',

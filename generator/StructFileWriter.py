@@ -17,13 +17,9 @@ class StructFileWriter(object):
         self.file('#pragma once')
 
     def __write_includes(self):
-        self.file('#include <stdint.h>')
-        self.file('#include <etl/byte_stream.h>')
-        if self.__has_array_fields():
-            self.file('#include <etl/array.h>')
-        if self.__has_optional_fields():
-            self.file('#include <etl/optional.h>')
         self.file('#include "EtlRwExtensions.hpp"')
+        for i in self.__required_includes():
+            self.file(f'#include {i}')
         self.file.newline()
 
     def __write_struct(self):
@@ -61,7 +57,7 @@ class StructFileWriter(object):
         self.file(f'{self.__name()} obj;')
 
         for field in self.descriptor['fields']:
-            f = LrpcVar(field, self.structs)
+            f = LrpcVar(field)
             if f.is_array():
                 self.file(f'obj.{f.name()} = read_unchecked<{f.read_type()}, {f.array_size()}>(reader);')
             else:
@@ -71,20 +67,19 @@ class StructFileWriter(object):
 
     def __write_encoder_body(self):
         for field in self.descriptor['fields']:
-            f = LrpcVar(field, self.structs)
+            f = LrpcVar(field)
             self.file(f'write_unchecked<{f.write_type()}>(writer, obj.{f.name()});')
 
     def __write_struct_field(self, field):
-        f = LrpcVar(field, self.structs)
+        f = LrpcVar(field)
         self.file(f'{f.field_type()} {f.name()};')
 
     def __name(self):
         return self.descriptor['name']
 
-    def __has_array_fields(self):
-        array_fields = [1 for f in self.descriptor['fields'] if LrpcVar(f, self.structs).is_array()]
-        return len(array_fields) != 0
+    def __required_includes(self):
+        includes = set()
+        for f in self.descriptor['fields']:
+            includes.update(LrpcVar(f).required_includes())
 
-    def __has_optional_fields(self):
-        optional_fields = [1 for f in self.descriptor['fields'] if LrpcVar(f, self.structs).is_optional()]
-        return len(optional_fields) != 0
+        return includes

@@ -2,8 +2,8 @@ from code_generation.code_generator import CppFile
 from LrpcService import LrpcService
 
 class DecoderShimWriter(object):
-    def __init__(self, service, structs, output):
-        self.service = LrpcService(service, structs)
+    def __init__(self, service, output):
+        self.service = service
         self.file = CppFile(f'{output}/{self.service.name()}_DecoderShim.hpp')
 
     def write(self):        
@@ -93,11 +93,7 @@ class DecoderShimWriter(object):
         self.file('#pragma once')
 
     def __write_includes(self):
-        for i in self.service.required_includes():
-            self.file(f'#include {i}')
-
-        self.file('#include <stdint.h>')
         self.file('#include "Decoder.hpp"')
-        self.file('#include "TestDecoder_all.hpp"')
+        self.file(f'#include "{self.service.name()}.hpp"')
 
         self.file.newline()

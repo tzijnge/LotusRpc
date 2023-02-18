@@ -1,5 +1,5 @@
 from typing import List
-
+from LrpcDef import LrpcDef
 class SemanticAnalyzer(object):
     errors : List[str]
     warnings : List[str]
@@ -23,22 +23,16 @@ class SemanticAnalyzer(object):
 
         return duplicates
 
-    def __params(self, function):
-        return function.get('params', list())
-
-    def __returns(self, function):
-        return function.get('returns', list())
-
     def __check_duplicate_service_ids(self):
-        ids = [i['id'] for i in self.__services]
+        ids = [s.id() for s in self.__services]
         duplicate_ids = self.__duplicates(ids)
         if len(duplicate_ids) > 0:
             self.errors.append(f'Duplicate service id(s): {duplicate_ids}')
 
     def __check_duplicate_function_ids(self):
         duplicate_ids = list()
-        for i in self.__services:
-            ids = [(i['name'], f['id']) for f in i['functions']]
+        for s in self.__services:
+            ids = [(s.name(), f.id()) for f in s.functions()]
             duplicate_ids.extend(self.__duplicates(ids))
 
         if len(duplicate_ids) > 0:
@@ -54,15 +48,15 @@ class SemanticAnalyzer(object):
             self.errors.append(f'Duplicate enum field id(s): {duplicate_ids}')
 
     def __check_duplicate_service_names(self):
-        names = [i['name'] for i in self.__services]
+        names = [s.name() for s in self.__services]
         duplicate_names = self.__duplicates(names)
         if len(duplicate_names) > 0:
             self.errors.append(f'Duplicate service name(s): {duplicate_names}')
 
     def __check_duplicate_function_names(self):
         duplicate_names = list()
-        for i in self.__services:
-            names = [(i['name'], f['name']) for f in i['functions']]
+        for s in self.__services:
+            names = [(s.name(), f.name()) for f in s.functions()]
             duplicate_names.extend(self.__duplicates(names))
 
         if len(duplicate_names) > 0:
@@ -109,16 +103,16 @@ class SemanticAnalyzer(object):
         return all_declared_structs + all_declared_enums
 
     def __used_custom_types(self):
-        all_used_types = list()
-        for i in self.__services:
-            for f in i['functions']:
-                all_used_types.extend([p['type'] for p in self.__params(f)])
-                all_used_types.extend([r['type'] for r in self.__returns(f)])
+        used_custom_types = list()
+        for s in self.__services:
+            for f in s.functions():
+                used_custom_types.extend([p.base_type() for p in f.params() if p.base_type_is_custom()])
+                used_custom_types.extend([r.base_type() for r in f.returns() if r.base_type_is_custom()])
 
         for s in self.__structs:
-            all_used_types.extend([f['type'] for f in s['fields']])
+            used_custom_types.extend([f['type'].strip('@') for f in s['fields'] if ('@' in f['type'])])
 
-        return [t.strip('@') for t in all_used_types if t.startswith('@')]
+        return used_custom_types
 
     def __check_auto_string_in_struct(self):
         offenders = list()
@@ -131,13 +125,13 @@ class SemanticAnalyzer(object):
 
     def __check_multiple_auto_strings_in_param_list_or_return_list(self):
         offenders = list()
-        for i in self.__services:
-            for f in i['functions']:
-                auto_string_params = [(f['name'], p['name']) for p in self.__params(f) if p['type'] == 'string_auto']
+        for s in self.__services:
+            for f in s.functions():
+                auto_string_params = [(f.name(), p.name()) for p in f.params() if p.is_auto_string()]
                 if len(auto_string_params) > 1:
                     offenders.extend(auto_string_params)
 
-                auto_string_returns = [(f['name'], r['name']) for r in self.__returns(f) if r['type'] == 'string_auto']
+                auto_string_returns = [(f.name(), r.name()) for r in f.returns() if r.is_auto_string()]
                 if len(auto_string_returns) > 1:
                     offenders.extend(auto_string_returns)
 
@@ -145,16 +139,22 @@ class SemanticAnalyzer(object):
             self.errors.append(f'More than one auto string per parameter list or return value list is not allowed: {offenders}')
 
     def __is_auto_string_array(self, p):
-        return p['type'] == 'string_auto' and p.get('count', 1) > 1
+        if not p.is_auto_string():
+            return False
+
+        if p.is_optional():
+            return False
+
+        return p.array_size() > 1
 
     def __check_array_of_auto_strings(self):
         offenders = list()
-        for i in self.__services:
-            for f in i['functions']:
-                auto_string_arrays = [(f['name'], p['name']) for p in self.__params(f) if self.__is_auto_string_array(p)]
+        for s in self.__services:
+            for f in s.functions():
+                auto_string_arrays = [(f.name(), p.name()) for p in f.params() if self.__is_auto_string_array(p)]
                 offenders.extend(auto_string_arrays)
 
-                auto_string_arrays = [(f['name'], r['name']) for r in self.__returns(f) if self.__is_auto_string_array(r)]
+                auto_string_arrays = [(f.name(), r.name()) for r in f.returns() if self.__is_auto_string_array(r)]
                 offenders.extend(auto_string_arrays)
 
         if len(offenders) > 0:
@@ -169,7 +169,7 @@ class SemanticAnalyzer(object):
             self.warnings.append(f'Unused custom type(s): {unused_custom_types}')
 
     def analyze(self, definition) -> None:
-        self.__services = definition['services']
+        self.__services = LrpcDef(definition).services()
         if 'enums' in definition:
             self.__enums = definition['enums']
         if 'structs' in definition:

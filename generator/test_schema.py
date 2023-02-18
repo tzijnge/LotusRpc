@@ -15,7 +15,8 @@ def semantic_errors(rpc_def):
 
 def test_duplicate_enum_field_names():
     rpc_def = \
-'''namespace: "a"
+'''name: "test"
+namespace: "a"
 services:
   - name: "a"
     id: 0
@@ -43,7 +44,8 @@ enums:
 
 def test_duplicate_enum_field_ids():
     rpc_def = \
-'''namespace: "a"
+'''name: "test"
+namespace: "a"
 services:
   - name: "a"
     id: 0
@@ -72,7 +74,8 @@ enums:
 
 def test_duplicate_enum_names():
     rpc_def = \
-'''namespace: "a"
+'''name: "test"
+namespace: "a"
 services:
   - name: "a"
     id: 0
@@ -97,7 +100,8 @@ enums:
 
 def test_duplicate_struct_names():
     rpc_def = \
-'''namespace: "a"
+'''name: "test"
+namespace: "a"
 services:
   - name: "a"
     id: 0
@@ -122,7 +126,8 @@ structs:
 
 def test_duplicate_struct_enum_names():
     rpc_def = \
-'''namespace: "a"
+'''name: "test"
+namespace: "a"
 services:
   - name: "a"
     id: 0
@@ -148,7 +153,8 @@ enums:
 
 def test_duplicate_struct_field_names():
     rpc_def = \
-'''namespace: "a"
+'''name: "test"
+namespace: "a"
 services:
   - name: "a"
     id: 0
@@ -176,7 +182,8 @@ structs:
 
 def test_duplicate_service_names():
     rpc_def = \
-'''namespace: "a"
+'''name: "test"
+namespace: "a"
 services:
   - name: "i0"
     id: 0
@@ -197,7 +204,8 @@ services:
 
 def test_duplicate_service_ids():
     rpc_def = \
-'''namespace: "a"
+'''name: "test"
+namespace: "a"
 services:
   - name: "i0"
     id: 111
@@ -218,7 +226,8 @@ services:
 
 def test_duplicate_function_ids():
     rpc_def = \
-'''namespace: "a"
+'''name: "test"
+namespace: "a"
 services:
   - name: "i0"
     id: 0
@@ -243,7 +252,8 @@ services:
 
 def test_duplicate_function_names():
     rpc_def = \
-'''namespace: "a"
+'''name: "test"
+namespace: "a"
 services:
   - name: "i0"
     id: 0
@@ -268,7 +278,8 @@ services:
 
 def test_undeclared_custom_type():
     rpc_def = \
-'''namespace: "a"
+'''name: "test"
+namespace: "a"
 services:
   - name: "i0"
     id: 0
@@ -314,7 +325,8 @@ enums:
 
 def test_auto_string_not_allowed_in_struct():
     rpc_def = \
-'''namespace: "a"
+'''name: "test"
+namespace: "a"
 services:
   - name: "i0"
     id: 0
@@ -339,7 +351,8 @@ structs:
 
 def test_only_one_auto_string_param_or_return_allowed():
     rpc_def = \
-'''namespace: "ns"
+'''name: "test"
+namespace: "ns"
 services:
   - name: "i0"
     id: 0
@@ -377,7 +390,8 @@ services:
 
 def test_array_of_auto_strings_is_not_allowed():
     rpc_def = \
-'''namespace: "ns"
+'''name: "test"
+namespace: "ns"
 services:
   - name: "i0"
     id: 0
@@ -401,7 +415,8 @@ services:
 
 def test_warning_on_unused_custom_type():
     rpc_def = \
-'''namespace: "ns"
+'''name: "test"
+namespace: "ns"
 services:
   - name: "i0"
     id: 0

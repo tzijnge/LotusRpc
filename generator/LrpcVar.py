@@ -1,17 +1,18 @@
 class LrpcVar(object):
-    def __init__(self, raw, structs) -> None:
-        self.structs = structs
+    def __init__(self, raw) -> None:
         self.raw = raw
-        self.raw['type'] = self.raw['type'].strip('@')
         if 'count' not in self.raw:
             self.raw['count'] = 1
 
     def name(self):
         return self.raw['name']
 
+    def base_type(self):
+        return self.raw['type'].strip('@')
+
     def field_type(self):
-        t = self.raw['type']
-        if self.is_string():
+        t = self.base_type()
+        if self.base_type_is_string():
             t = f'etl::string<{self.string_size()}>'
 
         if self.is_optional():
@@ -24,7 +25,7 @@ class LrpcVar(object):
         return t
 
     def return_type(self):
-        t = 'etl::string_view' if self.is_string() else self.raw['type']
+        t = 'etl::string_view' if self.is_string() else self.base_type()
 
         if self.is_optional():
             return f'etl::optional<{t}>'
@@ -38,9 +39,9 @@ class LrpcVar(object):
         if self.is_string():
             t = 'const etl::string_view&'
         elif self.is_struct():
-            t = 'const ' + self.raw['type'] + '&'
+            t = 'const ' + self.base_type() + '&'
         else:
-            t = self.raw['type']
+            t = self.base_type()
 
         if self.is_optional():
             return f'const etl::optional<{t}>&'
@@ -51,28 +52,42 @@ class LrpcVar(object):
         return t
 
     def read_type(self):
-        return 'etl::string_view' if self.is_string() else self.raw['type']
+        return 'etl::string_view' if self.is_string() else self.base_type()
 
     def write_type(self):
-        t = 'etl::string_view' if self.is_string() else self.raw['type']
+        t = 'etl::string_view' if self.is_string() else self.base_type()
 
         if self.is_array():
             return f'const {t}'
 
         return t
 
+    def base_type_is_custom(self):
+        return '@' in self.raw['type']
+
+    def base_type_is_struct(self):
+        return self.raw['base_type_is_struct']
+
+    def base_type_is_enum(self):
+        return self.raw['base_type_is_enum']
+
+    def base_type_is_integral(self):
+        return self.base_type() in ['uint8_t', 'uint16_t', 'uint32_t', 'uint64_t', 'int8_t', 'int16_t', 'int32_t', 'int64_t']
+
+    def base_type_is_string(self):
+        return self.base_type().startswith('string_')
+
     def is_struct(self):
         if self.is_array():
             return False
-
         if self.is_optional():
             return False
 
-        struct_names = [s['name'] for s in self.structs]
-        return self.raw['type'] in struct_names
+        return self.base_type_is_struct()
 
     def is_optional(self):
-        return self.raw['count'] == '*'
+        count = self.raw['count']
+        return isinstance(count, str) and count == '?'
 
     def is_array(self):
         if self.is_optional():
@@ -81,7 +96,7 @@ class LrpcVar(object):
         return self.raw['count'] > 1
 
     def is_array_of_strings(self):
-        return self.is_array() and self.__base_type_is_string()
+        return self.is_array() and self.base_type_is_string()
 
     def is_string(self):
         if self.is_array():
@@ -90,16 +105,16 @@ class LrpcVar(object):
         if self.is_optional():
             return False
 
-        return self.__base_type_is_string()
+        return self.base_type_is_string()
 
     def is_auto_string(self):
-        return self.raw['type'] == 'string_auto'
+        return self.base_type() == 'string_auto'
 
     def string_size(self):
         if self.is_auto_string():
             return -1
 
-        return int(self.raw['type'].strip('string_'))
+        return int(self.base_type().strip('string_'))
 
     def array_size(self):
         if self.is_optional():
@@ -108,16 +123,21 @@ class LrpcVar(object):
         return int(self.raw['count'])
 
     def required_includes(self):
-        if self.is_array_of_strings():
-            return {'<etl/string_view.h>', '<etl/span.h>'}
+        includes = set()
+
+        if self.base_type_is_integral():
+            includes.update({'<stdint.h>'})
+
+        if self.base_type_is_custom():
+            includes.update({f'"{self.base_type()}.hpp"'})
+
+        if self.base_type_is_string():
+            includes.update({'<etl/string.h>', '<etl/string_view.h>'})
 
         if self.is_array():
-            return {'<etl/span.h>'}
+            includes.update({'<etl/span.h>'})
 
-        if self.is_string():
-            return {'<etl/string_view.h>'}
+        if self.is_optional():
+            includes.update({'<etl/optional.h>'})
 
-        return {}
-
-    def __base_type_is_string(self):
-        return self.raw['type'].startswith('string_')
+        return includes

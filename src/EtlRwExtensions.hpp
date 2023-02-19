@@ -57,6 +57,13 @@ namespace lrpc
     read_unchecked(etl::byte_stream_reader &stream) = delete;
 
     template <typename T>
+    typename etl::enable_if<etl::is_arithmetic<T>::value, T>::type
+    read_unchecked(etl::byte_stream_reader &stream)
+    {
+        return stream.read_unchecked<T>();
+    };
+
+    template <typename T>
     typename etl::enable_if<is_etl_optional<T>::value, T>::type
     read_unchecked(etl::byte_stream_reader &stream)
     {
@@ -106,13 +113,6 @@ namespace lrpc
         return s;
     };
 
-    template <typename T>
-    typename etl::enable_if<etl::is_arithmetic<T>::value, T>::type
-    read_unchecked(etl::byte_stream_reader &stream)
-    {
-        return stream.read_unchecked<T>();
-    };
-
     // deleted write function to allow specializations for custom structs
     template <typename T, typename etl::enable_if<!etl::is_arithmetic<T>::value &&
                                            !is_etl_optional<T>::value &&
@@ -121,6 +121,12 @@ namespace lrpc
                                            bool>::type = true>
     void write_unchecked(etl::byte_stream_writer &stream, const T &value) = delete;
 
+    template <typename ARI, typename etl::enable_if<etl::is_arithmetic<ARI>::value, bool>::type = true>
+    void write_unchecked(etl::byte_stream_writer &stream, const ARI &value)
+    {
+        stream.write_unchecked<ARI>(value);
+    };
+    
     template <typename OPT, typename = typename etl::enable_if<is_etl_optional<OPT>::value, OPT>::type>
     void write_unchecked(etl::byte_stream_writer &stream, const etl::optional<typename etl_optional_type<OPT>::type> &value)
     {
@@ -148,11 +154,5 @@ namespace lrpc
             stream.write_unchecked<char>(c);
         }
         stream.write_unchecked<char>('\0');
-    };
-
-    template <typename ARI, typename etl::enable_if<etl::is_arithmetic<ARI>::value, bool>::type = true>
-    void write_unchecked(etl::byte_stream_writer &stream, const ARI &value)
-    {
-        stream.write_unchecked<ARI>(value);
     };
 }

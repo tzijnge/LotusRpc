@@ -17,6 +17,7 @@ class StructFileWriter(object):
         self.file('#pragma once')
 
     def __write_includes(self):
+        self.file('#include <etl/byte_stream.h>')
         self.file('#include "EtlRwExtensions.hpp"')
         for i in self.__required_includes():
             self.file(f'#include {i}')

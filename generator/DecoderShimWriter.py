@@ -44,11 +44,7 @@ class DecoderShimWriter(object):
         for p in function.params():
             n = p.name()
             t = p.read_type()
-            if p.is_array():
-                s = p.array_size()
-                self.file(f'const auto {n} = etl::read_unchecked<{t}, {s}>(r);')
-            else:
-                self.file(f'const auto {n} = etl::read_unchecked<{t}>(r);')
+            self.file(f'const auto {n} = lrpc::read_unchecked<{t}>(r);')
 
         param_list = ', '.join(function.param_names())
 
@@ -58,11 +54,11 @@ class DecoderShimWriter(object):
         returns = function.returns()
         if function.number_returns() == 1:
             t = returns[0].write_type()
-            self.file(f'etl::write_unchecked<{t}>(w, response);')
+            self.file(f'lrpc::write_unchecked<{t}>(w, response);')
         else:
             for i, r in enumerate(returns):
                 t = r.write_type()
-                self.file(f'etl::write_unchecked<{t}>(w, std::get<{i}>(response));')
+                self.file(f'lrpc::write_unchecked<{t}>(w, std::get<{i}>(response));')
 
     def __write_function_decl(self, function):
         name = function.name()

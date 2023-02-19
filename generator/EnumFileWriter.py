@@ -26,24 +26,24 @@ class EnumFileWriter(object):
         self.file.newline()
 
     def __write_codec(self):
-        with self.file.block('namespace etl'):
+        with self.file.block('namespace lrpc'):
             name = self.__name()
             self.file('template<>')
-            with self.file.block(f'inline {name} read_unchecked<{name}>(byte_stream_reader& reader)'):
+            with self.file.block(f'inline {name} read_unchecked<{name}>(etl::byte_stream_reader& reader)'):
                 self.__write_decoder_body()
 
             self.file.newline()
 
             self.file('template<>')
-            with self.file.block(f'inline void write_unchecked<{name}>(byte_stream_writer& writer, const {name}& obj)'):
+            with self.file.block(f'inline void write_unchecked<{name}>(etl::byte_stream_writer& writer, const {name}& value)'):
                 self.__write_encoder_body()
 
     def __write_decoder_body(self):
         name = self.descriptor['name']
-        self.file(f'return static_cast<{name}>(read_unchecked<uint8_t>(reader));')
+        self.file(f'return static_cast<{name}>(reader.read_unchecked<uint8_t>());')
 
     def __write_encoder_body(self):
-        self.file('write_unchecked<uint8_t>(writer, static_cast<uint8_t>(obj));')
+        self.file('writer.write_unchecked<uint8_t>(static_cast<uint8_t>(value));')
 
     def __name(self):
         return self.descriptor['name']

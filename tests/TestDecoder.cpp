@@ -40,14 +40,14 @@ public:
     MOCK_METHOD(uint8_t, f12, (), (override));
     MOCK_METHOD(uint16_t, f13, (), (override));
     MOCK_METHOD(float, f14, (), (override));
-    MOCK_METHOD((etl::span<const uint16_t>), f15, (), (override));
-    MOCK_METHOD(etl::string_view, f16, (), (override));
+    MOCK_METHOD((etl::array<uint16_t, 2>), f15, (), (override));
+    MOCK_METHOD(etl::string<20>, f16, (), (override));
     MOCK_METHOD(CompositeData, f17, (), (override));
     MOCK_METHOD(MyEnum, f18, (), (override));
-    MOCK_METHOD((etl::span<const CompositeData2>), f19, (), (override));
+    MOCK_METHOD((etl::array<CompositeData2, 2>), f19, (), (override));
     MOCK_METHOD(CompositeData3, f20, (), (override));
     MOCK_METHOD((std::tuple<uint8_t, uint8_t>), f21, (), (override));
-    MOCK_METHOD((std::tuple<etl::string_view, etl::string_view>), f22, (const etl::string_view &s1, const etl::string_view &s2), (override));
+    MOCK_METHOD((std::tuple<etl::string<4>, etl::string<4>>), f22, (const etl::string_view &s1, const etl::string_view &s2), (override));
 };
 
 class TestDecoder : public ::testing::Test
@@ -209,8 +209,8 @@ TEST_F(TestDecoder, decodeF14)
 // Decode function f15 which return array of uint16_t
 TEST_F(TestDecoder, decodeF15)
 {
-    std::vector<uint16_t> expected{0xBBAA, 0xDDCC};
-    EXPECT_CALL(s0Decoder, f15()).WillOnce(Return(etl::span<uint16_t>(expected)));
+    etl::array<uint16_t, 2> expected{0xBBAA, 0xDDCC};
+    EXPECT_CALL(s0Decoder, f15()).WillOnce(Return(expected));
     auto response = decode({15});
     EXPECT_RESPONSE({0xAA, 0xBB, 0xCC, 0xDD}, response);
 }
@@ -218,7 +218,7 @@ TEST_F(TestDecoder, decodeF15)
 // Decode function f16 which returns a string
 TEST_F(TestDecoder, decodeF16)
 {
-    EXPECT_CALL(s0Decoder, f16()).WillOnce(Return(etl::string_view("Test")));
+    EXPECT_CALL(s0Decoder, f16()).WillOnce(Return(etl::string<20>("Test")));
     auto response = decode({16});
     EXPECT_RESPONSE({'T', 'e', 's', 't', '\0'}, response);
 }
@@ -242,10 +242,10 @@ TEST_F(TestDecoder, decodeF18)
 // Decode function f19 which returns array of custom type
 TEST_F(TestDecoder, decodeF19)
 {
-    std::vector<CompositeData2> expected{
+    etl::array<CompositeData2, 2> expected{
         CompositeData2{0xAA, 0xBB},
         CompositeData2{0xCC, 0xDD}};
-    EXPECT_CALL(s0Decoder, f19()).WillOnce(Return(etl::span<CompositeData2>(expected)));
+    EXPECT_CALL(s0Decoder, f19()).WillOnce(Return(expected));
     auto response = decode({19});
     EXPECT_RESPONSE({0xAA, 0xBB, 0xCC, 0xDD}, response);
 }
@@ -271,8 +271,8 @@ TEST_F(TestDecoder, decodef22)
 {
     etl::string_view arg1{"arg1"};
     etl::string_view arg2{"arg2"};
-    etl::string_view ret1{"ret1"};
-    etl::string_view ret2{"ret2"};
+    etl::string<4> ret1{"ret1"};
+    etl::string<4> ret2{"ret2"};
 
     EXPECT_CALL(s0Decoder, f22(arg1, arg2)).WillOnce(Return(std::tuple{ret1, ret2}));
     auto response = decode({22, 'a', 'r', 'g', '1', '\0', 'a', 'r', 'g', '2', '\0'});

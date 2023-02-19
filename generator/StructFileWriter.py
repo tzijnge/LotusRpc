@@ -41,16 +41,16 @@ class StructFileWriter(object):
         self.file.newline()
 
     def __write_codec(self):
-        with self.file.block('namespace etl'):
+        with self.file.block('namespace lrpc'):
             name = self.__name()
             self.file('template<>')
-            with self.file.block(f'inline {name} read_unchecked<{name}>(byte_stream_reader& reader)'):
+            with self.file.block(f'inline {name} read_unchecked<{name}>(etl::byte_stream_reader& reader)'):
                 self.__write_decoder_body()
 
             self.file.newline()
 
             self.file('template<>')
-            with self.file.block(f'inline void write_unchecked<{name}>(byte_stream_writer& writer, const {name}& obj)'):
+            with self.file.block(f'inline void write_unchecked<{name}>(etl::byte_stream_writer& writer, const {name}& obj)'):
                 self.__write_encoder_body()
 
     def __write_decoder_body(self):
@@ -58,17 +58,14 @@ class StructFileWriter(object):
 
         for field in self.descriptor['fields']:
             f = LrpcVar(field)
-            if f.is_array():
-                self.file(f'obj.{f.name()} = read_unchecked<{f.read_type()}, {f.array_size()}>(reader);')
-            else:
-                self.file(f'obj.{f.name()} = read_unchecked<{f.read_type()}>(reader);')
+            self.file(f'obj.{f.name()} = lrpc::read_unchecked<{f.read_type()}>(reader);')
 
         self.file('return obj;')
 
     def __write_encoder_body(self):
         for field in self.descriptor['fields']:
             f = LrpcVar(field)
-            self.file(f'write_unchecked<{f.write_type()}>(writer, obj.{f.name()});')
+            self.file(f'lrpc::write_unchecked<{f.write_type()}>(writer, obj.{f.name()});')
 
     def __write_struct_field(self, field):
         f = LrpcVar(field)

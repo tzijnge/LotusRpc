@@ -25,13 +25,16 @@ class LrpcVar(object):
         return t
 
     def return_type(self):
-        t = 'etl::string_view' if self.is_string() else self.base_type()
+        t = self.base_type()
+
+        if self.is_string():
+            t = f'etl::string<{self.string_size()}>'
 
         if self.is_optional():
             return f'etl::optional<{t}>'
 
         if self.is_array():
-            return f'etl::span<const {t}>'
+            return f'etl::array<{t}, {self.array_size()}>'
 
         return t
 
@@ -52,13 +55,28 @@ class LrpcVar(object):
         return t
 
     def read_type(self):
-        return 'etl::string_view' if self.is_string() else self.base_type()
+        if self.is_string():
+            return 'etl::string_view'
+
+        t = self.base_type()
+        if self.is_array():
+            return f'etl::array<{t}, {self.array_size()}>'
+        
+        if self.is_optional():
+            return f'etl::optional<{t}>'
+
+        return t
 
     def write_type(self):
-        t = 'etl::string_view' if self.is_string() else self.base_type()
+        if self.is_string():
+            return f'etl::istring'
 
+        t = self.base_type()
         if self.is_array():
-            return f'const {t}'
+            return f'etl::array<{t}, {self.array_size()}>'
+        
+        if self.is_optional():
+            return f'etl::optional<{t}>'
 
         return t
 

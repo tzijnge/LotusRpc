@@ -120,14 +120,14 @@ services:
         id: 22
         params:
           - name: "s1"
-            type: string_1
+            type: string_4
           - name: "s2"
-            type: string_10
+            type: string_4
         returns:
           - name: "r2"
-            type: string_2
+            type: string_4
           - name: "r2"
-            type: string_3
+            type: string_4
 structs:
   - name: "CompositeData"
     fields:

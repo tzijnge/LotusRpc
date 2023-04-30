@@ -90,6 +90,7 @@ class DecoderShimWriter(object):
 
     def __write_includes(self):
         self.file('#include "Decoder.hpp"')
+        self.file('#include "EtlRwExtensions.hpp"')
         self.file(f'#include "{self.service.name()}.hpp"')
 
         self.file.newline()

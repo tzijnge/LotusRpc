@@ -1,0 +1,20 @@
+name: "TestDecoder"
+namespace: "ns"
+services:
+  - name: "s00"
+    id: 0
+    functions:
+      - name: "f0"
+        id: 0
+        params:
+          - name: "p0"
+            type: bool
+          - name: "p1"
+            type: string_auto
+      - name: "f1"
+        id: 1
+        params:
+          - name: "p0"
+            type: string_auto
+          - name: "p1"
+            type: bool

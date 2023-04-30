@@ -131,10 +131,6 @@ class SemanticAnalyzer(object):
                 if len(auto_string_params) > 1:
                     offenders.extend(auto_string_params)
 
-                auto_string_returns = [(f.name(), r.name()) for r in f.returns() if r.is_auto_string()]
-                if len(auto_string_returns) > 1:
-                    offenders.extend(auto_string_returns)
-
         if len(offenders) > 0:
             self.errors.append(f'More than one auto string per parameter list or return value list is not allowed: {offenders}')
 
@@ -154,9 +150,6 @@ class SemanticAnalyzer(object):
                 auto_string_arrays = [(f.name(), p.name()) for p in f.params() if self.__is_auto_string_array(p)]
                 offenders.extend(auto_string_arrays)
 
-                auto_string_arrays = [(f.name(), r.name()) for r in f.returns() if self.__is_auto_string_array(r)]
-                offenders.extend(auto_string_arrays)
-
         if len(offenders) > 0:
             self.errors.append(f'Array of auto strings is not allowed: {offenders}')
 
@@ -167,6 +160,16 @@ class SemanticAnalyzer(object):
 
         if len(unused_custom_types) > 0:
             self.warnings.append(f'Unused custom type(s): {unused_custom_types}')
+
+    def __check_return_auto_string(self):
+        offenders = list()
+        for s in self.__services:
+            for f in s.functions():
+                auto_string_returns = [(s.name(), f.name(), r.name()) for r in f.returns() if r.is_auto_string()]
+                offenders.extend(auto_string_returns)
+
+        if len(offenders) > 0:
+            self.errors.append(f'A function cannot return an auto string: {offenders}')
 
     def analyze(self, definition) -> None:
         self.__services = LrpcDef(definition).services()
@@ -188,3 +191,4 @@ class SemanticAnalyzer(object):
         self.__check_multiple_auto_strings_in_param_list_or_return_list()
         self.__check_array_of_auto_strings()
         self.__check_custom_types_not_used()
+        self.__check_return_auto_string()

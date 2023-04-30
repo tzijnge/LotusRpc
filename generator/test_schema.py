@@ -349,7 +349,7 @@ structs:
     assert len(warnings) == 1
     assert "Auto string not allowed in struct: [('s0', 'f0'), ('s1', 'f1')]" in errors
 
-def test_only_one_auto_string_param_or_return_allowed():
+def test_only_one_auto_string_param_allowed():
     rpc_def = \
 '''name: "test"
 namespace: "ns"
@@ -364,29 +364,12 @@ services:
             type: string_auto
           - name: "p1"
             type: "string_auto"
-        returns:
-          - name: "r0"
-            type: bool
-          - name: "r1"
-            type: "string_auto"
-      - name: "f1"
-        id: 1
-        params:
-          - name: "p0"
-            type: string_auto
-          - name: "p1"
-            type: "bool"
-        returns:
-          - name: "r0"
-            type: string_auto
-          - name: "r1"
-            type: "string_auto"
 '''
 
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
     assert len(warnings) == 0
-    assert "More than one auto string per parameter list or return value list is not allowed: [('f0', 'p0'), ('f0', 'p1'), ('f1', 'r0'), ('f1', 'r1')]" in errors
+    assert "More than one auto string per parameter list or return value list is not allowed: [('f0', 'p0'), ('f0', 'p1')]" in errors
 
 def test_array_of_auto_strings_is_not_allowed():
     rpc_def = \
@@ -402,16 +385,12 @@ services:
           - name: "p0"
             type: string_auto
             count: 10
-        returns:
-          - name: "r0"
-            type: string_auto
-            count: 10
 '''
 
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
     assert len(warnings) == 0
-    assert "Array of auto strings is not allowed: [('f2', 'p0'), ('f2', 'r0')]" in errors
+    assert "Array of auto strings is not allowed: [('f2', 'p0')]" in errors
 
 def test_warning_on_unused_custom_type():
     rpc_def = \
@@ -442,3 +421,43 @@ enums:
     assert len(errors) == 0
     assert len(warnings) == 1
     assert "Unused custom type(s): ['s0', 'e0']" in warnings
+
+def test_auto_string_return_value_is_not_allowed():
+    rpc_def = \
+'''name: "test"
+namespace: "ns"
+services:
+  - name: "s0"
+    id: 0
+    functions:
+      - name: "f0"
+        id: 0
+        returns:
+          - name: "r0"
+            type: string_auto
+      - name: "f1"
+        id: 1
+        returns:
+          - name: "r0"
+            type: string_auto
+          - name: "r1"
+            type: string_auto
+      - name: "f2"
+        id: 2
+        returns:
+          - name: "r0"
+            type: string_auto
+            count: "?"
+      - name: "f3"
+        id: 3
+        returns:
+          - name: "r0"
+            type: string_auto
+            count: 10
+
+'''
+
+    errors, warnings = semantic_errors(rpc_def)
+    assert len(errors) == 1
+    assert len(warnings) == 0
+    assert "A function cannot return an auto string: [('s0', 'f0', 'r0'), ('s0', 'f1', 'r0'), ('s0', 'f1', 'r1'), ('s0', 'f2', 'r0'), ('s0', 'f3', 'r0')]" in errors

@@ -18,12 +18,19 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestDecoder/Test
                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/TestDecoder.lrpc.yaml
                   COMMAND python ${CMAKE_SOURCE_DIR}/generator/lotusrpc.py ${CMAKE_CURRENT_SOURCE_DIR}/TestDecoder.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestDecoder)
 
+add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestDecoder2/TestDecoder2_all.hpp
+                  COMMENT "Generate TestDecoder LRPC files"
+                  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/TestDecoder2.lrpc.yaml
+                  COMMAND python ${CMAKE_SOURCE_DIR}/generator/lotusrpc.py ${CMAKE_CURRENT_SOURCE_DIR}/TestDecoder2.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestDecoder2)
+
 set_directory_properties(PROPERTIES ADDITIONAL_CLEAN_FILES ${CMAKE_CURRENT_SOURCE_DIR}/generated)
 
 add_executable(UnitTests
                 TestDecoder.cpp
+                TestDecoder2_s0.cpp
                 TestServer.cpp
-                ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestDecoder/TestDecoder_all.hpp)
+                ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestDecoder/TestDecoder_all.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestDecoder2/TestDecoder2_all.hpp)
 
 target_include_directories(UnitTests PRIVATE ../src)
 target_include_directories(UnitTests PRIVATE ../external/etl/include)

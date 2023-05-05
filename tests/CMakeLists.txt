@@ -28,6 +28,7 @@ set_directory_properties(PROPERTIES ADDITIONAL_CLEAN_FILES ${CMAKE_CURRENT_SOURC
 add_executable(UnitTests
                 TestDecoder.cpp
                 TestDecoder2_s0.cpp
+                TestDecoder2_s1.cpp
                 TestServer.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestDecoder/TestDecoder_all.hpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestDecoder2/TestDecoder2_all.hpp)

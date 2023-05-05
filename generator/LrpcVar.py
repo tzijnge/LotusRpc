@@ -39,33 +39,37 @@ class LrpcVar(object):
         return t
 
     def param_type(self):
-        if self.is_string():
-            t = 'const etl::string_view&'
-        elif self.is_struct():
-            t = 'const ' + self.base_type() + '&'
+        if self.base_type_is_string():
+            t = 'etl::string_view'
         else:
             t = self.base_type()
 
-        if self.is_optional():
-            return f'const etl::optional<{t}>&'
-
         if self.is_array():
             return f'const etl::span<const {t}>&'
-
-        return t
+        elif self.is_optional():
+            return f'const etl::optional<{t}>&'
+        else:
+            if self.base_type_is_struct() or self.base_type_is_string():
+                return f'const {t}&'
+            else:
+                return t
 
     def read_type(self):
-        if self.is_string():
-            return 'etl::string_view'
+        if self.base_type_is_string():
+            if self.is_fixed_size_string():
+                s = self.string_size()
+                t = f'etl::string<{s}>'
+            else:
+                t = 'etl::string_view'
+        else:
+            t = self.base_type()
 
-        t = self.base_type()
         if self.is_array():
             return f'etl::array<{t}, {self.array_size()}>'
-        
-        if self.is_optional():
+        elif self.is_optional():
             return f'etl::optional<{t}>'
-
-        return t
+        else:
+            return t
 
     def write_type(self):
         if self.is_string():
@@ -127,6 +131,9 @@ class LrpcVar(object):
 
     def is_auto_string(self):
         return self.base_type() == 'string_auto'
+    
+    def is_fixed_size_string(self):
+        return self.base_type_is_string() and not self.is_auto_string()
 
     def string_size(self):
         if self.is_auto_string():

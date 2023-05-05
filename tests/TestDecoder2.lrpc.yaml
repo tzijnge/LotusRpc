@@ -18,3 +18,12 @@ services:
             type: string_auto
           - name: "p1"
             type: bool
+  - name: "s01"
+    id: 1
+    functions:
+      - name: "f0"
+        id: 0
+        params:
+          - name: "p0"
+            type: string_2
+            count: 2

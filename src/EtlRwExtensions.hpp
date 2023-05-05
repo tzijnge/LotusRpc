@@ -17,6 +17,16 @@ namespace lrpc
     };
 
     template <typename T>
+    struct is_etl_string : etl::false_type
+    {
+    };
+
+    template <size_t N>
+    struct is_etl_string<etl::string<N>> : etl::true_type
+    {
+    };
+
+    template <typename T>
     struct is_etl_array : etl::false_type
     {
     };
@@ -48,14 +58,37 @@ namespace lrpc
         using type = T;
     };
 
+    template <typename T>
+    struct etl_array_size
+    {
+    };
+
+    template <typename T, size_t N>
+    struct etl_array_size<etl::array<T, N>> : etl::integral_constant<size_t, N>
+    {
+    };
+
+    template <typename T>
+    struct etl_string_size
+    {
+    };
+
+    template <size_t N>
+    struct etl_string_size<etl::string<N>> : etl::integral_constant<size_t, N>
+    {
+    };
+
     // deleted read function to allow specializations for custom structs
     template <typename T>
     typename etl::enable_if<!etl::is_arithmetic<T>::value &&
-                            !is_etl_optional<T>::value &&
-                            !is_etl_array<T>::value &&
-                            !etl::is_same<T, etl::string_view>::value, T>::type
+                                !is_etl_optional<T>::value &&
+                                !is_etl_array<T>::value &&
+                                !etl::is_same<T, etl::string_view>::value &&
+                                !is_etl_string<T>::value,
+                            T>::type
     read_unchecked(etl::byte_stream_reader &stream) = delete;
 
+    // Arithmetic types
     template <typename T>
     typename etl::enable_if<etl::is_arithmetic<T>::value, T>::type
     read_unchecked(etl::byte_stream_reader &stream)
@@ -63,6 +96,7 @@ namespace lrpc
         return stream.read_unchecked<T>();
     };
 
+    // Optional
     template <typename T>
     typename etl::enable_if<is_etl_optional<T>::value, T>::type
     read_unchecked(etl::byte_stream_reader &stream)
@@ -76,8 +110,11 @@ namespace lrpc
         return {};
     };
 
+    // Array
     template <typename T>
-    typename etl::enable_if<is_etl_array<T>::value, T>::type
+    typename etl::enable_if<is_etl_array<T>::value &&
+                                !is_etl_string<typename etl_array_type<T>::type>::value,
+                            T>::type
     read_unchecked(etl::byte_stream_reader &stream)
     {
         T arr;
@@ -89,6 +126,23 @@ namespace lrpc
         return arr;
     };
 
+    // Array of fixed size string
+    template <typename T>
+    typename etl::enable_if<is_etl_array<T>::value &&
+                                is_etl_string<typename etl_array_type<T>::type>::value,
+                            etl::array<etl::string_view, etl_array_size<T>::value>>::type
+    read_unchecked(etl::byte_stream_reader &stream)
+    {
+        etl::array<etl::string_view, etl_array_size<T>::value> arr;
+        for (auto &el : arr)
+        {
+            el = lrpc::read_unchecked<typename etl_array_type<T>::type>(stream);
+        }
+
+        return arr;
+    };
+
+    // Auto string
     template <typename T>
     typename etl::enable_if<etl::is_same<T, etl::string_view>::value, T>::type
     read_unchecked(etl::byte_stream_reader &stream)
@@ -112,6 +166,33 @@ namespace lrpc
         stream.read_unchecked<uint8_t>(skipSize);
         return s;
     };
+
+    // Fixed size string
+    template <typename T>
+    typename etl::enable_if<is_etl_string<T>::value, etl::string_view>::type
+    read_unchecked(etl::byte_stream_reader &stream)
+    {
+        auto found = reinterpret_cast<const char *>(memchr(stream.end(), '\0', stream.available_bytes()));
+
+        size_t stringSize = 0;
+        size_t skipSize = 0;
+        if (found != nullptr)
+        {
+            stringSize = std::distance(stream.end(), found);
+            stringSize = std::min(stringSize, etl_string_size<T>::value);
+            skipSize = stringSize + 1;
+        }
+        else
+        {
+            stringSize = stream.available_bytes();
+            stringSize = std::min(stringSize, etl_string_size<T>::value);
+            skipSize = stringSize;
+        }
+
+        const etl::string_view s{stream.end(), stringSize};
+        stream.read_unchecked<uint8_t>(skipSize);
+        return s;
+    }
 
     // deleted write function to allow specializations for custom structs
     template <typename T, typename etl::enable_if<!etl::is_arithmetic<T>::value &&

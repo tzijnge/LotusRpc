@@ -116,10 +116,15 @@ namespace lrpc
     template <typename T>
     using etl_array_type_is_string = is_etl_string<typename etl_array_type<T>::type>;
 
+    template <typename T>
+    using array_not_of_string = etl::enable_if<is_etl_array<T>::value && !etl_array_type_is_string<T>::value, T>;
+
+    template <typename T>
+    using array_of_string = etl::enable_if<is_etl_array<T>::value && etl_array_type_is_string<T>::value, etl::array<etl::string_view, etl_array_size<T>::value>>;
+
     // Array, but not of fixed size string
     template <typename T>
-    typename etl::enable_if<is_etl_array<T>::value && !etl_array_type_is_string<T>::value,
-                            T>::type
+    typename array_not_of_string<T>::type
     read_unchecked(etl::byte_stream_reader &stream)
     {
         T arr;
@@ -133,8 +138,7 @@ namespace lrpc
 
     // Array of fixed size string. Read as an array of etl::string_view
     template <typename T>
-    typename etl::enable_if<is_etl_array<T>::value && etl_array_type_is_string<T>::value,
-                            etl_sv_array<T>>::type
+    typename array_of_string<T>::type
     read_unchecked(etl::byte_stream_reader &stream)
     {
         etl::array<etl::string_view, etl_array_size<T>::value> arr;

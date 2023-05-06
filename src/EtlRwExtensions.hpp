@@ -96,6 +96,58 @@ namespace lrpc
         return stream.read_unchecked<T>();
     };
 
+    // Auto string
+    template <typename T>
+    typename etl::enable_if<etl::is_same<T, etl::string_view>::value, T>::type
+    read_unchecked(etl::byte_stream_reader &stream)
+    {
+        auto found = reinterpret_cast<const char *>(memchr(stream.end(), '\0', stream.available_bytes()));
+
+        size_t stringSize = 0;
+        size_t skipSize = 0;
+        if (found != nullptr)
+        {
+            stringSize = std::distance(stream.end(), found);
+            skipSize = stringSize + 1;
+        }
+        else
+        {
+            stringSize = stream.available_bytes();
+            skipSize = stringSize;
+        }
+
+        const etl::string_view s{stream.end(), stringSize};
+        stream.read_unchecked<uint8_t>(skipSize);
+        return s;
+    };
+
+    // Fixed size string
+    template <typename T>
+    typename etl::enable_if<is_etl_string<T>::value, etl::string_view>::type
+    read_unchecked(etl::byte_stream_reader &stream)
+    {
+        auto found = reinterpret_cast<const char *>(memchr(stream.end(), '\0', stream.available_bytes()));
+
+        size_t stringSize = 0;
+        size_t skipSize = 0;
+        if (found != nullptr)
+        {
+            stringSize = std::distance(stream.end(), found);
+            stringSize = std::min(stringSize, etl_string_size<T>::value);
+            skipSize = stringSize + 1;
+        }
+        else
+        {
+            stringSize = stream.available_bytes();
+            stringSize = std::min(stringSize, etl_string_size<T>::value);
+            skipSize = stringSize;
+        }
+
+        const etl::string_view s{stream.end(), stringSize};
+        stream.read_unchecked<uint8_t>(skipSize);
+        return s;
+    }
+
     // Optional
     template <typename T>
     typename etl::enable_if<is_etl_optional<T>::value, T>::type
@@ -149,58 +201,6 @@ namespace lrpc
 
         return arr;
     };
-
-    // Auto string
-    template <typename T>
-    typename etl::enable_if<etl::is_same<T, etl::string_view>::value, T>::type
-    read_unchecked(etl::byte_stream_reader &stream)
-    {
-        auto found = reinterpret_cast<const char *>(memchr(stream.end(), '\0', stream.available_bytes()));
-
-        size_t stringSize = 0;
-        size_t skipSize = 0;
-        if (found != nullptr)
-        {
-            stringSize = std::distance(stream.end(), found);
-            skipSize = stringSize + 1;
-        }
-        else
-        {
-            stringSize = stream.available_bytes();
-            skipSize = stringSize;
-        }
-
-        const etl::string_view s{stream.end(), stringSize};
-        stream.read_unchecked<uint8_t>(skipSize);
-        return s;
-    };
-
-    // Fixed size string
-    template <typename T>
-    typename etl::enable_if<is_etl_string<T>::value, etl::string_view>::type
-    read_unchecked(etl::byte_stream_reader &stream)
-    {
-        auto found = reinterpret_cast<const char *>(memchr(stream.end(), '\0', stream.available_bytes()));
-
-        size_t stringSize = 0;
-        size_t skipSize = 0;
-        if (found != nullptr)
-        {
-            stringSize = std::distance(stream.end(), found);
-            stringSize = std::min(stringSize, etl_string_size<T>::value);
-            skipSize = stringSize + 1;
-        }
-        else
-        {
-            stringSize = stream.available_bytes();
-            stringSize = std::min(stringSize, etl_string_size<T>::value);
-            skipSize = stringSize;
-        }
-
-        const etl::string_view s{stream.end(), stringSize};
-        stream.read_unchecked<uint8_t>(skipSize);
-        return s;
-    }
 
     // deleted write function to allow specializations for custom structs
     template <typename T, typename etl::enable_if<!etl::is_arithmetic<T>::value &&

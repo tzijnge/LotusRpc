@@ -9,7 +9,7 @@ MATCHER_P(SPAN_EQ, e, "Equality matcher for etl::span")
 {
     if (e.size() != arg.size())
     {
-        return false;
+        return false;   
     }
     for (auto i = 0; i < e.size(); ++i)
     {
@@ -19,7 +19,6 @@ MATCHER_P(SPAN_EQ, e, "Equality matcher for etl::span")
         }
     }
     return true;
-
 }
 
 class MockS0Decoder : public s0DecoderShim

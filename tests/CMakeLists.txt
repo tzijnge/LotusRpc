@@ -26,6 +26,7 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestDecoder2/Tes
 set_directory_properties(PROPERTIES ADDITIONAL_CLEAN_FILES ${CMAKE_CURRENT_SOURCE_DIR}/generated)
 
 add_executable(UnitTests
+                TestEtlRwExtensions.cpp
                 TestDecoder.cpp
                 TestDecoder2_s0.cpp
                 TestDecoder2_s1.cpp

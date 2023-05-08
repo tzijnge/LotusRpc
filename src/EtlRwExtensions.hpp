@@ -78,6 +78,12 @@ namespace lrpc
     {
     };
 
+    template <typename T>
+    using etl_sv_array = etl::array<etl::string_view, etl_array_size<T>::value>;
+
+    template <typename T>
+    using etl_array_type_is_string = is_etl_string<typename etl_array_type<T>::type>;
+
     // deleted read function to allow specializations for custom structs
     template <typename T>
     typename etl::enable_if<!etl::is_arithmetic<T>::value &&
@@ -90,7 +96,10 @@ namespace lrpc
 
     // Arithmetic types
     template <typename T>
-    typename etl::enable_if<etl::is_arithmetic<T>::value, T>::type
+    using enable_for_arithmetic = etl::enable_if<etl::is_arithmetic<T>::value, T>;
+
+    template <typename T>
+    typename enable_for_arithmetic<T>::type
     read_unchecked(etl::byte_stream_reader &stream)
     {
         return stream.read_unchecked<T>();
@@ -98,7 +107,10 @@ namespace lrpc
 
     // Auto string
     template <typename T>
-    typename etl::enable_if<etl::is_same<T, etl::string_view>::value, T>::type
+    using enable_for_auto_string = etl::enable_if<etl::is_same<T, etl::string_view>::value, T>;
+
+    template <typename T>
+    typename enable_for_auto_string<T>::type
     read_unchecked(etl::byte_stream_reader &stream)
     {
         auto found = reinterpret_cast<const char *>(memchr(stream.end(), '\0', stream.available_bytes()));
@@ -123,7 +135,10 @@ namespace lrpc
 
     // Fixed size string
     template <typename T>
-    typename etl::enable_if<is_etl_string<T>::value, etl::string_view>::type
+    using enable_for_fixed_size_string = etl::enable_if<is_etl_string<T>::value, etl::string_view>;
+
+    template <typename T>
+    typename enable_for_fixed_size_string<T>::type
     read_unchecked(etl::byte_stream_reader &stream)
     {
         auto found = reinterpret_cast<const char *>(memchr(stream.end(), '\0', stream.available_bytes()));
@@ -150,7 +165,10 @@ namespace lrpc
 
     // Optional
     template <typename T>
-    typename etl::enable_if<is_etl_optional<T>::value, T>::type
+    using enable_for_optional = etl::enable_if<is_etl_optional<T>::value, T>;
+
+    template <typename T>
+    typename enable_for_optional<T>::type
     read_unchecked(etl::byte_stream_reader &stream)
     {
         auto has_value = etl::read_unchecked<bool>(stream);
@@ -162,21 +180,12 @@ namespace lrpc
         return {};
     };
 
-    template <typename T>
-    using etl_sv_array = etl::array<etl::string_view, etl_array_size<T>::value>;
-
-    template <typename T>
-    using etl_array_type_is_string = is_etl_string<typename etl_array_type<T>::type>;
-
-    template <typename T>
-    using array_not_of_string = etl::enable_if<is_etl_array<T>::value && !etl_array_type_is_string<T>::value, T>;
-
-    template <typename T>
-    using array_of_string = etl::enable_if<is_etl_array<T>::value && etl_array_type_is_string<T>::value, etl::array<etl::string_view, etl_array_size<T>::value>>;
-
     // Array, but not of fixed size string
     template <typename T>
-    typename array_not_of_string<T>::type
+    using enable_for_array = etl::enable_if<is_etl_array<T>::value && !etl_array_type_is_string<T>::value, T>;
+
+    template <typename T>
+    typename enable_for_array<T>::type
     read_unchecked(etl::byte_stream_reader &stream)
     {
         T arr;
@@ -190,7 +199,10 @@ namespace lrpc
 
     // Array of fixed size string. Read as an array of etl::string_view
     template <typename T>
-    typename array_of_string<T>::type
+    using enable_for_array_of_string = etl::enable_if<is_etl_array<T>::value && etl_array_type_is_string<T>::value, etl::array<etl::string_view, etl_array_size<T>::value>>;
+
+    template <typename T>
+    typename enable_for_array_of_string<T>::type
     read_unchecked(etl::byte_stream_reader &stream)
     {
         etl::array<etl::string_view, etl_array_size<T>::value> arr;
@@ -206,26 +218,40 @@ namespace lrpc
     template <typename T, typename etl::enable_if<!etl::is_arithmetic<T>::value &&
                                            !is_etl_optional<T>::value &&
                                            !is_etl_array<T>::value &&
-                                           !etl::is_same<T, etl::string_view>::value,
+                                           !etl::is_same<T, etl::istring>::value,
                                            bool>::type = true>
     void write_unchecked(etl::byte_stream_writer &stream, const T &value) = delete;
 
+    // arithmetic
     template <typename ARI, typename etl::enable_if<etl::is_arithmetic<ARI>::value, bool>::type = true>
     void write_unchecked(etl::byte_stream_writer &stream, const ARI &value)
     {
         stream.write_unchecked<ARI>(value);
     };
     
+    // optional
     template <typename OPT, typename = typename etl::enable_if<is_etl_optional<OPT>::value, OPT>::type>
     void write_unchecked(etl::byte_stream_writer &stream, const etl::optional<typename etl_optional_type<OPT>::type> &value)
     {
         stream.write_unchecked<bool>(value.has_value());
         if (value.has_value())
         {
-            write_unchecked<typename etl_optional_type<OPT>::type>(value.value());
+            lrpc::write_unchecked<typename etl_optional_type<OPT>::type>(stream, value.value());
         }
     };
 
+    // string
+    template <typename T, typename = typename etl::enable_if<etl::is_same<T, etl::istring>::value, T>::type>
+    void write_unchecked(etl::byte_stream_writer &stream, const etl::string_view &value)
+    {
+        for (auto c : value)
+        {
+            stream.write_unchecked<char>(c);
+        }
+        stream.write_unchecked<char>('\0');
+    };
+
+    // array
     template <typename ARR, typename = typename etl::enable_if<is_etl_array<ARR>::value, ARR>::type>
     void write_unchecked(etl::byte_stream_writer &stream, const etl::span<const typename etl_array_type<ARR>::type> &value)
     {
@@ -233,15 +259,5 @@ namespace lrpc
         {
             lrpc::write_unchecked<typename etl_array_type<ARR>::type>(stream, el);
         }
-    };
-
-    template <typename T, typename = typename etl::enable_if<etl::is_same<T, etl::istring>::value, T>::type>
-    void write_unchecked(etl::byte_stream_writer &stream, const etl::istring &value)
-    {
-        for (auto c : value)
-        {
-            stream.write_unchecked<char>(c);
-        }
-        stream.write_unchecked<char>('\0');
     };
 }

@@ -4,22 +4,6 @@
 #include <array>
 #include <etl/vector.h>
 
-// MATCHER_P(SPAN_EQ, e, "Equality matcher for etl::span")
-// {
-//     if (e.size() != arg.size())
-//     {
-//         return false;
-//     }
-//     for (auto i = 0; i < e.size(); ++i)
-//     {
-//         if (e[i] != arg[i])
-//         {
-//             return false;
-//         }
-//     }
-//     return true;
-// }
-
 TEST(TestEtlRwExtensions, is_etl_optional)
 {
     EXPECT_FALSE(lrpc::is_etl_optional<int>::value);
@@ -133,4 +117,62 @@ TEST(TestEtlRwExtensions, readArrayOfString)
     EXPECT_EQ("t1", a.at(0));
     EXPECT_EQ("t2", a.at(1));
     EXPECT_EQ("t3", a.at(2));
+}
+
+TEST(TestEtlRwExtensions, writeArithmetic)
+{
+    etl::array<uint8_t, 10> storage;
+    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+
+    lrpc::write_unchecked<bool>(writer, false);
+    lrpc::write_unchecked<bool>(writer, true);
+    lrpc::write_unchecked<uint8_t>(writer, 0x02);
+    lrpc::write_unchecked<uint16_t>(writer, 0x0403);
+    lrpc::write_unchecked<float>(writer, 123.456);
+
+    auto written = writer.used_data();
+    ASSERT_EQ(9, written.size());
+    EXPECT_EQ(0x00, static_cast<uint8_t>(written[0]));
+    EXPECT_EQ(0x01, static_cast<uint8_t>(written[1]));
+    EXPECT_EQ(0x02, static_cast<uint8_t>(written[2]));
+    EXPECT_EQ(0x03, static_cast<uint8_t>(written[3]));
+    EXPECT_EQ(0x04, static_cast<uint8_t>(written[4]));
+    EXPECT_EQ(0x79, static_cast<uint8_t>(written[5]));
+    EXPECT_EQ(0xE9, static_cast<uint8_t>(written[6]));
+    EXPECT_EQ(0xF6, static_cast<uint8_t>(written[7]));
+    EXPECT_EQ(0x42, static_cast<uint8_t>(written[8]));
+}
+
+TEST(TestEtlRwExtensions, writeOptional)
+{
+    etl::array<uint8_t, 10> storage;
+    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+
+    lrpc::write_unchecked<etl::optional<uint8_t>>(writer, {});
+    lrpc::write_unchecked<etl::optional<uint8_t>>(writer, 0x02);
+
+    auto written = writer.used_data();
+    ASSERT_EQ(3, written.size());
+    EXPECT_EQ(0x00, static_cast<uint8_t>(written[0]));
+    EXPECT_EQ(0x01, static_cast<uint8_t>(written[1]));
+    EXPECT_EQ(0x02, static_cast<uint8_t>(written[2]));
+}
+
+TEST(TestEtlRwExtensions, writeString)
+{
+    etl::array<uint8_t, 10> storage;
+    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+
+    lrpc::write_unchecked<etl::istring>(writer, "T1");
+    etl::string<2> t2("T2");
+    lrpc::write_unchecked<etl::istring>(writer, t2);
+
+    auto written = writer.used_data();
+    ASSERT_EQ(6, written.size());
+    EXPECT_EQ('T', written[0]);
+    EXPECT_EQ('1', written[1]);
+    EXPECT_EQ('\0', written[2]);
+    EXPECT_EQ('T', written[3]);
+    EXPECT_EQ('2', written[4]);
+    EXPECT_EQ('\0', written[5]);
 }

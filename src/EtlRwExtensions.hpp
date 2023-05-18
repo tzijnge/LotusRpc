@@ -6,6 +6,8 @@
 
 namespace lrpc
 {
+    struct string {};
+
     template <typename T>
     struct is_etl_optional : etl::false_type
     {
@@ -218,7 +220,7 @@ namespace lrpc
     template <typename T, typename etl::enable_if<!etl::is_arithmetic<T>::value &&
                                            !is_etl_optional<T>::value &&
                                            !is_etl_array<T>::value &&
-                                           !etl::is_same<T, etl::istring>::value,
+                                           !etl::is_same<T, lrpc::string>::value,
                                            bool>::type = true>
     void write_unchecked(etl::byte_stream_writer &stream, const T &value) = delete;
 
@@ -241,7 +243,7 @@ namespace lrpc
     };
 
     // string
-    template <typename T, typename = typename etl::enable_if<etl::is_same<T, etl::istring>::value, T>::type>
+    template <typename T, typename = typename etl::enable_if<etl::is_same<T, lrpc::string>::value, T>::type>
     void write_unchecked(etl::byte_stream_writer &stream, const etl::string_view &value)
     {
         for (auto c : value)
@@ -251,11 +253,26 @@ namespace lrpc
         stream.write_unchecked<char>('\0');
     };
 
-    // array
-    template <typename ARR, typename = typename etl::enable_if<is_etl_array<ARR>::value, ARR>::type>
-    void write_unchecked(etl::byte_stream_writer &stream, const etl::span<const typename etl_array_type<ARR>::type> &value)
+    // Array, but not of fixed size string
+    // template <typename T>0
+    // using enable_for_array = etl::enable_if<is_etl_array<T>::value && !etl_array_type_is_string<T>::value, T>;
+
+    template <typename ARR, typename = typename etl::enable_if<is_etl_array<ARR>::value && !etl::is_same<typename etl_array_type<ARR>::type, lrpc::string>::value, ARR>
+        ::type >
+        void write_unchecked(etl::byte_stream_writer &stream, const etl::span<const typename etl_array_type<ARR>::type> &value)
     {
         for (const auto& el : value)
+        {
+            lrpc::write_unchecked<typename etl_array_type<ARR>::type>(stream, el);
+        }
+    };
+
+    // array of strings
+    template <typename ARR, typename = typename etl::enable_if<is_etl_array<ARR>::value && etl::is_same<typename etl_array_type<ARR>::type, lrpc::string>::value, ARR>
+        ::type >
+        void write_unchecked(etl::byte_stream_writer &stream, const etl::span<const etl::string_view> &value)
+    {
+        for (const auto &el : value)
         {
             lrpc::write_unchecked<typename etl_array_type<ARR>::type>(stream, el);
         }

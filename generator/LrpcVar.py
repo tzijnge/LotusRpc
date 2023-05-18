@@ -73,7 +73,7 @@ class LrpcVar(object):
 
     def write_type(self):
         if self.is_string():
-            return f'etl::istring'
+            return f'lrpc::string'
 
         t = self.base_type()
         if self.is_array():

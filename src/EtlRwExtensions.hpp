@@ -251,17 +251,6 @@ namespace lrpc
     {
         stream.write_unchecked<ARI>(value);
     };
-    
-    // optional
-    template <typename OPT, typename etl::enable_if<is_etl_optional<OPT>::value, bool>::type = true>
-    void write_unchecked(etl::byte_stream_writer &stream, const OPT& value)
-    {
-        stream.write_unchecked<bool>(value.has_value());
-        if (value.has_value())
-        {
-            lrpc::write_unchecked<typename etl_optional_type<OPT>::type>(stream, value.value());
-        }
-    };
 
     // string
     template <typename T, typename etl::enable_if<is_etl_string<T>::value, bool>::type = true>
@@ -272,6 +261,17 @@ namespace lrpc
             stream.write_unchecked<char>(c);
         }
         stream.write_unchecked<char>('\0');
+    };
+
+    // optional
+    template <typename OPT, typename etl::enable_if<is_etl_optional<OPT>::value, bool>::type = true>
+    void write_unchecked(etl::byte_stream_writer &stream, const OPT &value)
+    {
+        stream.write_unchecked<bool>(value.has_value());
+        if (value.has_value())
+        {
+            lrpc::write_unchecked<typename etl_optional_type<OPT>::type>(stream, value.value());
+        }
     };
 
     // array

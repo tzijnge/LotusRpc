@@ -28,6 +28,7 @@ public:
     MOCK_METHOD((etl::array<etl::string<2>, 2>), f1, (), (override));
     MOCK_METHOD(void, f2, (const etl::optional<etl::string_view> &p01), (override));
     MOCK_METHOD(void, f3, (const etl::optional<etl::string_view> &p01), (override));
+    MOCK_METHOD((etl::optional<etl::string<2>>), f4, (), (override));
 };
 
 class TestDecoder2_s1 : public ::testing::Test
@@ -102,4 +103,13 @@ TEST_F(TestDecoder2_s1, decodeF3)
     EXPECT_CALL(decoder, f3(expected));
     auto response = decode({3, 0x01, 'T', '1', '\0'});
     EXPECT_TRUE(response.empty());
+}
+
+// Decode function that returns optional string
+TEST_F(TestDecoder2_s1, decodeF4)
+{
+    etl::optional<etl::string<2>> expected{"T1"};
+    EXPECT_CALL(decoder, f4()).WillOnce(Return(expected));
+    auto response = decode({4});
+    EXPECT_RESPONSE({0x01, 'T', '1', '\0'}, response);
 }

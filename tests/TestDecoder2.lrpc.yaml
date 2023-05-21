@@ -45,3 +45,9 @@ services:
           - name: "p01"
             type: string_auto
             count: "?"
+      - name: "f4"
+        id: 4
+        returns:
+          - name: "r0"
+            type: string_2
+            count: "?"

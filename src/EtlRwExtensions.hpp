@@ -84,6 +84,9 @@ namespace lrpc
     template <typename T>
     using etl_array_type_is_string = is_etl_string<typename etl_array_type<T>::type>;
 
+    template <typename T>
+    using etl_optional_type_is_string = is_etl_string<typename etl_optional_type<T>::type>;
+
     // deleted read function to allow specializations for custom structs
     template <typename T>
     typename etl::enable_if<!etl::is_arithmetic<T>::value &&
@@ -163,9 +166,9 @@ namespace lrpc
         return s;
     }
 
-    // Optional
+    // Optional, but not of fixed size string
     template <typename T>
-    using enable_for_optional = etl::enable_if<is_etl_optional<T>::value, T>;
+    using enable_for_optional = etl::enable_if<is_etl_optional<T>::value && !etl_optional_type_is_string<T>::value, T>;
 
     template <typename T>
     typename enable_for_optional<T>::type
@@ -175,6 +178,26 @@ namespace lrpc
         if (has_value)
         {
             return lrpc::read_unchecked<typename etl_optional_type<T>::type>(stream);
+        }
+
+        return {};
+    };
+
+    // Optional of fixed size string. Read as an optional of etl::string_view
+    template <typename T>
+    using enable_for_optional_string = etl::enable_if<is_etl_optional<T>::value && etl_optional_type_is_string<T>::value, etl::optional<etl::string_view>>;
+
+    template <typename T>
+    using optional_string_size = etl_string_size<typename etl_optional_type<T>::type>;
+
+    template <typename T>
+    typename enable_for_optional_string<T>::type
+    read_unchecked(etl::byte_stream_reader &stream)
+    {
+        auto has_value = etl::read_unchecked<bool>(stream);
+        if (has_value)
+        {
+            return lrpc::read_unchecked<etl::string<optional_string_size<T>::value>>(stream);
         }
 
         return {};

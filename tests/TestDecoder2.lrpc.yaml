@@ -51,3 +51,19 @@ services:
           - name: "r0"
             type: string_2
             count: "?"
+      - name: "f5"
+        id: 5
+        params:
+          - name: "a"
+            type: "@CompositeData1"
+structs:
+  - name: "CompositeData1"
+    fields:
+      - name: "aa"
+        type: string_2
+      - name: "b"
+        type: string_2
+        count: 2
+      - name: "c"
+        type: string_2
+        count: "?"

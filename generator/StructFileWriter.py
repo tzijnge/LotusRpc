@@ -59,7 +59,11 @@ class StructFileWriter(object):
 
         for field in self.descriptor['fields']:
             f = LrpcVar(field)
-            self.file(f'obj.{f.name()} = lrpc::read_unchecked<{f.read_type()}>(reader);')
+            if f.base_type_is_string():
+                self.file(f'const auto {f.name()} = lrpc::read_unchecked<{f.read_type()}>(reader);')
+                self.file(f'lrpc::copy<{f.read_type()}>({f.name()}, obj.{f.name()});')
+            else:
+                self.file(f'obj.{f.name()} = lrpc::read_unchecked<{f.read_type()}>(reader);')
 
         self.file('return obj;')
 

@@ -143,6 +143,49 @@ TEST(TestEtlRwExtensions, readArrayOfString)
     EXPECT_EQ("t3", a.at(2));
 }
 
+TEST(TestEtlRwExtensions, copyString)
+{
+    etl::string_view source{"test"};
+    etl::string<4> dest4;
+    lrpc::copy<etl::string<4>>(source, dest4);
+    EXPECT_EQ("test", dest4);
+
+    etl::string<2> dest2;
+    lrpc::copy<etl::string<2>>(source, dest2);
+    EXPECT_EQ("te", dest2);
+
+    etl::string<6> dest6;
+    lrpc::copy<etl::string<6>>(source, dest6);
+    EXPECT_EQ("test", dest6);
+}
+
+TEST(TestEtlRwExtensions, copyArrayOfString)
+{
+    etl::array<etl::string_view, 2> source {"T1", "T2"};
+    etl::array<etl::string<2>, 2> dest;
+    lrpc::copy<etl::array<etl::string<2>, 2>>(source, dest);
+    EXPECT_EQ("T1", dest[0]);
+    EXPECT_EQ("T2", dest[1]);
+}
+
+TEST(TestEtlRwExtensions, copyOptionalString)
+{
+    etl::optional<etl::string_view> source1 {"T1"};
+    etl::optional<etl::string<2>> dest1;
+    lrpc::copy<etl::optional<etl::string<2>>>(source1, dest1);
+    ASSERT_TRUE(dest1.has_value());
+    EXPECT_EQ("T1", dest1.value());
+
+    etl::optional<etl::string<2>> dest2 {"~~"};
+    lrpc::copy<etl::optional<etl::string<2>>>(source1, dest2);
+    ASSERT_TRUE(dest2.has_value());
+    EXPECT_EQ("T1", dest2.value());
+
+    etl::optional<etl::string_view> source2;
+    lrpc::copy<etl::optional<etl::string<2>>>(source2, dest2);
+    EXPECT_FALSE(dest2.has_value());
+}
+
 TEST(TestEtlRwExtensions, writeArithmetic)
 {
     etl::array<uint8_t, 10> storage;

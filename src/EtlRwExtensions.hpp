@@ -283,4 +283,35 @@ namespace lrpc
             lrpc::write_unchecked<typename etl_array_type<ARR>::type>(stream, el);
         }
     };
+
+    // copy string
+    template <typename T, typename etl::enable_if<is_etl_string<T>::value, bool>::type = true>
+    void copy(const etl::string_view &source, T &destination)
+    {
+        destination.assign(source.begin(), source.size());
+    }
+
+    // copy array of strings
+    template <typename T, typename etl::enable_if<is_etl_array<T>::value && etl_array_type_is_string<T>::value, bool>::type = true>
+    void copy(const etl::array<etl::string_view, etl_array_size<T>::value> &source, T &destination)
+    {
+        for (auto i = 0; i < etl_array_size<T>::value; ++i)
+        {
+            copy(source[i], destination[i]);
+        }
+    }
+
+    // copy optional of string
+    template <typename T, typename etl::enable_if<is_etl_optional<T>::value && etl_optional_type_is_string<T>::value, bool>::type = true>
+    void copy(const etl::optional<etl::string_view> &source, T &destination)
+    {
+        if (source.has_value())
+        {
+            destination.emplace(source.value().begin(), source.value().size());
+        }
+        else
+        {
+            destination.reset();
+        }
+    }
 }

@@ -29,6 +29,7 @@ public:
     MOCK_METHOD(void, f2, (const etl::optional<etl::string_view> &p01), (override));
     MOCK_METHOD(void, f3, (const etl::optional<etl::string_view> &p01), (override));
     MOCK_METHOD((etl::optional<etl::string<2>>), f4, (), (override));
+    MOCK_METHOD(void, f5, (const CompositeData1 &a), (override));
 };
 
 class TestDecoder2_s1 : public ::testing::Test
@@ -112,4 +113,16 @@ TEST_F(TestDecoder2_s1, decodeF4)
     EXPECT_CALL(decoder, f4()).WillOnce(Return(expected));
     auto response = decode({4});
     EXPECT_RESPONSE({0x01, 'T', '1', '\0'}, response);
+}
+
+// Decode function that takes custom struct argument
+TEST_F(TestDecoder2_s1, decodeF5)
+{
+    CompositeData1 expected;
+    expected.aa = "T1";
+    expected.b = {"T2", "T3"};
+    expected.c = "T4";
+    EXPECT_CALL(decoder, f5(expected));
+    auto response = decode({5, 'T', '1', '\0', 'T', '2', '\0', 'T', '3', '\0', 0x01, 'T', '4', '\0'});
+    EXPECT_TRUE(response.empty());
 }

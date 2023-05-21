@@ -163,9 +163,9 @@ TEST(TestEtlRwExtensions, writeString)
     etl::array<uint8_t, 10> storage;
     etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
 
-    lrpc::write_unchecked<lrpc::string>(writer, "T1");
+    lrpc::write_unchecked<etl::string<2>>(writer, "T1");
     etl::string<2> t2("T2");
-    lrpc::write_unchecked<lrpc::string>(writer, t2);
+    lrpc::write_unchecked<etl::string<2>>(writer, t2);
 
     auto written = writer.used_data();
     ASSERT_EQ(6, written.size());
@@ -196,8 +196,8 @@ TEST(TestEtlRwExtensions, writeArrayOfString)
     etl::array<uint8_t, 10> storage;
     etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
 
-    etl::array<etl::string_view, 2> a {"T1", "T2"};
-    lrpc::write_unchecked<etl::array<lrpc::string, 2>>(writer, a);
+    etl::array<etl::string<2>, 2> a {"T1", "T2"};
+    lrpc::write_unchecked<etl::array<etl::string<2>, 2>>(writer, a);
 
     auto written = writer.used_data();
     ASSERT_EQ(6, written.size());

@@ -27,3 +27,9 @@ services:
           - name: "p0"
             type: string_2
             count: 2
+      - name: "f1"
+        id: 1
+        returns:
+          - name: "r00"
+            type: string_2
+            count: 2

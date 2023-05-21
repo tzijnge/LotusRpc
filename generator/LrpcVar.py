@@ -27,7 +27,7 @@ class LrpcVar(object):
     def return_type(self):
         t = self.base_type()
 
-        if self.is_string():
+        if self.base_type_is_string():
             t = f'etl::string<{self.string_size()}>'
 
         if self.is_optional():
@@ -72,10 +72,14 @@ class LrpcVar(object):
             return t
 
     def write_type(self):
-        if self.is_string():
-            return f'etl::string<{self.string_size()}>'
-
         t = self.base_type()
+
+        if self.base_type_is_string():
+            t = f'etl::string<{self.string_size()}>'
+
+        # if self.is_string():
+            # return f'etl::string<{self.string_size()}>'
+
         if self.is_array():
             return f'etl::array<{t}, {self.array_size()}>'
         

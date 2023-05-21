@@ -25,6 +25,7 @@ class MockS01Decoder : public s01DecoderShim
 {
 public:
     MOCK_METHOD(void, f0, (const etl::span<const etl::string_view> &p0), (override));
+    MOCK_METHOD((etl::array<etl::string<2>, 2>), f1, (), (override));
 };
 
 class TestDecoder2_s1 : public ::testing::Test
@@ -70,4 +71,13 @@ TEST_F(TestDecoder2_s1, decodeF0WithStringShorterThanMax)
     EXPECT_CALL(decoder, f0(SPAN_EQ(expected)));
     auto response = decode({0, '1', '\0', '2', '\0'});
     EXPECT_TRUE(response.empty());
+}
+
+// Decode function that returns array of strings
+TEST_F(TestDecoder2_s1, decodeF1)
+{
+    etl::array<etl::string<2>, 2> expected {"T1", "T2"};
+    EXPECT_CALL(decoder, f1()).WillOnce(Return(expected));
+    auto response = decode({1});
+    EXPECT_RESPONSE({'T', '1', '\0', 'T', '2', '\0'}, response);
 }

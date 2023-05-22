@@ -1,4 +1,4 @@
-name: "TestDecoder"
+name: "TestDecoder2"
 namespace: "ns"
 services:
   - name: "s00"
@@ -55,9 +55,14 @@ services:
         id: 5
         params:
           - name: "a"
-            type: "@CompositeData1"
+            type: "@StringStruct"
+      - name: "f6"
+        id: 6
+        returns:
+          - name: "a"
+            type: "@StringStruct"
 structs:
-  - name: "CompositeData1"
+  - name: "StringStruct"
     fields:
       - name: "aa"
         type: string_2

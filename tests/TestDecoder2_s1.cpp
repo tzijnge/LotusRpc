@@ -31,6 +31,7 @@ public:
     MOCK_METHOD((etl::optional<etl::string<2>>), f4, (), (override));
     MOCK_METHOD(void, f5, (const StringStruct &a), (override));
     MOCK_METHOD(StringStruct, f6, (), (override));
+    MOCK_METHOD((etl::string<5>), f7, (const etl::string_view &p0), (override));
 };
 
 class TestDecoder2_s1 : public ::testing::Test
@@ -138,4 +139,14 @@ TEST_F(TestDecoder2_s1, decodeF6)
     EXPECT_CALL(decoder, f6()).WillOnce(Return(retVal));
     auto response = decode({6});
     EXPECT_RESPONSE({'T', '1', '\0', 'T', '2', '\0', 'T', '3', '\0', 0x01, 'T', '4', '\0'}, response);
+}
+
+// Decode function that takes auto string argument and returns fixed size string
+TEST_F(TestDecoder2_s1, decodeF7)
+{
+    etl::string<5> retVal {"T1234"};
+    etl::string_view expected {"T0"};
+    EXPECT_CALL(decoder, f7(expected)).WillOnce(Return(retVal));
+    auto response = decode({7, 'T', '0', '\0'});
+    EXPECT_RESPONSE({'T', '1', '2', '3', '4', '\0'}, response);
 }

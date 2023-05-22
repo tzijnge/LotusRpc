@@ -61,6 +61,14 @@ services:
         returns:
           - name: "a"
             type: "@StringStruct"
+      - name: "f7"
+        id: 7
+        params:
+          - name: "p0"
+            type: string_auto
+        returns:
+          - name: "r0"
+            type: string_5
 structs:
   - name: "StringStruct"
     fields:

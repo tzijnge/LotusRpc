@@ -1,10 +1,10 @@
 from code_generation.code_generator import CppFile
 from LrpcService import LrpcService
 
-class DecoderShimWriter(object):
+class ServiceShimWriter(object):
     def __init__(self, service, output):
         self.service = service
-        self.file = CppFile(f'{output}/{self.service.name()}_DecoderShim.hpp')
+        self.file = CppFile(f'{output}/{self.service.name()}_ServiceShim.hpp')
 
     def write(self):        
         self.__write_include_guard()
@@ -12,7 +12,7 @@ class DecoderShimWriter(object):
         self.__write_shim()
 
     def __write_shim(self):
-        with self.file.block(f'class {self.service.name()}DecoderShim : public Decoder', ';'):
+        with self.file.block(f'class {self.service.name()}ServiceShim : public lrpc::Service', ';'):
             self.file.label('public')
             self.file(f'uint32_t id() const override {{ return {self.service.id()}; }}')
             self.file.newline()
@@ -38,7 +38,7 @@ class DecoderShimWriter(object):
             self.file.label('private')
             with self.file.block('inline static const etl::array functionShims', ';'):
                 for f in self.service.functions():
-                    self.file(f'&{self.service.name()}DecoderShim::{f.name()}_shim,')
+                    self.file(f'&{self.service.name()}ServiceShim::{f.name()}_shim,')
 
     def __write_function_shim(self, function):
         for p in function.params():
@@ -89,8 +89,8 @@ class DecoderShimWriter(object):
         self.file('#pragma once')
 
     def __write_includes(self):
-        self.file('#include "Decoder.hpp"')
-        self.file('#include "EtlRwExtensions.hpp"')
+        self.file('#include "lrpc/Service.hpp"')
+        self.file('#include "lrpc/EtlRwExtensions.hpp"')
         self.file(f'#include "{self.service.name()}.hpp"')
 
         self.file.newline()

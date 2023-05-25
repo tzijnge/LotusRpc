@@ -1,28 +1,28 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "generated/TestDecoder2/s00_DecoderShim.hpp"
+#include "generated/TestService2/s00_ServiceShim.hpp"
 
 using ::testing::Return;
 
-class MockS00Decoder : public s00DecoderShim
+class MockS00Service : public s00ServiceShim
 {
 public:
     MOCK_METHOD(void, f0, (bool p0, const etl::string_view &p1), (override));
     MOCK_METHOD(void, f1, (const etl::string_view &p0, bool p1), (override));
 };
 
-class TestDecoder2 : public ::testing::Test
+class TestService2 : public ::testing::Test
 {
 public:
-    MockS00Decoder decoder;
+    MockS00Service service;
 
     etl::span<uint8_t> decode(const std::vector<uint8_t> &bytes)
     {
         const etl::span<const uint8_t> s(bytes.begin(), bytes.end());
 
-        Decoder::Reader reader(s.begin(), s.end(), etl::endian::little);
-        Decoder::Writer writer(response.begin(), response.end(), etl::endian::little);
-        decoder.decode(reader, writer);
+        lrpc::Service::Reader reader(s.begin(), s.end(), etl::endian::little);
+        lrpc::Service::Writer writer(response.begin(), response.end(), etl::endian::little);
+        service.decode(reader, writer);
 
         return { response.begin(), writer.size_bytes()};
     }
@@ -38,17 +38,17 @@ private:
 };
 
 // Decode void function with auto string as last param
-TEST_F(TestDecoder2, decodeF0)
+TEST_F(TestService2, decodeF0)
 {
-    EXPECT_CALL(decoder, f0(true, etl::string_view("Test")));
+    EXPECT_CALL(service, f0(true, etl::string_view("Test")));
     auto response = decode({0, 0x01, 'T', 'e', 's', 't', '\0'});
     EXPECT_TRUE(response.empty());
 }
 
 // Decode void function with auto string as first param
-TEST_F(TestDecoder2, decodeF1)
+TEST_F(TestService2, decodeF1)
 {
-    EXPECT_CALL(decoder, f1(etl::string_view("Test"), true));
+    EXPECT_CALL(service, f1(etl::string_view("Test"), true));
     auto response = decode({1, 'T', 'e', 's', 't', '\0', 0x01});
     EXPECT_TRUE(response.empty());
 }

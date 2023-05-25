@@ -2,7 +2,9 @@
 #include <etl/byte_stream.h>
 #include <stdint.h>
 
-class Decoder
+namespace lrpc
+{
+class Service
 {
 public:
     using Reader = etl::byte_stream_reader;
@@ -14,3 +16,5 @@ public:
 protected:
     constexpr void nullInvoker(Reader &reader, Writer &writer) const {}
 };
+
+}

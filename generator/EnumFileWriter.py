@@ -16,7 +16,7 @@ class EnumFileWriter(object):
 
     def __write_includes(self):
         self.file('#include <etl/byte_stream.h>')
-        self.file('#include "EtlRwExtensions.hpp"')
+        self.file('#include "lrpc/EtlRwExtensions.hpp"')
         self.file.newline()
 
     def __write_enum(self):

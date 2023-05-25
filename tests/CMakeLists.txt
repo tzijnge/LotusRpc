@@ -13,28 +13,28 @@ mark_as_advanced(
 
 add_subdirectory(../external/gtest External/gtest EXCLUDE_FROM_ALL)
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestDecoder/TestDecoder.hpp
-                  COMMENT "Generate TestDecoder LRPC files"
-                  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/TestDecoder.lrpc.yaml
-                  COMMAND python ${CMAKE_SOURCE_DIR}/generator/lotusrpc.py ${CMAKE_CURRENT_SOURCE_DIR}/TestDecoder.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestDecoder)
+add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestService/TestService.hpp
+                  COMMENT "Generate TestService LRPC files"
+                  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/TestService.lrpc.yaml
+                  COMMAND python ${CMAKE_SOURCE_DIR}/generator/lotusrpc.py ${CMAKE_CURRENT_SOURCE_DIR}/TestService.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestService)
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestDecoder2/TestDecoder2.hpp
-                  COMMENT "Generate TestDecoder2 LRPC files"
-                  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/TestDecoder2.lrpc.yaml
-                  COMMAND python ${CMAKE_SOURCE_DIR}/generator/lotusrpc.py ${CMAKE_CURRENT_SOURCE_DIR}/TestDecoder2.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestDecoder2)
+add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestService2/TestService2.hpp
+                  COMMENT "Generate TestService2 LRPC files"
+                  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/TestService2.lrpc.yaml
+                  COMMAND python ${CMAKE_SOURCE_DIR}/generator/lotusrpc.py ${CMAKE_CURRENT_SOURCE_DIR}/TestService2.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestService2)
 
 set_directory_properties(PROPERTIES ADDITIONAL_CLEAN_FILES ${CMAKE_CURRENT_SOURCE_DIR}/generated)
 
 add_executable(UnitTests
                 TestEtlRwExtensions.cpp
-                TestDecoder.cpp
-                TestDecoder2_s0.cpp
-                TestDecoder2_s1.cpp
+                TestService.cpp
+                TestService2_s0.cpp
+                TestService2_s1.cpp
                 TestServer.cpp
-                ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestDecoder/TestDecoder.hpp
-                ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestDecoder2/TestDecoder2.hpp)
+                ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestService/TestService.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestService2/TestService2.hpp)
 
-target_include_directories(UnitTests PRIVATE ../src)
+target_include_directories(UnitTests PRIVATE ../include)
 target_include_directories(UnitTests PRIVATE ../external/etl/include)
 
 target_link_libraries(

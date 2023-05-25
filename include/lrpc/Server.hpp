@@ -1,13 +1,15 @@
 #pragma once
-#include "Decoder.hpp"
+#include "Service.hpp"
 #include <etl/vector.h>
 
+namespace lrpc
+{
 class Server
 {
 public:
-    void registerDecoder(Decoder &decoder)
+    void registerService(Service &service)
     {
-        interfaces[decoder.id()] = &decoder;
+        services[service.id()] = &service;
     }
 
     void decode(uint8_t byte)
@@ -33,18 +35,20 @@ private:
 
     void invokeFunction()
     {
-        using Reader = Decoder::Reader;
-        using Writer = Decoder::Writer;
+        using Reader = Service::Reader;
+        using Writer = Service::Writer;
 
         Reader reader(receiveBuffer.begin(), receiveBuffer.end(), etl::endian::little);
         Writer writer(sendBuffer.begin(), sendBuffer.end(), etl::endian::little);
         reader.skip<uint8_t>(1); // message size
         auto interfaceId = reader.read_unchecked<uint8_t>();
-        interfaces.at(interfaceId)->decode(reader, writer);
+        services.at(interfaceId)->decode(reader, writer);
     }
 
-    etl::vector<Decoder *, 2> interfaces{
+    etl::vector<Service *, 2> services{
         nullptr,
         nullptr,
     };
 };
+
+}

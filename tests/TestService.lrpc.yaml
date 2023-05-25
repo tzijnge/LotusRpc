@@ -1,4 +1,4 @@
-name: "TestDecoder"
+name: "TestService"
 namespace: "ns"
 services:
   - name: "s0"

@@ -3,7 +3,7 @@ from SematicAnalyzer import SemanticAnalyzer
 from StructFileWriter import StructFileWriter
 from EnumFileWriter import EnumFileWriter
 from IncludeAllWriter import IncludeAllWriter
-from DecoderShimWriter import DecoderShimWriter
+from ServiceShimWriter import ServiceShimWriter
 import yaml
 import jsonschema
 import jsonschema.exceptions
@@ -59,7 +59,7 @@ def generate_include_all(definition, output):
 
 def generate_shims(services, output):
     for s in services:
-        writer = DecoderShimWriter(s, output)
+        writer = ServiceShimWriter(s, output)
         writer.write()
 
 def generate_rpc(input, output):

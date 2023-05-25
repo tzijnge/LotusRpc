@@ -1,8 +1,8 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "Server.hpp"
+#include "lrpc/Server.hpp"
 
-class DecoderMock : public Decoder
+class ServiceMock : public lrpc::Service
 {
 public:
     void decode(Reader & reader, Writer& writer) override
@@ -24,13 +24,13 @@ public:
     std::vector<uint8_t> received;
 };
 
-class I0DecoderMock : public DecoderMock
+class I0ServiceMock : public ServiceMock
 {
 public:
     uint32_t id() const override { return 0; }
 };
 
-class I1DecoderMock : public DecoderMock
+class I1ServiceMock : public ServiceMock
 {
 public:
     uint32_t id() const override { return 1; }
@@ -52,30 +52,30 @@ public:
         EXPECT_EQ(v1, v2);
     }
 
-    Server server;
-    I0DecoderMock i0Decoder;
-    I1DecoderMock i1Decoder;
+    lrpc::Server server;
+    I0ServiceMock i0Service;
+    I1ServiceMock i1Service;
 };
 
-TEST_F(TestServer, registerDecoder)
+TEST_F(TestServer, registerService)
 {
-    server.registerDecoder(i0Decoder);
+    server.registerService(i0Service);
 }
 
 TEST_F(TestServer, decodeI0)
 {
-    server.registerDecoder(i0Decoder);
+    server.registerService(i0Service);
     decode({0x04, 0x00, 0xAA, 0xBB});
 
-    EXPECT_VECTOR_EQ({0xAA, 0xBB}, i0Decoder.received);
+    EXPECT_VECTOR_EQ({0xAA, 0xBB}, i0Service.received);
 }
 
 TEST_F(TestServer, decodeI0AndI1)
 {
-    server.registerDecoder(i0Decoder);
-    server.registerDecoder(i1Decoder);
+    server.registerService(i0Service);
+    server.registerService(i1Service);
     decode({0x04, 0x00, 0xAA, 0xBB, 0x04, 0x01, 0xCC, 0xDD});
 
-    EXPECT_VECTOR_EQ({0xAA, 0xBB}, i0Decoder.received);
-    EXPECT_VECTOR_EQ({0xCC, 0xDD}, i1Decoder.received);
+    EXPECT_VECTOR_EQ({0xAA, 0xBB}, i0Service.received);
+    EXPECT_VECTOR_EQ({0xCC, 0xDD}, i1Service.received);
 }

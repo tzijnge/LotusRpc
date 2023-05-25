@@ -24,8 +24,8 @@ RPC framework for embedded systems based on [ETL](https://github.com/ETLCPP/etl)
   - Enabled by using the `count` setting in the definition file with any value larger than 1
 - optional
   - Can be used with any type
-  - Translated to `std::optional` in the generated C++ code
-  - Enabled by using the `count` setting in the definition file with a value `*`
+  - Translated to `etl::optional` in the generated C++ code
+  - Enabled by using the `count` setting in the definition file with a value `?`
 - custom
   - struct
     - A custom struct can have any number of fields of any type except `string_auto`, even other custom types

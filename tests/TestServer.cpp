@@ -9,7 +9,7 @@ public:
     {
         while (true)
         {
-            auto b = reader.read<uint8_t>();
+            const auto b = reader.read<uint8_t>();
             if (b)
             {
                 received.push_back(b.value());
@@ -30,10 +30,10 @@ public:
     uint32_t id() const override { return 0; }
 };
 
-class I1ServiceMock : public ServiceMock
+class I5ServiceMock : public ServiceMock
 {
 public:
-    uint32_t id() const override { return 1; }
+    uint32_t id() const override { return 5; }
 };
 
 class TestServer : public ::testing::Test
@@ -52,9 +52,9 @@ public:
         EXPECT_EQ(v1, v2);
     }
 
-    lrpc::Server server;
+    lrpc::Server<> server;
     I0ServiceMock i0Service;
-    I1ServiceMock i1Service;
+    I5ServiceMock i5Service;
 };
 
 TEST_F(TestServer, registerService)
@@ -70,12 +70,12 @@ TEST_F(TestServer, decodeI0)
     EXPECT_VECTOR_EQ({0xAA, 0xBB}, i0Service.received);
 }
 
-TEST_F(TestServer, decodeI0AndI1)
+TEST_F(TestServer, decodeI0AndI5)
 {
     server.registerService(i0Service);
-    server.registerService(i1Service);
-    decode({0x04, 0x00, 0xAA, 0xBB, 0x04, 0x01, 0xCC, 0xDD});
+    server.registerService(i5Service);
+    decode({0x04, 0x00, 0xAA, 0xBB, 0x04, 0x05, 0xCC, 0xDD});
 
     EXPECT_VECTOR_EQ({0xAA, 0xBB}, i0Service.received);
-    EXPECT_VECTOR_EQ({0xCC, 0xDD}, i1Service.received);
+    EXPECT_VECTOR_EQ({0xCC, 0xDD}, i5Service.received);
 }

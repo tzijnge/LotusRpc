@@ -1,10 +1,12 @@
 #pragma once
 #include <etl/byte_stream.h>
 #include <stdint.h>
+#include <etl/intrusive_forward_list.h>
 
 namespace lrpc
 {
-class Service
+using ServiceListItem = etl::forward_link<0>;
+class Service : public ServiceListItem
 {
 public:
     using Reader = etl::byte_stream_reader;

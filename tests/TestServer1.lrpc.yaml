@@ -1,4 +1,4 @@
-name: "TestService"
+name: "Server1"
 namespace: "ns"
 services:
   - name: "s0"

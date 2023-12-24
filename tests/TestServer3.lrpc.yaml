@@ -1,0 +1,13 @@
+name: "Server3"
+namespace: "ns"
+services:
+  - name: "s00"
+    id: 0
+    functions:
+      - name: "f0"
+        id: 0
+  - name: "s01"
+    id: 7
+    functions:
+      - name: "f0"
+        id: 0

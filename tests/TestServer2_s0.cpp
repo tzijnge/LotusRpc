@@ -1,6 +1,6 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "generated/TestService2/s00_ServiceShim.hpp"
+#include "generated/Server2/s00_ServiceShim.hpp"
 
 using ::testing::Return;
 
@@ -11,7 +11,7 @@ public:
     MOCK_METHOD(void, f1, (const etl::string_view &p0, bool p1), (override));
 };
 
-class TestService2 : public ::testing::Test
+class TestServer2 : public ::testing::Test
 {
 public:
     MockS00Service service;
@@ -38,7 +38,7 @@ private:
 };
 
 // Decode void function with auto string as last param
-TEST_F(TestService2, decodeF0)
+TEST_F(TestServer2, decodeF0)
 {
     EXPECT_CALL(service, f0(true, etl::string_view("Test")));
     auto response = decode({0, 0x01, 'T', 'e', 's', 't', '\0'});
@@ -46,7 +46,7 @@ TEST_F(TestService2, decodeF0)
 }
 
 // Decode void function with auto string as first param
-TEST_F(TestService2, decodeF1)
+TEST_F(TestServer2, decodeF1)
 {
     EXPECT_CALL(service, f1(etl::string_view("Test"), true));
     auto response = decode({1, 'T', 'e', 's', 't', '\0', 0x01});

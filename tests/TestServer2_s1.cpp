@@ -1,6 +1,6 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "generated/TestService2/s01_ServiceShim.hpp"
+#include "generated/Server2/s01_ServiceShim.hpp"
 
 using ::testing::Return;
 
@@ -34,7 +34,7 @@ public:
     MOCK_METHOD((etl::string<5>), f7, (const etl::string_view &p0), (override));
 };
 
-class TestService2_s1 : public ::testing::Test
+class TestServer2_s1 : public ::testing::Test
 {
 public:
     MockS01Service service;
@@ -61,7 +61,7 @@ private:
 };
 
 // Decode void function with array of strings param
-TEST_F(TestService2_s1, decodeF0)
+TEST_F(TestServer2_s1, decodeF0)
 {
     using sv = etl::string_view;
     std::vector<sv> expected{sv("T1"), sv("T2")};
@@ -70,7 +70,7 @@ TEST_F(TestService2_s1, decodeF0)
     EXPECT_TRUE(response.empty());
 }
 
-TEST_F(TestService2_s1, decodeF0WithStringShorterThanMax)
+TEST_F(TestServer2_s1, decodeF0WithStringShorterThanMax)
 {
     using sv = etl::string_view;
     std::vector<sv> expected{sv("1"), sv("2")};
@@ -80,7 +80,7 @@ TEST_F(TestService2_s1, decodeF0WithStringShorterThanMax)
 }
 
 // Decode function that returns array of strings
-TEST_F(TestService2_s1, decodeF1)
+TEST_F(TestServer2_s1, decodeF1)
 {
     etl::array<etl::string<2>, 2> retVal {"T1", "T2"};
     EXPECT_CALL(service, f1()).WillOnce(Return(retVal));
@@ -89,7 +89,7 @@ TEST_F(TestService2_s1, decodeF1)
 }
 
 // Decode void function with optional fixed size string param
-TEST_F(TestService2_s1, decodeF2)
+TEST_F(TestServer2_s1, decodeF2)
 {
     using sv = etl::string_view;
     etl::optional<sv> expected{"T1"};
@@ -99,7 +99,7 @@ TEST_F(TestService2_s1, decodeF2)
 }
 
 // Decode void function with optional auto string param
-TEST_F(TestService2_s1, decodeF3)
+TEST_F(TestServer2_s1, decodeF3)
 {
     using sv = etl::string_view;
     etl::optional<sv> expected{"T1"};
@@ -109,7 +109,7 @@ TEST_F(TestService2_s1, decodeF3)
 }
 
 // Decode function that returns optional string
-TEST_F(TestService2_s1, decodeF4)
+TEST_F(TestServer2_s1, decodeF4)
 {
     etl::optional<etl::string<2>> expected{"T1"};
     EXPECT_CALL(service, f4()).WillOnce(Return(expected));
@@ -118,7 +118,7 @@ TEST_F(TestService2_s1, decodeF4)
 }
 
 // Decode function that takes custom struct argument
-TEST_F(TestService2_s1, decodeF5)
+TEST_F(TestServer2_s1, decodeF5)
 {
     StringStruct expected;
     expected.aa = "T1";
@@ -130,7 +130,7 @@ TEST_F(TestService2_s1, decodeF5)
 }
 
 // Decode function that returns custom struct
-TEST_F(TestService2_s1, decodeF6)
+TEST_F(TestServer2_s1, decodeF6)
 {
     StringStruct retVal;
     retVal.aa = "T1";
@@ -142,7 +142,7 @@ TEST_F(TestService2_s1, decodeF6)
 }
 
 // Decode function that takes auto string argument and returns fixed size string
-TEST_F(TestService2_s1, decodeF7)
+TEST_F(TestServer2_s1, decodeF7)
 {
     etl::string<5> retVal {"T1234"};
     etl::string_view expected {"T0"};

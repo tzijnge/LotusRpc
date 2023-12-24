@@ -13,26 +13,33 @@ mark_as_advanced(
 
 add_subdirectory(../external/gtest External/gtest EXCLUDE_FROM_ALL)
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestService/TestService.hpp
-                  COMMENT "Generate TestService LRPC files"
-                  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/TestService.lrpc.yaml
-                  COMMAND python ${CMAKE_SOURCE_DIR}/generator/lotusrpc.py ${CMAKE_CURRENT_SOURCE_DIR}/TestService.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestService)
+add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server1/Server1.hpp
+                  COMMENT "Generate TestServer1 LRPC files"
+                  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/TestServer1.lrpc.yaml
+                  COMMAND python ${CMAKE_SOURCE_DIR}/generator/lotusrpc.py ${CMAKE_CURRENT_SOURCE_DIR}/TestServer1.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server1)
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestService2/TestService2.hpp
-                  COMMENT "Generate TestService2 LRPC files"
-                  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/TestService2.lrpc.yaml
-                  COMMAND python ${CMAKE_SOURCE_DIR}/generator/lotusrpc.py ${CMAKE_CURRENT_SOURCE_DIR}/TestService2.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestService2)
+add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server2/Server2.hpp
+                  COMMENT "Generate TestServer2 LRPC files"
+                  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/TestServer2.lrpc.yaml
+                  COMMAND python ${CMAKE_SOURCE_DIR}/generator/lotusrpc.py ${CMAKE_CURRENT_SOURCE_DIR}/TestServer2.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server2)
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server3/Server3.hpp
+                  COMMENT "Generate TestServer3 LRPC files"
+                  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/TestServer3.lrpc.yaml
+                  COMMAND python ${CMAKE_SOURCE_DIR}/generator/lotusrpc.py ${CMAKE_CURRENT_SOURCE_DIR}/TestServer3.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server3)
 
 set_directory_properties(PROPERTIES ADDITIONAL_CLEAN_FILES ${CMAKE_CURRENT_SOURCE_DIR}/generated)
 
 add_executable(UnitTests
                 TestEtlRwExtensions.cpp
-                TestService.cpp
-                TestService2_s0.cpp
-                TestService2_s1.cpp
+                TestServer1.cpp
+                TestServer2_s0.cpp
+                TestServer2_s1.cpp
+                TestServer3.cpp
                 TestServer.cpp
-                ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestService/TestService.hpp
-                ${CMAKE_CURRENT_SOURCE_DIR}/generated/TestService2/TestService2.hpp)
+                ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server1/Server1.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server2/Server2.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server3/Server3.hpp)
 
 target_include_directories(UnitTests PRIVATE ../include)
 target_include_directories(UnitTests PRIVATE ../external/etl/include)

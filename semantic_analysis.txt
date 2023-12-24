@@ -4,11 +4,26 @@ semantic analysis
 - [error] [done] array of auto strings is not allowed
 - [error] [done] custom data type must be in the list of structs or enums
 - [warning] [done] custom enum or struct not referenced in any function or any other custom type
-- [error] [done] duplicate interface IDs
-- [error] [done] duplicate function IDs (in same interface)
+- [error] [done] duplicate service IDs
+- [error] [done] duplicate function IDs (in same service)
 - [error] [done] duplicate enum field IDs (in same enum)
-- [error] [done] duplicate interface names
-- [error] [done] duplicate function names (in same interface)
+- [error] [done] duplicate service names
+- [error] [done] duplicate function names (in same service)
 - [error] [done] duplicate struct/enum names
 - [error] [done] duplicate enum field names (in same enum)
 - [error] [done] duplicate struct field names (in same struct)
+
+# Decision:
+# 1. Trivial function parameters (int, bool, float, etc) are by value
+# 2. Structs function parameters are also passed by value
+#   - string and array struct members are passed by value as etl::string and etl::array
+# 3. Non-trivial function parameters are always by reference
+#   - arrays are passed as span
+#   - strings are passed as string_view
+# 4. Function returns are by default by value
+#   - For strings and arrays and structs, this could result in a large object on the stack and an additional copy of data.
+#     However, returning things by reference means that the returned values must exist outside the scope of the function.
+#     This is more efficient, but less intuitive
+#   - At a later stage it may become possible to annotate a function to make it return something by reference
+# 5. The implication of returning things by value is that it is not possible to return an auto string
+# 6. The implication of passing structs by value is that it structs cannot have an auto string member

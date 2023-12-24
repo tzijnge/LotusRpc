@@ -10,10 +10,13 @@ class IncludeAllWriter(object):
         # write include file for every service, including enums, structs, stdint.h and required etl includes
         # write include all file that includes all service includes
         self.file('#pragma once')
+        self.file('#include "lrpc/Server.hpp"')
         for s in self.definition.services():
             self.write_service_include(s)
             self.file(f'#include "{s.name()}.hpp"')
 
+        self.file.newline()
+        self.file(f'using {self.definition.name()} = lrpc::Server<100, 100>;')
 
     def write_service_include(self, service):
         include_file = CppFile(f'{self.output}/{service.name()}.hpp')

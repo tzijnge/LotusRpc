@@ -48,18 +48,18 @@ def generate_structs(structs, output):
         sfw = StructFileWriter(s, structs, output)
         sfw.write()
 
-def generate_enums(enums, output):
+def generate_enums(enums, namespace, output):
     for e in enums:
-        sfw = EnumFileWriter(e, output)
+        sfw = EnumFileWriter(e, namespace, output)
         sfw.write()
 
 def generate_include_all(definition, output):
     writer = IncludeAllWriter(definition, output)
     writer.write()
 
-def generate_shims(services, output):
+def generate_shims(services, namespace, output):
     for s in services:
-        writer = ServiceShimWriter(s, output)
+        writer = ServiceShimWriter(s, namespace, output)
         writer.write()
 
 def generate_rpc(input, output):
@@ -69,11 +69,12 @@ def generate_rpc(input, output):
 
     structs = definition.get('structs', list())
     enums = definition.get('enums', list())
+    namespace = definition.get('namespace', None)
 
     generate_include_all(LrpcDef(definition), output)
     generate_structs(structs, output)
-    generate_enums(enums, output)
-    generate_shims(LrpcDef(definition).services(), output)
+    generate_enums(enums, namespace, output)
+    generate_shims(LrpcDef(definition).services(), namespace, output)
 
 @click.command()
 @click.option('-w', '--warnings_as_errors',

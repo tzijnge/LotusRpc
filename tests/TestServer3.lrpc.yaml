@@ -1,5 +1,4 @@
 name: "Server3"
-namespace: "ns"
 services:
   - name: "s00"
     id: 0

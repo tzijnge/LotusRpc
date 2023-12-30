@@ -1,5 +1,5 @@
 name: "Server1"
-namespace: "ns"
+namespace: "ts1"
 rx_buffer_size: 100
 tx_buffer_size: 200
 services:

@@ -22,7 +22,7 @@ MATCHER_P(SPAN_EQ, e, "Equality matcher for etl::span")
     return true;
 }
 
-class MockS0Service : public s0ServiceShim
+class MockS0Service : public ts1::s0ServiceShim
 {
 public:
     MOCK_METHOD(void, f0, (), (override));
@@ -33,7 +33,7 @@ public:
     MOCK_METHOD(void, f5, ((const etl::span<const uint16_t>)&a), (override));
     MOCK_METHOD(void, f6, (const etl::string_view &a), (override));
     MOCK_METHOD(void, f7, (const CompositeData &a), (override));
-    MOCK_METHOD(void, f8, (MyEnum a), (override));
+    MOCK_METHOD(void, f8, (ts1::MyEnum a), (override));
     MOCK_METHOD(void, f9, ((const etl::span<const CompositeData2>)&a), (override));
     MOCK_METHOD(void, f10, (const CompositeData3 &a), (override));
     MOCK_METHOD(void, f11, (uint8_t a, uint8_t b), (override));
@@ -43,7 +43,7 @@ public:
     MOCK_METHOD((etl::array<uint16_t, 2>), f15, (), (override));
     MOCK_METHOD(etl::string<20>, f16, (), (override));
     MOCK_METHOD(CompositeData, f17, (), (override));
-    MOCK_METHOD(MyEnum, f18, (), (override));
+    MOCK_METHOD(ts1::MyEnum, f18, (), (override));
     MOCK_METHOD((etl::array<CompositeData2, 2>), f19, (), (override));
     MOCK_METHOD(CompositeData3, f20, (), (override));
     MOCK_METHOD((std::tuple<uint8_t, uint8_t>), f21, (), (override));
@@ -76,7 +76,7 @@ private:
     etl::array<uint8_t, 256> response;
 };
 
-static_assert(std::is_same_v<Server1, lrpc::Server<100, 200>>, "RX and/or TX buffer size are unequal to the specification");
+static_assert(std::is_same_v<Server1, lrpc::Server<100, 200>>, "RX and/or TX buffer size are unequal to the definition file");
 
 // Decode void function f0. Make sure f1 is not called
 TEST_F(TestServer1, decodeF0)
@@ -151,7 +151,7 @@ TEST_F(TestServer1, decodeF7)
 // Decode function f8 with custom enum
 TEST_F(TestServer1, decodeF8)
 {
-    EXPECT_CALL(s0Service, f8(MyEnum::V3));
+    EXPECT_CALL(s0Service, f8(ts1::MyEnum::V3));
     auto response = decode({8, 0x03});
     EXPECT_TRUE(response.empty());
 }
@@ -228,7 +228,7 @@ TEST_F(TestServer1, decodeF16)
 // Decode function f17 which returns custom type
 TEST_F(TestServer1, decodeF17)
 {
-    EXPECT_CALL(s0Service, f17()).WillOnce(Return(CompositeData {{0xBBAA, 0xDDCC}, 123, true}));
+    EXPECT_CALL(s0Service, f17()).WillOnce(Return(CompositeData{{0xBBAA, 0xDDCC}, 123, true}));
     auto response = decode({17});
     EXPECT_RESPONSE({0xAA, 0xBB, 0xCC, 0xDD, 123, 1}, response);
 }
@@ -236,7 +236,7 @@ TEST_F(TestServer1, decodeF17)
 // Decode function f18 which returns custom enum
 TEST_F(TestServer1, decodeF18)
 {
-    EXPECT_CALL(s0Service, f18()).WillOnce(Return(MyEnum::V3));
+    EXPECT_CALL(s0Service, f18()).WillOnce(Return(ts1::MyEnum::V3));
     auto response = decode({18});
     EXPECT_RESPONSE({0x03}, response);
 }
@@ -255,7 +255,7 @@ TEST_F(TestServer1, decodeF19)
 // Decode function f20 which returns nested custom types
 TEST_F(TestServer1, decodeF20)
 {
-    EXPECT_CALL(s0Service, f20()).WillOnce(Return(CompositeData3 {{0xAA, 0xBB}}));
+    EXPECT_CALL(s0Service, f20()).WillOnce(Return(CompositeData3{{0xAA, 0xBB}}));
     auto response = decode({20});
     EXPECT_RESPONSE({0xAA, 0xBB}, response);
 }

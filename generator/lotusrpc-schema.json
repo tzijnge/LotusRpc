@@ -92,7 +92,7 @@
   "description": "JSON Schema for Lotus RPC, a RPC code generation tool",
   "type": "object",
   "additionalProperties": false,
-  "required": ["name", "namespace", "services"],
+  "required": ["name", "services"],
   "properties": {
     "name": {
       "$ref": "#/$defs/cppid",

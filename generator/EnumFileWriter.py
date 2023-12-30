@@ -1,9 +1,10 @@
 from code_generation.code_generator import CppFile
 
 class EnumFileWriter(object):
-    def __init__(self, descriptor, output):
+    def __init__(self, descriptor, namespace, output):
         self.descriptor = descriptor
-        self.file = CppFile(f'{output}/{self.__name()}.hpp')
+        self.file = CppFile(f'{output}/{self.__qualified_name()}.hpp')
+        self.namespace = namespace
 
     def write(self):
         self.__write_include_guard()
@@ -20,11 +21,19 @@ class EnumFileWriter(object):
         self.file.newline()
 
     def __write_enum(self):
-        with self.file.block(f'enum class {self.__name()}', ';'):
-            for f in self.descriptor['fields']:
-                self.file(f'{f["name"]} = {f["id"]},')
+        if self.namespace:
+            with self.file.block(f'namespace {self.namespace}'):
+                self.__write_enum_impl()
+        else:
+            self.__write_enum_impl()
 
         self.file.newline()
+
+    def __write_enum_impl(self):
+        qn = self.__qualified_name()
+        with self.file.block(f'enum class {qn}', ';'):
+            for f in self.descriptor['fields']:
+                self.file(f'{f["name"]} = {f["id"]},')
 
     def __write_codec(self):
         with self.file.block('namespace lrpc'):
@@ -40,11 +49,16 @@ class EnumFileWriter(object):
                 self.__write_encoder_body()
 
     def __write_decoder_body(self):
-        name = self.descriptor['name']
-        self.file(f'return static_cast<{name}>(reader.read_unchecked<uint8_t>());')
+        qn = self.__name()
+        self.file(f'return static_cast<{qn}>(reader.read_unchecked<uint8_t>());')
 
     def __write_encoder_body(self):
         self.file('writer.write_unchecked<uint8_t>(static_cast<uint8_t>(value));')
 
     def __name(self):
+        ns = self.namespace
+        qn = self.__qualified_name()
+        return f'{ns}::{qn}' if ns else qn
+    
+    def __qualified_name(self):
         return self.descriptor['name']

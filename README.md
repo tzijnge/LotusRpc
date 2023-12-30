@@ -52,6 +52,8 @@ All code is generated in the namespace specified in the interface definition fil
 Receive and transmit buffer sizes can be configured in the interface definition file. If not specified, both take the value of 256 bytes
 
 # Example
+## Interface definition file
+File name: example.lrpc.yaml
 ``` yaml
 namespace: "ns"
 rx_buffer_size: 200
@@ -78,3 +80,11 @@ enums:
       - id: 59
         name: "volts"
 ```
+
+## Python dependencies
+- [code-generation](https://pypi.org/project/code-generation/): `pip install code-generation`
+- [click](https://pypi.org/project/click/): `pip install click`
+
+## Generate code
+Basic usage: `python lotusrpc.py example.lrpc.yaml -o output-dir`
+For more info type `python lotusrpc.py --help`

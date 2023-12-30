@@ -1,6 +1,7 @@
+#include "generated/Server1/Server1.hpp"
+#include "generated/Server1/s0_ServiceShim.hpp"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "generated/Server1/s0_ServiceShim.hpp"
 #include <tuple>
 
 using ::testing::Return;
@@ -74,6 +75,8 @@ public:
 private:
     etl::array<uint8_t, 256> response;
 };
+
+static_assert(std::is_same_v<Server1, lrpc::Server<100, 200>>, "RX and/or TX buffer size are unequal to the specification");
 
 // Decode void function f0. Make sure f1 is not called
 TEST_F(TestServer1, decodeF0)

@@ -1,5 +1,6 @@
 name: "Server2"
 namespace: "ns"
+rx_buffer_size: 100
 services:
   - name: "s00"
     id: 0
@@ -80,3 +81,6 @@ structs:
       - name: "c"
         type: string_2
         count: "?"
+
+# TODO: test for function that returns multiple arrays
+# + test for function that returns multiple arrays of strings

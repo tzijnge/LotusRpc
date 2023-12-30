@@ -102,10 +102,15 @@
       "$ref": "#/$defs/cppid",
       "description": "C++ namespace to be generate code in"
     },
-    "max_auto_string_size": {
+    "rx_buffer_size": {
       "type": "integer",
       "minimum": 1,
-      "description": "Maximum size that a string_auto variable can have. Defaults to 255 bytes if not specified"
+      "description": "Size of the server side receive buffer in bytes"
+    },
+    "tx_buffer_size": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Size of the server side transmit buffer in bytes"
     },
     "services": {
       "type": "array",

@@ -15,8 +15,10 @@ class IncludeAllWriter(object):
             self.write_service_include(s)
             self.file(f'#include "{s.name()}.hpp"')
 
+        rx = self.definition.rx_buffer_size()
+        tx = self.definition.tx_buffer_size()
         self.file.newline()
-        self.file(f'using {self.definition.name()} = lrpc::Server<100, 100>;')
+        self.file(f'using {self.definition.name()} = lrpc::Server<{rx}, {tx}>;')
 
     def write_service_include(self, service):
         include_file = CppFile(f'{self.output}/{service.name()}.hpp')

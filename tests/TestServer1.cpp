@@ -170,9 +170,9 @@ TEST_F(TestServer1, decodeF9)
 // Decode function f10 with nested custom types
 TEST_F(TestServer1, decodeF10)
 {
-    ts1::CompositeData3 expected{{0xAA, 0xBB}};
+    ts1::CompositeData3 expected{{0xAA, 0xBB}, ts1::MyEnum::V1};
     EXPECT_CALL(s0Service, f10(expected));
-    auto response = decode({10, 0xAA, 0xBB});
+    auto response = decode({10, 0xAA, 0xBB, 0x01});
     EXPECT_TRUE(response.empty());
 }
 
@@ -255,9 +255,9 @@ TEST_F(TestServer1, decodeF19)
 // Decode function f20 which returns nested custom types
 TEST_F(TestServer1, decodeF20)
 {
-    EXPECT_CALL(s0Service, f20()).WillOnce(Return(ts1::CompositeData3{{0xAA, 0xBB}}));
+    EXPECT_CALL(s0Service, f20()).WillOnce(Return(ts1::CompositeData3{{0xAA, 0xBB}, ts1::MyEnum::V2}));
     auto response = decode({20});
-    EXPECT_RESPONSE({0xAA, 0xBB}, response);
+    EXPECT_RESPONSE({0xAA, 0xBB, 0x02}, response);
 }
 
 // Decode function f21 which return two uint8_t args

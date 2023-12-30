@@ -150,6 +150,8 @@ structs:
     fields:
       - name: "a"
         type: "@CompositeData2"
+      - name: "b"
+        type: "@MyEnum"
 enums:
   - name: "MyEnum"
     fields:

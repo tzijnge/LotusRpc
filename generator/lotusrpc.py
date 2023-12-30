@@ -43,9 +43,9 @@ def check_input(input, warnings_as_errors):
 
     return errors_found
 
-def generate_structs(structs, output):
+def generate_structs(structs, namespace, output):
     for s in structs:
-        sfw = StructFileWriter(s, structs, output)
+        sfw = StructFileWriter(s, structs, namespace, output)
         sfw.write()
 
 def generate_enums(enums, namespace, output):
@@ -72,7 +72,7 @@ def generate_rpc(input, output):
     namespace = definition.get('namespace', None)
 
     generate_include_all(LrpcDef(definition), output)
-    generate_structs(structs, output)
+    generate_structs(structs, namespace, output)
     generate_enums(enums, namespace, output)
     generate_shims(LrpcDef(definition).services(), namespace, output)
 

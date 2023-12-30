@@ -32,20 +32,20 @@ public:
     MOCK_METHOD(void, f4, (float a), (override));
     MOCK_METHOD(void, f5, ((const etl::span<const uint16_t>)&a), (override));
     MOCK_METHOD(void, f6, (const etl::string_view &a), (override));
-    MOCK_METHOD(void, f7, (const CompositeData &a), (override));
+    MOCK_METHOD(void, f7, (const ts1::CompositeData &a), (override));
     MOCK_METHOD(void, f8, (ts1::MyEnum a), (override));
-    MOCK_METHOD(void, f9, ((const etl::span<const CompositeData2>)&a), (override));
-    MOCK_METHOD(void, f10, (const CompositeData3 &a), (override));
+    MOCK_METHOD(void, f9, ((const etl::span<const ts1::CompositeData2>)&a), (override));
+    MOCK_METHOD(void, f10, (const ts1::CompositeData3 &a), (override));
     MOCK_METHOD(void, f11, (uint8_t a, uint8_t b), (override));
     MOCK_METHOD(uint8_t, f12, (), (override));
     MOCK_METHOD(uint16_t, f13, (), (override));
     MOCK_METHOD(float, f14, (), (override));
     MOCK_METHOD((etl::array<uint16_t, 2>), f15, (), (override));
     MOCK_METHOD(etl::string<20>, f16, (), (override));
-    MOCK_METHOD(CompositeData, f17, (), (override));
+    MOCK_METHOD(ts1::CompositeData, f17, (), (override));
     MOCK_METHOD(ts1::MyEnum, f18, (), (override));
-    MOCK_METHOD((etl::array<CompositeData2, 2>), f19, (), (override));
-    MOCK_METHOD(CompositeData3, f20, (), (override));
+    MOCK_METHOD((etl::array<ts1::CompositeData2, 2>), f19, (), (override));
+    MOCK_METHOD(ts1::CompositeData3, f20, (), (override));
     MOCK_METHOD((std::tuple<uint8_t, uint8_t>), f21, (), (override));
     MOCK_METHOD((std::tuple<etl::string<4>, etl::string<4>>), f22, (const etl::string_view &s1, const etl::string_view &s2), (override));
 };
@@ -142,7 +142,7 @@ TEST_F(TestServer1, decodeF6)
 // Decode function f7 with custom type
 TEST_F(TestServer1, decodeF7)
 {
-    CompositeData expected{{0xBBAA, 0xDDCC}, 123, true};
+    ts1::CompositeData expected{{0xBBAA, 0xDDCC}, 123, true};
     EXPECT_CALL(s0Service, f7(expected));
     auto response = decode({7, 0xAA, 0xBB, 0xCC, 0xDD, 123, 1});
     EXPECT_TRUE(response.empty());
@@ -159,9 +159,9 @@ TEST_F(TestServer1, decodeF8)
 // Decode function f9 with array of custom type
 TEST_F(TestServer1, decodeF9)
 {
-    std::vector<CompositeData2> expected{
-        CompositeData2{0xAA, 0xBB},
-        CompositeData2{0xCC, 0xDD}};
+    std::vector<ts1::CompositeData2> expected{
+        ts1::CompositeData2{0xAA, 0xBB},
+        ts1::CompositeData2{0xCC, 0xDD}};
     EXPECT_CALL(s0Service, f9(SPAN_EQ(expected)));
     auto response = decode({9, 0xAA, 0xBB, 0xCC, 0xDD});
     EXPECT_TRUE(response.empty());
@@ -170,7 +170,7 @@ TEST_F(TestServer1, decodeF9)
 // Decode function f10 with nested custom types
 TEST_F(TestServer1, decodeF10)
 {
-    CompositeData3 expected{{0xAA, 0xBB}};
+    ts1::CompositeData3 expected{{0xAA, 0xBB}};
     EXPECT_CALL(s0Service, f10(expected));
     auto response = decode({10, 0xAA, 0xBB});
     EXPECT_TRUE(response.empty());
@@ -228,7 +228,7 @@ TEST_F(TestServer1, decodeF16)
 // Decode function f17 which returns custom type
 TEST_F(TestServer1, decodeF17)
 {
-    EXPECT_CALL(s0Service, f17()).WillOnce(Return(CompositeData{{0xBBAA, 0xDDCC}, 123, true}));
+    EXPECT_CALL(s0Service, f17()).WillOnce(Return(ts1::CompositeData{{0xBBAA, 0xDDCC}, 123, true}));
     auto response = decode({17});
     EXPECT_RESPONSE({0xAA, 0xBB, 0xCC, 0xDD, 123, 1}, response);
 }
@@ -244,9 +244,9 @@ TEST_F(TestServer1, decodeF18)
 // Decode function f19 which returns array of custom type
 TEST_F(TestServer1, decodeF19)
 {
-    etl::array<CompositeData2, 2> expected{
-        CompositeData2{0xAA, 0xBB},
-        CompositeData2{0xCC, 0xDD}};
+    etl::array<ts1::CompositeData2, 2> expected{
+        ts1::CompositeData2{0xAA, 0xBB},
+        ts1::CompositeData2{0xCC, 0xDD}};
     EXPECT_CALL(s0Service, f19()).WillOnce(Return(expected));
     auto response = decode({19});
     EXPECT_RESPONSE({0xAA, 0xBB, 0xCC, 0xDD}, response);
@@ -255,7 +255,7 @@ TEST_F(TestServer1, decodeF19)
 // Decode function f20 which returns nested custom types
 TEST_F(TestServer1, decodeF20)
 {
-    EXPECT_CALL(s0Service, f20()).WillOnce(Return(CompositeData3{{0xAA, 0xBB}}));
+    EXPECT_CALL(s0Service, f20()).WillOnce(Return(ts1::CompositeData3{{0xAA, 0xBB}}));
     auto response = decode({20});
     EXPECT_RESPONSE({0xAA, 0xBB}, response);
 }

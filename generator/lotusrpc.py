@@ -43,38 +43,34 @@ def check_input(input, warnings_as_errors):
 
     return errors_found
 
-def generate_structs(structs, namespace, output):
-    for s in structs:
-        sfw = StructFileWriter(s, structs, namespace, output)
+def generate_structs(lrpc_def: LrpcDef, output: str):
+    for s in lrpc_def.structs():
+        sfw = StructFileWriter(s, lrpc_def, output)
         sfw.write()
 
-def generate_enums(enums, namespace, output):
-    for e in enums:
-        sfw = EnumFileWriter(e, namespace, output)
+def generate_enums(lrpc_def: LrpcDef, output: str):
+    for e in lrpc_def.enums():
+        sfw = EnumFileWriter(e, lrpc_def, output)
         sfw.write()
 
-def generate_include_all(definition, namespace, output):
-    writer = IncludeAllWriter(definition, namespace, output)
+def generate_include_all(lrpc_def: LrpcDef, output: str):
+    writer = IncludeAllWriter(lrpc_def, output)
     writer.write()
 
-def generate_shims(services, namespace, output):
-    for s in services:
-        writer = ServiceShimWriter(s, namespace, output)
+def generate_shims(lrpc_def: LrpcDef, output: str):
+    for s in lrpc_def.services():
+        writer = ServiceShimWriter(s, lrpc_def, output)
         writer.write()
 
-def generate_rpc(input, output):
+def generate_rpc(input: str, output: str):
     create_dir_if_not_exists(output)
 
-    definition = yaml.safe_load(input)
+    lrpc_def = LrpcDef(yaml.safe_load(input))
 
-    structs = definition.get('structs', list())
-    enums = definition.get('enums', list())
-    namespace = definition.get('namespace', None)
-
-    generate_include_all(LrpcDef(definition), namespace, output)
-    generate_structs(structs, namespace, output)
-    generate_enums(enums, namespace, output)
-    generate_shims(LrpcDef(definition).services(), namespace, output)
+    generate_include_all(lrpc_def, output)
+    generate_structs(lrpc_def, output)
+    generate_enums(lrpc_def, output)
+    generate_shims(lrpc_def, output)
 
 @click.command()
 @click.option('-w', '--warnings_as_errors',

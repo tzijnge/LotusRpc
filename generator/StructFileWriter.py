@@ -1,11 +1,12 @@
 from code_generation.code_generator import CppFile
 from LrpcVar import LrpcVar
+from LrpcDef import LrpcDef
 
 class StructFileWriter(object):
-    def __init__(self, descriptor, structs, namespace, output):
+    def __init__(self, descriptor, lrpc_def: LrpcDef, output: str):
         self.descriptor = descriptor
-        self.structs = structs
-        self.namespace = namespace
+        self.lrpc_def = lrpc_def
+        self.namespace = lrpc_def.namespace()
         self.file = CppFile(f'{output}/{self.__qualified_name()}.hpp')
 
     def write(self):

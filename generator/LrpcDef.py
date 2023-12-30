@@ -12,6 +12,9 @@ class LrpcDef(object):
             self.raw['tx_buffer_size'] = 256
         if 'rx_buffer_size' not in self.raw:
             self.raw['rx_buffer_size'] = 256
+
+        if 'namespace' not in self.raw:
+            self.raw['namespace'] = None
         
         for s in self.raw['services']:
             for f in s['functions']:

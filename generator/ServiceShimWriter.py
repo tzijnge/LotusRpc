@@ -1,11 +1,12 @@
 from code_generation.code_generator import CppFile
 from LrpcService import LrpcService
+from LrpcDef import LrpcDef
 
 class ServiceShimWriter(object):
-    def __init__(self, service, namespace, output):
+    def __init__(self, service: LrpcService, lrpc_def: LrpcDef, output: str):
         self.service = service
         self.file = CppFile(f'{output}/{self.service.name()}_ServiceShim.hpp')
-        self.namespace = namespace
+        self.lrpc_def = lrpc_def
 
     def write(self):        
         self.__write_include_guard()
@@ -13,8 +14,9 @@ class ServiceShimWriter(object):
         self.__write_shim()
 
     def __write_shim(self):
-        if self.namespace:
-            with self.file.block(f'namespace {self.namespace}'):
+        ns = self.lrpc_def.namespace()
+        if ns:
+            with self.file.block(f'namespace {ns}'):
                 self.__write_shim_impl()
         else:
             self.__write_shim_impl()

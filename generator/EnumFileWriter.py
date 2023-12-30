@@ -1,10 +1,11 @@
 from code_generation.code_generator import CppFile
+from LrpcDef import LrpcDef
 
 class EnumFileWriter(object):
-    def __init__(self, descriptor, namespace, output):
+    def __init__(self, descriptor, lrpc_def: LrpcDef, output: str):
         self.descriptor = descriptor
         self.file = CppFile(f'{output}/{self.__qualified_name()}.hpp')
-        self.namespace = namespace
+        self.namespace = lrpc_def.namespace()
 
     def write(self):
         self.__write_include_guard()

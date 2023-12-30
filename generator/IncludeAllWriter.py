@@ -1,10 +1,11 @@
 from code_generation.code_generator import CppFile
 
 class IncludeAllWriter(object):
-    def __init__(self, definition, output):
+    def __init__(self, definition, namespace, output):
         self.definition = definition
         self.output = output
         self.file = CppFile(f'{self.output}/{self.definition.name()}.hpp')
+        self.namespace = namespace
 
     def write(self):
         # write include file for every service, including enums, structs, stdint.h and required etl includes
@@ -17,8 +18,14 @@ class IncludeAllWriter(object):
 
         rx = self.definition.rx_buffer_size()
         tx = self.definition.tx_buffer_size()
+
         self.file.newline()
-        self.file(f'using {self.definition.name()} = lrpc::Server<{rx}, {tx}>;')
+        
+        if self.namespace:
+            with self.file.block(f'namespace {self.namespace}'):
+                self.file(f'using {self.definition.name()} = lrpc::Server<{rx}, {tx}>;')
+        else:
+            self.file(f'using {self.definition.name()} = lrpc::Server<{rx}, {tx}>;')
 
     def write_service_include(self, service):
         include_file = CppFile(f'{self.output}/{service.name()}.hpp')

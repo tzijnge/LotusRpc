@@ -45,9 +45,17 @@ The interface definition file is in YAML format. This makes it easy to parse in 
 * In the global or local settings.json, add the following entry: `"yaml.schemas": { "/path/to/LotusRpc/generator/lotusrpc-schema.json": "*.lrpc.yaml"}`
 * Now every file with `.lrpc.yaml` extension will get code completion and validation in VS Code
 
-### Example
+## Code generation in a namespace
+All code is generated in the namespace specified in the interface definition file. If no namespace is specified, all code is generated in the global namespace
+
+## Configuration of receive and transmit buffer size
+Receive and transmit buffer sizes can be configured in the interface definition file. If not specified, both take the value of 256 bytes
+
+# Example
 ``` yaml
 namespace: "ns"
+rx_buffer_size: 200
+tx_buffer_size: 300
 services:
   - name: "battery"
     id: 0

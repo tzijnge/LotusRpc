@@ -53,8 +53,8 @@ def generate_enums(enums, namespace, output):
         sfw = EnumFileWriter(e, namespace, output)
         sfw.write()
 
-def generate_include_all(definition, output):
-    writer = IncludeAllWriter(definition, output)
+def generate_include_all(definition, namespace, output):
+    writer = IncludeAllWriter(definition, namespace, output)
     writer.write()
 
 def generate_shims(services, namespace, output):
@@ -71,7 +71,7 @@ def generate_rpc(input, output):
     enums = definition.get('enums', list())
     namespace = definition.get('namespace', None)
 
-    generate_include_all(LrpcDef(definition), output)
+    generate_include_all(LrpcDef(definition), namespace, output)
     generate_structs(structs, namespace, output)
     generate_enums(enums, namespace, output)
     generate_shims(LrpcDef(definition).services(), namespace, output)

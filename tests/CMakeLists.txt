@@ -36,7 +36,6 @@ add_executable(UnitTests
                 TestServer2_s0.cpp
                 TestServer2_s1.cpp
                 TestServer3.cpp
-                TestServer.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server1/Server1.hpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server2/Server2.hpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server3/Server3.hpp)

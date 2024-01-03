@@ -1,50 +1,47 @@
+#include "generated/Server3/Server3.hpp"
+#include "generated/Server3/s00_ServiceShim.hpp"
+#include "generated/Server3/s01_ServiceShim.hpp"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "lrpc/Server.hpp"
 
-class ServiceMock : public lrpc::Service
+class s00Service : public srv3::s00ServiceShim
 {
 public:
-    void decode(Reader & reader, Writer& writer) override
+    uint8_t f0(uint8_t p1) override
     {
-        while (true)
-        {
-            const auto b = reader.read<uint8_t>();
-            if (b)
-            {
-                received.push_back(b.value());
-            }
-            else
-            {
-                break;
-            }
-        }
+        return p1;
+    }
+};
+
+class s01Service : public srv3::s01ServiceShim
+{
+public:
+    uint16_t f0(uint16_t p1) override
+    {
+        return p1;
+    }
+};
+
+class TestServer : public ::testing::Test, public srv3::Server3
+{
+public:
+    TestServer()
+    {
+        registerService(service00);
+        registerService(service01);
     }
 
-    std::vector<uint8_t> received;
-};
-
-class I0ServiceMock : public ServiceMock
-{
-public:
-    uint32_t id() const override { return 0; }
-};
-
-class I5ServiceMock : public ServiceMock
-{
-public:
-    uint32_t id() const override { return 5; }
-};
-
-class TestServer : public ::testing::Test
-{
-public:
-    void decode(const std::vector<uint8_t> &bytes)
+    void receive(const std::vector<uint8_t> &bytes)
     {
         for (const auto& b : bytes)
         {
-            server.decode(b);
+            lrpcReceive(b);
         }
+    }
+
+    void lrpcTransmit(etl::span<const uint8_t> bytes) override
+    {
+        transmitted.insert(transmitted.end(), bytes.begin(), bytes.end());
     }
 
     void EXPECT_VECTOR_EQ(const std::vector<uint8_t> &v1, const std::vector<uint8_t> &v2)
@@ -52,30 +49,19 @@ public:
         EXPECT_EQ(v1, v2);
     }
 
-    lrpc::Server<> server;
-    I0ServiceMock i0Service;
-    I5ServiceMock i5Service;
+    std::vector<uint8_t> transmitted;
+    s00Service service00;
+    s01Service service01;
 };
-
-TEST_F(TestServer, registerService)
-{
-    server.registerService(i0Service);
-}
 
 TEST_F(TestServer, decodeI0)
 {
-    server.registerService(i0Service);
-    decode({0x04, 0x00, 0xAA, 0xBB});
-
-    EXPECT_VECTOR_EQ({0xAA, 0xBB}, i0Service.received);
+    receive({0x04, 0x00, 0x00, 0xAA});
+    EXPECT_VECTOR_EQ({0x04, 0x00, 0x00, 0xAA}, transmitted);
 }
 
 TEST_F(TestServer, decodeI0AndI5)
 {
-    server.registerService(i0Service);
-    server.registerService(i5Service);
-    decode({0x04, 0x00, 0xAA, 0xBB, 0x04, 0x05, 0xCC, 0xDD});
-
-    EXPECT_VECTOR_EQ({0xAA, 0xBB}, i0Service.received);
-    EXPECT_VECTOR_EQ({0xCC, 0xDD}, i5Service.received);
+    receive({0x04, 0x00, 0x00, 0xBB, 0x05, 0x05, 0x00, 0xCC, 0xDD});
+    EXPECT_VECTOR_EQ({0x04, 0x00, 0x00, 0xBB, 0x05, 0x05, 0x00, 0xCC, 0xDD}, transmitted);
 }

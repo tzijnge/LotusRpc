@@ -1,7 +1,7 @@
 ![example workflow](https://github.com/tzijnge/LotusRpc/actions/workflows/cmake.yml/badge.svg)
 
 # LotusRpc
-RPC framework for embedded systems based on [ETL](https://github.com/ETLCPP/etl)
+RPC framework for embedded systems based on [ETL](https://github.com/ETLCPP/etl). Generates C++ code with no dynamic memory allocations, no exceptions, no RTTI, etc. 
 
 # Features
 ## Supported data types
@@ -55,7 +55,7 @@ Receive and transmit buffer sizes can be configured in the interface definition 
 ## Interface definition file
 File name: example.lrpc.yaml
 ``` yaml
-namespace: "ns"
+namespace: "ex"
 rx_buffer_size: 200
 tx_buffer_size: 300
 services:
@@ -88,3 +88,8 @@ enums:
 ## Generate code
 Basic usage: `python lotusrpc.py example.lrpc.yaml -o output-dir`
 For more info type `python lotusrpc.py --help`
+
+## Use code in your project (server side)
+Include the file `<out-dir>/example/battery_ServiceShim.hpp` in your project. Derive you own service class from `ex::batteryServiceShim` and implement all pure virtual functions. These are the remote procedures that are called when issuing a function call on the client. Implement these functions as desired.
+
+Include the file `<out-dir>/example/example.hpp` in your project. This file gives access to the LRPC server class called `ex::example`. Instantiate your service class(es) and register them to the server with `ex::example::registerService`. Feed incoming bytes to the server by calling the `ex::example::decode` function. You are responsible for making sure this data is correct.

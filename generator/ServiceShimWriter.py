@@ -27,9 +27,10 @@ class ServiceShimWriter(object):
             self.file(f'uint32_t id() const override {{ return {self.service.id()}; }}')
             self.file.newline()
 
-            with self.file.block('void decode(Reader &reader, Writer &writer) override'):
-                self.file('auto messageId = reader.read_unchecked<uint8_t>();')
-                self.file('((this)->*(functionShims.at(messageId)))(reader, writer);')
+            with self.file.block('void invoke(Reader &reader, Writer &writer) override'):
+                self.file('auto functionId = reader.read_unchecked<uint8_t>();')
+                self.file('writer.write_unchecked<uint8_t>(functionId);')
+                self.file('((this)->*(functionShims.at(functionId)))(reader, writer);')
             
             self.file.newline()
             self.file.label('protected')

@@ -17,13 +17,13 @@ class TestServer2 : public ::testing::Test
 public:
     MockS00Service service;
 
-    etl::span<uint8_t> decode(const std::vector<uint8_t> &bytes)
+    etl::span<uint8_t> receive(const std::vector<uint8_t> &bytes)
     {
         const etl::span<const uint8_t> s(bytes.begin(), bytes.end());
 
         lrpc::Service::Reader reader(s.begin(), s.end(), etl::endian::little);
         lrpc::Service::Writer writer(response.begin(), response.end(), etl::endian::little);
-        service.decode(reader, writer);
+        service.invoke(reader, writer);
 
         return { response.begin(), writer.size_bytes()};
     }
@@ -44,14 +44,14 @@ static_assert(std::is_same_v<Server2, lrpc::Server<100, 256>>, "RX and/or TX buf
 TEST_F(TestServer2, decodeF0)
 {
     EXPECT_CALL(service, f0(true, etl::string_view("Test")));
-    auto response = decode({0, 0x01, 'T', 'e', 's', 't', '\0'});
-    EXPECT_TRUE(response.empty());
+    auto response = receive({0, 0x01, 'T', 'e', 's', 't', '\0'});
+    EXPECT_RESPONSE({0}, response);
 }
 
 // Decode void function with auto string as first param
 TEST_F(TestServer2, decodeF1)
 {
     EXPECT_CALL(service, f1(etl::string_view("Test"), true));
-    auto response = decode({1, 'T', 'e', 's', 't', '\0', 0x01});
-    EXPECT_TRUE(response.empty());
+    auto response = receive({1, 'T', 'e', 's', 't', '\0', 0x01});
+    EXPECT_RESPONSE({1}, response);
 }

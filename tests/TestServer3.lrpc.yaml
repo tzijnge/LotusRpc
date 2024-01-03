@@ -1,12 +1,25 @@
 name: "Server3"
+namespace: "srv3"
 services:
   - name: "s00"
     id: 0
     functions:
       - name: "f0"
         id: 0
+        params:
+          - name: p1
+            type: uint8_t
+        returns:
+          - name: r1
+            type: uint8_t
   - name: "s01"
-    id: 7
+    id: 5
     functions:
       - name: "f0"
         id: 0
+        params:
+          - name: p1
+            type: uint16_t
+        returns:
+          - name: r1
+            type: uint16_t

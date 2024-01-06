@@ -5,13 +5,27 @@
 namespace lrpc
 {
 
-template <size_t RXSIZE = 256, size_t TXSIZE = RXSIZE>
+template <size_t MAX_SERVICE_ID, size_t RX_SIZE = 256, size_t TX_SIZE = RX_SIZE>
 class Server
 {
+private:
+    class NullService : public Service
+    {
+    public:
+        uint32_t id() const override { return 0; };
+        void invoke(Reader &reader, Writer &writer) override {};
+    };
+
 public:
+    Server()
+    {
+        static NullService nullService;
+        services.fill(&nullService);
+    }
+
     void registerService(Service &service)
     {
-        services.push_front(service);
+        services[service.id()] = &service;
     }
 
     void lrpcReceive(uint8_t byte)
@@ -28,11 +42,9 @@ public:
     virtual void lrpcTransmit(etl::span<const uint8_t> bytes) = 0;
 
 private:
-    using ServiceList = etl::intrusive_forward_list<Service, ServiceListItem>;
-
-    etl::vector<uint8_t, RXSIZE> receiveBuffer;
-    etl::vector<uint8_t, TXSIZE> sendBuffer;
-    ServiceList services;
+    etl::vector<uint8_t, RX_SIZE> receiveBuffer;
+    etl::vector<uint8_t, TX_SIZE> sendBuffer;
+    etl::array<Service*, MAX_SERVICE_ID + 1> services;
 
     bool messageIsComplete() const
     {
@@ -50,13 +62,7 @@ private:
         auto serviceId = reader.read_unchecked<uint8_t>();
         writer.write_unchecked<uint8_t>(serviceId);
 
-        for (auto& service : services)
-        {
-            if (service.id() == serviceId)
-            {
-                service.invoke(reader, writer);
-            }
-        }
+        services.at(serviceId)->invoke(reader, writer);
 
         sendBuffer[0] = writer.size_bytes();
 

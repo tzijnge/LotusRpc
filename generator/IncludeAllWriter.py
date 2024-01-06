@@ -13,22 +13,27 @@ class IncludeAllWriter(object):
         self.file('#pragma once')
         self.file('#include "lrpc/Server.hpp"')
         for s in self.lrpc_def.services():
-            self.write_service_include(s)
+            self.__write_service_include(s)
             self.file(f'#include "{s.name()}.hpp"')
-
-        rx = self.lrpc_def.rx_buffer_size()
-        tx = self.lrpc_def.tx_buffer_size()
 
         self.file.newline()
         
         ns = self.lrpc_def.namespace()
         if ns:
             with self.file.block(f'namespace {ns}'):
-                self.file(f'using {self.lrpc_def.name()} = lrpc::Server<{rx}, {tx}>;')
+                self.__write_server_class()
         else:
-            self.file(f'using {self.lrpc_def.name()} = lrpc::Server<{rx}, {tx}>;')
+            self.__write_server_class()
 
-    def write_service_include(self, service):
+    def __write_server_class(self):
+        rx = self.lrpc_def.rx_buffer_size()
+        tx = self.lrpc_def.tx_buffer_size()
+        name = self.lrpc_def.name()
+        number_services = self.lrpc_def.max_service_id()
+
+        self.file.write(f'using {self.lrpc_def.name()} = lrpc::Server<{number_services}, {rx}, {tx}>;')
+
+    def __write_service_include(self, service):
         include_file = CppFile(f'{self.output}/{service.name()}.hpp')
         include_file('#pragma once')
 

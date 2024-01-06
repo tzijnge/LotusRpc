@@ -22,10 +22,10 @@ public:
     }
 };
 
-class TestServer : public ::testing::Test, public srv3::Server3
+class TestServer3 : public ::testing::Test, public srv3::Server3
 {
 public:
-    TestServer()
+    TestServer3()
     {
         registerService(service00);
         registerService(service01);
@@ -54,15 +54,15 @@ public:
     s01Service service01;
 };
 
-static_assert(std::is_same_v<srv3::Server3, lrpc::Server<256, 256>>, "RX and/or TX buffer size are unequal to the definition file");
+static_assert(std::is_same_v<srv3::Server3, lrpc::Server<6, 256, 256>>, "RX and/or TX buffer size are unequal to the definition file");
 
-TEST_F(TestServer, decodeI0)
+TEST_F(TestServer3, decodeI0)
 {
     receive({0x04, 0x00, 0x00, 0xAA});
     EXPECT_VECTOR_EQ({0x04, 0x00, 0x00, 0xAA}, transmitted);
 }
 
-TEST_F(TestServer, decodeI0AndI5)
+TEST_F(TestServer3, decodeI0AndI5)
 {
     receive({0x04, 0x00, 0x00, 0xBB, 0x05, 0x05, 0x00, 0xCC, 0xDD});
     EXPECT_VECTOR_EQ({0x04, 0x00, 0x00, 0xBB, 0x05, 0x05, 0x00, 0xCC, 0xDD}, transmitted);

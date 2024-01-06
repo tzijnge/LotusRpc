@@ -68,6 +68,10 @@ class LrpcDef(object):
     def services(self):
         return [LrpcService(s) for s in self.raw['services']]
 
+    def max_service_id(self):
+        service_ids = [s.id() for s in self.services()]
+        return max(service_ids)
+
     def structs(self):
         return self.raw['structs']
 

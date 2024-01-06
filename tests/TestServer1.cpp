@@ -76,7 +76,7 @@ private:
     etl::array<uint8_t, 256> response;
 };
 
-static_assert(std::is_same_v<ts1::Server1, lrpc::Server<100, 200>>, "RX and/or TX buffer size are unequal to the definition file");
+static_assert(std::is_same_v<ts1::Server1, lrpc::Server<0, 100, 200>>, "RX and/or TX buffer size are unequal to the definition file");
 
 // Decode void function f0. Make sure f1 is not called
 TEST_F(TestServer1, decodeF0)

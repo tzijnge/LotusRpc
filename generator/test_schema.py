@@ -2,6 +2,7 @@ import pytest
 import jsonschema
 import yaml
 from SematicAnalyzer import SemanticAnalyzer
+from LrpcDef import LrpcDef
 
 def semantic_errors(rpc_def):
     with open('generator/lotusrpc-schema.json') as schema_file:
@@ -9,8 +10,8 @@ def semantic_errors(rpc_def):
         schema = yaml.safe_load(schema_file)
         jsonschema.validate(definition, schema)
 
-        sa = SemanticAnalyzer()
-        sa.analyze(definition)
+        sa = SemanticAnalyzer(LrpcDef(definition))
+        sa.analyze()
         return sa.errors, sa.warnings
 
 def test_duplicate_enum_field_names():

@@ -77,7 +77,7 @@
     },
     "service_decl": {
       "type": "object",
-      "required": [ "name", "id", "functions"],
+      "required": [ "name", "functions"],
       "additionalProperties": false,
       "properties": {
         "name": { "$ref": "#/$defs/cppid" },

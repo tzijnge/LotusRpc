@@ -15,31 +15,33 @@ def create_dir_if_not_exists(dir):
     if not path.exists(dir):
         os.makedirs(dir, 511, True)
 
-def check_input(input, warnings_as_errors):
-    errors_found = False
-
+def validate_yaml(definition, input: str):
     with open(f'{path.dirname(__file__)}/lotusrpc-schema.json', 'r') as schema_file:
         schema = yaml.safe_load(schema_file)
 
-        definition = yaml.safe_load(input)
         try:
             jsonschema.validate(definition, schema)
+            return False
         except jsonschema.exceptions.ValidationError as e:
             print('############################################')
             print(f'############### {input.name} ###############')
             print('############################################')
             print(e)
+            return True
 
-        sa = SemanticAnalyzer()
-        sa.analyze(definition)
+def validate_definition(lrpc_def: LrpcDef, warnings_as_errors: bool):
+    errors_found = False
 
-        if warnings_as_errors:
-            for e in sa.errors + sa.warnings:
-                errors_found = True
-                print(f'Error: {e}')
-        else:
-            for w in sa.warnings:
-                print(f'Warning: {w}')
+    sa = SemanticAnalyzer(lrpc_def)
+    sa.analyze()
+
+    if warnings_as_errors:
+        for e in sa.errors + sa.warnings:
+            errors_found = True
+            print(f'Error: {e}')
+    else:
+        for w in sa.warnings:
+            print(f'Warning: {w}')
 
     return errors_found
 
@@ -62,10 +64,8 @@ def generate_shims(lrpc_def: LrpcDef, output: str):
         writer = ServiceShimWriter(s, lrpc_def, output)
         writer.write()
 
-def generate_rpc(input: str, output: str):
+def generate_rpc(lrpc_def: LrpcDef, output: str):
     create_dir_if_not_exists(output)
-
-    lrpc_def = LrpcDef(yaml.safe_load(input))
 
     generate_include_all(lrpc_def, output)
     generate_structs(lrpc_def, output)
@@ -88,10 +88,17 @@ def generate_rpc(input: str, output: str):
                 type=click.File('r'))
 def generate(warnings_as_errors, output, input):
     '''Generate code for file(s) INPUTS'''
-    errors_found = check_input(input, warnings_as_errors)
+
+    definition = yaml.safe_load(input)
+    errors_found = validate_yaml(definition, input)
+    if errors_found:
+        return
+    
+    lrpc_def = LrpcDef(definition)
+    errors_found = validate_definition(lrpc_def, warnings_as_errors)
     if not errors_found:
         input.seek(0)
-        generate_rpc(input, output)
+        generate_rpc(lrpc_def, output)
 
 if __name__ == "__main__":
     generate()

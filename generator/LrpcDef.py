@@ -3,19 +3,14 @@ from LrpcService import LrpcService
 class LrpcDef(object):
     def __init__(self, raw) -> None:
         self.raw = raw
-        if 'structs' not in self.raw:
-            self.raw['structs'] = list()
-        if 'enums' not in self.raw:
-            self.raw['enums'] = list()
+        self.__init_structs()
+        self.__init_enums()
+        self.__init_buffer_sizes()
+        self.__init_namespace()
+        self.__init_ids()
+        self.__init_base_types()
 
-        if 'tx_buffer_size' not in self.raw:
-            self.raw['tx_buffer_size'] = 256
-        if 'rx_buffer_size' not in self.raw:
-            self.raw['rx_buffer_size'] = 256
-
-        if 'namespace' not in self.raw:
-            self.raw['namespace'] = None
-        
+    def __init_base_types(self):
         for s in self.raw['services']:
             for f in s['functions']:
                 for p in f.get('params', list()):
@@ -29,6 +24,34 @@ class LrpcDef(object):
             for f in s['fields']:
                 f['base_type_is_struct'] = self.__base_type_is_struct(f)
                 f['base_type_is_enum'] = self.__base_type_is_enum(f)
+
+    def __init_ids(self):
+        last_service_id = -1
+
+        for s in self.raw['services']:
+            if 'id' in s:
+                last_service_id = s['id']
+            else:
+                last_service_id = last_service_id + 1
+                s['id'] = last_service_id
+
+    def __init_namespace(self):
+        if 'namespace' not in self.raw:
+            self.raw['namespace'] = None
+
+    def __init_buffer_sizes(self):
+        if 'tx_buffer_size' not in self.raw:
+            self.raw['tx_buffer_size'] = 256
+        if 'rx_buffer_size' not in self.raw:
+            self.raw['rx_buffer_size'] = 256
+
+    def __init_structs(self):
+        if 'structs' not in self.raw:
+            self.raw['structs'] = list()
+
+    def __init_enums(self):
+        if 'enums' not in self.raw:
+            self.raw['enums'] = list()
 
     def name(self):
         return self.raw['name']

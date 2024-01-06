@@ -23,3 +23,7 @@ services:
         returns:
           - name: r1
             type: uint16_t
+  - name: "s02"
+    functions:
+      - name: "f0"
+        id: 0

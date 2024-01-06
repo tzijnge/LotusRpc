@@ -4,12 +4,12 @@ class SemanticAnalyzer(object):
     errors : List[str]
     warnings : List[str]
 
-    def __init__(self) -> None:
+    def __init__(self, definition: LrpcDef) -> None:
         self.errors = list()
         self.warnings = list()
-        self.__services = list()
-        self.__enums = list()
-        self.__structs = list()
+        self.__services = definition.services()
+        self.__enums = definition.enums()
+        self.__structs = definition.structs()
 
     def __duplicates(self, input):
         unique = list()
@@ -171,13 +171,7 @@ class SemanticAnalyzer(object):
         if len(offenders) > 0:
             self.errors.append(f'A function cannot return an auto string: {offenders}')
 
-    def analyze(self, definition) -> None:
-        self.__services = LrpcDef(definition).services()
-        if 'enums' in definition:
-            self.__enums = definition['enums']
-        if 'structs' in definition:
-            self.__structs = definition['structs']
-
+    def analyze(self) -> None:
         self.__check_duplicate_service_ids()
         self.__check_duplicate_function_ids()
         self.__check_duplicate_enum_field_ids()

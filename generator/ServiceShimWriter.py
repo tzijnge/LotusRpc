@@ -45,11 +45,25 @@ class ServiceShimWriter(object):
 
                 self.file.newline()
 
-            self.file.newline()
             self.file.label('private')
-            with self.file.block('inline static const etl::array functionShims', ';'):
-                for f in self.service.functions():
-                    self.file(f'&{self.service.name()}ServiceShim::{f.name()}_shim,')
+            self.__write_shim_array()
+
+    def __write_shim_array(self):
+        null_shim_name = 'null'
+        functions = self.service.functions()
+        function_ids = [f.id() for f in functions]
+        function_names = [f.name() for f in functions]
+        function_info = dict(zip(function_ids, function_names))
+        max_function_id = max(function_ids)
+
+        if max_function_id != (len(functions) - 1):
+            self.file.write(f'constexpr void {null_shim_name}_shim(Reader &reader, Writer &writer) {{}}')
+            self.file.newline()
+
+        with self.file.block('inline static const etl::array functionShims', ';'):
+            for fid in range(0, max_function_id + 1):
+                name = function_info.get(fid, null_shim_name)
+                self.file(f'&{self.service.name()}ServiceShim::{name}_shim,')
 
     def __write_function_shim(self, function):
         for p in function.params():

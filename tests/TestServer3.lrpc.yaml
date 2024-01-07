@@ -5,7 +5,6 @@ services:
     id: 0
     functions:
       - name: "f0"
-        id: 0
         params:
           - name: p1
             type: uint8_t
@@ -16,7 +15,7 @@ services:
     id: 5
     functions:
       - name: "f0"
-        id: 0
+        id: 8
         params:
           - name: p1
             type: uint16_t

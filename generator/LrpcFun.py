@@ -3,10 +3,16 @@ from LrpcVar import LrpcVar
 class LrpcFun(object):
     def __init__(self, raw) -> None:
         self.raw = raw
-        if 'params' not in self.raw:
-            self.raw['params'] = list()
+        self.__init_params()
+        self.__init_returns()
+
+    def __init_returns(self):
         if 'returns' not in self.raw:
             self.raw['returns'] = list()
+
+    def __init_params(self):
+        if 'params' not in self.raw:
+            self.raw['params'] = list()
 
     def params(self):
         return [LrpcVar(p) for p in self.raw['params']]

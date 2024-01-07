@@ -3,6 +3,17 @@ from LrpcFun import LrpcFun
 class LrpcService(object):
     def __init__(self, raw) -> None:
         self.raw = raw
+        self.__init_functions_ids()
+
+    def __init_functions_ids(self):
+        last_function_id = -1
+
+        for f in self.raw['functions']:
+            if 'id' in f:
+                last_function_id = f['id']
+            else:
+                last_function_id = last_function_id + 1
+                f['id'] = last_function_id
 
     def name(self):
         return self.raw['name']

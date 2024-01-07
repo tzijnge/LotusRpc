@@ -7,7 +7,7 @@ class LrpcDef(object):
         self.__init_enums()
         self.__init_buffer_sizes()
         self.__init_namespace()
-        self.__init_ids()
+        self.__init_service_ids()
         self.__init_base_types()
 
     def __init_base_types(self):
@@ -25,7 +25,7 @@ class LrpcDef(object):
                 f['base_type_is_struct'] = self.__base_type_is_struct(f)
                 f['base_type_is_enum'] = self.__base_type_is_enum(f)
 
-    def __init_ids(self):
+    def __init_service_ids(self):
         last_service_id = -1
 
         for s in self.raw['services']:

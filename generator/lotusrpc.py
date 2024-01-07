@@ -23,9 +23,10 @@ def validate_yaml(definition, input: str):
             jsonschema.validate(definition, schema)
             return False
         except jsonschema.exceptions.ValidationError as e:
-            print('############################################')
-            print(f'############### {input.name} ###############')
-            print('############################################')
+            print('#' * 80)
+            print(' LRPC definition parsing error '.center(80, '#'))
+            print(f' {input.name} '.center(80, '#'))
+            print('#' * 80)
             print(e)
             return True
 

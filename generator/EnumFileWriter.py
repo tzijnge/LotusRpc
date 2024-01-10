@@ -1,8 +1,9 @@
 from code_generation.code_generator import CppFile
 from LrpcDef import LrpcDef
+from LrpcEnum import LrpcEnum
 
 class EnumFileWriter(object):
-    def __init__(self, descriptor, lrpc_def: LrpcDef, output: str):
+    def __init__(self, descriptor: LrpcEnum, lrpc_def: LrpcDef, output: str):
         self.descriptor = descriptor
         self.file = CppFile(f'{output}/{self.__qualified_name()}.hpp')
         self.namespace = lrpc_def.namespace()
@@ -33,8 +34,8 @@ class EnumFileWriter(object):
     def __write_enum_impl(self):
         qn = self.__qualified_name()
         with self.file.block(f'enum class {qn}', ';'):
-            for f in self.descriptor['fields']:
-                self.file(f'{f["name"]} = {f["id"]},')
+            for f in self.descriptor.fields():
+                self.file(f'{f.name()} = {f.id()},')
 
     def __write_codec(self):
         with self.file.block('namespace lrpc'):
@@ -62,4 +63,4 @@ class EnumFileWriter(object):
         return f'{ns}::{qn}' if ns else qn
     
     def __qualified_name(self):
-        return self.descriptor['name']
+        return self.descriptor.name()

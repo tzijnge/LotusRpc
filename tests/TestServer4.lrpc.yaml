@@ -1,0 +1,66 @@
+name: "Server4"
+namespace: "srv4"
+constants:
+  - name: local
+    value: &array_size 55
+    local: true
+    cppType: uint16_t
+  - name: c0
+    value: 111
+  - name: c1
+    value: 123
+    cppType: uint8_t
+  - name: c2
+    value: -123
+    cppType: int8_t
+  - name: c3
+    value: 1234
+    cppType: uint16_t
+  - name: c4
+    value: -1234
+    cppType: int16_t
+  - name: c5
+    value: 123456
+    cppType: uint32_t
+  - name: c6
+    value: -123456
+    cppType: int32_t
+  - name: c7
+    value: 111222333444
+    cppType: uint64_t
+  - name: c8
+    value: -111222333444
+    cppType: int64_t
+  - name: c9
+    value: 111.222
+  - name: c10
+    value: 222.333
+    cppType: float
+  - name: c11
+    value: 333.444
+    cppType: double
+  - name: c12
+    value: True
+  - name: c13
+    value: True
+    cppType: bool
+  - name: c14
+    value: False
+    cppType: bool
+  - name: c15
+    value: Yes
+    cppType: bool
+  - name: c16
+    value: OFF
+    cppType: bool
+  - name: c17
+    value: 2.3E-5
+    cppType: double
+services:
+  - name: "s00"
+    functions:
+      - name: "f0"
+        returns:
+          - name: "a"
+            type: uint16_t
+            count: *array_size

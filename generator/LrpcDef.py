@@ -1,4 +1,7 @@
 from LrpcService import LrpcService
+from LrpcConstant import LrpcConstant
+from LrpcStruct import LrpcStruct
+from LrpcEnum import LrpcEnum
 
 class LrpcDef(object):
     def __init__(self, raw) -> None:
@@ -9,6 +12,7 @@ class LrpcDef(object):
         self.__init_namespace()
         self.__init_service_ids()
         self.__init_base_types()
+        self.__init_constants()
 
     def __init_base_types(self):
         for s in self.raw['services']:
@@ -53,6 +57,10 @@ class LrpcDef(object):
         if 'enums' not in self.raw:
             self.raw['enums'] = list()
 
+    def __init_constants(self):
+        if 'constants' not in self.raw:
+            self.raw['constants'] = list()
+
     def name(self):
         return self.raw['name']
 
@@ -73,10 +81,13 @@ class LrpcDef(object):
         return max(service_ids)
 
     def structs(self):
-        return self.raw['structs']
+        return [LrpcStruct(s) for s in self.raw['structs']]
 
     def enums(self):
-        return self.raw['enums']
+        return [LrpcEnum(s) for s in self.raw['enums']]
+
+    def constants(self):
+        return [LrpcConstant(c) for c in self.raw['constants']]
 
     def __struct_names(self):
         return [s['name'] for s in self.raw['structs']]

@@ -97,7 +97,7 @@ enums:
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
     assert len(warnings) == 1
-    assert "Duplicate struct/enum name(s): ['e0']" in errors
+    assert "Duplicate struct/enum/constant name(s): ['e0']" in errors
 
 def test_duplicate_struct_names():
     rpc_def = \
@@ -123,7 +123,7 @@ structs:
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
     assert len(warnings) == 1
-    assert "Duplicate struct/enum name(s): ['s0']" in errors
+    assert "Duplicate struct/enum/constant name(s): ['s0']" in errors
 
 def test_duplicate_struct_enum_names():
     rpc_def = \
@@ -150,7 +150,7 @@ enums:
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
     assert len(warnings) == 1
-    assert "Duplicate struct/enum name(s): ['s0']" in errors
+    assert "Duplicate struct/enum/constant name(s): ['s0']" in errors
 
 def test_duplicate_struct_field_names():
     rpc_def = \
@@ -276,6 +276,29 @@ services:
     assert len(errors) == 1
     assert len(warnings) == 0
     assert "Duplicate function name(s): [('i0', 'f0'), ('i1', 'f1')]" in errors
+
+def test_duplicate_constant_names():
+    rpc_def = \
+'''name: "test"
+constants:
+  - name : c0
+    value : 1
+  - name : c0
+    value : 2
+  - name : c1
+    value : 1
+  - name : c1
+    value : 2 
+services:
+  - name: "s0"
+    functions:
+      - name: "f0"
+'''
+
+    errors, warnings = semantic_errors(rpc_def)
+    assert len(errors) == 1
+    assert len(warnings) == 0
+    assert "Duplicate struct/enum/constant name(s): ['c0', 'c1']" in errors
 
 def test_undeclared_custom_type():
     rpc_def = \

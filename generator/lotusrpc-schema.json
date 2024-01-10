@@ -64,6 +64,23 @@
         }
       }
     },
+    "const_decl":{
+      "type": "object",
+      "description": "A constant declaration",
+      "required": [ "name",  "value" ],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "$ref": "#/$defs/cppid" },
+        "value": {
+          "oneOf" : [
+            {"type": "number"},
+            {"type": "boolean"}
+          ]
+        },
+        "cppType": {"enum": ["uint8_t", "int8_t", "uint16_t", "int16_t", "uint32_t", "int32_t", "uint64_t", "int64_t", "float", "double", "bool"]},
+        "local": {"type": "boolean", "description": "If true, no code is generated for this constant. It can only be used inside the definition file. Default false"} 
+      }
+    },
     "function_decl":{
       "type": "object",
       "required": ["name"],
@@ -130,6 +147,12 @@
       "minItems": 1,
       "items": { "$ref": "#/$defs/enum_decl" },
       "description": "A list of custom enums"
+    },
+    "constants": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/const_decl" },
+      "description": "A list of custom constants"
     }
   }
 }

@@ -1,6 +1,7 @@
 import click
 from SematicAnalyzer import SemanticAnalyzer
 from StructFileWriter import StructFileWriter
+from ConstantsFileWriter import ConstantsFileWriter
 from EnumFileWriter import EnumFileWriter
 from IncludeAllWriter import IncludeAllWriter
 from ServiceShimWriter import ServiceShimWriter
@@ -51,6 +52,10 @@ def generate_structs(lrpc_def: LrpcDef, output: str):
         sfw = StructFileWriter(s, lrpc_def, output)
         sfw.write()
 
+def generate_constants(lrpc_def: LrpcDef, output: str):
+    cfw = ConstantsFileWriter(lrpc_def, output)
+    cfw.write()
+
 def generate_enums(lrpc_def: LrpcDef, output: str):
     for e in lrpc_def.enums():
         sfw = EnumFileWriter(e, lrpc_def, output)
@@ -72,6 +77,7 @@ def generate_rpc(lrpc_def: LrpcDef, output: str):
     generate_structs(lrpc_def, output)
     generate_enums(lrpc_def, output)
     generate_shims(lrpc_def, output)
+    generate_constants(lrpc_def, output)
 
 @click.command()
 @click.option('-w', '--warnings_as_errors',

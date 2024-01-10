@@ -1,9 +1,10 @@
 from code_generation.code_generator import CppFile
 from LrpcVar import LrpcVar
 from LrpcDef import LrpcDef
+from LrpcStruct import LrpcStruct
 
 class StructFileWriter(object):
-    def __init__(self, descriptor, lrpc_def: LrpcDef, output: str):
+    def __init__(self, descriptor: LrpcStruct, lrpc_def: LrpcDef, output: str):
         self.descriptor = descriptor
         self.lrpc_def = lrpc_def
         self.namespace = lrpc_def.namespace()
@@ -36,13 +37,13 @@ class StructFileWriter(object):
 
     def __write_struct_impl(self):
         with self.file.block(f'struct {self.__qualified_name()}', ';'):
-            for f in self.descriptor['fields']:
+            for f in self.descriptor.fields():
                 self.__write_struct_field(f)
 
             self.file.newline()
 
             with self.file.block(f'bool operator==(const {self.__qualified_name()}& other) const'):
-                field_names = [f['name'] for f in self.descriptor['fields']]
+                field_names = [f.name() for f in self.descriptor.fields()]
                 fields_equal = [f'(this->{n} == other.{n})' for n in field_names]
                 all_fields_equal = ' && '.join(fields_equal)
                 self.file(f'return {all_fields_equal};')
@@ -68,8 +69,7 @@ class StructFileWriter(object):
 
         self.file(f'{self.__name()} obj;')
 
-        for field in self.descriptor['fields']:
-            f = LrpcVar(field)
+        for f in self.descriptor.fields():
             if f.base_type_is_string():
                 self.file(f'const auto {f.name()} = lrpc::read_unchecked<{f.read_type()}>(reader);')
                 self.file(f'lrpc::copy<{f.read_type()}>({f.name()}, obj.{f.name()});')
@@ -83,15 +83,13 @@ class StructFileWriter(object):
     def __write_encoder_body(self):
         ns_prefix = f'{self.namespace}::' if self.namespace else ''
 
-        for field in self.descriptor['fields']:
-            f = LrpcVar(field)
+        for f in self.descriptor.fields():
             if f.base_type_is_custom():
                 self.file(f'lrpc::write_unchecked<{ns_prefix}{f.write_type()}>(writer, obj.{f.name()});')
             else:
                 self.file(f'lrpc::write_unchecked<{f.write_type()}>(writer, obj.{f.name()});')
 
-    def __write_struct_field(self, field):
-        f = LrpcVar(field)
+    def __write_struct_field(self, f: LrpcVar):
         self.file(f'{f.field_type()} {f.name()};')
 
     def __name(self):
@@ -100,11 +98,11 @@ class StructFileWriter(object):
         return f'{ns}::{qn}' if ns else qn
     
     def __qualified_name(self):
-        return self.descriptor['name']
+        return self.descriptor.name()
 
     def __required_includes(self):
         includes = set()
-        for f in self.descriptor['fields']:
-            includes.update(LrpcVar(f).required_includes())
+        for f in self.descriptor.fields():
+            includes.update(f.required_includes())
 
         return includes

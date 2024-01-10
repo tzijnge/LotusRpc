@@ -29,6 +29,11 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server3/Server3.
                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/TestServer3.lrpc.yaml
                   COMMAND python ${CMAKE_SOURCE_DIR}/generator/lotusrpc.py ${CMAKE_CURRENT_SOURCE_DIR}/TestServer3.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server3)
 
+add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server4/Server4.hpp
+                  COMMENT "Generate TestServer4 LRPC files"
+                  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/TestServer4.lrpc.yaml
+                  COMMAND python ${CMAKE_SOURCE_DIR}/generator/lotusrpc.py ${CMAKE_CURRENT_SOURCE_DIR}/TestServer4.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server4)
+
 set_directory_properties(PROPERTIES ADDITIONAL_CLEAN_FILES ${CMAKE_CURRENT_SOURCE_DIR}/generated)
 
 add_executable(UnitTests
@@ -37,9 +42,11 @@ add_executable(UnitTests
                 TestServer2_s0.cpp
                 TestServer2_s1.cpp
                 TestServer3.cpp
+                TestServer4.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server1/Server1.hpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server2/Server2.hpp
-                ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server3/Server3.hpp)
+                ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server3/Server3.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server4/Server4.hpp)
 
 target_include_directories(UnitTests PRIVATE ../include)
 target_include_directories(UnitTests PRIVATE ../external/etl/include)

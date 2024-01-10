@@ -102,27 +102,16 @@ Include the file `<out-dir>/example/example.hpp` in your project. This file give
 # Reference
 The LRPC definition is written in YAML and therefore benefits from all the features and tooling that are available for YAML. Think about editor support, easy parsing in various programming languages. The fact that there is a schema available, makes it possible to have code completion and documentation in supporting editors.
 
-The LRPC definition file has two required properties:
-- [name](#name)
-- [services](#services)
-
-and the following optional properties:
-
-- namespace
-- rx_buffer_size
-- tx_buffer_size
-- structs
-- enums
-- constants
+The LRPC definition file has the following properties:
 
 | Required  | Optional |
 | --------- |--------- |
-| name      | structs  |
-| services  | enums    |
-|           | constants|
-|           | rx_buffer_size |
-|           | tx_buffer_size |
-|           | namespace |
+| [name](#name)          | structs        |
+| [services](#services)  | enums          |
+|                        | constants      |
+|                        | rx_buffer_size |
+|                        | tx_buffer_size |
+|                        | namespace      |
 
 At the top level it is also allowed to use additional properties. These properties are ignored by the LRPC tool, but may be useful creating anchors or for any other purpose that you may have. Remember that it's very easy to parse the definition file, so everyone is free to extend the functionality of LRPC.
 

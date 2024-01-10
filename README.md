@@ -98,3 +98,60 @@ For more info type `python lotusrpc.py --help`
 Include the file `<out-dir>/example/battery_ServiceShim.hpp` in your project. Derive you own service class from `ex::batteryServiceShim` and implement all pure virtual functions. These are the remote procedures that are called when issuing a function call on the client. Implement these functions as desired.
 
 Include the file `<out-dir>/example/example.hpp` in your project. This file gives access to the LRPC server class called `ex::example`. Instantiate your service class(es) and register them to the server with `ex::example::registerService`. Feed incoming bytes to the server by calling the `ex::example::decode` function. You are responsible for making sure this data is correct.
+
+# Reference
+The LRPC definition is written in YAML and therefore benefits from all the features and tooling that are available for YAML. Think about editor support, easy parsing in various programming languages. The fact that there is a schema available, makes it possible to have code completion and documentation in supporting editors.
+
+The LRPC definition file has two required properties:
+- [name](#name)
+- [services](#services)
+
+and the following optional properties:
+
+- namespace
+- rx_buffer_size
+- tx_buffer_size
+- structs
+- enums
+- constants
+
+| Required  | Optional |
+| --------- |--------- |
+| name      | structs  |
+| services  | enums    |
+|           | constants|
+|           | rx_buffer_size |
+|           | tx_buffer_size |
+|           | namespace |
+
+At the top level it is also allowed to use additional properties. These properties are ignored by the LRPC tool, but may be useful creating anchors or for any other purpose that you may have. Remember that it's very easy to parse the definition file, so everyone is free to extend the functionality of LRPC.
+
+## Name
+This is the name of the RPC engine. It is used in generated files and directories, as well as generated code. Therefore, the name must be a [valid C++ identifier](https://en.cppreference.com/w/cpp/language/identifiers)
+
+## Services
+A single RPC engine can contain up to 256 different services. A service can be considered a group of related functions. In the generated code a service with functions corresponds to a class with methods. A RPC engine must have at least one service.
+
+A service has the following properties
+| Required  | Optional |
+| --------- |--------- |
+| name      | id       |
+| functions |          |
+
+`name` is the name of the service. It must be a valid C++ identifier.
+
+### Service ID
+Every LRPC service has an identifier that is needed for proper transfer of information between two endpoints. If the service identifier is not specified, LRPC will generate one. When starting out with a fresh RPC, it's usually not necessary to specify service IDs. Later on it may be useful to explicitly specify a service ID for backwards compatibility.
+> **_NOTE:_**  The most efficient code is generated when service IDs are contiguous and start at 0. This is the default when no IDs are specified
+
+### Functions
+A single LRPC service can contain up to 256 functions (but at least 1). A function can have any number of arguments and return values.
+
+A function has the following properties:
+| Required  | Optional |
+| --------- |--------- |
+| name      | id       |
+|           | params   |
+|           | returns  |
+
+`name` is the name of the function. It must be a valid C++ identifier. `id` is the function identifier, similar to the [service ID](#service-id). `params` is a list of parameters and `returns` is a list of return values.

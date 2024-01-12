@@ -53,6 +53,13 @@ constants:
   - name: c17
     value: 2.3E-5
     cppType: double
+  - name: c18
+    value: This is an implicit string constant
+  - name: c19
+    value: This is an explicit string constant
+    cppType: string
+  - name: c20
+    value: !!str 333.444
 services:
   - name: "s00"
     functions:

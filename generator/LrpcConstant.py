@@ -11,6 +11,8 @@ class LrpcConstant(object):
                 self.raw["cppType"] = "float"
             if isinstance(self.value(), bool):
                 self.raw["cppType"] = "bool"
+            if isinstance(self.value(), str):
+                self.raw["cppType"] = "string"
 
     def name(self):
         return self.raw['name']

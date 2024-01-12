@@ -15,7 +15,10 @@ class ConstantsFileWriter(object):
         self.file('#pragma once')
 
     def __write_includes(self):
-        self.file('#include <stdint.h>')
+        if self.__has_integer_constants():
+            self.file('#include <stdint.h>')
+        if self.__has_string_constants():
+            self.file('#include <etl/string_view.h>')
         self.file.newline()
 
     def __write_constants(self):
@@ -27,7 +30,24 @@ class ConstantsFileWriter(object):
 
     def __write_constants_impl(self):
         for c in self.lrpc_def.constants():
-            t = c.cpp_type()
             n = c.name()
-            v = str(c.value()).lower()
+
+            if c.cpp_type() == 'string':
+                t = 'etl::string_view'
+            else:
+                t = c.cpp_type()
+
+            if c.cpp_type() == 'string':
+                v = f'"{c.value()}"'
+            else:
+                v = str(c.value()).lower()
+
             self.file.write(f'constexpr {t} {n} {{{v}}};')
+
+    def __has_integer_constants(self):
+        int_types = [t.cpp_type() for t in self.lrpc_def.constants() if 'int' in t.cpp_type()]
+        return len(int_types) != 0
+
+    def __has_string_constants(self):
+        types = [t.cpp_type() for t in self.lrpc_def.constants()]
+        return 'string' in types

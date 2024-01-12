@@ -55,3 +55,12 @@ static_assert(std::is_same_v<decltype(srv4::c16), const bool>, "");
 constexpr double testc17 {2.3e-5};
 static_assert(srv4::c17 == testc17, "");
 static_assert(std::is_same_v<decltype(srv4::c17), const double>, "");
+
+static_assert(srv4::c18 == "This is an implicit string constant", "");
+static_assert(std::is_same_v<decltype(srv4::c18), const etl::string_view>, "");
+
+static_assert(srv4::c19 == "This is an explicit string constant", "");
+static_assert(std::is_same_v<decltype(srv4::c19), const etl::string_view>, "");
+
+static_assert(srv4::c20 == "333.444", "");
+static_assert(std::is_same_v<decltype(srv4::c20), const etl::string_view>, "");

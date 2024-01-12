@@ -71,13 +71,8 @@
       "additionalProperties": false,
       "properties": {
         "name": { "$ref": "#/$defs/cppid" },
-        "value": {
-          "oneOf" : [
-            {"type": "number"},
-            {"type": "boolean"}
-          ]
-        },
-        "cppType": {"enum": ["uint8_t", "int8_t", "uint16_t", "int16_t", "uint32_t", "int32_t", "uint64_t", "int64_t", "float", "double", "bool"]}
+        "value": { "type": [ "number", "boolean", "string" ]},
+        "cppType": {"enum": ["uint8_t", "int8_t", "uint16_t", "int16_t", "uint32_t", "int32_t", "uint64_t", "int64_t", "float", "double", "bool", "string"]}
       }
     },
     "function_decl":{

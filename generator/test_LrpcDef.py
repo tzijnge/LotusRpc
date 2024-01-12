@@ -103,6 +103,8 @@ constants:
   - name: "c5"
     value: 123
     cppType: uint64_t
+  - name: "c6"
+    value: This is a string
 services:
   - name: "s1"
     functions:
@@ -110,7 +112,7 @@ services:
 '''
     lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
     constants = lrpc_def.constants()
-    assert(len(constants) == 5)
+    assert(len(constants) == 6)
 
     c1 = constants[0]
     assert(c1.name() == "c1")
@@ -136,3 +138,8 @@ services:
     assert(c5.name() == "c5")
     assert(c5.value() == 123)
     assert(c5.cpp_type() == "uint64_t")
+
+    c6 = constants[5]
+    assert(c6.name() == "c6")
+    assert(c6.value() == "This is a string")
+    assert(c6.cpp_type() == "string")

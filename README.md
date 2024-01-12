@@ -3,6 +3,8 @@
 # LotusRpc
 RPC framework for embedded systems based on [ETL](https://github.com/ETLCPP/etl). Generates C++ code with no dynamic memory allocations, no exceptions, no RTTI, etc. 
 
+> **_WARNING:_**  This project is work in progress
+
 # Features
 ## Supported data types
 - `uint8_t`
@@ -55,6 +57,11 @@ Receive and transmit buffer sizes can be configured in the interface definition 
 Every LRPC service has an ID with a value between 0 and 255. This means that LRPC supports a maximum of 256 services. Duplicate service IDs are not allowed. The service ID can optionally be specified in the definition file. If it is not specified an ID is generated, starting with 0 for the first service, 1 for the second service, etc. It is possible to specify only some service IDs and let the rest be generated automatically. For example, if a definition contains 4 services, but only the third service has a specified ID of 17, then the resulting service IDs are [0, 1, 17, 18]
 
 The same applies to LRPC functions inside a service.
+
+## Platform independent
+LRPC uses Python to generate code and can therefore be used on all platforms that support Python. The generated C++ code can be compiled for any platform with a suitable compiler.
+
+> **DISCLAIMER:** All development is done on Windows. Continuous integration is done with Github Actions on Ubuntu.
 
 # Example
 ## Interface definition file
@@ -143,4 +150,39 @@ A function has the following properties:
 |           | params   |
 |           | returns  |
 
-`name` is the name of the function. It must be a valid C++ identifier. `id` is the function identifier, similar to the [service ID](#service-id). `params` is a list of parameters and `returns` is a list of return values.
+`name` is the name of the function. It must be a valid C++ identifier. `id` is the function identifier, similar to the [service ID](#service-id). `params` is a list of parameters and `returns` is a list of return values. Every item in `params` and `returns` is a [LrpcType](#lrpctype).
+
+## Structs
+LRPC supports defining custom aggregate data types in the `structs` property. `structs` contains a list of custom struct definitions, where every item has the following properties:
+| Required  | Optional |
+| --------- |--------- |
+| name      |          |
+| fields    |          |
+
+`name` is the name of the struct. It must be a valid C++ identifier. `fields` is a list of data members, every member being a [LrpcType](#lrpctype). Custom structs can be referenced inside the LRPC definition file by prepending the name with the `@` sign.
+
+## Enums
+LRPC supports defining custom enum types in the `enums` property. `enums` contains a list of custom enum definitions, where every item has the following properties:
+| Required  | Optional |
+| --------- |--------- |
+| name      |          |
+| fields    |          |
+
+`name` is the name of the enum. It must be a valid C++ identifier. `fields` is a list of enum fields, every field having a required `name` and `id` property. `name` is the enum label and `id` is the underlying value of the label.
+
+## LrpcType
+The LRPC definition file uses LrpcType to describe function arguments, function return values and struct fields.
+
+A LrpcType has the following properties:
+| Required  | Optional |
+| --------- |--------- |
+| name      | count    |
+| type      |          |
+
+`name` is the name of the LrpcType.
+
+### LrpcType.type
+See section [data types](#supported-data-types)
+
+### LrpcType.count
+Specifying `count` as a number (at least 2) turns the LRPC type into an array of that size. Specifying `count` as `?` turns the LRPC type into an optional. If `count` is omitted, the type specified by `type` is used without any modifications

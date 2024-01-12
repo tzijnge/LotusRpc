@@ -1,10 +1,7 @@
 name: "Server4"
 namespace: "srv4"
+some_local_variable: &array_size 55
 constants:
-  - name: local
-    value: &array_size 55
-    local: true
-    cppType: uint16_t
   - name: c0
     value: 111
   - name: c1

@@ -91,12 +91,8 @@ def test_constants():
     rpc_def = \
 '''name: "test"
 constants:
-  - name: "local"
-    value: 123.456
-    local: true
   - name: "c1"
     value: true
-    local: false
   - name: "c2"
     value: 123
   - name: "c3"
@@ -114,40 +110,29 @@ services:
 '''
     lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
     constants = lrpc_def.constants()
-    assert(len(constants) == 6)
-    
-    local = constants[0]
-    assert(local.name() == "local")
-    assert(local.value() == 123.456)
-    assert(local.cpp_type() == "float")
-    assert(local.local() == True)
+    assert(len(constants) == 5)
 
-    c1 = constants[1]
+    c1 = constants[0]
     assert(c1.name() == "c1")
     assert(c1.value() == True)
     assert(c1.cpp_type() == "bool")
-    assert(c1.local() == False)
 
-    c2 = constants[2]
+    c2 = constants[1]
     assert(c2.name() == "c2")
     assert(c2.value() == 123)
     assert(c2.cpp_type() == "int32_t")
-    assert(c2.local() == False)
 
-    c3 = constants[3]
+    c3 = constants[2]
     assert(c3.name() == "c3")
     assert(c3.value() == 123.456)
     assert(c3.cpp_type() == "float")
-    assert(c3.local() == False)
 
-    c4 = constants[4]
+    c4 = constants[3]
     assert(c4.name() == "c4")
     assert(c4.value() == 123.456)
     assert(c4.cpp_type() == "double")
-    assert(c4.local() == False)
 
-    c5 = constants[5]
+    c5 = constants[4]
     assert(c5.name() == "c5")
     assert(c5.value() == 123)
     assert(c5.cpp_type() == "uint64_t")
-    assert(c5.local() == False)

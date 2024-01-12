@@ -59,7 +59,7 @@ Every LRPC service has an ID with a value between 0 and 255. This means that LRP
 The same applies to LRPC functions inside a service.
 
 ## Platform independent
-LRPC uses Python to generate code and can therefore be used on all platforms that support Python. The generated C++ code can be compiled for any platform with a suitable compiler.
+LRPC uses Python to generate code and can therefore be used on all platforms that support Python. The generated C++ code is C++11 compatible and can be compiled for any platform with a suitable compiler.
 
 > **DISCLAIMER:** All development is done on Windows. Continuous integration is done with Github Actions on Ubuntu.
 

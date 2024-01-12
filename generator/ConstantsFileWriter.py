@@ -27,8 +27,7 @@ class ConstantsFileWriter(object):
 
     def __write_constants_impl(self):
         for c in self.lrpc_def.constants():
-            if not c.local():
-                t = c.cpp_type()
-                n = c.name()
-                v = str(c.value()).lower()
-                self.file.write(f'constexpr {t} {n} {{{v}}};')
+            t = c.cpp_type()
+            n = c.name()
+            v = str(c.value()).lower()
+            self.file.write(f'constexpr {t} {n} {{{v}}};')

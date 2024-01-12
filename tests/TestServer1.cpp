@@ -263,7 +263,7 @@ TEST_F(TestServer1, decodeF20)
 // Decode function f21 which return two uint8_t args
 TEST_F(TestServer1, decodef21)
 {
-    EXPECT_CALL(s0Service, f21()).WillOnce(Return(std::tuple{123, 111}));
+    EXPECT_CALL(s0Service, f21()).WillOnce(Return(std::tuple<uint8_t, uint8_t>{123, 111}));
     auto response = receive({21});
     EXPECT_RESPONSE({21, 123, 111}, response);
 }
@@ -276,7 +276,7 @@ TEST_F(TestServer1, decodef22)
     etl::string<4> ret1{"ret1"};
     etl::string<4> ret2{"ret2"};
 
-    EXPECT_CALL(s0Service, f22(arg1, arg2)).WillOnce(Return(std::tuple{ret1, ret2}));
+    EXPECT_CALL(s0Service, f22(arg1, arg2)).WillOnce(Return(std::tuple<etl::string<4>, etl::string<4>>{ret1, ret2}));
     auto response = receive({22, 'a', 'r', 'g', '1', '\0', 'a', 'r', 'g', '2', '\0'});
     EXPECT_RESPONSE({22, 'r','e','t','1','\0','r','e','t','2','\0',}, response);
 }

@@ -56,11 +56,12 @@ class ServiceShimWriter(object):
         function_info = dict(zip(function_ids, function_names))
         max_function_id = max(function_ids)
 
+        self.file.write(f'using ShimType =  void ({self.service.name()}ServiceShim::*)(Reader &, Writer &);')
         if max_function_id != (len(functions) - 1):
             self.file.write(f'constexpr void {null_shim_name}_shim(Reader &reader, Writer &writer) {{}}')
             self.file.newline()
 
-        with self.file.block('inline static const etl::array functionShims', ';'):
+        with self.file.block(f'static constexpr etl::array<ShimType, {max_function_id + 1}> functionShims', ';'):
             for fid in range(0, max_function_id + 1):
                 name = function_info.get(fid, null_shim_name)
                 self.file(f'&{self.service.name()}ServiceShim::{name}_shim,')

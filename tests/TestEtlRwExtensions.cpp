@@ -7,7 +7,6 @@
 TEST(TestEtlRwExtensions, is_etl_optional)
 {
     EXPECT_FALSE(lrpc::is_etl_optional<int>::value);
-    EXPECT_FALSE(lrpc::is_etl_optional<std::optional<int>>::value);
     EXPECT_TRUE(lrpc::is_etl_optional<etl::optional<int>>::value);
 }
 

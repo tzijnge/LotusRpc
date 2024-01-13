@@ -76,7 +76,7 @@ services:
     lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
     assert(lrpc_def.max_service_id() == 43)
 
-def test_no_constants():
+def test_no_constants_no_enums_no_structs():
     rpc_def = \
 '''name: "test"
 services:
@@ -86,6 +86,8 @@ services:
 '''
     lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
     assert(len(lrpc_def.constants()) == 0)
+    assert(len(lrpc_def.enums()) == 0)
+    assert(len(lrpc_def.structs()) == 0)
 
 def test_constants():
     rpc_def = \
@@ -143,3 +145,40 @@ services:
     assert(c6.name() == "c6")
     assert(c6.value() == "This is a string")
     assert(c6.cpp_type() == "string")
+
+def test_enums():
+    rpc_def = \
+'''name: "test"
+services:
+  - name: "s1"
+    functions:
+      - name: "f1"
+enums:
+  - name: "MyEnum1"
+    fields:
+      - name: f1
+        id: 111
+      - name: f2
+        id: 222
+  - name: "MyEnum2"
+    fields: [f1, f2]
+'''
+    lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
+    enums = lrpc_def.enums()
+    assert(len(enums) == 2)
+
+    assert(enums[0].name() == "MyEnum1")
+    fields = enums[0].fields()
+    assert(len(fields) == 2)
+    assert(fields[0].name() == "f1")
+    assert(fields[0].id() == 111)
+    assert(fields[1].name() == "f2")
+    assert(fields[1].id() == 222)
+
+    assert(enums[1].name() == "MyEnum2")
+    fields = enums[1].fields()
+    assert(len(fields) == 2)
+    assert(fields[0].name() == "f1")
+    assert(fields[0].id() == 0)
+    assert(fields[1].name() == "f2")
+    assert(fields[1].id() == 1)

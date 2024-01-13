@@ -1,6 +1,9 @@
 class LrpcEnumField(object):
-    def __init__(self, raw) -> None:
+    def __init__(self, raw, index) -> None:
         self.raw = raw
+
+        if isinstance(self.raw, str):
+            self.raw = {'name': raw, 'id': index}
 
     def name(self):
         return self.raw['name']
@@ -16,4 +19,8 @@ class LrpcEnum(object):
         return self.raw['name']
 
     def fields(self):
-        return [LrpcEnumField(f) for f in self.raw['fields']]
+        all_fields = list()
+        for (index, field) in enumerate(self.raw['fields']):
+            all_fields.append(LrpcEnumField(field, index))
+        
+        return all_fields

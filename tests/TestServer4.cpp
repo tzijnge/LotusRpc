@@ -1,4 +1,5 @@
 #include "generated/Server4/Server4_Constants.hpp"
+#include "generated/Server4/MyEnum.hpp"
 #include <gtest/gtest.h>
 #include <type_traits>
 
@@ -64,3 +65,14 @@ static_assert(std::is_same<decltype(srv4::c19), const etl::string_view>::value, 
 
 static_assert(srv4::c20 == "333.444", "");
 static_assert(std::is_same<decltype(srv4::c20), const etl::string_view>::value, "");
+
+template <typename Enum>
+constexpr std::underlying_type_t<Enum> to_underlying(Enum enumValue)
+{
+    return static_cast<std::underlying_type_t<Enum>>(enumValue);
+}
+
+static_assert(to_underlying(srv4::MyEnum::V0) == 0, "");
+static_assert(to_underlying(srv4::MyEnum::V1) == 1, "");
+static_assert(to_underlying(srv4::MyEnum::V2) == 2, "");
+static_assert(to_underlying(srv4::MyEnum::V3) == 3, "");

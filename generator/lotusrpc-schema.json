@@ -28,7 +28,14 @@
       "additionalProperties": false,
       "properties": {
         "name": { "$ref": "#/$defs/cppid" },
-        "fields": { "type": "array", "minItems": 1, "maxItems": 256, "items": { "$ref": "#/$defs/enum_field" }, "description": "List of enum fields (max 256 fields)" }
+        "fields": {
+          "type": "array", "minItems": 1, "maxItems": 256, "description": "List of enum fields or names. IDs are assigned automatically if not specified",
+          "items": { "oneOf": [
+              { "$ref": "#/$defs/cppid" },
+              { "$ref": "#/$defs/enum_field" }
+            ]
+          }
+        }
       }
     },
     "var_decl": {

@@ -90,6 +90,7 @@ namespace lrpc
     // deleted read function to allow specializations for custom structs
     template <typename T>
     typename etl::enable_if<!etl::is_arithmetic<T>::value &&
+                                !etl::is_enum<T>::value &&
                                 !is_etl_optional<T>::value &&
                                 !is_etl_array<T>::value &&
                                 !etl::is_same<T, etl::string_view>::value &&
@@ -107,6 +108,17 @@ namespace lrpc
     {
         return stream.read_unchecked<T>();
     };
+
+    // Enum
+    template <typename T>
+    using enable_for_enum = etl::enable_if<etl::is_enum<T>::value, T>;
+
+    template <typename T>
+    typename enable_for_enum<T>::type
+    read_unchecked(etl::byte_stream_reader &stream)
+    {
+        return static_cast<T>(stream.read_unchecked<uint8_t>());
+    }
 
     // Auto string
     template <typename T>
@@ -239,6 +251,7 @@ namespace lrpc
 
     // deleted write function to allow specializations for custom structs
     template <typename T, typename etl::enable_if<!etl::is_arithmetic<T>::value &&
+                                           !etl::is_enum<T>::value &&
                                            !is_etl_optional<T>::value &&
                                            !is_etl_array<T>::value &&
                                            !is_etl_string<T>::value,
@@ -250,6 +263,13 @@ namespace lrpc
     void write_unchecked(etl::byte_stream_writer &stream, const ARI &value)
     {
         stream.write_unchecked<ARI>(value);
+    };
+
+    // Enum
+    template <typename ENUM, typename etl::enable_if<etl::is_enum<ENUM>::value, bool>::type = true>
+    void write_unchecked(etl::byte_stream_writer &stream, const ENUM &value)
+    {
+        stream.write_unchecked<uint8_t>(static_cast<uint8_t>(value));
     };
 
     // string

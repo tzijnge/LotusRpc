@@ -10,16 +10,10 @@ class EnumFileWriter(object):
 
     def write(self):
         self.__write_include_guard()
-        self.__write_includes()
         self.__write_enum()
 
     def __write_include_guard(self):
         self.file('#pragma once')
-
-    def __write_includes(self):
-        self.file('#include <etl/byte_stream.h>')
-        self.file('#include "lrpc/EtlRwExtensions.hpp"')
-        self.file.newline()
 
     def __write_enum(self):
         if self.namespace:

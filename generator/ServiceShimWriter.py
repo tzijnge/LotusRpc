@@ -9,7 +9,7 @@ class ServiceShimWriter(object):
         self.file = CppFile(f'{output}/{self.service.name()}_ServiceShim.hpp')
         self.lrpc_def = lrpc_def
 
-    def write(self):        
+    def write(self):
         self.__write_include_guard()
         self.__write_includes()
         self.__write_shim(self.lrpc_def.namespace())
@@ -24,8 +24,8 @@ class ServiceShimWriter(object):
             with self.file.block('void invoke(Reader &reader, Writer &writer) override'):
                 self.file('auto functionId = reader.read_unchecked<uint8_t>();')
                 self.file('writer.write_unchecked<uint8_t>(functionId);')
-                self.file('((this)->*(functionShims.at(functionId)))(reader, writer);')
-            
+                self.file(this)->*(shim(functionId)))(reader, writer);')
+
             self.file.newline()
             self.file.label('protected')
             for f in self.service.functions():
@@ -34,8 +34,8 @@ class ServiceShimWriter(object):
             self.file.newline()
 
             for f in self.service.functions():
-                reader_name = 'r' if len(f.params()) !=0 else ''
-                writer_name = 'w' if len(f.returns()) !=0 else ''
+                reader_name = 'r' if len(f.params()) != 0 else ''
+                writer_name = 'w' if len(f.returns()) != 0 else ''
                 with self.file.block(f'void {f.name()}_shim(Reader& {reader_name}, Writer& {writer_name})'):
                     self.__write_function_shim(f)
 
@@ -57,10 +57,14 @@ class ServiceShimWriter(object):
             self.file.write(f'constexpr void {null_shim_name}_shim(Reader&, Writer&) {{}}')
             self.file.newline()
 
-        with self.file.block(f'static constexpr etl::array<ShimType, {max_function_id + 1}> functionShims', ';'):
-            for fid in range(0, max_function_id + 1):
-                name = function_info.get(fid, null_shim_name)
-                self.file(f'&{self.service.name()}ServiceShim::{name}_shim,')
+        with self.file.block('static ShimType shim(const size_t functionId)'):
+            with self.file.block(f'static constexpr etl::array<ShimType, {max_function_id + 1}> shims', ';'):
+                for fid in range(0, max_function_id + 1):
+                    name = function_info.get(fid, null_shim_name)
+                    self.file(f'&{self.service.name()}ServiceShim::{name}_shim,')
+
+            self.file.newline()
+            self.file.write('return shims.at(functionId);')
 
     def __write_function_shim(self, function):
         for p in function.params():
@@ -102,7 +106,7 @@ class ServiceShimWriter(object):
 
         if len(returns_list) == 0:
             return 'void'
-        elif len (returns_list) == 1:
+        elif len(returns_list) == 1:
             return returns_list[0]
         else:
             return 'std::tuple<{}>'.format(', '.join(returns_list))

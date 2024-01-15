@@ -24,7 +24,7 @@ class ServiceShimWriter(object):
             with self.file.block('void invoke(Reader &reader, Writer &writer) override'):
                 self.file('auto functionId = reader.read_unchecked<uint8_t>();')
                 self.file('writer.write_unchecked<uint8_t>(functionId);')
-                self.file(this)->*(shim(functionId)))(reader, writer);')
+                self.file('((this)->*(shim(functionId)))(reader, writer);')
 
             self.file.newline()
             self.file.label('protected')

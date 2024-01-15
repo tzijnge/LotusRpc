@@ -54,7 +54,7 @@ public:
     s01Service service01;
 };
 
-static_assert(std::is_same_v<srv3::Server3, lrpc::Server<6, 256, 256>>, "RX and/or TX buffer size are unequal to the definition file");
+static_assert(std::is_same<srv3::Server3, lrpc::Server<6, 256, 256>>::value, "RX and/or TX buffer size are unequal to the definition file");
 
 TEST_F(TestServer3, decodeI0)
 {

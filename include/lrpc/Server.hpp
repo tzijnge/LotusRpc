@@ -13,7 +13,7 @@ private:
     {
     public:
         uint32_t id() const override { return 0; };
-        void invoke(Reader &reader, Writer &writer) override {};
+        void invoke(Reader&, Writer&) override {};
     };
 
 public:

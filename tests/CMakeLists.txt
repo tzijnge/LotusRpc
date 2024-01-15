@@ -48,8 +48,11 @@ add_executable(UnitTests
                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server3/Server3.hpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server4/Server4.hpp)
 
+target_include_directories(UnitTests PRIVATE .)
 target_include_directories(UnitTests PRIVATE ../include)
 target_include_directories(UnitTests PRIVATE ../external/etl/include)
+
+target_compile_options(UnitTests PRIVATE -Werror -Wall -Wextra)
 
 target_link_libraries(
   UnitTests

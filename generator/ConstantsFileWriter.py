@@ -1,5 +1,6 @@
 from code_generation.code_generator import CppFile
 from LrpcDef import LrpcDef
+from LrpcUtils import optionally_in_namespace
 
 class ConstantsFileWriter(object):
     def __init__(self, lrpc_def: LrpcDef, output: str):
@@ -9,7 +10,7 @@ class ConstantsFileWriter(object):
     def write(self):
         self.__write_include_guard()
         self.__write_includes()
-        self.__write_constants()
+        self.__write_constants(self.lrpc_def.namespace())
 
     def __write_include_guard(self):
         self.file('#pragma once')
@@ -21,14 +22,8 @@ class ConstantsFileWriter(object):
             self.file('#include <etl/string_view.h>')
         self.file.newline()
 
+    @optionally_in_namespace
     def __write_constants(self):
-        if self.lrpc_def.namespace():
-            with self.file.block(f'namespace {self.lrpc_def.namespace()}'):
-                self.__write_constants_impl()
-        else:
-            self.__write_constants_impl()
-
-    def __write_constants_impl(self):
         for c in self.lrpc_def.constants():
             n = c.name()
 

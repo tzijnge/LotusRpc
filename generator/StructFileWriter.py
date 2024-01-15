@@ -2,6 +2,7 @@ from code_generation.code_generator import CppFile
 from LrpcVar import LrpcVar
 from LrpcDef import LrpcDef
 from LrpcStruct import LrpcStruct
+from LrpcUtils import optionally_in_namespace
 
 class StructFileWriter(object):
     def __init__(self, descriptor: LrpcStruct, lrpc_def: LrpcDef, output: str):
@@ -13,7 +14,8 @@ class StructFileWriter(object):
     def write(self):
         self.__write_include_guard()
         self.__write_includes()
-        self.__write_struct()
+        self.__write_struct(self.namespace)
+        self.file.newline()
         self.__write_codec()
 
     def __write_include_guard(self):
@@ -26,16 +28,8 @@ class StructFileWriter(object):
             self.file(f'#include {i}')
         self.file.newline()
 
+    @optionally_in_namespace
     def __write_struct(self):
-        if self.namespace:
-            with self.file.block(f'namespace {self.namespace}'):
-                self.__write_struct_impl()
-        else:
-            self.__write_struct_impl()
-
-        self.file.newline()
-
-    def __write_struct_impl(self):
         with self.file.block(f'struct {self.__qualified_name()}', ';'):
             for f in self.descriptor.fields():
                 self.__write_struct_field(f)

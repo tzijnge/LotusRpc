@@ -35,7 +35,9 @@
               { "$ref": "#/$defs/enum_field" }
             ]
           }
-        }
+        },
+        "external": {"type": "string", "description": "Header file containing the definition of the enum"},
+        "external_namespace": {"type": "string", "description": "Namespace in which the external enum is declared"}
       }
     },
     "var_decl": {

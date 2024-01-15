@@ -67,9 +67,20 @@ services:
         params:
           - name: e
             type: "@MyEnum"
+          - name: f
+            type: "@MyEnum2"
+          - name: g
+            type: "@MyEnum3"
         returns:
           - name: "a"
             type: uint16_t
             count: *array_size
 enums:
   - { name: "MyEnum", fields: [V0, V1, V2, V3]}
+  - { name: "MyEnum2", fields: [V0, V1, V2, V3], external: ext_files/MyEnum2.hpp, external_namespace: "ext"}
+  - name: "MyEnum3"
+    external: ext_files/MyEnum3.hpp
+    fields:
+      - {name: V0, id: 0}
+      - {name: V55, id: 55}
+      - {name: V200, id: 200 }

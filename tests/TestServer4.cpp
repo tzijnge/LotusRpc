@@ -1,5 +1,5 @@
 #include "generated/Server4/Server4_Constants.hpp"
-#include "generated/Server4/MyEnum.hpp"
+#include "generated/Server4/s00_ServiceShim.hpp"
 #include <gtest/gtest.h>
 #include <type_traits>
 

@@ -315,7 +315,7 @@ namespace lrpc
     template <typename T, typename etl::enable_if<is_etl_array<T>::value && etl_array_type_is_string<T>::value, bool>::type = true>
     void copy(const etl::array<etl::string_view, etl_array_size<T>::value> &source, T &destination)
     {
-        for (auto i = 0; i < etl_array_size<T>::value; ++i)
+        for (size_t i = 0; i < etl_array_size<T>::value; ++i)
         {
             copy(source[i], destination[i]);
         }

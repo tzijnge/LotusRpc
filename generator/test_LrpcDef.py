@@ -182,3 +182,21 @@ enums:
     assert(fields[0].id() == 0)
     assert(fields[1].name() == "f2")
     assert(fields[1].id() == 1)
+
+def test_external_enum():
+    rpc_def = \
+'''name: "test"
+services:
+  - name: "s1"
+    functions:
+      - name: "f1"
+enums:
+  - name: "MyEnum1"
+    fields: [f1, f2]
+    external: a/b/c/d.hpp
+'''
+    lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
+    enum = lrpc_def.enums()[0]
+
+    assert(enum.is_external() == True)
+    assert(enum.external_file() == "a/b/c/d.hpp")

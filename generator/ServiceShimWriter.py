@@ -1,6 +1,7 @@
 from code_generation.code_generator import CppFile
 from LrpcService import LrpcService
 from LrpcDef import LrpcDef
+from LrpcUtils import optionally_in_namespace
 
 class ServiceShimWriter(object):
     def __init__(self, service: LrpcService, lrpc_def: LrpcDef, output: str):
@@ -11,17 +12,10 @@ class ServiceShimWriter(object):
     def write(self):        
         self.__write_include_guard()
         self.__write_includes()
-        self.__write_shim()
+        self.__write_shim(self.lrpc_def.namespace())
 
+    @optionally_in_namespace
     def __write_shim(self):
-        ns = self.lrpc_def.namespace()
-        if ns:
-            with self.file.block(f'namespace {ns}'):
-                self.__write_shim_impl()
-        else:
-            self.__write_shim_impl()
-
-    def __write_shim_impl(self):
         with self.file.block(f'class {self.service.name()}ServiceShim : public lrpc::Service', ';'):
             self.file.label('public')
             self.file(f'uint32_t id() const override {{ return {self.service.id()}; }}')
@@ -40,7 +34,9 @@ class ServiceShimWriter(object):
             self.file.newline()
 
             for f in self.service.functions():
-                with self.file.block(f'void {f.name()}_shim(Reader &r, Writer &w)'):
+                reader_name = 'r' if len(f.params()) !=0 else ''
+                writer_name = 'w' if len(f.returns()) !=0 else ''
+                with self.file.block(f'void {f.name()}_shim(Reader& {reader_name}, Writer& {writer_name})'):
                     self.__write_function_shim(f)
 
                 self.file.newline()
@@ -58,7 +54,7 @@ class ServiceShimWriter(object):
 
         self.file.write(f'using ShimType =  void ({self.service.name()}ServiceShim::*)(Reader &, Writer &);')
         if max_function_id != (len(functions) - 1):
-            self.file.write(f'constexpr void {null_shim_name}_shim(Reader &reader, Writer &writer) {{}}')
+            self.file.write(f'constexpr void {null_shim_name}_shim(Reader&, Writer&) {{}}')
             self.file.newline()
 
         with self.file.block(f'static constexpr etl::array<ShimType, {max_function_id + 1}> functionShims', ';'):

@@ -10,13 +10,73 @@ class StructFileWriter(object):
         self.lrpc_def = lrpc_def
         self.namespace = lrpc_def.namespace()
         self.file = CppFile(f'{output}/{self.__qualified_name()}.hpp')
+        self.__init_alias()
+
+    # def write(self):
+        # self.__write_include_guard()
+        # self.__write_includes()
+        # self.__write_struct(self.namespace)
+        # self.file.newline()
+        # self.__write_codec()
 
     def write(self):
         self.__write_include_guard()
         self.__write_includes()
-        self.__write_struct(self.namespace)
+        self.file.newline()
+
+        if self.descriptor.is_external():
+            self.__write_external_alias_if_needed()
+        else:
+            self.__write_struct(self.namespace)
+
         self.file.newline()
         self.__write_codec()
+        self.file.newline()
+
+        if self.descriptor.is_external():
+            self.__write_external_struct_checks()
+
+    def __init_alias(self):
+        ns = self.namespace
+        ext_ns = self.descriptor.external_namespace()
+        name = self.descriptor.name()
+
+        if (not ns) and (not ext_ns):
+            self.alias = None
+        elif (not ns) and ext_ns:
+            self.alias = name
+        elif ns and (not ext_ns):
+            self.alias = f'{ns}::{name}'
+        else:
+            self.alias = f'{ns}::{name}'
+
+    def __alias_or_name(self):
+        return self.alias or self.descriptor.name()
+
+    def __write_external_alias_if_needed(self):
+        if self.alias:
+            self.__write_external_alias(self.namespace)
+            self.file.newline()
+
+    def __write_external_struct_checks(self):
+        with self.file.block('namespace lrpc_private'):
+            with self.file.block('namespace dummy'):
+                with self.file.block(f'struct {self.__qualified_name()}', ';'):
+                    for f in self.descriptor.fields():
+                        self.__write_struct_field(f)
+        
+            self.file.newline()
+            self.file.write(f'static_assert(sizeof(dummy::{self.__qualified_name()}) == sizeof({self.__name()}), "External struct size not as expected. It may have missing or additional fields or different packing.");')
+            self.file.newline()
+            for f in self.descriptor.fields():
+                self.file.write(f'static_assert(std::is_same<decltype(dummy::{self.__qualified_name()}::{f.name()}), decltype({self.__name()}::{f.name()})>::value, "Type of field {f.name()} is not as specified in LRPC");')
+
+    @optionally_in_namespace
+    def __write_external_alias(self):
+        ext_ns = self.descriptor.external_namespace()
+        name = self.descriptor.name()
+        ext_full_name = f'{ext_ns}::{name}' if ext_ns else f'::{name}'
+        self.file.write(f'using {name} = {ext_full_name};')
 
     def __write_include_guard(self):
         self.file('#pragma once')
@@ -26,7 +86,6 @@ class StructFileWriter(object):
         self.file('#include "lrpc/EtlRwExtensions.hpp"')
         for i in self.__required_includes():
             self.file(f'#include {i}')
-        self.file.newline()
 
     @optionally_in_namespace
     def __write_struct(self):
@@ -95,8 +154,11 @@ class StructFileWriter(object):
         return self.descriptor.name()
 
     def __required_includes(self):
-        includes = set()
-        for f in self.descriptor.fields():
-            includes.update(f.required_includes())
+        if self.descriptor.is_external():
+            return [f'"{self.descriptor.external_file()}"']
+        else:
+            includes = set()
+            for f in self.descriptor.fields():
+                includes.update(f.required_includes())
 
-        return includes
+            return includes

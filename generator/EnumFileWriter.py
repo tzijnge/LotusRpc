@@ -10,6 +10,18 @@ class EnumFileWriter(object):
         self.namespace = lrpc_def.namespace()
         self.__init_alias()
 
+    def write(self):
+        self.__write_include_guard()
+
+        if self.descriptor.is_external():
+            self.__write_external_enum_include()
+            self.file.newline()
+            self.__write_external_alias_if_needed()
+            self.__write_external_enum_checks()
+        else:
+            self.file.newline()
+            self.__write_enum(self.namespace)
+
     def __init_alias(self):
         ns = self.namespace
         ext_ns = self.descriptor.external_namespace()
@@ -26,19 +38,6 @@ class EnumFileWriter(object):
 
     def __alias_or_name(self):
         return self.alias or self.descriptor.name()
-
-
-    def write(self):
-        self.__write_include_guard()
-
-        if self.descriptor.is_external():
-            self.__write_external_enum_include()
-            self.file.newline()
-            self.__write_external_alias_if_needed()
-            self.__write_external_enum_checks()
-        else:
-            self.file.newline()
-            self.__write_enum(self.namespace)
 
     def __write_external_alias_if_needed(self):
         if self.alias:

@@ -1,5 +1,6 @@
 #pragma once
 #include "Service.hpp"
+#include <etl/array.h>
 #include <etl/vector.h>
 
 namespace lrpc

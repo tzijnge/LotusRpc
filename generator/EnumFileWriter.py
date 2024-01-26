@@ -8,7 +8,6 @@ class EnumFileWriter(object):
         self.descriptor = descriptor
         self.file = CppFile(f'{output}/{self.descriptor.name()}.hpp')
         self.namespace = lrpc_def.namespace()
-        self.__init_alias()
 
     def write(self):
         self.__write_include_guard()
@@ -22,32 +21,15 @@ class EnumFileWriter(object):
             self.file.newline()
             self.__write_enum(self.namespace)
 
-    def __init_alias(self):
-        ns = self.namespace
-        ext_ns = self.descriptor.external_namespace()
-        name = self.descriptor.name()
-
-        if (not ns) and (not ext_ns):
-            self.alias = None
-        elif (not ns) and ext_ns:
-            self.alias = name
-        elif ns and (not ext_ns):
-            self.alias = f'{ns}::{name}'
-        else:
-            self.alias = f'{ns}::{name}'
-
-    def __alias_or_name(self):
-        return self.alias or self.descriptor.name()
-
     def __write_external_alias_if_needed(self):
-        if self.alias:
+        if self.namespace or self.descriptor.external_namespace():
             self.__write_external_alias(self.namespace)
             self.file.newline()
 
     @optionally_in_namespace
     def __write_external_alias(self):
+        name = self.__qualified_name()
         ext_ns = self.descriptor.external_namespace()
-        name = self.descriptor.name()
         ext_full_name = f'{ext_ns}::{name}' if ext_ns else f'::{name}'
         self.file.write(f'using {name} = {ext_full_name};')
 
@@ -75,10 +57,10 @@ class EnumFileWriter(object):
             self.file.write('// if the external enum declaration has fields that are not known to LRPC')
             self.file.write('// This function does not serve any purpose and is optimized out with the right compiler/linker settings')
 
-            with self.file.block(f'void CheckEnum(const {self.__alias_or_name()} v)'):
+            with self.file.block(f'void CheckEnum(const {self.__name()} v)'):
                 with self.file.block('switch (v)'):
                     for f in self.descriptor.fields():
-                        self.file.write(f'case {self.__alias_or_name()}::{f.name()}: break;')
+                        self.file.write(f'case {self.__name()}::{f.name()}: break;')
 
     @optionally_in_namespace
     def __write_enum(self):
@@ -86,3 +68,11 @@ class EnumFileWriter(object):
         with self.file.block(f'enum class {n}', ';'):
             for f in self.descriptor.fields():
                 self.file.write(f'{f.name()} = {f.id()},')
+
+    def __name(self):
+        ns = self.namespace
+        qn = self.__qualified_name()
+        return f'{ns}::{qn}' if ns else qn
+    
+    def __qualified_name(self):
+        return self.descriptor.name()

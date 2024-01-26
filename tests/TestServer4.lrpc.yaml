@@ -75,6 +75,8 @@ services:
             type: "@MyStruct1"
           - name: i
             type: "@MyStruct2"
+          - name: j
+            type: "@MyEnum4"
         returns:
           - name: "a"
             type: uint16_t
@@ -87,7 +89,13 @@ enums:
     fields:
       - {name: V0, id: 0}
       - {name: V55, id: 55}
-      - {name: V200, id: 200 }
+      - {name: V200, id: 200}
+  - name: MyEnum4
+    fields:
+      - {name: f1}
+      - {name: f2}
+      - {name: f3, id: 222}
+      - {name: f4}
 structs:
   - name: MyStruct1
     fields:

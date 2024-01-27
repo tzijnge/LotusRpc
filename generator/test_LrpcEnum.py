@@ -72,3 +72,29 @@ def test_external_with_namespace():
   assert(enum.is_external() == True)
   assert(enum.external_file() == "a/b/c/d.hpp")
   assert(enum.external_namespace() == "ext")
+
+
+def test_omitted_id():
+  e = {
+    "name": "MyEnum1",
+    "fields": [
+      {"name": "f1"},
+      {"name": "f2"},
+      {"name": "f3", "id": 222},
+      {"name": "f4"},
+    ]
+    }
+  
+  enum = LrpcEnum(e)
+
+  assert(enum.name() == "MyEnum1")
+  fields = enum.fields()
+  assert(len(fields) == 4)
+  assert(fields[0].name() == "f1")
+  assert(fields[0].id() == 0)
+  assert(fields[1].name() == "f2")
+  assert(fields[1].id() == 1)
+  assert(fields[2].name() == "f3")
+  assert(fields[2].id() == 222)
+  assert(fields[3].name() == "f4")
+  assert(fields[3].id() == 223)

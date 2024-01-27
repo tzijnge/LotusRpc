@@ -201,6 +201,38 @@ enums:
     assert(enum.is_external() == True)
     assert(enum.external_file() == "a/b/c/d.hpp")
 
+def test_enum_with_omitted_ids():
+    rpc_def = \
+'''name: "test"
+services:
+  - name: "s1"
+    functions:
+      - name: "f1"
+enums:
+  - name: "MyEnum1"
+    fields:
+      - name: f1
+      - name: f2
+      - name: f3
+        id: 222
+      - name: f4
+'''
+    lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
+    enums = lrpc_def.enums()
+    assert(len(enums) == 1)
+
+    assert(enums[0].name() == "MyEnum1")
+    fields = enums[0].fields()
+    assert(len(fields) == 4)
+    assert(fields[0].name() == "f1")
+    assert(fields[0].id() == 0)
+    assert(fields[1].name() == "f2")
+    assert(fields[1].id() == 1)
+    assert(fields[2].name() == "f3")
+    assert(fields[2].id() == 222)
+    assert(fields[3].name() == "f4")
+    assert(fields[3].id() == 223)
+
 def test_structs():
     rpc_def = \
 '''name: "test"

@@ -13,9 +13,9 @@
     },
     "enum_field":{
       "type": "object",
-      "description": "Enumeration field consisting of a name and an ID",
+      "description": "Enumeration field consisting of a name and an optional ID",
       "additionalProperties": false,
-      "required": [ "id", "name"],
+      "required": [ "name"],
       "properties": {
         "name": { "$ref": "#/$defs/cppid"},
         "id": { "$ref": "#/$defs/uint8"}

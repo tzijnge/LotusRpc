@@ -1,4 +1,6 @@
-![example workflow](https://github.com/tzijnge/LotusRpc/actions/workflows/cmake.yml/badge.svg)
+![Automated build](https://github.com/tzijnge/LotusRpc/actions/workflows/cmake.yml/badge.svg)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=tzijnge_LotusRpc&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=tzijnge_LotusRpc)
+[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=tzijnge_LotusRpc)](https://sonarcloud.io/summary/new_code?id=tzijnge_LotusRpc)
 
 # LotusRpc
 RPC framework for embedded systems based on [ETL](https://github.com/ETLCPP/etl). Generates C++ code with no dynamic memory allocations, no exceptions, no RTTI, etc. 

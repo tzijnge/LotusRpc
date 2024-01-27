@@ -71,6 +71,10 @@ services:
             type: "@MyEnum2"
           - name: g
             type: "@MyEnum3"
+          - name: h
+            type: "@MyStruct1"
+          - name: i
+            type: "@MyStruct2"
         returns:
           - name: "a"
             type: uint16_t
@@ -84,3 +88,18 @@ enums:
       - {name: V0, id: 0}
       - {name: V55, id: 55}
       - {name: V200, id: 200 }
+structs:
+  - name: MyStruct1
+    fields:
+      - name: f1
+        type: double
+    external: ext_files/MyStruct1.hpp
+  - name: MyStruct2
+    fields:
+      - name: f1
+        type: float
+      - name: f2
+        type: bool
+        count: 7
+    external: ext_files/MyStruct2.hpp
+    external_namespace: ext::test

@@ -10,12 +10,12 @@ services:
           - name: "p0"
             type: bool
           - name: "p1"
-            type: string_auto
+            type: string
       - name: "f1"
         id: 1
         params:
           - name: "p0"
-            type: string_auto
+            type: string
           - name: "p1"
             type: bool
   - name: "s01"
@@ -43,7 +43,7 @@ services:
         id: 3
         params:
           - name: "p01"
-            type: string_auto
+            type: string
             count: "?"
       - name: "f4"
         id: 4
@@ -65,7 +65,7 @@ services:
         id: 7
         params:
           - name: "p0"
-            type: string_auto
+            type: string
         returns:
           - name: "r0"
             type: string_5

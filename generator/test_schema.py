@@ -361,11 +361,11 @@ structs:
   - name: "s0"
     fields:
       - name: "f0"
-        type: "string_auto"
+        type: "string"
   - name: "s1"
     fields:
       - name: "f1"
-        type: "string_auto"
+        type: "string"
 '''
 
     errors, warnings = semantic_errors(rpc_def)
@@ -385,9 +385,9 @@ services:
         id: 0
         params:
           - name: "p0"
-            type: string_auto
+            type: string
           - name: "p1"
-            type: "string_auto"
+            type: "string"
 '''
 
     errors, warnings = semantic_errors(rpc_def)
@@ -407,7 +407,7 @@ services:
         id: 2
         params:
           - name: "p0"
-            type: string_auto
+            type: string
             count: 10
 '''
 
@@ -458,25 +458,25 @@ services:
         id: 0
         returns:
           - name: "r0"
-            type: string_auto
+            type: string
       - name: "f1"
         id: 1
         returns:
           - name: "r0"
-            type: string_auto
+            type: string
           - name: "r1"
-            type: string_auto
+            type: string
       - name: "f2"
         id: 2
         returns:
           - name: "r0"
-            type: string_auto
+            type: string
             count: "?"
       - name: "f3"
         id: 3
         returns:
           - name: "r0"
-            type: string_auto
+            type: string
             count: 10
 
 '''

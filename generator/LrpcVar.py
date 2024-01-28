@@ -77,9 +77,6 @@ class LrpcVar(object):
         if self.base_type_is_string():
             t = f'etl::string<{self.string_size()}>'
 
-        # if self.is_string():
-            # return f'etl::string<{self.string_size()}>'
-
         if self.is_array():
             return f'etl::array<{t}, {self.array_size()}>'
         
@@ -101,7 +98,7 @@ class LrpcVar(object):
         return self.base_type() in ['uint8_t', 'uint16_t', 'uint32_t', 'uint64_t', 'int8_t', 'int16_t', 'int32_t', 'int64_t']
 
     def base_type_is_string(self):
-        return self.base_type().startswith('string_')
+        return self.base_type().startswith('string')
 
     def is_struct(self):
         if self.is_array():
@@ -134,7 +131,7 @@ class LrpcVar(object):
         return self.base_type_is_string()
 
     def is_auto_string(self):
-        return self.base_type() == 'string_auto'
+        return self.base_type() == 'string'
     
     def is_fixed_size_string(self):
         return self.base_type_is_string() and not self.is_auto_string()

@@ -1,8 +1,19 @@
 from LrpcVar import LrpcVar
+from LrpcVisitor import LrpcVisitor
+from abc import ABC
+from typing import Optional
 
-class LrpcStruct(object):
+from LrpcStructBase import LrpcStructBase
+
+class LrpcStruct(LrpcStructBase):
     def __init__(self, raw) -> None:
         self.raw = raw
+
+    def accept(self, visitor: LrpcVisitor):
+        visitor.visit_lrpc_struct(self)
+        for f in self.fields():
+            visitor.visit_lrpc_struct_field(f)
+        visitor.visit_lrpc_struct_field_end()
 
     def name(self):
         return self.raw['name']

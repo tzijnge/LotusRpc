@@ -1,6 +1,9 @@
 from LrpcVar import LrpcVar
+from LrpcVisitor import LrpcVisitor
 
-class LrpcFun(object):
+from LrpcFunBase import LrpcFunBase
+
+class LrpcFun(LrpcFunBase):
     def __init__(self, raw) -> None:
         self.raw = raw
         self.__init_params()
@@ -13,6 +16,17 @@ class LrpcFun(object):
     def __init_params(self):
         if 'params' not in self.raw:
             self.raw['params'] = list()
+
+    def accept(self, visitor: LrpcVisitor):
+        visitor.visit_lrpc_function(self)
+        
+        for r in self.returns():
+            visitor.visit_lrpc_function_return(r)
+        visitor.visit_lrpc_function_return_end()
+
+        for p in self.params():
+            visitor.visit_lrpc_function_param(p)
+        visitor.visit_lrpc_function_param_end()
 
     def params(self):
         return [LrpcVar(p) for p in self.raw['params']]

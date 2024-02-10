@@ -2,8 +2,11 @@ from LrpcService import LrpcService
 from LrpcConstant import LrpcConstant
 from LrpcStruct import LrpcStruct
 from LrpcEnum import LrpcEnum
+from LrpcVisitor import LrpcVisitor
 
-class LrpcDef(object):
+from LrpcDefBase import LrpcDefBase
+
+class LrpcDef(LrpcDefBase):
     def __init__(self, raw) -> None:
         self.raw = raw
         self.__init_structs()
@@ -60,6 +63,27 @@ class LrpcDef(object):
     def __init_constants(self):
         if 'constants' not in self.raw:
             self.raw['constants'] = list()
+
+    def accept(self, visitor: LrpcVisitor):
+        visitor.visit_lrpc_def(self)
+        
+        for s in self.services():
+            s.accept(visitor)
+        visitor.visit_lrpc_service_end()
+
+        for s in self.structs():
+            s.accept(visitor)
+        visitor.visit_lrpc_struct_end()
+
+        for e in self.enums():
+            e.accept(visitor)
+        visitor.visit_lrpc_enum_end()
+
+        for c in self.constants():
+            c.accept(visitor)
+        visitor.visit_lrpc_constant_end()
+
+        visitor.visit_lrpc_def_end()
 
     def name(self):
         return self.raw['name']

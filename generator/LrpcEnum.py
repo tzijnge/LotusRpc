@@ -1,4 +1,7 @@
-class LrpcEnumField(object):
+from LrpcVisitor import LrpcVisitor
+from LrpcEnumBase import LrpcEnumBase, LrpcEnumFieldBase
+
+class LrpcEnumField(LrpcEnumFieldBase):
     def __init__(self, raw, index) -> None:
         self.raw = raw
 
@@ -14,9 +17,15 @@ class LrpcEnumField(object):
     def id(self):
         return self.raw['id']
 
-class LrpcEnum(object):
+class LrpcEnum(LrpcEnumBase):
     def __init__(self, raw) -> None:
         self.raw = raw
+
+    def accept(self, visitor: LrpcVisitor):
+        visitor.visit_lrpc_enum(self)
+        for f in self.fields():
+            visitor.visit_lrpc_enum_field(f)
+        visitor.visit_lrpc_enum_field_end()
 
     def name(self):
         return self.raw['name']

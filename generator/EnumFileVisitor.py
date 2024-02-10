@@ -1,15 +1,23 @@
 from code_generation.code_generator import CppFile
-from LrpcDef import LrpcDef
-from LrpcEnum import LrpcEnum
-from  LrpcUtils import optionally_in_namespace
+from LrpcUtils import optionally_in_namespace
+from LrpcVisitor import LrpcVisitor
+from LrpcDefBase import LrpcDefBase
+from LrpcEnumBase import LrpcEnumBase
 
-class EnumFileWriter(object):
-    def __init__(self, descriptor: LrpcEnum, lrpc_def: LrpcDef, output: str):
-        self.descriptor = descriptor
-        self.file = CppFile(f'{output}/{self.descriptor.name()}.hpp')
+class EnumFileVisitor(LrpcVisitor):
+    def __init__(self, output: str):
+        self.descriptor = None
+        self.file = None
+        self.namespace = None
+        self.output = output
+
+    def visit_lrpc_def(self, lrpc_def: LrpcDefBase):
         self.namespace = lrpc_def.namespace()
 
-    def write(self):
+    def visit_lrpc_enum(self, enum: LrpcEnumBase):
+        self.descriptor = enum
+        self.file = CppFile(f'{self.output}/{self.descriptor.name()}.hpp')
+
         self.__write_include_guard()
 
         if self.descriptor.is_external():

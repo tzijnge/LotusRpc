@@ -1,4 +1,9 @@
-class LrpcConstant(object):
+from LrpcVisitor import LrpcVisitor
+from typing import Union
+
+from LrpcConstantBase import LrpcConstantBase
+
+class LrpcConstant(LrpcConstantBase):
     def __init__(self, raw) -> None:
         self.raw = raw
         self.__init_cpp_type()
@@ -13,6 +18,9 @@ class LrpcConstant(object):
                 self.raw["cppType"] = "bool"
             if isinstance(self.value(), str):
                 self.raw["cppType"] = "string"
+
+    def accept(self, visitor: LrpcVisitor):
+        visitor.visit_lrpc_constant(self)
 
     def name(self):
         return self.raw['name']

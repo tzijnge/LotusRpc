@@ -1,6 +1,9 @@
 from LrpcFun import LrpcFun
+from LrpcVisitor import LrpcVisitor
 
-class LrpcService(object):
+from LrpcServiceBase import LrpcServiceBase
+
+class LrpcService(LrpcServiceBase):
     def __init__(self, raw) -> None:
         self.raw = raw
         self.__init_functions_ids()
@@ -14,6 +17,12 @@ class LrpcService(object):
             else:
                 last_function_id = last_function_id + 1
                 f['id'] = last_function_id
+
+    def accept(self, visitor: LrpcVisitor):
+        visitor.visit_lrpc_service(self)
+        for f in self.functions():
+            f.accept(visitor)
+        visitor.visit_lrpc_function_end()
 
     def name(self):
         return self.raw['name']

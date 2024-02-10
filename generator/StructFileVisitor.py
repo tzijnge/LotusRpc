@@ -1,23 +1,26 @@
 from code_generation.code_generator import CppFile
-from LrpcVar import LrpcVar
+from LrpcVisitor import LrpcVisitor
 from LrpcDef import LrpcDef
 from LrpcStruct import LrpcStruct
 from LrpcUtils import optionally_in_namespace
+from LrpcVar import LrpcVar
 
-class StructFileWriter(object):
-    def __init__(self, descriptor: LrpcStruct, lrpc_def: LrpcDef, output: str):
-        self.descriptor = descriptor
-        self.lrpc_def = lrpc_def
+class StructFileVisitor(LrpcVisitor):
+    def __init__(self, output: str):
+        self.output = output
+        self.namespace = None
+        self.file = None
+        self.descriptor = None
+
+    def visit_lrpc_def(self, lrpc_def: LrpcDef):
         self.namespace = lrpc_def.namespace()
-        self.file = CppFile(f'{output}/{self.__qualified_name()}.hpp')
-        self.__init_alias()
 
-    # def write(self):
-        # self.__write_include_guard()
-        # self.__write_includes()
-        # self.__write_struct(self.namespace)
-        # self.file.newline()
-        # self.__write_codec()
+    def visit_lrpc_struct(self, descriptor: LrpcStruct):
+        self.descriptor = descriptor
+        self.file = CppFile(f'{self.output}/{self.__qualified_name()}.hpp')
+
+        self.__init_alias()
+        self.write()
 
     def write(self):
         self.__write_include_guard()
@@ -49,9 +52,6 @@ class StructFileWriter(object):
             self.alias = f'{ns}::{name}'
         else:
             self.alias = f'{ns}::{name}'
-
-    def __alias_or_name(self):
-        return self.alias or self.descriptor.name()
 
     def __write_external_alias_if_needed(self):
         if self.alias:

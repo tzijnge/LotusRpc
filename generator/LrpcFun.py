@@ -28,6 +28,8 @@ class LrpcFun(LrpcFunBase):
             visitor.visit_lrpc_function_param(p)
         visitor.visit_lrpc_function_param_end()
 
+        visitor.visit_lrpc_function_end()
+
     def params(self):
         return [LrpcVar(p) for p in self.raw['params']]
 

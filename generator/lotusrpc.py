@@ -1,10 +1,10 @@
 import click
 from SematicAnalyzer import SemanticAnalyzer
 from StructFileVisitor import StructFileVisitor
-from ConstantsFileWriter import ConstantsFileWriter
+from ConstantsFileVisitor import ConstantsFileVisitor
 from EnumFileVisitor import EnumFileVisitor
 from IncludeAllVisitor import IncludeAllVisitor
-from ServiceShimWriter import ServiceShimWriter
+from ServiceShimVisitor import ServiceShimVisitor
 import yaml
 import jsonschema
 import jsonschema.exceptions
@@ -47,23 +47,14 @@ def validate_definition(lrpc_def: LrpcDef, warnings_as_errors: bool):
 
     return errors_found
 
-def generate_constants(lrpc_def: LrpcDef, output: str):
-    cfw = ConstantsFileWriter(lrpc_def, output)
-    cfw.write()
-
-def generate_shims(lrpc_def: LrpcDef, output: str):
-    for s in lrpc_def.services():
-        writer = ServiceShimWriter(s, lrpc_def, output)
-        writer.write()
-
 def generate_rpc(lrpc_def: LrpcDef, output: str):
     create_dir_if_not_exists(output)
 
     lrpc_def.accept(IncludeAllVisitor(output))
     lrpc_def.accept(StructFileVisitor(output))
     lrpc_def.accept(EnumFileVisitor(output))
-    generate_shims(lrpc_def, output)
-    generate_constants(lrpc_def, output)
+    lrpc_def.accept(ServiceShimVisitor(output))
+    lrpc_def.accept(ConstantsFileVisitor(output))
 
 @click.command()
 @click.option('-w', '--warnings_as_errors',

@@ -29,9 +29,6 @@ class LrpcVisitor(ABC):
     def visit_lrpc_struct_field(self, field: LrpcVar):
         pass
 
-    def visit_lrpc_struct_field_end(self):
-        pass
-
     def visit_lrpc_enum(self, enum: LrpcEnumBase):
         pass
 
@@ -39,9 +36,6 @@ class LrpcVisitor(ABC):
         pass
 
     def visit_lrpc_enum_field(self, field: LrpcEnumFieldBase):
-        pass
-
-    def visit_lrpc_enum_field_end(self):
         pass
 
     def visit_lrpc_constant(self, constant: LrpcConstantBase):

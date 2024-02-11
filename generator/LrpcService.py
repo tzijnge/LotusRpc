@@ -22,7 +22,7 @@ class LrpcService(LrpcServiceBase):
         visitor.visit_lrpc_service(self)
         for f in self.functions():
             f.accept(visitor)
-        visitor.visit_lrpc_function_end()
+        visitor.visit_lrpc_service_end()
 
     def name(self):
         return self.raw['name']

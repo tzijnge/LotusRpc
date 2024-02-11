@@ -69,15 +69,12 @@ class LrpcDef(LrpcDefBase):
         
         for s in self.services():
             s.accept(visitor)
-        visitor.visit_lrpc_service_end()
 
         for s in self.structs():
             s.accept(visitor)
-        visitor.visit_lrpc_struct_end()
 
         for e in self.enums():
             e.accept(visitor)
-        visitor.visit_lrpc_enum_end()
 
         for c in self.constants():
             c.accept(visitor)

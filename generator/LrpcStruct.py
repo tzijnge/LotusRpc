@@ -11,9 +11,11 @@ class LrpcStruct(LrpcStructBase):
 
     def accept(self, visitor: LrpcVisitor):
         visitor.visit_lrpc_struct(self)
+
         for f in self.fields():
             visitor.visit_lrpc_struct_field(f)
-        visitor.visit_lrpc_struct_field_end()
+
+        visitor.visit_lrpc_struct_end()
 
     def name(self):
         return self.raw['name']

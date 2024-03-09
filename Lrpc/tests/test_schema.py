@@ -1,11 +1,11 @@
 import pytest
 import jsonschema
 import yaml
-from SematicAnalyzer import SemanticAnalyzer
-from LrpcDef import LrpcDef
+from Lrpc.SematicAnalyzer import SemanticAnalyzer
+from Lrpc.Core.LrpcDef import LrpcDef
 
 def semantic_errors(rpc_def):
-    with open('generator/lotusrpc-schema.json') as schema_file:
+    with open('Lrpc/lotusrpc-schema.json') as schema_file:
         definition = yaml.safe_load(rpc_def)
         schema = yaml.safe_load(schema_file)
         jsonschema.validate(definition, schema)

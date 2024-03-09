@@ -1,4 +1,4 @@
-from LrpcVisitor import LrpcVisitor
+from Lrpc import LrpcVisitor
 
 class LrpcConstant(object):
     def __init__(self, raw) -> None:

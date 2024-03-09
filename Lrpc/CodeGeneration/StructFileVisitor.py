@@ -1,9 +1,9 @@
 from code_generation.code_generator import CppFile
-from LrpcVisitor import LrpcVisitor
-from LrpcDef import LrpcDef
-from LrpcStruct import LrpcStruct
-from LrpcUtils import optionally_in_namespace
-from LrpcVar import LrpcVar
+from Lrpc.LrpcVisitor import LrpcVisitor
+from Lrpc.Core.LrpcDef import LrpcDef
+from Lrpc.Core.LrpcStruct import LrpcStruct
+from Lrpc.Core.LrpcUtils import optionally_in_namespace
+from Lrpc.Core.LrpcVar import LrpcVar
 
 class StructFileVisitor(LrpcVisitor):
     def __init__(self, output: str):

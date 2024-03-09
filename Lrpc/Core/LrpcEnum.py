@@ -1,4 +1,4 @@
-from LrpcVisitor import LrpcVisitor
+from Lrpc import LrpcVisitor
 
 class LrpcEnumField(object):
     def __init__(self, raw, index) -> None:

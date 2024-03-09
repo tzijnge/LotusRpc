@@ -1,4 +1,4 @@
-from LrpcDef import LrpcDef
+from Lrpc.Core.LrpcDef import LrpcDef
 import yaml
 
 def test_optional_service_id():

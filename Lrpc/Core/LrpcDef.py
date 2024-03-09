@@ -1,8 +1,8 @@
-from LrpcService import LrpcService
-from LrpcConstant import LrpcConstant
-from LrpcStruct import LrpcStruct
-from LrpcEnum import LrpcEnum
-from LrpcVisitor import LrpcVisitor
+from .LrpcService import LrpcService
+from .LrpcConstant import LrpcConstant
+from .LrpcStruct import LrpcStruct
+from .LrpcEnum import LrpcEnum
+from Lrpc import LrpcVisitor
 
 class LrpcDef(object):
     def __init__(self, raw) -> None:

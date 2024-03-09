@@ -1,8 +1,8 @@
 from code_generation.code_generator import CppFile
-from LrpcUtils import optionally_in_namespace
-from LrpcVisitor import LrpcVisitor
-from LrpcDef import LrpcDef
-from LrpcEnum import LrpcEnum
+from Lrpc.Core.LrpcUtils import optionally_in_namespace
+from Lrpc.LrpcVisitor import LrpcVisitor
+from Lrpc.Core.LrpcDef import LrpcDef
+from Lrpc.Core.LrpcEnum import LrpcEnum
 
 class EnumFileVisitor(LrpcVisitor):
     def __init__(self, output: str):

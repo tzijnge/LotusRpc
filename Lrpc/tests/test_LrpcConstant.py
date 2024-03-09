@@ -1,4 +1,4 @@
-from LrpcConstant import LrpcConstant
+from Lrpc.Core.LrpcConstant import LrpcConstant
 import yaml
 
 def test_default_int():

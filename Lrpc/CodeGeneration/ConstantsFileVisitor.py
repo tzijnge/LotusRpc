@@ -1,8 +1,8 @@
 from code_generation.code_generator import CppFile
-from LrpcUtils import optionally_in_namespace
-from LrpcVisitor import LrpcVisitor
-from LrpcConstant import LrpcConstant
-from LrpcDef import LrpcDef
+from Lrpc.Core.LrpcUtils import optionally_in_namespace
+from Lrpc.LrpcVisitor import LrpcVisitor
+from Lrpc.Core.LrpcConstant import LrpcConstant
+from Lrpc.Core.LrpcDef import LrpcDef
 
 class ConstantsFileVisitor(LrpcVisitor):
     def __init__(self, output: str):

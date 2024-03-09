@@ -1,10 +1,10 @@
 from code_generation.code_generator import CppFile
-from LrpcUtils import optionally_in_namespace
-from LrpcVisitor import LrpcVisitor
-from LrpcDef import LrpcDef
-from LrpcService import LrpcService
-from LrpcFun import LrpcFun
-from LrpcVar import LrpcVar
+from Lrpc.Core.LrpcUtils import optionally_in_namespace
+from Lrpc.LrpcVisitor import LrpcVisitor
+from Lrpc.Core.LrpcDef import LrpcDef
+from Lrpc.Core.LrpcService import LrpcService
+from Lrpc.Core.LrpcFun import LrpcFun
+from Lrpc.Core.LrpcVar import LrpcVar
 
 class ServiceShimVisitor(LrpcVisitor):
     def __init__(self, output: str):

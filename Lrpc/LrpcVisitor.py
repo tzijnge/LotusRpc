@@ -1,4 +1,3 @@
-from LrpcVar import LrpcVar
 from abc import ABC
 
 class LrpcVisitor(ABC):
@@ -20,7 +19,7 @@ class LrpcVisitor(ABC):
     def visit_lrpc_struct_end(self):
         pass
 
-    def visit_lrpc_struct_field(self, field: LrpcVar):
+    def visit_lrpc_struct_field(self, field):
         pass
 
     def visit_lrpc_enum(self, enum):
@@ -47,13 +46,13 @@ class LrpcVisitor(ABC):
     def visit_lrpc_function_end(self):
         pass
 
-    def visit_lrpc_function_return(self, ret: LrpcVar):
+    def visit_lrpc_function_return(self, ret):
         pass
 
     def visit_lrpc_function_return_end(self):
         pass
 
-    def visit_lrpc_function_param(self, param: LrpcVar):
+    def visit_lrpc_function_param(self, param):
         pass
 
     def visit_lrpc_function_param_end(self):

@@ -4,9 +4,7 @@ from LrpcStruct import LrpcStruct
 from LrpcEnum import LrpcEnum
 from LrpcVisitor import LrpcVisitor
 
-from LrpcDefBase import LrpcDefBase
-
-class LrpcDef(LrpcDefBase):
+class LrpcDef(object):
     def __init__(self, raw) -> None:
         self.raw = raw
         self.__init_structs()

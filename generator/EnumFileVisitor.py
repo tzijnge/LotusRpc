@@ -1,8 +1,8 @@
 from code_generation.code_generator import CppFile
 from LrpcUtils import optionally_in_namespace
 from LrpcVisitor import LrpcVisitor
-from LrpcDefBase import LrpcDefBase
-from LrpcEnumBase import LrpcEnumBase
+from LrpcDef import LrpcDef
+from LrpcEnum import LrpcEnum
 
 class EnumFileVisitor(LrpcVisitor):
     def __init__(self, output: str):
@@ -11,10 +11,10 @@ class EnumFileVisitor(LrpcVisitor):
         self.namespace = None
         self.output = output
 
-    def visit_lrpc_def(self, lrpc_def: LrpcDefBase):
+    def visit_lrpc_def(self, lrpc_def: LrpcDef):
         self.namespace = lrpc_def.namespace()
 
-    def visit_lrpc_enum(self, enum: LrpcEnumBase):
+    def visit_lrpc_enum(self, enum: LrpcEnum):
         self.descriptor = enum
         self.file = CppFile(f'{self.output}/{self.descriptor.name()}.hpp')
 

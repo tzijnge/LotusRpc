@@ -1,11 +1,7 @@
 from LrpcVar import LrpcVar
 from LrpcVisitor import LrpcVisitor
-from abc import ABC
-from typing import Optional
 
-from LrpcStructBase import LrpcStructBase
-
-class LrpcStruct(LrpcStructBase):
+class LrpcStruct(object):
     def __init__(self, raw) -> None:
         self.raw = raw
 

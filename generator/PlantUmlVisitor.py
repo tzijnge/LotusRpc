@@ -1,10 +1,10 @@
 from LrpcVisitor import LrpcVisitor
-from LrpcConstantBase import LrpcConstantBase
-from LrpcDefBase import LrpcDefBase
-from LrpcEnumBase import LrpcEnumBase, LrpcEnumFieldBase
-from LrpcFunBase import LrpcFunBase
-from LrpcServiceBase import LrpcServiceBase
-from LrpcStructBase import LrpcStructBase
+from LrpcConstant import LrpcConstant
+from LrpcDef import LrpcDef
+from LrpcEnum import LrpcEnum, LrpcEnumField
+from LrpcFun import LrpcFun
+from LrpcService import LrpcService
+from LrpcStruct import LrpcStruct
 from LrpcVar import LrpcVar
 from contextlib import contextmanager
 
@@ -19,7 +19,7 @@ class FunctionStringBuilder(object):
         self.function_id = ''
         self.id_width = len(str(max_function_id))
 
-    def add_function(self, function: LrpcFunBase) -> None:
+    def add_function(self, function: LrpcFun) -> None:
         self.function_name = function.name()
         self.function_id = f'{function.id()}'.rjust(self.id_width)
 
@@ -45,12 +45,12 @@ def var_string(p: LrpcVar) -> str:
 
     return t + ' ' + in_color(p.name(), 'CornflowerBlue')
 
-def enum_field_string(e: LrpcEnumFieldBase) -> str:
+def enum_field_string(e: LrpcEnumField) -> str:
     name = in_color(e.name(), 'CornflowerBlue')
     id = in_color(e.id(), 'ForestGreen')
     return f'{name} = {id}'
 
-def const_string(p: LrpcConstantBase) -> str:
+def const_string(p: LrpcConstant) -> str:
     t = in_color(p.cpp_type(), 'DarkCyan')
     n = in_color(p.name(), 'CornflowerBlue')
     return t + ' ' + n
@@ -181,7 +181,7 @@ class PlantUmlVisitor(LrpcVisitor):
         self.constants = list()
         self.const_items_max = 10
 
-    def visit_lrpc_def(self, lrpc_def: LrpcDefBase):
+    def visit_lrpc_def(self, lrpc_def: LrpcDef):
         self.puml = PumlFile(f'C:/projects/lotusrpc2/{lrpc_def.name()}.puml')
 
         self.puml.block(lrpc_def.name(), 'Yellow', level=1)
@@ -210,7 +210,7 @@ class PlantUmlVisitor(LrpcVisitor):
         self.puml.block('Constants', 'Pink', 2)
         self.constants = list()
 
-    def visit_lrpc_constant(self, constant: LrpcConstantBase):
+    def visit_lrpc_constant(self, constant: LrpcConstant):
         self.constants.append(constant)
 
     def visit_lrpc_constants_end(self):
@@ -223,7 +223,7 @@ class PlantUmlVisitor(LrpcVisitor):
 
         self.puml.list_end()
 
-    def visit_lrpc_enum(self, enum: LrpcEnumBase):
+    def visit_lrpc_enum(self, enum: LrpcEnum):
         icon = 'external-link' if enum.is_external() else None
         self.puml.block(enum.name(), 'PaleGreen', self.enum_indent, icon)
 
@@ -241,10 +241,10 @@ class PlantUmlVisitor(LrpcVisitor):
         if self.enum_indent > self.enum_indent_max:
             self.enum_indent = 2
 
-    def visit_lrpc_enum_field(self, field: LrpcEnumFieldBase):
+    def visit_lrpc_enum_field(self, field: LrpcEnumField):
         self.enum_fields.append(field)
 
-    def visit_lrpc_function(self, function: LrpcFunBase):
+    def visit_lrpc_function(self, function: LrpcFun):
         self.fsb = FunctionStringBuilder(self.max_function_id)
         self.fsb.add_function(function)
         
@@ -265,7 +265,7 @@ class PlantUmlVisitor(LrpcVisitor):
     def visit_lrpc_function_return_end(self):
          return super().visit_lrpc_function_return_end()
 
-    def visit_lrpc_service(self, service: LrpcServiceBase):
+    def visit_lrpc_service(self, service: LrpcService):
         self.puml.block(service.name(), 'PeachPuff', 2)
         self.puml.list_item(f'ID: {service.id()}', level=0)
         self.puml.list_end()
@@ -275,7 +275,7 @@ class PlantUmlVisitor(LrpcVisitor):
     def visit_lrpc_service_end(self):
         return super().visit_lrpc_service_end()
     
-    def visit_lrpc_struct(self, struct: LrpcStructBase):
+    def visit_lrpc_struct(self, struct: LrpcStruct):
         self.struct_fields = list()
         icon = 'external-link' if struct.is_external() else None
         self.puml.block(struct.name(), 'lightblue', self.struct_indent, icon)

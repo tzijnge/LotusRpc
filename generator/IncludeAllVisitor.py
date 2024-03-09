@@ -1,7 +1,7 @@
 from code_generation.code_generator import CppFile
 from LrpcDef import LrpcDef
 from LrpcVisitor import LrpcVisitor
-from LrpcServiceBase import LrpcServiceBase
+from LrpcService import LrpcService
 from LrpcUtils import optionally_in_namespace
 
 class IncludeAllVisitor(LrpcVisitor):
@@ -16,7 +16,7 @@ class IncludeAllVisitor(LrpcVisitor):
         self.file('#pragma once')
         self.file('#include "lrpc/Server.hpp"')
 
-    def visit_lrpc_service(self, service: LrpcServiceBase):
+    def visit_lrpc_service(self, service: LrpcService):
         self.__write_service_include(service)
         self.file(f'#include "{service.name()}.hpp"')
 
@@ -33,7 +33,7 @@ class IncludeAllVisitor(LrpcVisitor):
 
         self.file.write(f'using {name} = lrpc::Server<{number_services}, {rx}, {tx}>;')
 
-    def __write_service_include(self, service: LrpcServiceBase):
+    def __write_service_include(self, service: LrpcService):
         include_file = CppFile(f'{self.output}/{service.name()}.hpp')
         include_file('#pragma once')
 

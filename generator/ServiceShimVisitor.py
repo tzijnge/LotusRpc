@@ -1,9 +1,9 @@
 from code_generation.code_generator import CppFile
 from LrpcUtils import optionally_in_namespace
 from LrpcVisitor import LrpcVisitor
-from LrpcDefBase import LrpcDefBase
-from LrpcServiceBase import LrpcServiceBase
-from LrpcFunBase import LrpcFunBase
+from LrpcDef import LrpcDef
+from LrpcService import LrpcService
+from LrpcFun import LrpcFun
 from LrpcVar import LrpcVar
 
 class ServiceShimVisitor(LrpcVisitor):
@@ -23,10 +23,10 @@ class ServiceShimVisitor(LrpcVisitor):
         self.service_id = None
         self.number_functions = None
 
-    def visit_lrpc_def(self, lrpc_def: LrpcDefBase):
+    def visit_lrpc_def(self, lrpc_def: LrpcDef):
         self.lrpc_def = lrpc_def
 
-    def visit_lrpc_service(self, service: LrpcServiceBase):
+    def visit_lrpc_service(self, service: LrpcService):
         self.file = CppFile(f'{self.output}/{service.name()}_ServiceShim.hpp')
         self.function_info = dict()
         self.max_function_id = 0
@@ -43,7 +43,7 @@ class ServiceShimVisitor(LrpcVisitor):
     def visit_lrpc_service_end(self):
         self.__write_shim(self.lrpc_def.namespace())
 
-    def visit_lrpc_function(self, function: LrpcFunBase):
+    def visit_lrpc_function(self, function: LrpcFun):
         self.function_params = list()
         self.function_returns = list()
         self.function_name = function.name()

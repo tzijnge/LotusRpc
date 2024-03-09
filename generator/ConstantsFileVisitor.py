@@ -1,8 +1,8 @@
 from code_generation.code_generator import CppFile
 from LrpcUtils import optionally_in_namespace
 from LrpcVisitor import LrpcVisitor
-from LrpcConstantBase import LrpcConstantBase
-from LrpcDefBase import LrpcDefBase
+from LrpcConstant import LrpcConstant
+from LrpcDef import LrpcDef
 
 class ConstantsFileVisitor(LrpcVisitor):
     def __init__(self, output: str):
@@ -12,13 +12,13 @@ class ConstantsFileVisitor(LrpcVisitor):
         self.includes = None
         self.constant_definitions = None
 
-    def visit_lrpc_def(self, lrpc_def: LrpcDefBase):
+    def visit_lrpc_def(self, lrpc_def: LrpcDef):
         self.file = CppFile(f'{self.output}/{lrpc_def.name()}_Constants.hpp')
         self.namespace = lrpc_def.namespace()
         self.constant_definitions = list()
         self.includes = set()
 
-    def visit_lrpc_constant(self, constant: LrpcConstantBase):
+    def visit_lrpc_constant(self, constant: LrpcConstant):
         if 'int' in constant.cpp_type():
             self.includes.add('stdint.h')
         if constant.cpp_type() == 'string':
@@ -44,7 +44,7 @@ class ConstantsFileVisitor(LrpcVisitor):
         for cd in self.constant_definitions:
             self.file.write(cd)
 
-    def __constant_definition(self, constant: LrpcConstantBase):
+    def __constant_definition(self, constant: LrpcConstant):
         n = constant.name()
 
         if constant.cpp_type() == 'string':

@@ -1,9 +1,7 @@
 from LrpcFun import LrpcFun
 from LrpcVisitor import LrpcVisitor
 
-from LrpcServiceBase import LrpcServiceBase
-
-class LrpcService(LrpcServiceBase):
+class LrpcService(object):
     def __init__(self, raw) -> None:
         self.raw = raw
         self.__init_functions_ids()

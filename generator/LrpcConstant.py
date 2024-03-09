@@ -1,9 +1,6 @@
 from LrpcVisitor import LrpcVisitor
-from typing import Union
 
-from LrpcConstantBase import LrpcConstantBase
-
-class LrpcConstant(LrpcConstantBase):
+class LrpcConstant(object):
     def __init__(self, raw) -> None:
         self.raw = raw
         self.__init_cpp_type()

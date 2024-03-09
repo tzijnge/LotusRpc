@@ -1,9 +1,7 @@
 from LrpcVar import LrpcVar
 from LrpcVisitor import LrpcVisitor
 
-from LrpcFunBase import LrpcFunBase
-
-class LrpcFun(LrpcFunBase):
+class LrpcFun(object):
     def __init__(self, raw) -> None:
         self.raw = raw
         self.__init_params()

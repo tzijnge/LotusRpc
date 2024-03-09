@@ -26,7 +26,7 @@ class ConstantsFileVisitor(LrpcVisitor):
 
         self.constant_definitions.append(self.__constant_definition(constant))
 
-    def visit_lrpc_constant_end(self):
+    def visit_lrpc_constants_end(self):
         self.__write_include_guard()
         self.__write_includes()
         self.file.newline()

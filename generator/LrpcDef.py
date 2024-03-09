@@ -76,9 +76,11 @@ class LrpcDef(LrpcDefBase):
         for e in self.enums():
             e.accept(visitor)
 
-        for c in self.constants():
-            c.accept(visitor)
-        visitor.visit_lrpc_constant_end()
+        if len(self.constants()) != 0:
+            visitor.visit_lrpc_constants()
+            for c in self.constants():
+                c.accept(visitor)
+            visitor.visit_lrpc_constants_end()
 
         visitor.visit_lrpc_def_end()
 

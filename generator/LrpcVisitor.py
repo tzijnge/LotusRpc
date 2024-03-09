@@ -38,10 +38,13 @@ class LrpcVisitor(ABC):
     def visit_lrpc_enum_field(self, field: LrpcEnumFieldBase):
         pass
 
+    def visit_lrpc_constants(self):
+        pass
+
     def visit_lrpc_constant(self, constant: LrpcConstantBase):
         pass
 
-    def visit_lrpc_constant_end(self):
+    def visit_lrpc_constants_end(self):
         pass
 
     def visit_lrpc_function(self, function: LrpcFunBase):

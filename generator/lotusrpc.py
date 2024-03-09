@@ -11,6 +11,7 @@ import jsonschema.exceptions
 from os import path
 import os
 from LrpcDef import LrpcDef
+from PlantUmlVisitor import PlantUmlVisitor
 
 def create_dir_if_not_exists(dir):
     if not path.exists(dir):
@@ -55,6 +56,7 @@ def generate_rpc(lrpc_def: LrpcDef, output: str):
     lrpc_def.accept(EnumFileVisitor(output))
     lrpc_def.accept(ServiceShimVisitor(output))
     lrpc_def.accept(ConstantsFileVisitor(output))
+    lrpc_def.accept(PlantUmlVisitor())
 
 @click.command()
 @click.option('-w', '--warnings_as_errors',

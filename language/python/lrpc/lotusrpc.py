@@ -1,20 +1,20 @@
 import click
-from Lrpc.SematicAnalyzer import SemanticAnalyzer
-from Lrpc.CodeGeneration import StructFileVisitor, ConstantsFileVisitor, EnumFileVisitor, IncludeAllVisitor, ServiceShimVisitor
-from Lrpc.Core import LrpcDef
+from lrpc.SematicAnalyzer import SemanticAnalyzer
+from lrpc.codegen import StructFileVisitor, ConstantsFileVisitor, EnumFileVisitor, IncludeAllVisitor, ServiceShimVisitor
+from lrpc.core import LrpcDef
 import yaml
 import jsonschema
 import jsonschema.exceptions
 from os import path
 import os
-from Lrpc import PlantUmlVisitor
+from lrpc import PlantUmlVisitor
 
 def create_dir_if_not_exists(dir):
     if not path.exists(dir):
         os.makedirs(dir, 511, True)
 
 def validate_yaml(definition, input: str):
-    with open(f'{path.dirname(__file__)}/lotusrpc-schema.json', 'r') as schema_file:
+    with open(f'{path.dirname(__file__)}/../../../misc/lotusrpc-schema.json', 'r') as schema_file:
         schema = yaml.safe_load(schema_file)
 
         try:

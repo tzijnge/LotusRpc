@@ -1,8 +1,8 @@
 from code_generation.code_generator import CppFile
-from Lrpc.Core.LrpcDef import LrpcDef
-from Lrpc.LrpcVisitor import LrpcVisitor
-from Lrpc.Core.LrpcService import LrpcService
-from Lrpc.Core.LrpcUtils import optionally_in_namespace
+from lrpc.core.LrpcDef import LrpcDef
+from lrpc.LrpcVisitor import LrpcVisitor
+from lrpc.core.LrpcService import LrpcService
+from lrpc.core.LrpcUtils import optionally_in_namespace
 
 class IncludeAllVisitor(LrpcVisitor):
     def __init__(self, output: str):

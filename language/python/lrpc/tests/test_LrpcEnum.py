@@ -1,4 +1,4 @@
-from Lrpc.Core.LrpcEnum import LrpcEnum
+from lrpc.core.LrpcEnum import LrpcEnum
 import yaml
 
 def test_full_notation():

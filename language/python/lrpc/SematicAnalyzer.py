@@ -1,5 +1,5 @@
 from typing import List
-from Lrpc.Core import LrpcDef
+from lrpc.core import LrpcDef
 
 class SemanticAnalyzer(object):
     errors : List[str]

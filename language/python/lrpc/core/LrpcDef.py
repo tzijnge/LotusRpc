@@ -2,7 +2,7 @@ from .LrpcService import LrpcService
 from .LrpcConstant import LrpcConstant
 from .LrpcStruct import LrpcStruct
 from .LrpcEnum import LrpcEnum
-from Lrpc import LrpcVisitor
+from lrpc import LrpcVisitor
 
 class LrpcDef(object):
     def __init__(self, raw) -> None:

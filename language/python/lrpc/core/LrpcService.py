@@ -1,5 +1,5 @@
 from .LrpcFun import LrpcFun
-from Lrpc import LrpcVisitor
+from lrpc import LrpcVisitor
 
 class LrpcService(object):
     def __init__(self, raw) -> None:

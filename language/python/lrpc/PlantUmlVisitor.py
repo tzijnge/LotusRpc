@@ -1,11 +1,11 @@
-from Lrpc.LrpcVisitor import LrpcVisitor
-from Lrpc.Core.LrpcConstant import LrpcConstant
-from Lrpc.Core.LrpcDef import LrpcDef
-from Lrpc.Core.LrpcEnum import LrpcEnum, LrpcEnumField
-from Lrpc.Core.LrpcFun import LrpcFun
-from Lrpc.Core.LrpcService import LrpcService
-from Lrpc.Core.LrpcStruct import LrpcStruct
-from Lrpc.Core.LrpcVar import LrpcVar
+from lrpc.LrpcVisitor import LrpcVisitor
+from lrpc.core.LrpcConstant import LrpcConstant
+from lrpc.core.LrpcDef import LrpcDef
+from lrpc.core.LrpcEnum import LrpcEnum, LrpcEnumField
+from lrpc.core.LrpcFun import LrpcFun
+from lrpc.core.LrpcService import LrpcService
+from lrpc.core.LrpcStruct import LrpcStruct
+from lrpc.core.LrpcVar import LrpcVar
 from contextlib import contextmanager
 
 def in_color(t: str, c: str):

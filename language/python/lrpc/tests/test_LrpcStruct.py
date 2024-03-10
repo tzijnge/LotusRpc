@@ -1,4 +1,4 @@
-from Lrpc.Core.LrpcStruct import LrpcStruct
+from lrpc.core.LrpcStruct import LrpcStruct
 
 def test_minimal_notation():
   s = {

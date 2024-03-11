@@ -163,7 +163,8 @@ class PumlFile(object):
                 self.write(')')
 
 class PlantUmlVisitor(LrpcVisitor):
-    def __init__(self) -> None:
+    def __init__(self, output: str) -> None:
+        self.output = output
         self.fsb = None
         self.puml = None
         self.max_function_id = 0
@@ -182,7 +183,7 @@ class PlantUmlVisitor(LrpcVisitor):
         self.const_items_max = 10
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef):
-        self.puml = PumlFile(f'C:/projects/lotusrpc2/{lrpc_def.name()}.puml')
+        self.puml = PumlFile(f'{self.output}/{lrpc_def.name()}.puml')
 
         self.puml.block(lrpc_def.name(), 'Yellow', level=1)
         self.puml.list_item(f'Namespace: {lrpc_def.namespace()}', level=0)

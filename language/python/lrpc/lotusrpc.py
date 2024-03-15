@@ -1,6 +1,5 @@
 import click
-from lrpc.SematicAnalyzer import SemanticAnalyzer
-from lrpc.codegen import StructFileVisitor, ConstantsFileVisitor, EnumFileVisitor, IncludeAllVisitor, ServiceShimVisitor
+from lrpc.codegen import StructFileVisitor, ConstantsFileVisitor, EnumFileVisitor, IncludeAllVisitor, ServiceShimVisitor, SemanticAnalyzer
 from lrpc.core import LrpcDef
 import yaml
 import jsonschema

@@ -1,6 +1,8 @@
 import click
 from lrpc.codegen import StructFileVisitor, ConstantsFileVisitor, EnumFileVisitor, IncludeAllVisitor, ServiceShimVisitor, SemanticAnalyzer
 from lrpc.core import LrpcDef
+from lrpc import schema as lrpc_schema
+from importlib import resources
 import yaml
 import jsonschema
 import jsonschema.exceptions
@@ -13,7 +15,8 @@ def create_dir_if_not_exists(dir):
         os.makedirs(dir, 511, True)
 
 def validate_yaml(definition, input: str):
-    with open(f'{path.dirname(__file__)}/../../../misc/lotusrpc-schema.json', 'r') as schema_file:
+    url = (resources.files(lrpc_schema) / 'lotusrpc-schema.json')
+    with open(url, 'rt') as schema_file:
         schema = yaml.safe_load(schema_file)
 
         try:
@@ -51,7 +54,7 @@ def generate_rpc(lrpc_def: LrpcDef, output: str):
     lrpc_def.accept(EnumFileVisitor(output))
     lrpc_def.accept(ServiceShimVisitor(output))
     lrpc_def.accept(ConstantsFileVisitor(output))
-    lrpc_def.accept(PlantUmlVisitor())
+    lrpc_def.accept(PlantUmlVisitor(output))
 
 @click.command()
 @click.option('-w', '--warnings_as_errors',

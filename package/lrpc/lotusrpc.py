@@ -1,6 +1,8 @@
 import click
-from lrpc.codegen import StructFileVisitor, ConstantsFileVisitor, EnumFileVisitor, IncludeAllVisitor, ServiceShimVisitor, SemanticAnalyzer
+from lrpc.codegen import StructFileVisitor, ConstantsFileVisitor, EnumFileVisitor, IncludeAllVisitor, ServiceShimVisitor
+from lrpc.validation import SemanticAnalyzer 
 from lrpc.core import LrpcDef
+from lrpc import PlantUmlVisitor
 from lrpc import schema as lrpc_schema
 from importlib import resources
 import yaml
@@ -8,7 +10,6 @@ import jsonschema
 import jsonschema.exceptions
 from os import path
 import os
-from lrpc import PlantUmlVisitor
 
 def create_dir_if_not_exists(dir):
     if not path.exists(dir):

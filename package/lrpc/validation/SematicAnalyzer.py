@@ -1,5 +1,6 @@
 from typing import List
 from lrpc.core import LrpcDef
+from lrpc.validation.DuplicateServiceIdChecker import DuplicateServiceIdChecker
 
 class SemanticAnalyzer(object):
     errors : List[str]
@@ -10,6 +11,9 @@ class SemanticAnalyzer(object):
         self.warnings = list()
         self.definition = definition
         self.__services = definition.services()
+        self.checkers = [
+            DuplicateServiceIdChecker()
+        ]
 
     def __duplicates(self, input):
         unique = list()
@@ -22,12 +26,6 @@ class SemanticAnalyzer(object):
             unique.append(n)
 
         return duplicates
-
-    def __check_duplicate_service_ids(self):
-        ids = [s.id() for s in self.__services]
-        duplicate_ids = self.__duplicates(ids)
-        if len(duplicate_ids) > 0:
-            self.errors.append(f'Duplicate service id(s): {duplicate_ids}')
 
     def __check_duplicate_function_ids(self):
         duplicate_ids = list()
@@ -174,7 +172,11 @@ class SemanticAnalyzer(object):
             self.errors.append(f'A function cannot return an auto string: {offenders}')
 
     def analyze(self) -> None:
-        self.__check_duplicate_service_ids()
+        for checker in self.checkers:
+            self.definition.accept(checker)
+
+        self.errors = [c.error() for c in self.checkers if c.error() is not None]
+
         self.__check_duplicate_service_names()
         self.__check_duplicate_function_ids()
         self.__check_duplicate_function_names()

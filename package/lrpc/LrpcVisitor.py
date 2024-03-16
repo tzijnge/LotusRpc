@@ -9,7 +9,7 @@ class LrpcVisitor(ABC):
 
     def visit_lrpc_service(self, service):
         pass
-    
+
     def visit_lrpc_service_end(self):
         pass
 

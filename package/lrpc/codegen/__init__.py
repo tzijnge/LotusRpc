@@ -3,4 +3,3 @@ from .EnumFileVisitor import EnumFileVisitor
 from .IncludeAllVisitor import IncludeAllVisitor
 from .ServiceShimVisitor import ServiceShimVisitor
 from .StructFileVisitor import StructFileVisitor
-from .SematicAnalyzer import SemanticAnalyzer

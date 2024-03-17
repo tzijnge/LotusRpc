@@ -205,7 +205,7 @@ services:
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
     assert len(warnings) == 0
-    assert "Duplicate service name(s): ['i0']" in errors
+    assert "Duplicate service name: i0" in errors
 
 def test_duplicate_service_ids():
     rpc_def = \
@@ -227,7 +227,7 @@ services:
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
     assert len(warnings) == 0
-    assert "Duplicate service id(s): [111]" in errors
+    assert "Duplicate service id: 111" in errors
 
 def test_duplicate_function_ids():
     rpc_def = \
@@ -251,9 +251,10 @@ services:
 '''
 
     errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 1
+    assert len(errors) == 2
     assert len(warnings) == 0
-    assert "Duplicate function id(s): [('i0', 111), ('i1', 111)]" in errors
+    assert "Duplicate function id in service i0: 111" in errors
+    assert "Duplicate function id in service i1: 111" in errors
 
 def test_duplicate_function_names():
     rpc_def = \
@@ -277,9 +278,10 @@ services:
 '''
 
     errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 1
+    assert len(errors) == 2
     assert len(warnings) == 0
-    assert "Duplicate function name(s): [('i0', 'f0'), ('i1', 'f1')]" in errors
+    assert "Duplicate function name in service i0: f0" in errors
+    assert "Duplicate function name in service i1: f1" in errors
 
 def test_duplicate_constant_names():
     rpc_def = \

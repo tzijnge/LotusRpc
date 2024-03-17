@@ -1,6 +1,7 @@
 from typing import List
 from lrpc.core import LrpcDef
-from lrpc.validation.DuplicateServiceIdChecker import DuplicateServiceIdChecker
+from lrpc.validation.ServiceChecker import ServiceChecker
+from lrpc.validation.FunctionChecker import FunctionChecker
 
 class SemanticAnalyzer(object):
     errors : List[str]
@@ -12,7 +13,8 @@ class SemanticAnalyzer(object):
         self.definition = definition
         self.__services = definition.services()
         self.checkers = [
-            DuplicateServiceIdChecker()
+            ServiceChecker(),
+            FunctionChecker()
         ]
 
     def __duplicates(self, input):
@@ -27,15 +29,6 @@ class SemanticAnalyzer(object):
 
         return duplicates
 
-    def __check_duplicate_function_ids(self):
-        duplicate_ids = list()
-        for s in self.__services:
-            ids = [(s.name(), f.id()) for f in s.functions()]
-            duplicate_ids.extend(self.__duplicates(ids))
-
-        if len(duplicate_ids) > 0:
-            self.errors.append(f'Duplicate function id(s): {duplicate_ids}')
-
     def __check_duplicate_enum_field_ids(self):
         duplicate_ids = list()
         for e in self.definition.enums():
@@ -44,21 +37,6 @@ class SemanticAnalyzer(object):
             
         if len(duplicate_ids) > 0:
             self.errors.append(f'Duplicate enum field id(s): {duplicate_ids}')
-
-    def __check_duplicate_service_names(self):
-        names = [s.name() for s in self.__services]
-        duplicate_names = self.__duplicates(names)
-        if len(duplicate_names) > 0:
-            self.errors.append(f'Duplicate service name(s): {duplicate_names}')
-
-    def __check_duplicate_function_names(self):
-        duplicate_names = list()
-        for s in self.__services:
-            names = [(s.name(), f.name()) for f in s.functions()]
-            duplicate_names.extend(self.__duplicates(names))
-
-        if len(duplicate_names) > 0:
-            self.errors.append(f'Duplicate function name(s): {duplicate_names}')
 
     def __check_duplicate_struct_enum__constant_names(self):
         names = list()
@@ -174,12 +152,8 @@ class SemanticAnalyzer(object):
     def analyze(self) -> None:
         for checker in self.checkers:
             self.definition.accept(checker)
+            self.errors.extend(checker.errors)
 
-        self.errors = [c.error() for c in self.checkers if c.error() is not None]
-
-        self.__check_duplicate_service_names()
-        self.__check_duplicate_function_ids()
-        self.__check_duplicate_function_names()
         self.__check_duplicate_enum_field_ids()
         self.__check_duplicate_enum_field_names()
         self.__check_duplicate_struct_field_names()

@@ -1,2 +1,3 @@
 from .SematicAnalyzer import SemanticAnalyzer
-from .DuplicateServiceIdChecker import DuplicateServiceIdChecker
+from .ServiceChecker import ServiceChecker
+from .FunctionChecker import FunctionChecker

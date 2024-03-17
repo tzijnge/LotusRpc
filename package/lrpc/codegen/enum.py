@@ -1,8 +1,8 @@
 from code_generation.code_generator import CppFile
-from lrpc.core import utils
 from lrpc.LrpcVisitor import LrpcVisitor
 from lrpc.core import LrpcDef
 from lrpc.core import LrpcEnum
+from lrpc.codegen.utils import optionally_in_namespace
 
 class EnumFileVisitor(LrpcVisitor):
     def __init__(self, output: str):
@@ -34,7 +34,7 @@ class EnumFileVisitor(LrpcVisitor):
             self.__write_external_alias(self.namespace)
             self.file.newline()
 
-    @utils.optionally_in_namespace
+    @optionally_in_namespace
     def __write_external_alias(self):
         name = self.__qualified_name()
         ext_ns = self.descriptor.external_namespace()
@@ -70,7 +70,7 @@ class EnumFileVisitor(LrpcVisitor):
                     for f in self.descriptor.fields():
                         self.file.write(f'case {self.__name()}::{f.name()}: break;')
 
-    @utils.optionally_in_namespace
+    @optionally_in_namespace
     def __write_enum(self):
         n = self.descriptor.name()
         with self.file.block(f'enum class {n}', ';'):

@@ -2,7 +2,7 @@ from code_generation.code_generator import CppFile
 from lrpc.core import LrpcDef
 from lrpc.LrpcVisitor import LrpcVisitor
 from lrpc.core import LrpcService
-from lrpc.core import utils
+from lrpc.codegen.utils import optionally_in_namespace
 
 class IncludeAllVisitor(LrpcVisitor):
     def __init__(self, output: str):
@@ -24,7 +24,7 @@ class IncludeAllVisitor(LrpcVisitor):
         self.file.newline()
         self.__write_server_class(self.lrpc_def.namespace())
 
-    @utils.optionally_in_namespace
+    @optionally_in_namespace
     def __write_server_class(self):
         rx = self.lrpc_def.rx_buffer_size()
         tx = self.lrpc_def.tx_buffer_size()

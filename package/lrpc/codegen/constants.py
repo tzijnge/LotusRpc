@@ -1,8 +1,8 @@
 from code_generation.code_generator import CppFile
-from lrpc.core import utils
 from lrpc.LrpcVisitor import LrpcVisitor
 from lrpc.core import LrpcConstant
 from lrpc.core import LrpcDef
+from lrpc.codegen.utils import optionally_in_namespace
 
 class ConstantsFileVisitor(LrpcVisitor):
     def __init__(self, output: str):
@@ -39,7 +39,7 @@ class ConstantsFileVisitor(LrpcVisitor):
         for i in self.includes:
             self.file.write(f'#include <{i}>')
 
-    @utils.optionally_in_namespace
+    @optionally_in_namespace
     def __write_constant_definitions(self):
         for cd in self.constant_definitions:
             self.file.write(cd)

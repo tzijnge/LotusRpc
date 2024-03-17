@@ -2,6 +2,7 @@ from typing import List
 from lrpc.core import LrpcDef
 from lrpc.validation.ServiceChecker import ServiceChecker
 from lrpc.validation.FunctionChecker import FunctionChecker
+from lrpc.validation.EnumChecker import EnumChecker
 
 class SemanticAnalyzer(object):
     errors : List[str]
@@ -14,7 +15,8 @@ class SemanticAnalyzer(object):
         self.__services = definition.services()
         self.checkers = [
             ServiceChecker(),
-            FunctionChecker()
+            FunctionChecker(),
+            EnumChecker()
         ]
 
     def __duplicates(self, input):
@@ -29,15 +31,6 @@ class SemanticAnalyzer(object):
 
         return duplicates
 
-    def __check_duplicate_enum_field_ids(self):
-        duplicate_ids = list()
-        for e in self.definition.enums():
-            ids = [(e.name(), field.id()) for field in e.fields()]
-            duplicate_ids.extend(self.__duplicates(ids))
-            
-        if len(duplicate_ids) > 0:
-            self.errors.append(f'Duplicate enum field id(s): {duplicate_ids}')
-
     def __check_duplicate_struct_enum__constant_names(self):
         names = list()
         names = names + [e.name() for e in self.definition.enums()]
@@ -47,15 +40,6 @@ class SemanticAnalyzer(object):
 
         if len(duplicate_names) > 0:
             self.errors.append(f'Duplicate struct/enum/constant name(s): {duplicate_names}')
-
-    def __check_duplicate_enum_field_names(self):
-        duplicate_names = list()
-        for e in self.definition.enums():
-            names = [(e.name(), field.name()) for field in e.fields()]
-            duplicate_names.extend(self.__duplicates(names))
-            
-        if len(duplicate_names) > 0:
-            self.errors.append(f'Duplicate enum field name(s): {duplicate_names}')
 
     def __check_duplicate_struct_field_names(self):
         duplicate_names = list()
@@ -154,8 +138,6 @@ class SemanticAnalyzer(object):
             self.definition.accept(checker)
             self.errors.extend(checker.errors)
 
-        self.__check_duplicate_enum_field_ids()
-        self.__check_duplicate_enum_field_names()
         self.__check_duplicate_struct_field_names()
         self.__check_duplicate_struct_enum__constant_names()
         self.__check_undeclared_custom_types()

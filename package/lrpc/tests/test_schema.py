@@ -43,9 +43,10 @@ enums:
         id: 1
 '''
     errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 1
+    assert len(errors) == 2
     assert len(warnings) == 1
-    assert "Duplicate enum field name(s): [('e0', 'f'), ('e1', 'g')]" in errors
+    assert "Duplicate field name in enum e0: f" in errors
+    assert "Duplicate field name in enum e1: g" in errors
 
 def test_duplicate_enum_field_ids():
     rpc_def = \
@@ -73,9 +74,10 @@ enums:
 '''
 
     errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 1
+    assert len(errors) == 2
     assert len(warnings) == 1
-    assert "Duplicate enum field id(s): [('e0', 111), ('e1', 222)]" in errors
+    assert "Duplicate field id in enum e0: 111" in errors
+    assert "Duplicate field id in enum e1: 222" in errors
 
 def test_duplicate_enum_names():
     rpc_def = \

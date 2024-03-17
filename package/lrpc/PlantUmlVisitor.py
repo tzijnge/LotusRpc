@@ -1,11 +1,5 @@
 from lrpc.LrpcVisitor import LrpcVisitor
-from lrpc.core.LrpcConstant import LrpcConstant
-from lrpc.core.LrpcDef import LrpcDef
-from lrpc.core.LrpcEnum import LrpcEnum, LrpcEnumField
-from lrpc.core.LrpcFun import LrpcFun
-from lrpc.core.LrpcService import LrpcService
-from lrpc.core.LrpcStruct import LrpcStruct
-from lrpc.core.LrpcVar import LrpcVar
+from lrpc.core import *
 from contextlib import contextmanager
 
 def in_color(t: str, c: str):

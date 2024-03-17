@@ -1,9 +1,7 @@
 from code_generation.code_generator import CppFile
 from lrpc.LrpcVisitor import LrpcVisitor
-from lrpc.core.LrpcDef import LrpcDef
-from lrpc.core.LrpcStruct import LrpcStruct
-from lrpc.core.LrpcUtils import optionally_in_namespace
-from lrpc.core.LrpcVar import LrpcVar
+from lrpc.core import LrpcDef, LrpcStruct, LrpcVar
+from lrpc.core import utils
 
 class StructFileVisitor(LrpcVisitor):
     def __init__(self, output: str):
@@ -71,7 +69,7 @@ class StructFileVisitor(LrpcVisitor):
             for f in self.descriptor.fields():
                 self.file.write(f'static_assert(std::is_same<decltype(dummy::{self.__qualified_name()}::{f.name()}), decltype({self.__name()}::{f.name()})>::value, "Type of field {f.name()} is not as specified in LRPC");')
 
-    @optionally_in_namespace
+    @utils.optionally_in_namespace
     def __write_external_alias(self):
         ext_ns = self.descriptor.external_namespace()
         name = self.descriptor.name()
@@ -87,7 +85,7 @@ class StructFileVisitor(LrpcVisitor):
         for i in self.__required_includes():
             self.file(f'#include {i}')
 
-    @optionally_in_namespace
+    @utils.optionally_in_namespace
     def __write_struct(self):
         with self.file.block(f'struct {self.__qualified_name()}', ';'):
             for f in self.descriptor.fields():

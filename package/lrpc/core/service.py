@@ -1,4 +1,4 @@
-from .LrpcFun import LrpcFun
+from lrpc.core import LrpcFun
 from lrpc import LrpcVisitor
 
 class LrpcService(object):

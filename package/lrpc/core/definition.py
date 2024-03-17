@@ -1,7 +1,4 @@
-from .LrpcService import LrpcService
-from .LrpcConstant import LrpcConstant
-from .LrpcStruct import LrpcStruct
-from .LrpcEnum import LrpcEnum
+from lrpc.core import LrpcService, LrpcConstant, LrpcStruct, LrpcEnum
 from lrpc import LrpcVisitor
 
 class LrpcDef(object):

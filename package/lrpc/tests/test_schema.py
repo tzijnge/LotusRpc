@@ -1,8 +1,8 @@
 import pytest
 import jsonschema
 import yaml
-from lrpc.validation.SematicAnalyzer import SemanticAnalyzer
-from lrpc.core.LrpcDef import LrpcDef
+from lrpc.validation import SemanticAnalyzer
+from lrpc.core import LrpcDef
 from lrpc import schema as lrpc_schema
 from importlib import resources
 

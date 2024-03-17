@@ -1,10 +1,7 @@
 from code_generation.code_generator import CppFile
-from lrpc.core.LrpcUtils import optionally_in_namespace
+from lrpc.core import utils
 from lrpc.LrpcVisitor import LrpcVisitor
-from lrpc.core.LrpcDef import LrpcDef
-from lrpc.core.LrpcService import LrpcService
-from lrpc.core.LrpcFun import LrpcFun
-from lrpc.core.LrpcVar import LrpcVar
+from lrpc.core import LrpcDef, LrpcService, LrpcFun, LrpcVar
 
 class ServiceShimVisitor(LrpcVisitor):
     def __init__(self, output: str):
@@ -69,7 +66,7 @@ class ServiceShimVisitor(LrpcVisitor):
     def visit_lrpc_function_return(self, ret: LrpcVar):
         self.function_returns.append(ret)
 
-    @optionally_in_namespace
+    @utils.optionally_in_namespace
     def __write_shim(self):
         with self.file.block(f'class {self.service_name}ServiceShim : public lrpc::Service', ';'):
             self.file.label('public')

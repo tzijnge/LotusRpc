@@ -1,8 +1,6 @@
 from typing import List
 from lrpc.core import LrpcDef
-from lrpc.validation.ServiceChecker import ServiceChecker
-from lrpc.validation.FunctionChecker import FunctionChecker
-from lrpc.validation.EnumChecker import EnumChecker
+from lrpc.validation import ServiceChecker, FunctionChecker, EnumChecker
 
 class SemanticAnalyzer(object):
     errors : List[str]
@@ -31,7 +29,7 @@ class SemanticAnalyzer(object):
 
         return duplicates
 
-    def __check_duplicate_struct_enum__constant_names(self):
+    def __check_duplicate_struct_enum_constant_names(self):
         names = list()
         names = names + [e.name() for e in self.definition.enums()]
         names = names + [e.name() for e in self.definition.structs()]
@@ -139,7 +137,7 @@ class SemanticAnalyzer(object):
             self.errors.extend(checker.errors)
 
         self.__check_duplicate_struct_field_names()
-        self.__check_duplicate_struct_enum__constant_names()
+        self.__check_duplicate_struct_enum_constant_names()
         self.__check_undeclared_custom_types()
         self.__check_auto_string_in_struct()
         self.__check_multiple_auto_strings_in_param_list_or_return_list()

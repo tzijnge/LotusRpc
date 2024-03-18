@@ -12,6 +12,7 @@ semantic analysis
 - [error] [done] duplicate struct/enum names
 - [error] [done] duplicate enum field names (in same enum)
 - [error] [done] duplicate struct field names (in same struct)
+- [error] Function in service cannot have same name as service (this would be a constructor)
 
 # Decision:
 # 1. Trivial function parameters (int, bool, float, etc) are by value

@@ -6,10 +6,10 @@ from lrpc.codegen.utils import optionally_in_namespace
 
 class EnumFileVisitor(LrpcVisitor):
     def __init__(self, output: str):
-        self.descriptor = None
-        self.file = None
-        self.namespace = None
-        self.output = output
+        self.descriptor: LrpcEnum
+        self.file: CppFile
+        self.namespace: str
+        self.output: str = output
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef):
         self.namespace = lrpc_def.namespace()

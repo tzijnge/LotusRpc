@@ -31,16 +31,6 @@ class SemanticAnalyzer(object):
 
         return duplicates
 
-    def __check_duplicate_struct_enum_constant_names(self):
-        names = list()
-        names = names + [e.name() for e in self.definition.enums()]
-        names = names + [e.name() for e in self.definition.structs()]
-        names = names + [e.name() for e in self.definition.constants()]
-        duplicate_names = self.__duplicates(names)
-
-        if len(duplicate_names) > 0:
-            self.errors.append(f'Duplicate struct/enum/constant name(s): {duplicate_names}')
-
     def __check_duplicate_struct_field_names(self):
         duplicate_names = list()
         for s in self.definition.structs():

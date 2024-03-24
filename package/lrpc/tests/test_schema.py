@@ -214,9 +214,10 @@ services:
 '''
 
     errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 1
+    assert len(errors) == 2
     assert len(warnings) == 0
     assert "Duplicate name: i0" in errors
+    assert "Duplicate name: i0ServiceShim" in errors
 
 def test_duplicate_service_ids():
     rpc_def = \
@@ -293,6 +294,44 @@ services:
     assert len(warnings) == 0
     assert "Duplicate function name in service i0: f0" in errors
     assert "Duplicate function name in service i1: f1" in errors
+
+def test_invalid_function_name():
+    rpc_def = \
+'''name: "test"
+services:
+  - name: "s0"
+    functions:
+      - { name: "s0ServiceShim" }
+'''
+
+    errors, warnings = semantic_errors(rpc_def)
+    assert len(errors) == 1
+    assert len(warnings) == 0
+    assert 'Invalid function name: s0ServiceShim. This name is incompatible with the generated code for the containing service' in errors
+
+def test_duplicate_server_name():
+    rpc_def = \
+'''name: "server"
+services:
+  - name: "server"
+    functions:
+      - { name: "f0" }
+constants:
+  - name: server
+    cppType: bool
+    value: true
+enums:
+  - { name: server, fields: [V0]}
+structs:
+  - name: server
+    fields: [{name: f1, type: bool}]
+'''
+
+    errors, warnings = semantic_errors(rpc_def)
+    assert len(errors) == 4
+    assert len(warnings) == 1
+    assert errors.count("Duplicate name: server") == 4
+
 
 def test_duplicate_constant_names():
     rpc_def = \

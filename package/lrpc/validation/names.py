@@ -12,6 +12,7 @@ class NamesChecker(LrpcVisitor):
         self.errors.clear()
         self.warnings.clear()
         self.names.clear()
+        self.names.add(lrpc_def.name())
 
     def __check(self, name: str):
         if name in self.names:
@@ -26,7 +27,12 @@ class NamesChecker(LrpcVisitor):
         self.__check(enum.name())
 
     def visit_lrpc_service(self, service: LrpcService):
+        # A top-level item with the same name as the service is
+        # not strictly a problem, because the generated class
+        # has the word 'ServiceShim' appended. But it is confusing
+        # and therefore both are treated as an invalid name
         self.__check(service.name())
+        self.__check(service.name() + 'ServiceShim')
 
     def visit_lrpc_constant(self, constant: LrpcConstant):
         self.__check(constant.name())

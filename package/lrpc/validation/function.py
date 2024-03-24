@@ -26,6 +26,9 @@ class FunctionChecker(LrpcVisitor):
         if name in self.function_names:
             self.errors.append(f'Duplicate function name in service {self.current_service}: {name}')
 
+        if name == (self.current_service + 'ServiceShim'):
+            self.errors.append(f'Invalid function name: {name}. This name is incompatible with the generated code for the containing service')
+
         self.function_ids.add(id)
         self.function_names.add(name)
 

@@ -10,7 +10,7 @@ MATCHER_P(SPAN_EQ, e, "Equality matcher for etl::span")
 {
     if (e.size() != arg.size())
     {
-        return false;   
+        return false;
     }
     for (size_t i = 0; i < e.size(); ++i)
     {

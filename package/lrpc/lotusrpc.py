@@ -26,7 +26,7 @@ def validate_yaml(definition, input: str):
         except jsonschema.exceptions.ValidationError as e:
             print('#' * 80)
             print(' LRPC definition parsing error '.center(80, '#'))
-            print(f' {input.name} '.center(80, '#'))
+            print(f' {input} '.center(80, '#'))
             print('#' * 80)
             print(e)
             return True
@@ -78,7 +78,7 @@ def generate(warnings_as_errors, output, input):
     errors_found = validate_yaml(definition, input)
     if errors_found:
         return
-    
+
     lrpc_def = LrpcDef(definition)
     errors_found = validate_definition(lrpc_def, warnings_as_errors)
     if not errors_found:

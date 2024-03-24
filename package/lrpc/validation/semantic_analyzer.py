@@ -1,6 +1,6 @@
 from typing import List
 from lrpc.core import LrpcDef
-from lrpc.validation import ServiceChecker, FunctionChecker, EnumChecker, CustomTypesChecker
+from lrpc.validation import ServiceChecker, FunctionChecker, EnumChecker, NamesChecker, CustomTypesChecker
 
 class SemanticAnalyzer(object):
     errors : List[str]
@@ -15,6 +15,7 @@ class SemanticAnalyzer(object):
             ServiceChecker(),
             FunctionChecker(),
             EnumChecker(),
+            NamesChecker(),
             CustomTypesChecker()
         ]
 
@@ -23,10 +24,10 @@ class SemanticAnalyzer(object):
         duplicates = list()
 
         for n in input:
-          if n in unique:
-            duplicates.append(n)
-          else:
-            unique.append(n)
+            if n in unique:
+                duplicates.append(n)
+            else:
+                unique.append(n)
 
         return duplicates
 
@@ -105,7 +106,6 @@ class SemanticAnalyzer(object):
             self.warnings.extend(checker.warnings)
 
         self.__check_duplicate_struct_field_names()
-        self.__check_duplicate_struct_enum_constant_names()
 
 
         self.__check_auto_string_in_struct()

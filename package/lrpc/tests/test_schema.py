@@ -103,7 +103,7 @@ enums:
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
     assert len(warnings) == 1
-    assert "Duplicate struct/enum/constant name(s): ['e0']" in errors
+    assert "Duplicate name: e0" in errors
 
 def test_duplicate_struct_names():
     rpc_def = \
@@ -129,34 +129,43 @@ structs:
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
     assert len(warnings) == 1
-    assert "Duplicate struct/enum/constant name(s): ['s0']" in errors
+    assert "Duplicate name: s0" in errors
 
-def test_duplicate_struct_enum_names():
+def test_duplicate_names():
     rpc_def = \
 '''name: "test"
 namespace: "a"
 services:
-  - name: "a"
+  - name: "s0"
     id: 0
     functions:
       - name: "a"
         id: 0
 structs:
-  - name: "s0"
+  - name: "s1"
     fields:
       - name: "f0"
         type: uint64_t
 enums:
-  - name: "s0"
+  - name: "s2"
     fields:
       - name: "f1"
         id: 111
+constants:
+  - name: s0
+    value: 123
+  - name: s1
+    value: 123
+  - name: s2
+    value: 123
 '''
 
     errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 1
-    assert len(warnings) == 1
-    assert "Duplicate struct/enum/constant name(s): ['s0']" in errors
+    assert len(errors) == 3
+    assert len(warnings) == 2
+    assert "Duplicate name: s0" in errors
+    assert "Duplicate name: s1" in errors
+    assert "Duplicate name: s2" in errors
 
 def test_duplicate_struct_field_names():
     rpc_def = \
@@ -207,7 +216,7 @@ services:
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
     assert len(warnings) == 0
-    assert "Duplicate service name: i0" in errors
+    assert "Duplicate name: i0" in errors
 
 def test_duplicate_service_ids():
     rpc_def = \
@@ -304,9 +313,10 @@ services:
 '''
 
     errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 1
+    assert len(errors) == 2
     assert len(warnings) == 0
-    assert "Duplicate struct/enum/constant name(s): ['c0', 'c1']" in errors
+    assert "Duplicate name: c0" in errors
+    assert "Duplicate name: c1" in errors
 
 def test_undeclared_custom_type():
     rpc_def = \

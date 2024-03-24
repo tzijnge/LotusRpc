@@ -3,14 +3,15 @@ from lrpc.LrpcVisitor import LrpcVisitor
 from lrpc.core import LrpcConstant
 from lrpc.core import LrpcDef
 from lrpc.codegen.utils import optionally_in_namespace
+from typing import Set, List
 
 class ConstantsFileVisitor(LrpcVisitor):
     def __init__(self, output: str):
         self.output = output
         self.namespace = None
         self.file = None
-        self.includes = None
-        self.constant_definitions = None
+        self.includes : Set[str] = set()
+        self.constant_definitions : List[str] = list()
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef):
         self.file = CppFile(f'{self.output}/{lrpc_def.name()}_Constants.hpp')

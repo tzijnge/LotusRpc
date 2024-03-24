@@ -32,3 +32,5 @@
 *.app
 build
 .vscode
+**/__pycache__/**/*.*
+/language/cpp/tests/generated

@@ -2,9 +2,9 @@ name: CMake
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 env:
   BUILD_TYPE: Release
@@ -14,28 +14,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        submodules: 'true'
+      - name: Checkout
+        uses: actions/checkout@v4.1.2
+        with:
+          submodules: "true"
 
-    - name: Install Python requirements
-      run: pip install -r requirements.txt
+      - name: Install Python requirements
+        run: pip install -r requirements.txt
 
-    - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      - name: Configure CMake
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
-    - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
-    - name: C++ tests
-      working-directory: ${{github.workspace}}/build
-      run: ctest -C ${{env.BUILD_TYPE}} --output-junit ../testresults/cpptestresults.xml
+      - name: C++ tests
+        working-directory: ${{github.workspace}}/build
+        run: ctest -C ${{env.BUILD_TYPE}} --output-junit ../testresults/cpptestresults.xml
 
-    - name: Python tests
-      run: pytest generator -v --junitxml=testresults/pytestresults.xml
-      
-    - name: Publish Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v2
-      with:
-        junit_files: "testresults/*.xml"
+      - name: Python tests
+        run: pytest package/lrpc/tests -v --junitxml=testresults/pytestresults.xml
+
+      - name: Install LRPC Python package
+        working-directory: package
+        run: pip install .
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action/linux@v2
+        with:
+          junit_files: "testresults/*.xml"

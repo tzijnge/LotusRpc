@@ -61,21 +61,21 @@ class LrpcDef(object):
 
     def accept(self, visitor: LrpcVisitor):
         visitor.visit_lrpc_def(self)
-        
-        for s in self.services():
-            s.accept(visitor)
-
-        for s in self.structs():
-            s.accept(visitor)
-
-        for e in self.enums():
-            e.accept(visitor)
 
         if len(self.constants()) != 0:
             visitor.visit_lrpc_constants()
             for c in self.constants():
                 c.accept(visitor)
             visitor.visit_lrpc_constants_end()
+
+        for e in self.enums():
+            e.accept(visitor)
+
+        for s in self.structs():
+            s.accept(visitor)
+
+        for s in self.services():
+            s.accept(visitor)
 
         visitor.visit_lrpc_def_end()
 

@@ -44,7 +44,7 @@ enums:
 '''
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 2
-    assert len(warnings) == 1
+    assert len(warnings) == 2
     assert "Duplicate field name in enum e0: f" in errors
     assert "Duplicate field name in enum e1: g" in errors
 
@@ -75,7 +75,7 @@ enums:
 
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 2
-    assert len(warnings) == 1
+    assert len(warnings) == 2
     assert "Duplicate field id in enum e0: 111" in errors
     assert "Duplicate field id in enum e1: 222" in errors
 
@@ -184,7 +184,7 @@ structs:
 '''
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
-    assert len(warnings) == 1
+    assert len(warnings) == 2
     assert "Duplicate struct field name(s): [('s0', 'f'), ('s1', 'g')]" in errors
 
 def test_duplicate_service_names():
@@ -351,9 +351,42 @@ enums:
 '''
 
     errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 1
+    assert len(errors) == 3
     assert len(warnings) == 0
-    assert "Undeclared custom type(s): ['MyType1', 'MyType2', 'MyType3']" in errors
+    assert "Undeclared custom type: MyType1" in errors
+    assert "Undeclared custom type: MyType2" in errors
+    assert "Undeclared custom type: MyType3" in errors
+
+def test_unused_custom_type():
+    rpc_def = \
+'''name: "test"
+namespace: "ns"
+services:
+  - name: "i0"
+    id: 0
+    functions:
+      - name: "f0"
+        id: 0
+        params:
+          - name: "p0"
+            type: bool
+structs:
+  - name: "s0"
+    fields:
+      - name: "f0"
+        type: bool
+enums:
+  - name: "e0"
+    fields:
+      - name: "f0"
+        id: 0
+'''
+
+    errors, warnings = semantic_errors(rpc_def)
+    assert len(errors) == 0
+    assert len(warnings) == 2
+    assert "Unused custom type: s0" in warnings
+    assert "Unused custom type: e0" in warnings
 
 def test_auto_string_not_allowed_in_struct():
     rpc_def = \
@@ -378,7 +411,7 @@ structs:
 
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
-    assert len(warnings) == 1
+    assert len(warnings) == 2
     assert "Auto string not allowed in struct: [('s0', 'f0'), ('s1', 'f1')]" in errors
 
 def test_only_one_auto_string_param_allowed():
@@ -423,36 +456,6 @@ services:
     assert len(errors) == 1
     assert len(warnings) == 0
     assert "Array of auto strings is not allowed: [('f2', 'p0')]" in errors
-
-def test_warning_on_unused_custom_type():
-    rpc_def = \
-'''name: "test"
-namespace: "ns"
-services:
-  - name: "i0"
-    id: 0
-    functions:
-      - name: "f0"
-        id: 0
-        params:
-          - name: "p0"
-            type: bool
-structs:
-  - name: "s0"
-    fields:
-      - name: "f0"
-        type: bool
-enums:
-  - name: "e0"
-    fields:
-      - name: "f0"
-        id: 0
-'''
-
-    errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 0
-    assert len(warnings) == 1
-    assert "Unused custom type(s): ['s0', 'e0']" in warnings
 
 def test_auto_string_return_value_is_not_allowed():
     rpc_def = \

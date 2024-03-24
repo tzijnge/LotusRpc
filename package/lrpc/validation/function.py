@@ -4,12 +4,14 @@ from lrpc.LrpcVisitor import LrpcVisitor
 class FunctionChecker(LrpcVisitor):
     def __init__(self) -> None:
         self.errors = list()
+        self.warnings = list()
         self.function_ids = set()
         self.function_names = set()
         self.current_service = ""
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef):
         self.errors.clear()
+        self.warnings.clear()
         self.function_ids.clear()
         self.function_names.clear()
         self.current_service = ""

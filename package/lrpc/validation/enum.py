@@ -4,12 +4,14 @@ from lrpc.LrpcVisitor import LrpcVisitor
 class EnumChecker(LrpcVisitor):
     def __init__(self) -> None:
         self.errors = list()
+        self.warnings = list()
         self.enum_ids = set()
         self.enum_names = set()
         self.current_enum_name = ""
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef):
         self.errors.clear()
+        self.warnings.clear()
         self.enum_ids.clear()
         self.enum_names.clear()
 

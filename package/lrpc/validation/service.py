@@ -4,11 +4,13 @@ from lrpc.LrpcVisitor import LrpcVisitor
 class ServiceChecker(LrpcVisitor):
     def __init__(self) -> None:
         self.errors = list()
+        self.warnings = list()
         self.service_ids = set()
         self.service_names = set()
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef):
         self.errors.clear()
+        self.warnings.clear()
         self.service_ids.clear()
         self.service_names.clear()
 

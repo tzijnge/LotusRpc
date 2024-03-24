@@ -1,6 +1,6 @@
 from typing import List
 from lrpc.core import LrpcDef
-from lrpc.validation import ServiceChecker, FunctionChecker, EnumChecker
+from lrpc.validation import ServiceChecker, FunctionChecker, EnumChecker, CustomTypesChecker
 
 class SemanticAnalyzer(object):
     errors : List[str]
@@ -14,7 +14,8 @@ class SemanticAnalyzer(object):
         self.checkers = [
             ServiceChecker(),
             FunctionChecker(),
-            EnumChecker()
+            EnumChecker(),
+            CustomTypesChecker()
         ]
 
     def __duplicates(self, input):
@@ -47,32 +48,6 @@ class SemanticAnalyzer(object):
             
         if len(duplicate_names) > 0:
             self.errors.append(f'Duplicate struct field name(s): {duplicate_names}')
-
-    def __check_undeclared_custom_types(self):
-        custom_types = self.__custom_types()
-        used_custom_types = self.__used_custom_types()
-
-        all_undeclared_types = [t for t in used_custom_types if t not in custom_types]
-
-        if len(all_undeclared_types) > 0:
-            self.errors.append(f'Undeclared custom type(s): {sorted(set(all_undeclared_types))}')
-
-    def __custom_types(self):
-        all_declared_structs = [s.name() for s in self.definition.structs()]
-        all_declared_enums = [e.name() for e in self.definition.enums()]
-        return all_declared_structs + all_declared_enums
-
-    def __used_custom_types(self):
-        used_custom_types = list()
-        for s in self.__services:
-            for f in s.functions():
-                used_custom_types.extend([p.base_type() for p in f.params() if p.base_type_is_custom()])
-                used_custom_types.extend([r.base_type() for r in f.returns() if r.base_type_is_custom()])
-
-        for s in self.definition.structs():
-            used_custom_types.extend([f.base_type() for f in s.fields() if f.base_type_is_custom()])
-
-        return used_custom_types
 
     def __check_auto_string_in_struct(self):
         offenders = list()
@@ -113,14 +88,6 @@ class SemanticAnalyzer(object):
         if len(offenders) > 0:
             self.errors.append(f'Array of auto strings is not allowed: {offenders}')
 
-    def __check_custom_types_not_used(self):
-        custom_types = self.__custom_types()
-        used_custom_types = self.__used_custom_types()
-        unused_custom_types = [t for t in custom_types if t not in used_custom_types]
-
-        if len(unused_custom_types) > 0:
-            self.warnings.append(f'Unused custom type(s): {unused_custom_types}')
-
     def __check_return_auto_string(self):
         offenders = list()
         for s in self.__services:
@@ -135,12 +102,13 @@ class SemanticAnalyzer(object):
         for checker in self.checkers:
             self.definition.accept(checker)
             self.errors.extend(checker.errors)
+            self.warnings.extend(checker.warnings)
 
         self.__check_duplicate_struct_field_names()
         self.__check_duplicate_struct_enum_constant_names()
-        self.__check_undeclared_custom_types()
+
+
         self.__check_auto_string_in_struct()
         self.__check_multiple_auto_strings_in_param_list_or_return_list()
         self.__check_array_of_auto_strings()
-        self.__check_custom_types_not_used()
         self.__check_return_auto_string()

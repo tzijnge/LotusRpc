@@ -1,3 +1,5 @@
+from typing import Any
+
 class LrpcVar(object):
     def __init__(self, raw) -> None:
         self.raw = raw
@@ -7,7 +9,7 @@ class LrpcVar(object):
     def name(self):
         return self.raw['name']
 
-    def base_type(self):
+    def base_type(self) -> str:
         return self.raw['type'].strip('@')
 
     def field_type(self):
@@ -147,23 +149,3 @@ class LrpcVar(object):
             return -1
 
         return int(self.raw['count'])
-
-    def required_includes(self):
-        includes = set()
-
-        if self.base_type_is_integral():
-            includes.update({'<stdint.h>'})
-
-        if self.base_type_is_custom():
-            includes.update({f'"{self.base_type()}.hpp"'})
-
-        if self.base_type_is_string():
-            includes.update({'<etl/string.h>', '<etl/string_view.h>'})
-
-        if self.is_array():
-            includes.update({'<etl/span.h>'})
-
-        if self.is_optional():
-            includes.update({'<etl/optional.h>'})
-
-        return includes

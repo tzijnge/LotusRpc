@@ -2,26 +2,28 @@ from code_generation.code_generator import CppFile
 from lrpc.LrpcVisitor import LrpcVisitor
 from lrpc.core import LrpcDef, LrpcStruct, LrpcVar
 from lrpc.codegen.utils import optionally_in_namespace
+from typing import Set
+from lrpc.codegen.common import lrpc_var_includes
 
 class StructFileVisitor(LrpcVisitor):
-    def __init__(self, output: str):
+    def __init__(self, output: str) -> None:
         self.output = output
         self.namespace = None
         self.file = None
-        self.descriptor = None
+        self.descriptor: LrpcStruct
+        self.alias: str = ''
+        self.includes: Set[str] = set()
 
-    def visit_lrpc_def(self, lrpc_def: LrpcDef):
+    def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
         self.namespace = lrpc_def.namespace()
 
-    def visit_lrpc_struct(self, descriptor: LrpcStruct):
-        self.descriptor = descriptor
+    def visit_lrpc_struct(self, struct: LrpcStruct) -> None:
+        self.descriptor = struct
         self.file = CppFile(f'{self.output}/{self.__qualified_name()}.hpp')
-
         self.__init_alias()
-        self.write()
 
-    def write(self):
-        self.__write_include_guard()
+    def visit_lrpc_struct_end(self) -> None:
+        self.file.write('#pragma once')
         self.__write_includes()
         self.file.newline()
 
@@ -37,13 +39,19 @@ class StructFileVisitor(LrpcVisitor):
         if self.descriptor.is_external():
             self.__write_external_struct_checks()
 
+    def visit_lrpc_struct_field(self, field: LrpcVar):
+        if self.descriptor.is_external():
+            return
+
+        self.includes.update(lrpc_var_includes(field))
+
     def __init_alias(self):
         ns = self.namespace
         ext_ns = self.descriptor.external_namespace()
         name = self.descriptor.name()
 
         if (not ns) and (not ext_ns):
-            self.alias = None
+            self.alias = ''
         elif (not ns) and ext_ns:
             self.alias = name
         elif ns and (not ext_ns):
@@ -52,7 +60,7 @@ class StructFileVisitor(LrpcVisitor):
             self.alias = f'{ns}::{name}'
 
     def __write_external_alias_if_needed(self):
-        if self.alias:
+        if len(self.alias) > 0:
             self.__write_external_alias(self.namespace)
             self.file.newline()
 
@@ -76,13 +84,12 @@ class StructFileVisitor(LrpcVisitor):
         ext_full_name = f'{ext_ns}::{name}' if ext_ns else f'::{name}'
         self.file.write(f'using {name} = {ext_full_name};')
 
-    def __write_include_guard(self):
-        self.file('#pragma once')
-
     def __write_includes(self):
-        self.file('#include <etl/byte_stream.h>')
-        self.file('#include "lrpc/EtlRwExtensions.hpp"')
-        for i in self.__required_includes():
+        self.includes.add('<etl/byte_stream.h>')
+        self.includes.add('"lrpc/EtlRwExtensions.hpp"')
+        if self.descriptor.is_external():
+            self.includes.add(f'"{self.descriptor.external_file()}"')
+        for i in sorted(self.includes):
             self.file(f'#include {i}')
 
     @optionally_in_namespace
@@ -150,13 +157,3 @@ class StructFileVisitor(LrpcVisitor):
     
     def __qualified_name(self):
         return self.descriptor.name()
-
-    def __required_includes(self):
-        if self.descriptor.is_external():
-            return [f'"{self.descriptor.external_file()}"']
-        else:
-            includes = set()
-            for f in self.descriptor.fields():
-                includes.update(f.required_includes())
-
-            return includes

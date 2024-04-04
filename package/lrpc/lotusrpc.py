@@ -1,6 +1,6 @@
 import click
-from lrpc.codegen import StructFileVisitor, ConstantsFileVisitor, EnumFileVisitor, IncludeAllVisitor, ServiceShimVisitor
-from lrpc.validation import SemanticAnalyzer 
+from lrpc.codegen import StructFileVisitor, ConstantsFileVisitor, EnumFileVisitor, ServerIncludeVisitor, ServiceShimVisitor, ServiceIncludeVisitor
+from lrpc.validation import SemanticAnalyzer
 from lrpc.core import LrpcDef
 from lrpc import PlantUmlVisitor
 from lrpc import schema as lrpc_schema
@@ -50,7 +50,8 @@ def validate_definition(lrpc_def: LrpcDef, warnings_as_errors: bool):
 def generate_rpc(lrpc_def: LrpcDef, output: str):
     create_dir_if_not_exists(output)
 
-    lrpc_def.accept(IncludeAllVisitor(output))
+    lrpc_def.accept(ServerIncludeVisitor(output))
+    lrpc_def.accept(ServiceIncludeVisitor(output))
     lrpc_def.accept(StructFileVisitor(output))
     lrpc_def.accept(EnumFileVisitor(output))
     lrpc_def.accept(ServiceShimVisitor(output))

@@ -45,13 +45,3 @@ class LrpcFun(object):
 
     def param_names(self):
         return [p.name() for p in self.params()]
-
-    def required_includes(self):
-        includes = set()
-        for p in self.params() + self.returns():
-            includes.update(p.required_includes())
-
-        if len(self.returns()) > 1:
-            includes.update({'<tuple>'})
-
-        return includes

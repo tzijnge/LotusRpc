@@ -37,7 +37,7 @@ services:
             count: 2
       - name: "f10"
         params:
-          - { name: "a", type: "@CompositeData3"}
+          - { name: "a", type: "@CompositeData3" }
       - name: "f11"
         params:
           - { name: "a", type: uint8_t }
@@ -100,7 +100,7 @@ services:
 structs:
   - name: "CompositeData"
     fields:
-      - { name: "a",  type: uint16_t, count: 2 }
+      - { name: "a", type: uint16_t, count: 2 }
       - { name: "b", type: uint8_t }
       - { name: "c", type: bool }
   - name: "CompositeData2"
@@ -109,8 +109,8 @@ structs:
       - { name: "b", type: uint8_t }
   - name: "CompositeData3"
     fields:
-      - { name: "a", type: "@CompositeData2"}
-      - { name: "b", type: "@MyEnum"}
+      - { name: "a", type: "@CompositeData2" }
+      - { name: "b", type: "@MyEnum" }
 enums:
   - name: "MyEnum"
     fields:

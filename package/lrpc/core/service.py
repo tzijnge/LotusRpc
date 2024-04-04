@@ -30,10 +30,3 @@ class LrpcService(object):
 
     def functions(self):
         return [LrpcFun(f) for f in self.raw['functions']]
-
-    def required_includes(self):
-        includes = set()
-        for f in self.functions():
-            includes.update(f.required_includes())
-
-        return includes

@@ -40,6 +40,13 @@ class LrpcEnum(object):
         
         return all_fields
 
+    def field_id(self, name: str):
+        for f in self.fields():
+            if f.name() == name:
+                return f.id()
+
+        return None
+
     def is_external(self):
         return 'external' in self.raw
 

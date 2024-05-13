@@ -1,5 +1,6 @@
 from lrpc.core import LrpcService, LrpcConstant, LrpcStruct, LrpcEnum
 from lrpc import LrpcVisitor
+from typing import Optional
 
 class LrpcDef(object):
     def __init__(self, raw) -> None:
@@ -94,6 +95,13 @@ class LrpcDef(object):
     def services(self):
         return [LrpcService(s) for s in self.raw['services']]
 
+    def service(self, name: str) -> Optional[LrpcService]:
+        for s in self.services():
+            if s.name() == name:
+                return s
+
+        return None
+
     def max_service_id(self):
         service_ids = [s.id() for s in self.services()]
         return max(service_ids)
@@ -101,8 +109,22 @@ class LrpcDef(object):
     def structs(self):
         return [LrpcStruct(s) for s in self.raw['structs']]
 
+    def struct(self, name: str) -> Optional[LrpcStruct]:
+        for s in self.structs():
+            if s.name() == name:
+                return s
+
+        return None
+
     def enums(self):
         return [LrpcEnum(s) for s in self.raw['enums']]
+
+    def enum(self, name: str) -> Optional[LrpcEnum]:
+        for s in self.enums():
+            if s.name() == name:
+                return s
+
+        return None
 
     def constants(self):
         return [LrpcConstant(c) for c in self.raw['constants']]

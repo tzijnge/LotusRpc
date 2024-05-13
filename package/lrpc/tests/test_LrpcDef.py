@@ -291,3 +291,58 @@ structs:
     assert(struct.is_external() == True)
     assert(struct.external_file() == "a/b/c/d.hpp")
     assert(struct.external_namespace() == "a::b::c")
+
+def test_get_service_by_name():
+    rpc_def = \
+'''name: "test"
+services:
+  - name: "s1"
+    functions:
+      - name: "f1"
+'''
+    lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
+
+    service = lrpc_def.service('s1')
+    assert(service is not None)
+    assert(service.name() == 's1')
+    assert(lrpc_def.service('') is None)
+
+def test_get_struct_by_name():
+    rpc_def = \
+'''name: "test"
+services:
+  - name: "s1"
+    functions:
+      - name: "f1"
+structs:
+  - name: "MyStruct1"
+    fields:
+      - name: ms1
+        type: float
+'''
+    lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
+
+    s = lrpc_def.struct('MyStruct1')
+    assert(s is not None)
+    assert(s.name() == 'MyStruct1')
+    assert(lrpc_def.struct('') is None)
+
+def test_get_enum_by_name():
+    rpc_def = \
+'''name: "test"
+services:
+  - name: "s1"
+    functions:
+      - name: "f1"
+enums:
+  - name: "MyEnum1"
+    fields:
+      - name: ms1
+        id: 55
+'''
+    lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
+
+    e = lrpc_def.enum('MyEnum1')
+    assert(e is not None)
+    assert(e.name() == 'MyEnum1')
+    assert(lrpc_def.enum('') is None)

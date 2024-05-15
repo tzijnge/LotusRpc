@@ -1,4 +1,4 @@
-from lrpc.LrpcVisitor import LrpcVisitor
+from lrpc import LrpcVisitor
 from lrpc.core import *
 from contextlib import contextmanager
 

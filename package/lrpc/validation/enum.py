@@ -1,5 +1,5 @@
 from lrpc.core import LrpcDef, LrpcEnumField
-from lrpc.LrpcVisitor import LrpcVisitor
+from lrpc import LrpcVisitor
 
 class EnumChecker(LrpcVisitor):
     def __init__(self) -> None:

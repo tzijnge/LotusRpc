@@ -33,5 +33,6 @@ def test_get_function_by_name():
     service = LrpcService(s)
 
     assert service.function('') is None
-    assert service.function('f0') is not None
-    assert service.function('f0').name() == 'f0'
+    f0 = service.function('f0')
+    assert f0 is not None
+    assert f0.name() == 'f0'

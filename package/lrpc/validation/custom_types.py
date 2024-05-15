@@ -1,5 +1,5 @@
 from lrpc.core import LrpcDef, LrpcEnum, LrpcStruct, LrpcVar
-from lrpc.LrpcVisitor import LrpcVisitor
+from lrpc import LrpcVisitor
 
 class CustomTypesChecker(LrpcVisitor):
     def __init__(self) -> None:

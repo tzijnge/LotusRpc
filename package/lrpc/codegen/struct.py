@@ -1,5 +1,5 @@
 from code_generation.code_generator import CppFile
-from lrpc.LrpcVisitor import LrpcVisitor
+from lrpc import LrpcVisitor
 from lrpc.core import LrpcDef, LrpcStruct, LrpcVar
 from lrpc.codegen.utils import optionally_in_namespace
 from typing import Set

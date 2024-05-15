@@ -1,6 +1,8 @@
-from lrpc.core import LrpcService, LrpcConstant, LrpcStruct, LrpcEnum
-from lrpc import LrpcVisitor
 from typing import Optional
+
+from lrpc import LrpcVisitor
+from lrpc.core import LrpcConstant, LrpcEnum, LrpcService, LrpcStruct
+
 
 class LrpcDef(object):
     def __init__(self, raw) -> None:
@@ -88,7 +90,7 @@ class LrpcDef(object):
 
     def rx_buffer_size(self):
         return self.raw['rx_buffer_size']
-    
+
     def tx_buffer_size(self):
         return self.raw['tx_buffer_size']
 

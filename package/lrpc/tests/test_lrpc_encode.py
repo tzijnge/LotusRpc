@@ -1,32 +1,9 @@
 from lrpc.core import LrpcVar, LrpcDef
-from typing import Any, Optional
 import pytest
 import struct
-import yaml
-from importlib import resources
-from lrpc import schema as lrpc_schema
-import jsonschema
-from lrpc.validation import SemanticAnalyzer
 from lrpc.client import lrpc_encode
 
-def __load_lrpc_def():
-    schema_url = resources.files(lrpc_schema) / 'lotusrpc-schema.json'
-    definition_url = 'package/lrpc/tests/test_lrpc_encode.lrpc.yaml'
-
-    with open(definition_url, 'rt') as rpc_def:
-        with open(schema_url, 'rt') as schema_file:
-            definition = yaml.safe_load(rpc_def)
-            schema = yaml.safe_load(schema_file)
-            jsonschema.validate(definition, schema)
-
-            lrpc_def = LrpcDef(definition)
-            sa = SemanticAnalyzer(lrpc_def)
-            sa.analyze()
-
-            assert len(sa.errors) == 0
-            assert len(sa.warnings) == 0
-
-            return lrpc_def
+lrpc_def = LrpcDef.load('package/lrpc/tests/test_lrpc_encode.lrpc.yaml')
 
 def test_encode_uint8_t():
     var = LrpcVar({ 'name': 'v1', 'type': 'uint8_t' })
@@ -209,16 +186,12 @@ def test_encode_optional_auto_string():
     assert lrpc_encode('ab', var) == b'\x01ab\x00'
 
 def test_encode_struct():
-    lrpc_def = __load_lrpc_def()
-
     var = LrpcVar({ 'name': 'v1', 'type': '@MyStruct1', 'base_type_is_struct': True})
 
     encoded = lrpc_encode({'b': 123, 'a': 4567, 'c': True}, var, lrpc_def)
     assert encoded == b'\xD7\x11\x7B\x01'
 
 def test_encode_optional_struct():
-    lrpc_def = __load_lrpc_def()
-
     var = LrpcVar({ 'name': 'v1', 'type': '@MyStruct1', 'base_type_is_struct': True, 'count': '?'})
 
     encoded = lrpc_encode(None, var, lrpc_def)
@@ -227,16 +200,12 @@ def test_encode_optional_struct():
     assert encoded == b'\x01\xD7\x11\x7B\x01'
 
 def test_encode_nested_struct():
-    lrpc_def = __load_lrpc_def()
-
     var = LrpcVar({ 'name': 'v1', 'type': '@MyStruct2', 'base_type_is_struct': True})
 
     encoded = lrpc_encode({'a': {'b': 123, 'a': 4567, 'c': True}}, var, lrpc_def)
     assert encoded == b'\xD7\x11\x7B\x01'
 
 def test_encode_enum():
-    lrpc_def = __load_lrpc_def()
-
     var = LrpcVar({ 'name': 'v1', 'type': '@MyEnum1', 'base_type_is_enum': True})
 
     encoded = lrpc_encode('test1', var, lrpc_def)
@@ -248,11 +217,11 @@ def test_encode_enum():
         lrpc_encode('test3', var, lrpc_def)
 
 def test_encode_optional_enum():
-    lrpc_def = __load_lrpc_def()
-
     var = LrpcVar({ 'name': 'v1', 'type': '@MyEnum1', 'base_type_is_enum': True, 'count': '?'})
 
     encoded = lrpc_encode(None, var, lrpc_def)
     assert encoded == b'\x00'
     encoded = lrpc_encode('test2', var, lrpc_def)
     assert encoded == b'\x01\x37'
+
+# todo: array of structs and array of strings

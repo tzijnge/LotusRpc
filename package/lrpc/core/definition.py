@@ -2,7 +2,10 @@ from typing import Optional
 
 from lrpc import LrpcVisitor
 from lrpc.core import LrpcConstant, LrpcEnum, LrpcService, LrpcStruct
-
+from lrpc import schema as lrpc_schema
+import jsonschema
+from importlib import resources
+import yaml
 
 class LrpcDef(object):
     def __init__(self, raw) -> None:
@@ -142,3 +145,25 @@ class LrpcDef(object):
 
     def __base_type_is_enum(self, var):
         return var['type'].strip('@') in self.__enum_names()
+    
+    def load(definition_url: str):
+        from lrpc.validation import SemanticAnalyzer
+
+        schema_url = resources.files(lrpc_schema) / 'lotusrpc-schema.json'
+        # definition_url = 'package/lrpc/tests/test_lrpc_encode.lrpc.yaml'
+
+        with open(definition_url, 'rt') as rpc_def:
+            with open(schema_url, 'rt') as schema_file:
+                definition = yaml.safe_load(rpc_def)
+                schema = yaml.safe_load(schema_file)
+                jsonschema.validate(definition, schema)
+
+                lrpc_def = LrpcDef(definition)
+                sa = SemanticAnalyzer(lrpc_def)
+                sa.analyze()
+
+                assert len(sa.errors) == 0
+                assert len(sa.warnings) == 0
+
+                return lrpc_def
+

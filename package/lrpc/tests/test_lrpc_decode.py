@@ -1,8 +1,10 @@
-from lrpc.core import LrpcVar
+from lrpc.core import LrpcVar, LrpcDef
 import pytest
 import struct
 from lrpc.client import lrpc_decode
 import math
+
+lrpc_def = LrpcDef.load('package/lrpc/tests/test_lrpc_encode.lrpc.yaml')
 
 def test_decode_uint8_t():
     var = LrpcVar({ 'name': 'v1', 'type': 'uint8_t' })
@@ -92,11 +94,37 @@ def test_decode_string():
 
     assert lrpc_decode(b'test123\x00', var) == 'test123'
 
+    # no string termination
+    with pytest.raises(ValueError):
+        lrpc_decode(b'test123', var)
+
+    # trailing bytes
+    with pytest.raises(ValueError):
+        lrpc_decode(b'test123\x00\x00', var)
+
+    # trailing bytes
+    with pytest.raises(ValueError):
+        lrpc_decode(b'test123\x00test345\x00', var)
+
 def test_decode_fixed_size_string():
     var = LrpcVar({ 'name': 'v1', 'type': 'string_10' })
 
     assert lrpc_decode(b'test123\x00\x00\x00\x00', var) == 'test123'
     assert lrpc_decode(b'0123456789\x00', var) == '0123456789'
+    assert lrpc_decode(b'012\x00345\x00\x00\x00\x00', var) == '012'
+    assert lrpc_decode(b'012\x00345\x00\x00\x00a', var) == '012'
+
+    # no string termination
+    with pytest.raises(ValueError):
+        lrpc_decode(b'01234567890', var)
+
+    # too short
+    with pytest.raises(ValueError):
+        lrpc_decode(b'012345678\x00', var)
+
+    # too long
+    with pytest.raises(ValueError):
+        lrpc_decode(b'01234567890\x00', var)
 
 def test_decode_array():
     var = LrpcVar({ 'name': 'v1', 'type': 'uint8_t', 'count': 4 })
@@ -113,6 +141,7 @@ def test_decode_array_of_fixed_size_string():
     var = LrpcVar({ 'name': 'v1', 'type': 'string_2', 'count': 2 })
 
     assert lrpc_decode(b'ab\x00cd\x00', var) == ['ab', 'cd']
+    assert lrpc_decode(b'a\x00\x00cd\x00', var) == ['a', 'cd']
 
     # last string not terminated
     with pytest.raises(ValueError):
@@ -147,31 +176,42 @@ def test_decode_array_of_auto_string():
     with pytest.raises(ValueError):
         lrpc_decode(b'ab1\x00cd23\x00ef45\x00gh67\x00', var)
 
-# def test_decode_optional():
-#     var = LrpcVar({ 'name': 'v1', 'type': 'uint8_t', 'count': '?' })
+def test_decode_optional():
+    var = LrpcVar({ 'name': 'v1', 'type': 'uint8_t', 'count': '?' })
 
-#     assert lrpc_decode(None, var) == b'\x00'
-#     assert lrpc_decode(0xAB, var) == b'\x01\xAB'
+    assert lrpc_decode(b'\x00', var) == None
+    assert lrpc_decode(b'\x01\xAB', var) == 0xAB
+    assert lrpc_decode(b'\xFF\xAB', var) == 0xAB
 
-# def test_decode_optional_fixed_size_string():
-#     var = LrpcVar({ 'name': 'v1', 'type': 'string_2', 'count': '?' })
+    with pytest.raises(struct.error):
+        lrpc_decode(b'\x01', var)
 
-#     assert lrpc_decode(None, var) == b'\x00'
-#     assert lrpc_decode('ab', var) == b'\x01ab\x00'
+    with pytest.raises(struct.error):
+        lrpc_decode(b'\x01\x01\x01', var)
 
-# def test_decode_optional_auto_string():
-#     var = LrpcVar({ 'name': 'v1', 'type': 'string', 'count': '?' })
+def test_decode_optional_fixed_size_string():
+    var = LrpcVar({ 'name': 'v1', 'type': 'string_2', 'count': '?' })
 
-#     assert lrpc_decode(None, var) == b'\x00'
-#     assert lrpc_decode('ab', var) == b'\x01ab\x00'
+    assert lrpc_decode(b'\x00', var) == None
+    assert lrpc_decode(b'\x01ab\x00', var) == 'ab'
 
-# def test_decode_struct():
-#     lrpc_def = __load_lrpc_def()
+    with pytest.raises(ValueError):
+        lrpc_decode(b'\x01ab', var)
 
-#     var = LrpcVar({ 'name': 'v1', 'type': '@MyStruct1', 'base_type_is_struct': True})
+def test_decode_optional_auto_string():
+    var = LrpcVar({ 'name': 'v1', 'type': 'string', 'count': '?' })
 
-#     encoded = lrpc_decode({'b': 123, 'a': 4567, 'c': True}, var, lrpc_def)
-#     assert encoded == b'\xD7\x11\x7B\x01'
+    assert lrpc_decode(b'\x00', var) == None
+    assert lrpc_decode(b'\x01ab\x00', var) == 'ab'
+
+    with pytest.raises(ValueError):
+        lrpc_decode(b'\x01ab', var)
+
+#def test_decode_struct():
+#    var = LrpcVar({ 'name': 'v1', 'type': '@MyStruct1', 'base_type_is_struct': True})
+
+#    decoded = lrpc_decode(b'\xD7\x11\x7B\x01', var, lrpc_def)
+#    assert decoded == {'b': 123, 'a': 4567, 'c': True}
 
 # def test_decode_optional_struct():
 #     lrpc_def = __load_lrpc_def()

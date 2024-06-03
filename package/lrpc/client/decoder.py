@@ -1,47 +1,77 @@
 import struct
 from copy import deepcopy
-from typing import Any, Optional
+from typing import Any, Optional, List
 
 from lrpc.core import LrpcDef, LrpcVar
 
 def __decode_string(encoded: bytes, var: LrpcVar) -> str:
-    s = encoded.split(b'\x00')[0]
-    return s.decode('utf-8')
+    if var.is_auto_string():
+        return __decode_auto_string(encoded)
+    else:
+        return __decode_fixed_size_string(encoded, var)
 
-def __decode_array_of_strings(encoded, var: LrpcVar) -> bytes:
+def __decode_fixed_size_string(encoded: bytes, var: LrpcVar) -> str:
+    if len(encoded) != var.string_size() + 1:
+        raise ValueError(f'Wrong string size (including string termination): expected {var.string_size() + 1}, got {len(encoded)}')
+    
     parts = encoded.split(b'\x00')
 
-    a = parts[-1]
-    if parts[-1] != b'':
-        raise ValueError('Last string in array is not terminated')
+    if len(parts) == 1:
+        raise ValueError(f'String not terminated: {encoded}')
+
+    return parts[0].decode('utf-8')
+
+def __decode_auto_string(encoded: bytes) -> str:
+    parts = encoded.split(b'\x00')
+
+    if (len(parts) == 1):
+        raise ValueError(f'String not terminated: {encoded}')
     
-    parts.pop() # final string termination causes empty part
-
-    if len(parts) != var.array_size():
-        raise ValueError(f'Wrong array size. Expected {var.array_size()}, but got {len(parts)}')
+    if (len(parts) != 2):
+        raise ValueError(f'Invalid string: {encoded}')
     
-    if not var.is_auto_string():
-        for p in parts:
-            if len(p) != var.string_size():
-                raise ValueError(f'Wrong string size. Expected {var.string_size()}, but got {len(p)}')
-
-    return [s.decode('utf-8') for s in parts]
+    return parts[0].decode('utf-8')
 
 
-# def __encode_optional(value, var: LrpcVar, lrpc_def: Optional[LrpcDef]) -> bytes:
-#     if value is None:
-#         return struct.pack('<?', False)
-#     else:
-#         contained_var = deepcopy(var)
-#         contained_var.raw['count'] = 1
-#         return struct.pack('<?', True) + lrpc_encode(value, contained_var, lrpc_def)
+def __decode_array_of_strings(encoded: bytes, var: LrpcVar) -> List[str]:
+    decoded = list()
+    if var.is_auto_string():
+        start = 0
+        for i in range(0, var.array_size()):
+            end = encoded.index(b'\x00', start) + 1
+            decoded.append(__decode_auto_string(encoded[start:end]))
+            start = end
+    else:
+        for i in range(0, var.array_size()):
+            start = i * (var.string_size() + 1)
+            end = start + var.string_size() + 1
+            decoded.append(__decode_fixed_size_string(encoded[start:end], var))
+
+    if end != len(encoded):
+        raise ValueError('Trailing data for array')
+
+    if len(decoded) != var.array_size():
+        raise ValueError(f'Wrong array size. Expected {var.array_size()}, but got {len(decoded)}')
+
+    return decoded
+
+
+
+def __decode_optional(encoded: bytes, var: LrpcVar, lrpc_def: Optional[LrpcDef]) -> Any:
+    has_value = struct.unpack_from('<?', buffer=encoded, offset = 0)[0]
+    if has_value:
+        contained_var = deepcopy(var)
+        contained_var.raw['count'] = 1
+        return lrpc_decode(encoded[1:], contained_var, lrpc_def)
+    else:
+        return None
     
-# def __encode_struct(value, var: LrpcVar, lrpc_def: Optional[LrpcDef]) -> bytes:
-#     encoded = b''
+# def __decode_struct(encoded: bytes, var: LrpcVar, lrpc_def: Optional[LrpcDef]) -> Any:
+#     decoded = dict()
 #     s = lrpc_def.struct(var.base_type())
 #     for field in s.fields():
-#         v = value[field.name()]
-#         encoded += lrpc_encode(v, field, lrpc_def)
+#         decoded.update(field.name(), )
+#         encoded += lrpc_decode(encoded, field, lrpc_def)
 
 #     return encoded
 
@@ -54,8 +84,8 @@ def lrpc_decode(encoded: bytes, var: LrpcVar, lrpc_def: Optional[LrpcDef] = None
         a =  struct.unpack(f, encoded)
         return list(a)
 
-    # if var.is_optional():
-    #     return __encode_optional(value, var, lrpc_def)
+    if var.is_optional():
+        return __decode_optional(encoded, var, lrpc_def)
 
     if var.base_type_is_string():
         return __decode_string(encoded, var)

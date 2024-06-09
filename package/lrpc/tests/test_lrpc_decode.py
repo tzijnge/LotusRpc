@@ -12,11 +12,11 @@ def test_decode_uint8_t():
     assert lrpc_decode(b'\x00', var) == 0
     assert lrpc_decode(b'\xFF', var) == 255
 
-    with pytest.raises(struct.error):
-        lrpc_decode(b'', var)
+    # decode with trailing byte
+    assert lrpc_decode(b'\xFF\x00', var) == 255
 
     with pytest.raises(struct.error):
-        lrpc_decode(b'\x00\x00', var)
+        lrpc_decode(b'', var)
 
 def test_decode_int8_t():
     var = LrpcVar({ 'name': 'v1', 'type': 'int8_t' })
@@ -99,12 +99,8 @@ def test_decode_string():
         lrpc_decode(b'test123', var)
 
     # trailing bytes
-    with pytest.raises(ValueError):
-        lrpc_decode(b'test123\x00\x00', var)
-
-    # trailing bytes
-    with pytest.raises(ValueError):
-        lrpc_decode(b'test123\x00test345\x00', var)
+    assert lrpc_decode(b'test123\x00\x00', var) == 'test123'
+    assert lrpc_decode(b'test123\x00test345\x00', var) == 'test123'
 
 def test_decode_fixed_size_string():
     var = LrpcVar({ 'name': 'v1', 'type': 'string_10' })
@@ -113,6 +109,10 @@ def test_decode_fixed_size_string():
     assert lrpc_decode(b'0123456789\x00', var) == '0123456789'
     assert lrpc_decode(b'012\x00345\x00\x00\x00\x00', var) == '012'
     assert lrpc_decode(b'012\x00345\x00\x00\x00a', var) == '012'
+
+    # trailing bytes
+    assert lrpc_decode(b'0123456789\x00\x00', var) == '0123456789'
+    assert lrpc_decode(b'0123456789\x00\x01', var) == '0123456789'
 
     # no string termination
     with pytest.raises(ValueError):
@@ -130,18 +130,17 @@ def test_decode_array():
     var = LrpcVar({ 'name': 'v1', 'type': 'uint8_t', 'count': 4 })
 
     assert lrpc_decode(b'\x01\x02\x03\x04', var) == [1, 2, 3, 4]
+    assert lrpc_decode(b'\x01\x02\x03\x04\x05', var) == [1, 2, 3, 4]
 
     with pytest.raises(struct.error):
         lrpc_decode(b'\x01\x02\x03', var)
-
-    with pytest.raises(struct.error):
-        lrpc_decode(b'\x01\x02\x03\x04\x05', var)
 
 def test_decode_array_of_fixed_size_string():
     var = LrpcVar({ 'name': 'v1', 'type': 'string_2', 'count': 2 })
 
     assert lrpc_decode(b'ab\x00cd\x00', var) == ['ab', 'cd']
     assert lrpc_decode(b'a\x00\x00cd\x00', var) == ['a', 'cd']
+    assert lrpc_decode(b'ab\x00cd\x00ef\x00', var) == ['ab', 'cd']
 
     # last string not terminated
     with pytest.raises(ValueError):
@@ -155,14 +154,11 @@ def test_decode_array_of_fixed_size_string():
     with pytest.raises(ValueError):
         lrpc_decode(b'ab\x00', var)
 
-    # three strings in array
-    with pytest.raises(ValueError):
-        lrpc_decode(b'ab\x00cd\x00ef\x00', var)
-
 def test_decode_array_of_auto_string():
     var = LrpcVar({ 'name': 'v1', 'type': 'string', 'count': 3 })
 
     assert lrpc_decode(b'abcd\x00ef\x00\x00', var) == ['abcd', 'ef', '']
+    assert lrpc_decode(b'ab1\x00cd23\x00ef45\x00gh67\x00', var) == ['ab1', 'cd23', 'ef45']
 
     # last string not terminated
     with pytest.raises(ValueError):
@@ -172,28 +168,25 @@ def test_decode_array_of_auto_string():
     with pytest.raises(ValueError):
         lrpc_decode(b'ab\x00cd\x00', var)
 
-    # four strings in array
-    with pytest.raises(ValueError):
-        lrpc_decode(b'ab1\x00cd23\x00ef45\x00gh67\x00', var)
-
 def test_decode_optional():
     var = LrpcVar({ 'name': 'v1', 'type': 'uint8_t', 'count': '?' })
 
     assert lrpc_decode(b'\x00', var) == None
     assert lrpc_decode(b'\x01\xAB', var) == 0xAB
     assert lrpc_decode(b'\xFF\xAB', var) == 0xAB
+    assert lrpc_decode(b'\x01\x01\x01', var) == 0x01
 
     with pytest.raises(struct.error):
         lrpc_decode(b'\x01', var)
-
-    with pytest.raises(struct.error):
-        lrpc_decode(b'\x01\x01\x01', var)
 
 def test_decode_optional_fixed_size_string():
     var = LrpcVar({ 'name': 'v1', 'type': 'string_2', 'count': '?' })
 
     assert lrpc_decode(b'\x00', var) == None
     assert lrpc_decode(b'\x01ab\x00', var) == 'ab'
+
+    # trailing bytes
+    assert lrpc_decode(b'\x01ab\x00\x00', var) == 'ab'
 
     with pytest.raises(ValueError):
         lrpc_decode(b'\x01ab', var)
@@ -203,6 +196,9 @@ def test_decode_optional_auto_string():
 
     assert lrpc_decode(b'\x00', var) == None
     assert lrpc_decode(b'\x01ab\x00', var) == 'ab'
+
+    # trailing bytes
+    assert lrpc_decode(b'\x01ab\x00\x00', var) == 'ab'
 
     with pytest.raises(ValueError):
         lrpc_decode(b'\x01ab', var)

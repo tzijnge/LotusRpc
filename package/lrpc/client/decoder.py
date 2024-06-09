@@ -11,27 +11,21 @@ def __decode_string(encoded: bytes, var: LrpcVar) -> str:
         return __decode_fixed_size_string(encoded, var)
 
 def __decode_fixed_size_string(encoded: bytes, var: LrpcVar) -> str:
-    if len(encoded) != var.string_size() + 1:
+    if len(encoded) < (var.string_size() + 1) :
         raise ValueError(f'Wrong string size (including string termination): expected {var.string_size() + 1}, got {len(encoded)}')
-    
-    parts = encoded.split(b'\x00')
 
-    if len(parts) == 1:
-        raise ValueError(f'String not terminated: {encoded}')
-
-    return parts[0].decode('utf-8')
+    return __decode_string_from(encoded, var.string_size() + 1)
 
 def __decode_auto_string(encoded: bytes) -> str:
-    parts = encoded.split(b'\x00')
+    return __decode_string_from(encoded, len(encoded))
 
-    if (len(parts) == 1):
+def __decode_string_from(encoded: bytes, end_index: int) -> str:
+    try:
+        end = encoded.index(b'\x00', 0, end_index)
+    except:
         raise ValueError(f'String not terminated: {encoded}')
     
-    if (len(parts) != 2):
-        raise ValueError(f'Invalid string: {encoded}')
-    
-    return parts[0].decode('utf-8')
-
+    return encoded[0:end].decode('utf-8')
 
 def __decode_array_of_strings(encoded: bytes, var: LrpcVar) -> List[str]:
     decoded = list()
@@ -47,15 +41,7 @@ def __decode_array_of_strings(encoded: bytes, var: LrpcVar) -> List[str]:
             end = start + var.string_size() + 1
             decoded.append(__decode_fixed_size_string(encoded[start:end], var))
 
-    if end != len(encoded):
-        raise ValueError('Trailing data for array')
-
-    if len(decoded) != var.array_size():
-        raise ValueError(f'Wrong array size. Expected {var.array_size()}, but got {len(decoded)}')
-
     return decoded
-
-
 
 def __decode_optional(encoded: bytes, var: LrpcVar, lrpc_def: Optional[LrpcDef]) -> Any:
     has_value = struct.unpack_from('<?', buffer=encoded, offset = 0)[0]
@@ -81,7 +67,7 @@ def lrpc_decode(encoded: bytes, var: LrpcVar, lrpc_def: Optional[LrpcDef] = None
 
     if var.is_array():
         f = f'<{var.array_size()}{var.pack_type()}'
-        a =  struct.unpack(f, encoded)
+        a =  struct.unpack_from(f, encoded)
         return list(a)
 
     if var.is_optional():
@@ -97,5 +83,5 @@ def lrpc_decode(encoded: bytes, var: LrpcVar, lrpc_def: Optional[LrpcDef] = None
     #     e = lrpc_def.enum(var.base_type())
     #     return struct.pack('<B', e.field_id(value))
 
-    decoded = struct.unpack(f'<{var.pack_type()}', encoded)
+    decoded = struct.unpack_from(f'<{var.pack_type()}', encoded)
     return decoded[0]

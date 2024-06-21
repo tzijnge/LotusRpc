@@ -86,7 +86,7 @@ services:
     assert client.call('s1', 'f1', p1=0xABCD1234ABCD1234) == b'\x00\x00\x34\x12\xCD\xAB\x34\x12\xCD\xAB'
 
 def test_call_nested_struct():
-    lrpc_def = LrpcDef.load('package/lrpc/tests/test_lrpc_encode.lrpc.yaml')
+    lrpc_def = LrpcDef.load('package/lrpc/tests/test_lrpc_encode_decode.lrpc.yaml')
     client = LrpcClient(lrpc_def)
 
     assert client.call('s0', 'f1', p1={'a': {'a': 4567, 'b': 123, 'c': True}}) == b'\x00\x01\xD7\x11\x7B\x01'

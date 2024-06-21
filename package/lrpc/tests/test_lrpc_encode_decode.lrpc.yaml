@@ -14,6 +14,8 @@ services:
         params:
           - name: p1
             type: "@MyEnum1"
+          - name: p2
+            type: "@MyStruct3"
 structs:
   - name: MyStruct1
     fields:
@@ -23,6 +25,11 @@ structs:
   - name: MyStruct2
     fields:
       - { name: a, type: "@MyStruct1" }
+  - name: MyStruct3
+    fields:
+      - { name: "a", type: string_2, count: 2}
+      - { name: "b", type: "@MyStruct2", count: "?"}
+      - { name: "c", type: "@MyEnum1", }
 enums:
   - name: MyEnum1
     fields:

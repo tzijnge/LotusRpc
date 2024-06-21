@@ -96,8 +96,6 @@ class SemanticAnalyzer(object):
             self.warnings.extend(checker.warnings)
 
         self.__check_duplicate_struct_field_names()
-
-
         self.__check_auto_string_in_struct()
         self.__check_multiple_auto_strings_in_param_list_or_return_list()
         self.__check_array_of_auto_strings()

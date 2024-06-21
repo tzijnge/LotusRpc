@@ -1,5 +1,6 @@
 from lrpc.core import LrpcVar
 from lrpc import LrpcVisitor
+from typing import List
 
 class LrpcStruct(object):
     def __init__(self, raw) -> None:
@@ -16,7 +17,7 @@ class LrpcStruct(object):
     def name(self):
         return self.raw['name']
 
-    def fields(self):
+    def fields(self) -> List[str]:
         return [LrpcVar(f) for f in self.raw['fields']]
 
     def is_external(self):

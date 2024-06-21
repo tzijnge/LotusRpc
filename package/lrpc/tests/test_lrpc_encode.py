@@ -3,7 +3,7 @@ import pytest
 import struct
 from lrpc.client import lrpc_encode
 
-lrpc_def = LrpcDef.load('package/lrpc/tests/test_lrpc_encode.lrpc.yaml')
+lrpc_def = LrpcDef.load('package/lrpc/tests/test_lrpc_encode_decode.lrpc.yaml')
 
 def test_encode_uint8_t():
     var = LrpcVar({ 'name': 'v1', 'type': 'uint8_t' })
@@ -16,6 +16,9 @@ def test_encode_uint8_t():
 
     with pytest.raises(struct.error):
         lrpc_encode(256, var)
+
+    with pytest.raises(struct.error):
+        lrpc_encode({123}, var)
 
 def test_encode_int8_t():
     var = LrpcVar({ 'name': 'v1', 'type': 'int8_t' })
@@ -31,6 +34,9 @@ def test_encode_int8_t():
     with pytest.raises(struct.error):
         lrpc_encode(-129, var)
 
+    with pytest.raises(struct.error):
+        lrpc_encode((123, 124), var)
+
 def test_encode_uint16_t():
     var = LrpcVar({ 'name': 'v1', 'type': 'uint16_t' })
 
@@ -42,6 +48,9 @@ def test_encode_uint16_t():
 
     with pytest.raises(struct.error):
         lrpc_encode(65536, var)
+
+    with pytest.raises(struct.error):
+        lrpc_encode([123], var)
 
 def test_encode_int16_t():
     var = LrpcVar({ 'name': 'v1', 'type': 'int16_t' })
@@ -57,6 +66,9 @@ def test_encode_int16_t():
     with pytest.raises(struct.error):
         lrpc_encode(-32769, var)
 
+    with pytest.raises(struct.error):
+        lrpc_encode(None, var)
+
 def test_encode_uint32_t():
     var = LrpcVar({ 'name': 'v1', 'type': 'uint32_t' })
 
@@ -68,6 +80,9 @@ def test_encode_uint32_t():
 
     with pytest.raises(struct.error):
         lrpc_encode(2**32, var)
+
+    with pytest.raises(struct.error):
+        lrpc_encode('123', var)
 
 def test_encode_int32_t():
     var = LrpcVar({ 'name': 'v1', 'type': 'int32_t' })
@@ -140,32 +155,30 @@ def test_encode_string():
 
     assert lrpc_encode('test123', var) == b'test123\x00'
 
+    with pytest.raises(TypeError):
+        lrpc_encode(['test123'], var)
+
 def test_encode_fixed_size_string():
     var = LrpcVar({ 'name': 'v1', 'type': 'string_10' })
 
     assert lrpc_encode('test123', var) == b'test123\x00\x00\x00\x00'
-    assert lrpc_encode('0123456789_', var) == b'0123456789\x00'
+
+    with pytest.raises(ValueError):
+        assert lrpc_encode('0123456789_', var) == b'0123456789\x00'
 
 def test_encode_array():
     var = LrpcVar({ 'name': 'v1', 'type': 'uint8_t', 'count': 4 })
 
     assert lrpc_encode([1, 2, 3, 4], var) == b'\x01\x02\x03\x04'
 
-    with pytest.raises(struct.error):
+    with pytest.raises(TypeError):
+        lrpc_encode(0, var)
+
+    with pytest.raises(ValueError):
         lrpc_encode([1, 2, 3], var)
 
-    with pytest.raises(struct.error):
+    with pytest.raises(ValueError):
         lrpc_encode([1, 2, 3, 4, 5], var)
-
-def test_encode_array_of_fixed_size_string():
-    var = LrpcVar({ 'name': 'v1', 'type': 'string_2', 'count': 2 })
-
-    assert lrpc_encode(['ab', 'cd'], var) == b'ab\x00cd\x00'
-
-def test_encode_array_of_auto_string():
-    var = LrpcVar({ 'name': 'v1', 'type': 'string', 'count': 2 })
-
-    assert lrpc_encode(['abcd', 'ef'], var) == b'abcd\x00ef\x00'
 
 def test_encode_optional():
     var = LrpcVar({ 'name': 'v1', 'type': 'uint8_t', 'count': '?' })
@@ -191,6 +204,18 @@ def test_encode_struct():
     encoded = lrpc_encode({'b': 123, 'a': 4567, 'c': True}, var, lrpc_def)
     assert encoded == b'\xD7\x11\x7B\x01'
 
+    with pytest.raises(TypeError):
+        lrpc_encode((123, 4567, True), var, lrpc_def)
+
+    with pytest.raises(ValueError):
+        lrpc_encode({1: 123, 'a': 4567, 'c': True}, var, lrpc_def)
+
+    with pytest.raises(ValueError):
+        lrpc_encode({'b': 123, 'a': 4567}, var, lrpc_def)
+
+    with pytest.raises(ValueError):
+        lrpc_encode({'b': 123, 'a': 4567, 'c': True, 'd': False}, var, lrpc_def)
+
 def test_encode_optional_struct():
     var = LrpcVar({ 'name': 'v1', 'type': '@MyStruct1', 'base_type_is_struct': True, 'count': '?'})
 
@@ -213,7 +238,7 @@ def test_encode_enum():
     encoded = lrpc_encode('test2', var, lrpc_def)
     assert encoded == b'\x37'
 
-    with pytest.raises(struct.error):
+    with pytest.raises(ValueError):
         lrpc_encode('test3', var, lrpc_def)
 
 def test_encode_optional_enum():
@@ -224,4 +249,25 @@ def test_encode_optional_enum():
     encoded = lrpc_encode('test2', var, lrpc_def)
     assert encoded == b'\x01\x37'
 
-# todo: array of structs and array of strings
+def test_encode_array_of_struct():
+    var = LrpcVar({ 'name': 'v1', 'type': '@MyStruct2', 'base_type_is_struct': True, 'count': 2})
+
+    array_of_structs = [
+        {'a': {'b': 123, 'a': 4567, 'c': True}},
+        {'a': {'b': 51, 'a': 8721, 'c': False}}
+    ]
+    encoded = lrpc_encode(array_of_structs, var, lrpc_def)
+
+    assert encoded == b'\xD7\x11\x7B\x01\x11\x22\x33\x00'
+
+def test_encode_array_of_fixed_size_string():
+    var = LrpcVar({ 'name': 'v1', 'type': 'string_2', 'count': 3 })
+
+    assert lrpc_encode(['ab', 'cd', 'ef'], var, lrpc_def) == b'ab\x00cd\x00ef\x00'
+    assert lrpc_encode(['a', 'cd', ''], var, lrpc_def) == b'a\x00\x00cd\x00\x00\x00\x00'
+
+def test_encode_array_of_auto_string():
+    var = LrpcVar({ 'name': 'v1', 'type': 'string', 'count': 3 })
+
+    assert lrpc_encode(['abcd', 'ef', ''], var, lrpc_def) == b'abcd\x00ef\x00\x00'
+    assert lrpc_encode(['ab1', 'cd23', 'ef45'], var, lrpc_def) == b'ab1\x00cd23\x00ef45\x00'

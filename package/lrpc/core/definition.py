@@ -150,7 +150,6 @@ class LrpcDef(object):
         from lrpc.validation import SemanticAnalyzer
 
         schema_url = resources.files(lrpc_schema) / 'lotusrpc-schema.json'
-        # definition_url = 'package/lrpc/tests/test_lrpc_encode.lrpc.yaml'
 
         with open(definition_url, 'rt') as rpc_def:
             with open(schema_url, 'rt') as schema_file:

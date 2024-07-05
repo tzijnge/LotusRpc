@@ -16,6 +16,16 @@ services:
             type: "@MyEnum1"
           - name: p2
             type: "@MyStruct3"
+  - name: s1
+    functions:
+      - name: add5
+        params: 
+          - name: p0
+            type: uint8_t
+        returns:
+          - name: r0
+            type: uint8_t
+      - name: f2
 structs:
   - name: MyStruct1
     fields:

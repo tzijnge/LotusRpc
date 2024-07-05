@@ -33,7 +33,7 @@ jobs:
         run: ctest -C ${{env.BUILD_TYPE}} --output-junit ../testresults/cpptestresults.xml
 
       - name: Python tests
-        run: pytest package/lrpc/tests -v --junitxml=testresults/pytestresults.xml
+        run: pytest package/tests -v --junitxml=testresults/pytestresults.xml
 
       - name: Install LRPC Python package
         working-directory: package

@@ -4,7 +4,7 @@ import struct
 from lrpc.client import lrpc_decode
 import math
 
-lrpc_def = LrpcDef.load('package/lrpc/tests/test_lrpc_encode_decode.lrpc.yaml')
+lrpc_def = LrpcDef.load('test_lrpc_encode_decode.lrpc.yaml')
 
 def test_decode_uint8_t():
     var = LrpcVar({ 'name': 'v1', 'type': 'uint8_t' })

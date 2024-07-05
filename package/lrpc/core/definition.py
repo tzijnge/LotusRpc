@@ -100,9 +100,16 @@ class LrpcDef(object):
     def services(self):
         return [LrpcService(s) for s in self.raw['services']]
 
-    def service(self, name: str) -> Optional[LrpcService]:
+    def service_by_name(self, name: str) -> Optional[LrpcService]:
         for s in self.services():
             if s.name() == name:
+                return s
+
+        return None
+
+    def service_by_id(self, id: int) -> Optional[LrpcService]:
+        for s in self.services():
+            if s.id() == id:
                 return s
 
         return None
@@ -146,23 +153,22 @@ class LrpcDef(object):
     def __base_type_is_enum(self, var):
         return var['type'].strip('@') in self.__enum_names()
     
-    def load(definition_url: str):
+    def load(definition_url: str) -> 'LrpcDef':
         from lrpc.validation import SemanticAnalyzer
 
-        schema_url = resources.files(lrpc_schema) / 'lotusrpc-schema.json'
+        schema_url = resources.files(lrpc_schema).joinpath('lotusrpc-schema.json')
 
         with open(definition_url, 'rt') as rpc_def:
-            with open(schema_url, 'rt') as schema_file:
-                definition = yaml.safe_load(rpc_def)
-                schema = yaml.safe_load(schema_file)
-                jsonschema.validate(definition, schema)
+            definition = yaml.safe_load(rpc_def)
+            schema = yaml.safe_load(schema_url.read_text())
+            jsonschema.validate(definition, schema)
 
-                lrpc_def = LrpcDef(definition)
-                sa = SemanticAnalyzer(lrpc_def)
-                sa.analyze()
+            lrpc_def = LrpcDef(definition)
+            sa = SemanticAnalyzer(lrpc_def)
+            sa.analyze()
 
-                assert len(sa.errors) == 0
-                assert len(sa.warnings) == 0
+            assert len(sa.errors) == 0
+            assert len(sa.warnings) == 0
 
-                return lrpc_def
+            return lrpc_def
 

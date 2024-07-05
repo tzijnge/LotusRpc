@@ -222,7 +222,7 @@ class PlantUmlVisitor(LrpcVisitor):
         icon = 'external-link' if enum.is_external() else None
         self.puml.block(enum.name(), 'PaleGreen', self.enum_indent, icon)
 
-    def visit_lrpc_enum_end(self):
+    def visit_lrpc_enum_end(self, enum: LrpcEnum):
         enum_field_strings = [enum_field_string(ef) for ef in self.enum_fields[0:self.enum_fields_max]]
         if len(self.enum_fields) > self.enum_fields_max:
             enum_field_strings.append('...')
@@ -236,7 +236,7 @@ class PlantUmlVisitor(LrpcVisitor):
         if self.enum_indent > self.enum_indent_max:
             self.enum_indent = 2
 
-    def visit_lrpc_enum_field(self, field: LrpcEnumField):
+    def visit_lrpc_enum_field(self, enum: LrpcEnum, field: LrpcEnumField):
         self.enum_fields.append(field)
 
     def visit_lrpc_function(self, function: LrpcFun):

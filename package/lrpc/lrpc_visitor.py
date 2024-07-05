@@ -1,59 +1,81 @@
 from abc import ABC
 
 class LrpcVisitor(ABC):
-    def visit_lrpc_def(self, lrpc_def):
+    '''Called before visiting the LRPC definition'''
+    def visit_lrpc_def(self, lrpc_def: 'LrpcDef') -> None:
         pass
 
-    def visit_lrpc_def_end(self):
+    '''Called after visiting the LRPC definition'''
+    def visit_lrpc_def_end(self) -> None:
         pass
 
-    def visit_lrpc_service(self, service):
+    '''Called before each service in the LRPC definition'''
+    def visit_lrpc_service(self, service: 'LrpcService') -> None:
         pass
 
-    def visit_lrpc_service_end(self):
+    '''Called after each service  in the LRPC definition'''
+    def visit_lrpc_service_end(self) -> None:
         pass
 
-    def visit_lrpc_struct(self, struct):
+    '''Called before each struct in the LRPC definition. All
+    structs are visited before the first service'''
+    def visit_lrpc_struct(self, struct: 'LrpcStruct') -> None:
         pass
 
-    def visit_lrpc_struct_end(self):
+    '''Called after visiting each field of the current struct'''
+    def visit_lrpc_struct_end(self) -> None:
         pass
 
-    def visit_lrpc_struct_field(self, field):
+    '''Called for each field in the current struct'''
+    def visit_lrpc_struct_field(self, field: 'LrpcVar') -> None:
         pass
 
-    def visit_lrpc_enum(self, enum):
+    '''Called before each enum in the LRPC definition. All
+    enums are visited before the first service'''
+    def visit_lrpc_enum(self, enum: 'LrpcEnum') -> None:
         pass
 
-    def visit_lrpc_enum_end(self):
+    '''Called after visiting each field of the current enum'''
+    def visit_lrpc_enum_end(self, enum: 'LrpcEnum') -> None:
         pass
 
-    def visit_lrpc_enum_field(self, field):
+    '''Called for each field in the current enum'''
+    def visit_lrpc_enum_field(self, enum: 'LrpcEnum', field: 'LrpcEnumField') -> None:
         pass
 
-    def visit_lrpc_constants(self):
+    '''Called before visiting the constants in the LRPC definition. All
+    constants are visited before the first service'''
+    def visit_lrpc_constants(self) -> None:
         pass
 
-    def visit_lrpc_constant(self, constant):
+    '''Called for each constant in the LRPC definition'''
+    def visit_lrpc_constant(self, constant: 'LrpcVar') -> None:
         pass
 
-    def visit_lrpc_constants_end(self):
+    '''Called after visiting the constants in the LRPC definition'''
+    def visit_lrpc_constants_end(self) -> None:
         pass
 
-    def visit_lrpc_function(self, function):
+    '''Called for each function in the current service'''
+    def visit_lrpc_function(self, function: 'LrpcFun') -> None:
         pass
 
-    def visit_lrpc_function_end(self):
+    '''Called after visiting all parameters and returns of the current function'''
+    def visit_lrpc_function_end(self) -> None:
         pass
 
-    def visit_lrpc_function_return(self, ret):
+    '''Called for each return of the current function'''
+    def visit_lrpc_function_return(self, ret: 'LrpcVar') -> None:
         pass
 
-    def visit_lrpc_function_return_end(self):
+    '''Called after visiting all returns of the current function'''
+    def visit_lrpc_function_return_end(self) -> None:
         pass
 
-    def visit_lrpc_function_param(self, param):
+    '''Called for each parameter of the current function'''
+    def visit_lrpc_function_param(self, param: 'LrpcVar') -> None:
         pass
 
-    def visit_lrpc_function_param_end(self):
+    '''Called after visiting all parameters of the current function'''
+    def visit_lrpc_function_param_end(self) -> None:
         pass

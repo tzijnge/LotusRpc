@@ -25,9 +25,9 @@ class LrpcEnum(object):
         visitor.visit_lrpc_enum(self)
 
         for f in self.fields():
-            visitor.visit_lrpc_enum_field(f)
+            visitor.visit_lrpc_enum_field(self, f)
 
-        visitor.visit_lrpc_enum_end()
+        visitor.visit_lrpc_enum_end(self)
 
     def name(self):
         return self.raw['name']

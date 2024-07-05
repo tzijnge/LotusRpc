@@ -1,6 +1,6 @@
 from lrpc.core import LrpcVar
 from lrpc import LrpcVisitor
-from typing import Optional
+from typing import Optional, List
 
 class LrpcFun(object):
     def __init__(self, raw) -> None:
@@ -46,7 +46,7 @@ class LrpcFun(object):
 
         return None
 
-    def returns(self):
+    def returns(self) -> List[LrpcVar]:
         return [LrpcVar(r) for r in self.raw['returns']]
 
     def name(self) -> str:

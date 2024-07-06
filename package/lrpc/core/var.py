@@ -117,6 +117,12 @@ class LrpcVar(object):
     def base_type_is_integral(self) -> bool:
         return self.base_type() in ['uint8_t', 'uint16_t', 'uint32_t', 'uint64_t', 'int8_t', 'int16_t', 'int32_t', 'int64_t']
 
+    def base_type_is_float(self) -> bool:
+        return self.base_type() in ['float', 'double']
+
+    def base_type_is_bool(self) -> bool:
+        return self.base_type() == 'bool'
+
     def base_type_is_string(self) -> bool:
         return self.base_type().startswith('string')
 

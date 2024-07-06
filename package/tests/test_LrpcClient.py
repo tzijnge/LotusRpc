@@ -1,7 +1,9 @@
 from lrpc.client import LrpcClient
 import struct, pytest
+from os import path
 
-client = LrpcClient('test_lrpc_encode_decode.lrpc.yaml')
+definition_file = path.join(path.dirname(path.abspath(__file__)), 'test_lrpc_encode_decode.lrpc.yaml')
+client = LrpcClient(definition_file)
 
 def test_encode_nested_struct():
     assert client.encode('s0', 'f1', p1={'a': {'a': 4567, 'b': 123, 'c': True}}) == b'\x07\x00\x01\xD7\x11\x7B\x01'

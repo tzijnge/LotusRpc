@@ -2,8 +2,10 @@ from lrpc.core import LrpcVar, LrpcDef
 import pytest
 import struct
 from lrpc.client import lrpc_encode
+from os import path
 
-lrpc_def = LrpcDef.load('test_lrpc_encode_decode.lrpc.yaml')
+definition_file = path.join(path.dirname(path.abspath(__file__)), 'test_lrpc_encode_decode.lrpc.yaml')
+lrpc_def = LrpcDef.load(definition_file)
 
 def test_encode_uint8_t():
     var = LrpcVar({ 'name': 'v1', 'type': 'uint8_t' })

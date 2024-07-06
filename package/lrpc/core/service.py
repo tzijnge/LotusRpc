@@ -33,9 +33,16 @@ class LrpcService(object):
     def functions(self):
         return [LrpcFun(f) for f in self.raw['functions']]
 
-    def function(self, name: str) -> Optional[LrpcFun]:
+    def function_by_name(self, name: str) -> Optional[LrpcFun]:
         for f in self.functions():
             if f.name() == name:
+                return f
+
+        return None
+
+    def function_by_id(self, id: int) -> Optional[LrpcFun]:
+        for f in self.functions():
+            if f.id() == id:
                 return f
 
         return None

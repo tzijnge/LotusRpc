@@ -22,7 +22,7 @@ def test_short_notation():
     assert service.functions()[2].name() == 'f2'
     assert service.functions()[2].id() == 56
 
-def test_get_function_by_name():
+def test_function_by_name():
     s = {
         'name': 's0',
         'functions': [
@@ -32,7 +32,22 @@ def test_get_function_by_name():
     }
     service = LrpcService(s)
 
-    assert service.function('') is None
-    f0 = service.function('f0')
+    assert service.function_by_name('') is None
+    f0 = service.function_by_name('f0')
+    assert f0 is not None
+    assert f0.name() == 'f0'
+
+def test_function_by_id():
+    s = {
+        'name': 's0',
+        'functions': [
+            { 'name': 'f0', 'id': 36 },
+            { 'name': 'f1' }
+        ]
+    }
+    service = LrpcService(s)
+
+    assert service.function_by_id(55) is None
+    f0 = service.function_by_id(36)
     assert f0 is not None
     assert f0.name() == 'f0'

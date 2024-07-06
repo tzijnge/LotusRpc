@@ -39,6 +39,12 @@ jobs:
         working-directory: package
         run: pip install .
 
+      - name: Run lotusrpc
+        run: lotusrpc --help
+
+      - name: Run LRPC client CLI
+        run: lrpcc --help
+
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action/linux@v2
         with:

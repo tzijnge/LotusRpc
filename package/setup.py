@@ -15,7 +15,7 @@ setup(
    packages=find_packages(),
    package_data={'lrpc.schema': ['lotusrpc-schema.json']},
    include_package_data=True,
-   install_requires=['click', 'code-generation', 'pyyaml', 'jsonschema'], #external packages as dependencies
+   install_requires=['click', 'code-generation', 'pyyaml', 'jsonschema', 'pyserial'],
    entry_points = '''
         [console_scripts]
         lotusrpc=lrpc.lotusrpc:generate

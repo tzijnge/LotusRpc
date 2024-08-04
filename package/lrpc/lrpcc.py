@@ -94,5 +94,8 @@ the LRPCC_CONFIG environment variable.
         lrpc_def.accept(cli)
         cli.root()
 
-if __name__ == "__main__":
+def cli():
     Lrpcc().run()
+
+if __name__ == "__main__":
+    cli()

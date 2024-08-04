@@ -4,14 +4,9 @@ from lrpc.core import LrpcDef, LrpcService, LrpcFun, LrpcVar, LrpcEnum, LrpcEnum
 import click
 from typing import Dict, List
 import yaml
+from functools import partial
 
 NoneArg = "7bc9ddaa-b6c9-4afb-93c1-5240ec91ab9c"
-
-def my_command_impl(**kwargs):
-    for a, v in kwargs.items():
-        if v == NoneArg:
-            kwargs[a] = None
-    print(f'Stub: {kwargs}')
 
 class YamlParamType(click.ParamType):
     '''Convert command line input to a struct. Command line
@@ -31,7 +26,7 @@ class YamlParamType(click.ParamType):
 class OptionalParamType(click.ParamType):
     '''Convert command line input to LRPC optional. "_" maps to None,
        any other input is converted to the underlying type. A string input
-       which is a sequence of underscores can must be preceded with an additional
+       which is a sequence of underscores must be escaped with an additional
        underscore'''
     name = "LRPC optional"
 
@@ -50,11 +45,13 @@ class OptionalParamType(click.ParamType):
         return self.contained_type.convert(value, param, ctx)
 
 class ClientCliVisitor(LrpcVisitor):
-    def __init__(self) -> None:
+    def __init__(self, callback) -> None:
         self.root: click.Group = None
         self.current_service: click.Group = None
         self.current_function: click.Command = None
         self.enum_values: Dict[str, List[str]] = {}
+
+        self.callback = callback
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef):
         self.root = click.Group(lrpc_def.name())
@@ -72,7 +69,11 @@ class ClientCliVisitor(LrpcVisitor):
         self.enum_values[enum.name()].append(field.name())
 
     def visit_lrpc_function(self, function: LrpcFun):
-        self.current_function = click.Command(name=function.name(), callback=my_command_impl, help='my help 123')
+        self.current_function = click.Command(
+            name=function.name(),
+            callback=partial(self.__handle_command, self.current_service.name, function.name()),
+            help='my help 123'
+            )
 
     def visit_lrpc_function_end(self):
         self.current_service.add_command(self.current_function)
@@ -111,3 +112,10 @@ class ClientCliVisitor(LrpcVisitor):
             return OptionalParamType(t)
         else:
             return t
+
+    def __handle_command(self, service, function, **kwargs):
+        for a, v in kwargs.items():
+            if v == NoneArg:
+                kwargs[a] = None
+
+        return self.callback(service, function, **kwargs)

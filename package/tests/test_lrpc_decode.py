@@ -1,9 +1,10 @@
-from lrpc.core import LrpcVar, LrpcDef
-import pytest
-import struct
-from lrpc.client import lrpc_decode
 import math
+import struct
 from os import path
+
+import pytest
+from lrpc.client import lrpc_decode
+from lrpc.core import LrpcDef, LrpcVar
 
 definition_file = path.join(path.dirname(path.abspath(__file__)), 'test_lrpc_encode_decode.lrpc.yaml')
 lrpc_def = LrpcDef.load(definition_file)
@@ -86,10 +87,10 @@ def test_decode_double():
 def test_decode_bool():
     var = LrpcVar({ 'name': 'v1', 'type': 'bool' })
 
-    assert lrpc_decode(b'\x00', var, lrpc_def) == False
-    assert lrpc_decode(b'\x01', var, lrpc_def) == True
-    assert lrpc_decode(b'\x02', var, lrpc_def) == True
-    assert lrpc_decode(b'\xFF', var, lrpc_def) == True
+    assert not lrpc_decode(b'\x00', var, lrpc_def)
+    assert not lrpc_decode(b'\x01', var, lrpc_def)
+    assert not lrpc_decode(b'\x02', var, lrpc_def)
+    assert not lrpc_decode(b'\xFF', var, lrpc_def)
 
 def test_decode_string():
     var = LrpcVar({ 'name': 'v1', 'type': 'string' })
@@ -173,7 +174,7 @@ def test_decode_array_of_auto_string():
 def test_decode_optional():
     var = LrpcVar({ 'name': 'v1', 'type': 'uint8_t', 'count': '?' })
 
-    assert lrpc_decode(b'\x00', var, lrpc_def) == None
+    assert lrpc_decode(b'\x00', var, lrpc_def) is None
     assert lrpc_decode(b'\x01\xAB', var, lrpc_def) == 0xAB
     assert lrpc_decode(b'\xFF\xAB', var, lrpc_def) == 0xAB
     assert lrpc_decode(b'\x01\x01\x01', var, lrpc_def) == 0x01
@@ -184,7 +185,7 @@ def test_decode_optional():
 def test_decode_optional_fixed_size_string():
     var = LrpcVar({ 'name': 'v1', 'type': 'string_2', 'count': '?' })
 
-    assert lrpc_decode(b'\x00', var, lrpc_def) == None
+    assert lrpc_decode(b'\x00', var, lrpc_def) is None
     assert lrpc_decode(b'\x01ab\x00', var, lrpc_def) == 'ab'
 
     # trailing bytes
@@ -196,7 +197,7 @@ def test_decode_optional_fixed_size_string():
 def test_decode_optional_auto_string():
     var = LrpcVar({ 'name': 'v1', 'type': 'string', 'count': '?' })
 
-    assert lrpc_decode(b'\x00', var, lrpc_def) == None
+    assert lrpc_decode(b'\x00', var, lrpc_def) is None
     assert lrpc_decode(b'\x01ab\x00', var, lrpc_def) == 'ab'
 
     # trailing bytes
@@ -219,7 +220,7 @@ def test_decode_struct():
 def test_decode_optional_struct():
     var = LrpcVar({ 'name': 'v1', 'type': '@MyStruct1', 'base_type_is_struct': True, 'count': '?'})
 
-    assert lrpc_decode(b'\x00', var, lrpc_def) == None
+    assert lrpc_decode(b'\x00', var, lrpc_def) is None
     assert lrpc_decode(b'\x01\xD7\x11\x7B\x01', var, lrpc_def) == {'b': 123, 'a': 4567, 'c': True}
 
 def test_decode_nested_struct():
@@ -239,7 +240,7 @@ def test_decode_enum():
 def test_decode_optional_enum():
     var = LrpcVar({ 'name': 'v1', 'type': '@MyEnum1', 'base_type_is_enum': True, 'count': '?'})
 
-    assert lrpc_decode(b'\x00', var, lrpc_def) == None
+    assert lrpc_decode(b'\x00', var, lrpc_def) is None
     assert lrpc_decode(b'\x01\x37', var, lrpc_def) == 'test2'
 
 def test_decode_array_of_struct():

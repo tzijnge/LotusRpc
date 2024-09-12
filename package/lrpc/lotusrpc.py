@@ -1,23 +1,27 @@
-import click
-from lrpc.codegen import StructFileVisitor, ConstantsFileVisitor, EnumFileVisitor, ServerIncludeVisitor, ServiceShimVisitor, ServiceIncludeVisitor
-from lrpc.validation import SemanticAnalyzer
-from lrpc.core import LrpcDef
-from lrpc import PlantUmlVisitor
-from lrpc import schema as lrpc_schema
+import os
 from importlib import resources
-import yaml
+from os import path
+
+import click
 import jsonschema
 import jsonschema.exceptions
-from os import path
-import os
+import yaml
+from lrpc import PlantUmlVisitor
+from lrpc import schema as lrpc_schema
+from lrpc.codegen import (ConstantsFileVisitor, EnumFileVisitor,
+                          ServerIncludeVisitor, ServiceIncludeVisitor,
+                          ServiceShimVisitor, StructFileVisitor)
+from lrpc.core import LrpcDef
+from lrpc.validation import SemanticAnalyzer
 
-def create_dir_if_not_exists(dir):
-    if not path.exists(dir):
-        os.makedirs(dir, 511, True)
+
+def create_dir_if_not_exists(target_dir):
+    if not path.exists(target_dir):
+        os.makedirs(target_dir, 511, True)
 
 def validate_yaml(definition, input: str):
-    url = (resources.files(lrpc_schema) / 'lotusrpc-schema.json')
-    with open(url, 'rt') as schema_file:
+    url = resources.files(lrpc_schema) / 'lotusrpc-schema.json'
+    with open(url, mode='rt', encoding='utf-8') as schema_file:
         schema = yaml.safe_load(schema_file)
 
         try:

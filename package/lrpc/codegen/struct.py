@@ -1,15 +1,17 @@
+from typing import Set
+
 from code_generation.code_generator import CppFile
 from lrpc import LrpcVisitor
-from lrpc.core import LrpcDef, LrpcStruct, LrpcVar
-from lrpc.codegen.utils import optionally_in_namespace
-from typing import Set
 from lrpc.codegen.common import lrpc_var_includes
+from lrpc.codegen.utils import optionally_in_namespace
+from lrpc.core import LrpcDef, LrpcStruct, LrpcVar
+
 
 class StructFileVisitor(LrpcVisitor):
     def __init__(self, output: str) -> None:
         self.output = output
         self.namespace = None
-        self.file = None
+        self.file: CppFile
         self.descriptor: LrpcStruct
         self.alias: str = ''
         self.includes: Set[str] = set()
@@ -70,7 +72,7 @@ class StructFileVisitor(LrpcVisitor):
                 with self.file.block(f'struct {self.__qualified_name()}', ';'):
                     for f in self.descriptor.fields():
                         self.__write_struct_field(f)
-        
+
             self.file.newline()
             self.file.write(f'static_assert(sizeof(dummy::{self.__qualified_name()}) == sizeof({self.__name()}), "External struct size not as expected. It may have missing or additional fields or different packing.");')
             self.file.newline()
@@ -107,7 +109,7 @@ class StructFileVisitor(LrpcVisitor):
                 self.file(f'return {all_fields_equal};')
 
             with self.file.block(f'bool operator!=(const {self.__qualified_name()}& other) const'):
-                self.file(f'return !(*this == other);')
+                self.file('return !(*this == other);')
 
     def __write_codec(self):
         with self.file.block('namespace lrpc'):
@@ -154,6 +156,6 @@ class StructFileVisitor(LrpcVisitor):
         ns = self.namespace
         qn = self.__qualified_name()
         return f'{ns}::{qn}' if ns else qn
-    
+
     def __qualified_name(self):
         return self.descriptor.name()

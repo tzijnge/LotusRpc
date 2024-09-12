@@ -5,31 +5,31 @@ from lrpc.codegen.utils import optionally_in_namespace
 
 class ServiceShimVisitor(LrpcVisitor):
     def __init__(self, output: str):
-        self.file = None
-        self.lrpc_def = None
+        self.file: CppFile
+        self.lrpc_def: LrpcDef
         self.output = output
-        self.function_info = None
+        self.function_info: dict
         self.max_function_id = 0
-        self.function_declarations = None
-        self.function_shims = None
-        self.function_params = None
-        self.function_returns = None
-        self.function_name = None
-        self.shim_array = None
-        self.service_name = None
+        self.function_declarations: list
+        self.function_shims: list
+        self.function_params: list
+        self.function_returns: list
+        self.function_name: str
+        self.shim_array: list
+        self.service_name: str
         self.service_id = None
-        self.number_functions = None
+        self.number_functions = 0
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef):
         self.lrpc_def = lrpc_def
 
     def visit_lrpc_service(self, service: LrpcService):
         self.file = CppFile(f'{self.output}/{service.name()}_ServiceShim.hpp')
-        self.function_info = dict()
+        self.function_info = {}
         self.max_function_id = 0
-        self.function_declarations = list()
-        self.function_shims = list()
-        self.shim_array = list()
+        self.function_declarations = []
+        self.function_shims = []
+        self.shim_array = []
         self.service_name = service.name()
         self.service_id = service.id()
         self.number_functions = len(service.functions())
@@ -41,8 +41,8 @@ class ServiceShimVisitor(LrpcVisitor):
         self.__write_shim(self.lrpc_def.namespace())
 
     def visit_lrpc_function(self, function: LrpcFun):
-        self.function_params = list()
-        self.function_returns = list()
+        self.function_params = []
+        self.function_returns = []
         self.function_name = function.name()
         self.max_function_id = max(self.max_function_id, function.id())
         self.function_info.update({function.id(): function.name()})
@@ -53,13 +53,13 @@ class ServiceShimVisitor(LrpcVisitor):
         returns = self.__returns_string()
         self.function_declarations.append(f'virtual {returns} {name}({params}) = 0;')
 
-        shim = list()
+        shim = []
         reader_name = 'r' if len(self.function_params) != 0 else ''
         writer_name = 'w' if len(self.function_returns) != 0 else ''
         shim.append(f'void {name}_shim(Reader& {reader_name}, Writer& {writer_name})')
         shim.extend(self.__function_shim_body())
         self.function_shims.append(shim)
-    
+
     def visit_lrpc_function_param(self, param: LrpcVar):
         self.function_params.append(param)
 
@@ -144,7 +144,8 @@ class ServiceShimVisitor(LrpcVisitor):
         elif len(self.function_returns) == 1:
             return self.function_returns[0].return_type()
         else:
-            return 'std::tuple<{}>'.format(', '.join([r.return_type() for r in self.function_returns]))
+            types = ', '.join([r.return_type() for r in self.function_returns])
+            return f'std::tuple<{types}>'
 
     def __write_include_guard(self):
         self.file('#pragma once')

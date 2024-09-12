@@ -1,5 +1,6 @@
-from lrpc.core import LrpcVar
 from typing import Set
+
+from lrpc.core import LrpcVar
 
 def lrpc_var_includes(var: LrpcVar) -> Set[str]:
     includes = set()

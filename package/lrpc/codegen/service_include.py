@@ -7,7 +7,7 @@ from lrpc.codegen.common import lrpc_var_includes
 class ServiceIncludeVisitor(LrpcVisitor):
     def __init__(self, output: str) -> None:
         self.output = output
-        self.file = None
+        self.file: CppFile
         self.includes: Set = set()
 
     def visit_lrpc_service(self, service: LrpcService) -> None:

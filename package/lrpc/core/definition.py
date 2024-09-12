@@ -1,11 +1,12 @@
+from importlib import resources
 from typing import Optional
 
-from lrpc import LrpcVisitor
-from lrpc.core import LrpcConstant, LrpcEnum, LrpcService, LrpcStruct
-from lrpc import schema as lrpc_schema
 import jsonschema
-from importlib import resources
 import yaml
+from lrpc import LrpcVisitor
+from lrpc import schema as lrpc_schema
+from lrpc.core import LrpcConstant, LrpcEnum, LrpcService, LrpcStruct
+
 
 class LrpcDef(object):
     def __init__(self, raw) -> None:
@@ -21,10 +22,10 @@ class LrpcDef(object):
     def __init_base_types(self):
         for s in self.raw['services']:
             for f in s['functions']:
-                for p in f.get('params', list()):
+                for p in f.get('params', []):
                     p['base_type_is_struct'] = self.__base_type_is_struct(p)
                     p['base_type_is_enum'] = self.__base_type_is_enum(p)
-                for r in f.get('returns', list()):
+                for r in f.get('returns', []):
                     r['base_type_is_struct'] = self.__base_type_is_struct(r)
                     r['base_type_is_enum'] = self.__base_type_is_enum(r)
 
@@ -107,9 +108,9 @@ class LrpcDef(object):
 
         return None
 
-    def service_by_id(self, id: int) -> Optional[LrpcService]:
+    def service_by_id(self, identifier: int) -> Optional[LrpcService]:
         for s in self.services():
-            if s.id() == id:
+            if s.id() == identifier:
                 return s
 
         return None
@@ -152,13 +153,14 @@ class LrpcDef(object):
 
     def __base_type_is_enum(self, var):
         return var['type'].strip('@') in self.__enum_names()
-    
+
+    @staticmethod
     def load(definition_url: str) -> 'LrpcDef':
         from lrpc.validation import SemanticAnalyzer
 
         schema_url = resources.files(lrpc_schema).joinpath('lotusrpc-schema.json')
 
-        with open(definition_url, 'rt') as rpc_def:
+        with open(definition_url, mode='rt', encoding='utf-8') as rpc_def:
             definition = yaml.safe_load(rpc_def)
             schema = yaml.safe_load(schema_url.read_text())
             jsonschema.validate(definition, schema)
@@ -171,4 +173,3 @@ class LrpcDef(object):
             assert len(sa.warnings) == 0
 
             return lrpc_def
-

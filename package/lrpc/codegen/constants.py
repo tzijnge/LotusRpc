@@ -1,15 +1,16 @@
+from typing import List, Set
+
 from code_generation.code_generator import CppFile
 from lrpc import LrpcVisitor
-from lrpc.core import LrpcConstant
-from lrpc.core import LrpcDef
 from lrpc.codegen.utils import optionally_in_namespace
-from typing import Set, List
+from lrpc.core import LrpcConstant, LrpcDef
+
 
 class ConstantsFileVisitor(LrpcVisitor):
     def __init__(self, output: str):
         self.output = output
         self.namespace = None
-        self.file = None
+        self.file: CppFile
         self.includes : Set[str] = set()
         self.constant_definitions : List[str] = list()
 

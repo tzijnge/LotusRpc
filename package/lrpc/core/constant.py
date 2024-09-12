@@ -24,6 +24,6 @@ class LrpcConstant(object):
 
     def value(self):
         return self.raw['value']
-    
+
     def cpp_type(self):
         return self.raw['cppType']

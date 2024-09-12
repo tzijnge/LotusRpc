@@ -1,12 +1,14 @@
+from typing import List, Set
+
 from lrpc.core import LrpcDef, LrpcEnum, LrpcEnumField
 from lrpc import LrpcVisitor
 
 class EnumChecker(LrpcVisitor):
     def __init__(self) -> None:
-        self.errors = list()
-        self.warnings = list()
-        self.enum_ids = set()
-        self.enum_names = set()
+        self.errors: List[str] = []
+        self.warnings: List[str] = []
+        self.enum_ids: Set = set()
+        self.enum_names: Set[str] = set()
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef):
         self.errors.clear()
@@ -19,14 +21,14 @@ class EnumChecker(LrpcVisitor):
         self.enum_names.clear()
 
     def visit_lrpc_enum_field(self, enum: LrpcEnum, field: LrpcEnumField):
-        id = field.id()
+        field_id = field.id()
         name = field.name()
 
-        if id in self.enum_ids:
-            self.errors.append(f'Duplicate field id in enum {enum.name()}: {id}')
+        if field_id in self.enum_ids:
+            self.errors.append(f'Duplicate field id in enum {enum.name()}: {field_id}')
 
         if name in self.enum_names:
             self.errors.append(f'Duplicate field name in enum {enum.name()}: {name}')
 
-        self.enum_ids.add(id)
+        self.enum_ids.add(field_id)
         self.enum_names.add(name)

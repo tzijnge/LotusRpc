@@ -1,12 +1,13 @@
+from functools import partial
+from typing import Dict, List
+
+import click
+import yaml
 import yaml.parser
 from lrpc import LrpcVisitor
-from lrpc.core import LrpcDef, LrpcService, LrpcFun, LrpcVar, LrpcEnum, LrpcEnumField
-import click
-from typing import Dict, List
-import yaml
-from functools import partial
+from lrpc.core import LrpcDef, LrpcEnum, LrpcEnumField, LrpcFun, LrpcService, LrpcVar
 
-NoneArg = "7bc9ddaa-b6c9-4afb-93c1-5240ec91ab9c"
+NONE_ARG = "7bc9ddaa-b6c9-4afb-93c1-5240ec91ab9c"
 
 class YamlParamType(click.ParamType):
     '''Convert command line input to a struct. Command line
@@ -38,13 +39,18 @@ class OptionalParamType(click.ParamType):
             self.fail(f'{value} is not a string', param, ctx)
 
         if value == '_':
-            return NoneArg
+            return NONE_ARG
         elif len(value) != 0 and len(value.replace('_', '')) == 0: # value only contains underscores
             value = value.removeprefix('_')
 
         return self.contained_type.convert(value, param, ctx)
 
 class ClientCliVisitor(LrpcVisitor):
+    '''
+    Class to create an LRPC client CLI (based on click) from spec.
+    Pass an instance of this class to LrpcDef.accept() to build the CLI.
+    Call ClientCliVisitor.root() to activate the CLI
+    '''
     def __init__(self, callback) -> None:
         self.root: click.Group = None
         self.current_service: click.Group = None
@@ -88,7 +94,7 @@ class ClientCliVisitor(LrpcVisitor):
         self.current_function.params.append(arg)
 
     def __click_type(self, param: LrpcVar) -> click.ParamType:
-        t = click.UNPROCESSED
+        t: click.ParamType = click.UNPROCESSED
 
         if param.base_type_is_integral():
             t = click.INT
@@ -115,7 +121,7 @@ class ClientCliVisitor(LrpcVisitor):
 
     def __handle_command(self, service, function, **kwargs):
         for a, v in kwargs.items():
-            if v == NoneArg:
+            if v == NONE_ARG:
                 kwargs[a] = None
 
         return self.callback(service, function, **kwargs)

@@ -1,12 +1,14 @@
+from typing import Set
+
 from lrpc.core import LrpcDef, LrpcEnum, LrpcStruct, LrpcVar
 from lrpc import LrpcVisitor
 
 class CustomTypesChecker(LrpcVisitor):
     def __init__(self) -> None:
-        self.errors = set()
-        self.warnings = set()
-        self.declared_custom_types = set()
-        self.used_custom_types = set()
+        self.errors: Set[str] = set()
+        self.warnings: Set[str] = set()
+        self.declared_custom_types: Set[str] = set()
+        self.used_custom_types: Set[str] = set()
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef):
         self.errors.clear()

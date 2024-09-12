@@ -40,9 +40,9 @@ class LrpcService(object):
 
         return None
 
-    def function_by_id(self, id: int) -> Optional[LrpcFun]:
+    def function_by_id(self, function_id: int) -> Optional[LrpcFun]:
         for f in self.functions():
-            if f.id() == id:
+            if f.id() == function_id:
                 return f
 
         return None

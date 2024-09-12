@@ -25,7 +25,7 @@ class LrpcClient(object):
         return None
 
     def decode(self, encoded: bytes):
-        ret = dict()
+        ret = {}
 
         # skip packet length at index 0
         service_id = encoded[1]

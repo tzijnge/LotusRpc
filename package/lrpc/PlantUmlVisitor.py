@@ -1,17 +1,20 @@
-from lrpc import LrpcVisitor
-from lrpc.core import *
+from typing import List
 from contextlib import contextmanager
 
-def in_color(t: str, c: str):
+from lrpc import LrpcVisitor
+from lrpc.core import LrpcFun, LrpcVar, LrpcEnum, LrpcEnumField, LrpcConstant, LrpcDef, LrpcService, LrpcStruct
+
+
+def in_color(t: str | int, c: str):
     return f'<color:{c}>{t}</color>'
 
 class FunctionStringBuilder(object):
     def __init__(self, max_function_id: int) -> None:
-        self.param_strings = list()
-        self.return_strings = list()
-        self.function_name = ''
-        self.function_id = ''
-        self.id_width = len(str(max_function_id))
+        self.param_strings: List[str] = []
+        self.return_strings: List[str] = []
+        self.function_name: str = ''
+        self.function_id: str = ''
+        self.id_width: int = len(str(max_function_id))
 
     def add_function(self, function: LrpcFun) -> None:
         self.function_name = function.name()
@@ -41,14 +44,14 @@ def var_string(p: LrpcVar) -> str:
 
 def enum_field_string(e: LrpcEnumField) -> str:
     name = in_color(e.name(), 'CornflowerBlue')
-    id = in_color(e.id(), 'ForestGreen')
-    return f'{name} = {id}'
+    enum_id = in_color(e.id(), 'ForestGreen')
+    return f'{name} = {enum_id}'
 
 def const_string(p: LrpcConstant) -> str:
     t = in_color(p.cpp_type(), 'DarkCyan')
     n = in_color(p.name(), 'CornflowerBlue')
     return t + ' ' + n
-    
+
 class PumlFile(object):
     def __init__(self, filename: str) -> None:
         self.text = '@startmindmap\n'
@@ -70,7 +73,7 @@ class PumlFile(object):
         self.write('</color>')
 
     @contextmanager
-    def size(self, s: str):
+    def size(self, s: int):
         self.write(f'<size:{s}>')
         yield
         self.write('</size>')
@@ -82,10 +85,10 @@ class PumlFile(object):
         self.write('**')
 
     @contextmanager
-    def enclosed_in(self, open: str, close: str):
-        self.write(open)
+    def enclosed_in(self, open_str: str, close_str: str):
+        self.write(open_str)
         yield
-        self.write(close)
+        self.write(close_str)
 
     def icon(self, i: str) -> None:
         self.write(f'<&{i}>')
@@ -103,7 +106,7 @@ class PumlFile(object):
 
         self.write('endlegend\n')
 
-    def block(self, name: str, background: str, level: int, icon: str = None) -> None:
+    def block(self, name: str, background: str, level: int, icon: str | None = None) -> None:
         indent = '*' * level
         self.write(f'{indent}[#{background}]: ')
         if icon:
@@ -115,7 +118,7 @@ class PumlFile(object):
 
         self.write('\n----')
 
-    def list_item(self, text: str, level: int = 1, font: str = None) -> None:
+    def list_item(self, text: str, level: int = 1, font: str | None = None) -> None:
         indent = '*' * level
         if level != 0:
             indent += ' '
@@ -131,9 +134,9 @@ class PumlFile(object):
 
     def dump_to_file(self) -> None:
         self.write('\n@endmindmap')
-        with open(self.filename, 'w') as file:
+        with open(self.filename, mode='w', encoding='utf-8') as file:
             file.write(self.text)
-    
+
     def function_string(self, fsb: FunctionStringBuilder) -> None:
         with self.font('monospaced'):
             with self.enclosed_in('[', ']'):
@@ -159,21 +162,21 @@ class PumlFile(object):
 class PlantUmlVisitor(LrpcVisitor):
     def __init__(self, output: str) -> None:
         self.output = output
-        self.fsb = None
-        self.puml = None
+        self.fsb: FunctionStringBuilder
+        self.puml: PumlFile
         self.max_function_id = 0
-        
-        self.enum_fields = list()
+
+        self.enum_fields: List[LrpcEnumField] = []
         self.enum_indent = 2
         self.enum_indent_max = 7
         self.enum_fields_max = 10
         self.struct_indent = 2
-        
+
         self.struct_indent_max = 7
-        self.struct_fields = list()
+        self.struct_fields: List[LrpcVar] = []
         self.struct_fields_max = 10
-        
-        self.constants = list()
+
+        self.constants: List[LrpcConstant] = []
         self.const_items_max = 10
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef):
@@ -184,7 +187,7 @@ class PlantUmlVisitor(LrpcVisitor):
         self.puml.list_item(f'RX buffer size: {lrpc_def.rx_buffer_size()}', level=0)
         self.puml.list_item(f'TX Buffer size: {lrpc_def.tx_buffer_size()}', level=0)
         self.puml.list_end()
-    
+
     def visit_lrpc_def_end(self):
         self.puml.write('\n')
 
@@ -229,9 +232,9 @@ class PlantUmlVisitor(LrpcVisitor):
 
         for s in enum_field_strings:
             self.puml.list_item(s, font='monospaced')
-        
+
         self.puml.list_end()
-        
+
         self.enum_indent = self.enum_indent + 1
         if self.enum_indent > self.enum_indent_max:
             self.enum_indent = 2
@@ -242,23 +245,17 @@ class PlantUmlVisitor(LrpcVisitor):
     def visit_lrpc_function(self, function: LrpcFun):
         self.fsb = FunctionStringBuilder(self.max_function_id)
         self.fsb.add_function(function)
-        
+
     def visit_lrpc_function_end(self):
         self.puml.write('***_ ')
         self.puml.function_string(self.fsb)
         self.puml.write('\n')
-    
+
     def visit_lrpc_function_param(self, param: LrpcVar):
         self.fsb.add_param(param)
-    
-    def visit_lrpc_function_param_end(self):
-        return super().visit_lrpc_function_param_end()
-    
+
     def visit_lrpc_function_return(self, ret: LrpcVar):
         self.fsb.add_return(ret)
-
-    def visit_lrpc_function_return_end(self):
-         return super().visit_lrpc_function_return_end()
 
     def visit_lrpc_service(self, service: LrpcService):
         self.puml.block(service.name(), 'PeachPuff', 2)
@@ -267,9 +264,6 @@ class PlantUmlVisitor(LrpcVisitor):
 
         self.max_function_id = max([f.id() for f in service.functions()])
 
-    def visit_lrpc_service_end(self):
-        return super().visit_lrpc_service_end()
-    
     def visit_lrpc_struct(self, struct: LrpcStruct):
         self.struct_fields = list()
         icon = 'external-link' if struct.is_external() else None
@@ -282,9 +276,9 @@ class PlantUmlVisitor(LrpcVisitor):
 
         for s in struct_field_strings:
             self.puml.list_item(s, font='monospaced')
-        
+
         self.puml.list_end()
-        
+
         self.struct_indent = self.struct_indent + 1
         if self.struct_indent > self.struct_indent_max:
             self.struct_indent = 2

@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Dict
 
 class LrpcVar(object):
     def __init__(self, raw) -> None:
@@ -99,7 +99,7 @@ class LrpcVar(object):
 
         if self.is_array():
             return f'etl::array<{t}, {self.array_size()}>'
-        
+
         if self.is_optional():
             return f'etl::optional<{t}>'
 
@@ -158,7 +158,7 @@ class LrpcVar(object):
 
     def is_auto_string(self) -> bool:
         return self.base_type() == 'string'
-    
+
     def is_fixed_size_string(self) -> bool:
         return self.base_type_is_string() and not self.is_auto_string()
 

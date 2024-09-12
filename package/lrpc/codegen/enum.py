@@ -81,6 +81,6 @@ class EnumFileVisitor(LrpcVisitor):
         ns = self.namespace
         qn = self.__qualified_name()
         return f'{ns}::{qn}' if ns else qn
-    
+
     def __qualified_name(self):
         return self.descriptor.name()

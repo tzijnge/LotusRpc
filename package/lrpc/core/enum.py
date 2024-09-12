@@ -1,5 +1,7 @@
-from lrpc import LrpcVisitor
 from typing import List
+
+from lrpc import LrpcVisitor
+
 
 class LrpcEnumField(object):
     def __init__(self, raw, index) -> None:
@@ -13,7 +15,7 @@ class LrpcEnumField(object):
 
     def name(self):
         return self.raw['name']
-    
+
     def id(self):
         return self.raw['id']
 
@@ -38,7 +40,7 @@ class LrpcEnum(object):
         for field in self.raw['fields']:
             all_fields.append(LrpcEnumField(field, index))
             index = all_fields[-1].id() + 1
-        
+
         return all_fields
 
     def field_id(self, name: str):

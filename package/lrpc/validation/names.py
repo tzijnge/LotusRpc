@@ -1,11 +1,13 @@
-from lrpc.core import LrpcStruct, LrpcService, LrpcConstant, LrpcEnum, LrpcDef
+from typing import List, Set
+
 from lrpc import LrpcVisitor
-from typing import Set, List
+from lrpc.core import LrpcConstant, LrpcDef, LrpcEnum, LrpcService, LrpcStruct
+
 
 class NamesChecker(LrpcVisitor):
     def __init__(self) -> None:
-        self.errors: List[str] = list()
-        self.warnings: List[str] = list()
+        self.errors: List[str] = []
+        self.warnings: List[str] = []
         self.names: Set[str] = set()
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef):

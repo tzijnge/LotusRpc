@@ -5,9 +5,9 @@ from lrpc.codegen.utils import optionally_in_namespace
 
 class ServerIncludeVisitor(LrpcVisitor):
     def __init__(self, output: str) -> None:
-        self.lrpc_def = None
+        self.lrpc_def: LrpcDef
         self.output = output
-        self.file = None
+        self.file: CppFile
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef):
         self.lrpc_def = lrpc_def

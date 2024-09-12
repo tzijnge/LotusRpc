@@ -11,12 +11,12 @@ class LrpcFun(object):
         self.__init_returns()
 
     def __init_returns(self) -> None:
-        if 'returns' not in self.raw:
-            self.raw['returns'] = list()
+        if "returns" not in self.raw:
+            self.raw["returns"] = list()
 
     def __init_params(self) -> None:
-        if 'params' not in self.raw:
-            self.raw['params'] = list()
+        if "params" not in self.raw:
+            self.raw["params"] = list()
 
     def accept(self, visitor: LrpcVisitor) -> None:
         visitor.visit_lrpc_function(self)
@@ -32,7 +32,7 @@ class LrpcFun(object):
         visitor.visit_lrpc_function_end()
 
     def params(self):
-        return [LrpcVar(p) for p in self.raw['params']]
+        return [LrpcVar(p) for p in self.raw["params"]]
 
     def param(self, name: str) -> Optional[LrpcVar]:
         for p in self.params():
@@ -49,13 +49,13 @@ class LrpcFun(object):
         return None
 
     def returns(self) -> List[LrpcVar]:
-        return [LrpcVar(r) for r in self.raw['returns']]
+        return [LrpcVar(r) for r in self.raw["returns"]]
 
     def name(self) -> str:
-        return self.raw['name']
+        return self.raw["name"]
 
     def id(self):
-        return self.raw['id']
+        return self.raw["id"]
 
     def number_returns(self):
         return len(self.returns())

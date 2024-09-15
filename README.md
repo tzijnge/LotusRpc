@@ -133,6 +133,7 @@ This is the name of the RPC engine. It is used in generated files and directorie
 A single RPC engine can contain up to 256 different services. A service can be considered a group of related functions. In the generated code a service with functions corresponds to a class with methods. A RPC engine must have at least one service.
 
 A service has the following properties
+
 | Required  | Optional |
 | --------- |--------- |
 | name      | id       |

@@ -5,12 +5,12 @@ jobs:
     name: runner / mypy
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Install mypy
         run: pip install mypy
       - name: Install requirements
-        run: ls -la
-      - name: Checkout
-        uses: actions/checkout@v4
+        run: pip install -r requirements.txt
       - name: Run MyPy
         uses: tsuyoshicho/action-mypy@v4
         with:

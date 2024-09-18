@@ -43,7 +43,9 @@ def __load_config():
         return None
 
     if not path.isabs(config[DEFINITION_URL]):
-        config[DEFINITION_URL] = path.join(path.dirname(config_url), config[DEFINITION_URL])
+        config[DEFINITION_URL] = path.join(
+            path.dirname(config_url), config[DEFINITION_URL]
+        )
 
     return config
 
@@ -136,7 +138,7 @@ class Lrpcc:
         cli.root()
 
 
-def cli():
+def run_cli():
     config = __load_config()
 
     if config:
@@ -146,4 +148,4 @@ def cli():
 
 
 if __name__ == "__main__":
-    cli()
+    run_cli()

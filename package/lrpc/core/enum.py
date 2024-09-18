@@ -1,6 +1,7 @@
 from typing import List
 
 from lrpc import LrpcVisitor
+from typing import List
 
 
 class LrpcEnumField(object):

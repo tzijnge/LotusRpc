@@ -1,12 +1,16 @@
-name: reviewdog
+name: Reviewdog-MyPy
 on: [pull_request]
 jobs:
   mypy:
     name: runner / mypy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: tsuyoshicho/action-mypy@v4
+      - name: Install mypy
+        run: pip install mypy
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run MyPy
+        uses: tsuyoshicho/action-mypy@v4
         with:
           github_token: ${{ secrets.github_token }}
           # Change reviewdog reporter if you need [github-pr-check,github-check,github-pr-review].

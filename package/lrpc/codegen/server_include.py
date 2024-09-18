@@ -1,6 +1,6 @@
 from code_generation.code_generator import CppFile
 from lrpc.core import LrpcDef, LrpcService
-from lrpc.LrpcVisitor import LrpcVisitor
+from lrpc import LrpcVisitor
 from lrpc.codegen.utils import optionally_in_namespace
 
 class ServerIncludeVisitor(LrpcVisitor):

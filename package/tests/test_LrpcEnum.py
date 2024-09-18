@@ -98,3 +98,18 @@ def test_omitted_id():
   assert(fields[2].id() == 222)
   assert(fields[3].name() == "f4")
   assert(fields[3].id() == 223)
+
+def test_field_id():
+  e = {
+    "name": "MyEnum1",
+    "fields": [
+      {"name": "f1", "id": 111},
+      {"name": "f2", "id": 222},
+    ]
+    }
+  
+  enum = LrpcEnum(e)
+
+  assert(enum.field_id('f1') == 111)
+  assert(enum.field_id('f2') == 222)
+  assert(enum.field_id('f3') is None)

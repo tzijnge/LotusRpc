@@ -1,4 +1,5 @@
 from lrpc import LrpcVisitor
+from typing import List
 
 class LrpcEnumField(object):
     def __init__(self, raw, index) -> None:
@@ -24,14 +25,14 @@ class LrpcEnum(object):
         visitor.visit_lrpc_enum(self)
 
         for f in self.fields():
-            visitor.visit_lrpc_enum_field(f)
+            visitor.visit_lrpc_enum_field(self, f)
 
-        visitor.visit_lrpc_enum_end()
+        visitor.visit_lrpc_enum_end(self)
 
     def name(self):
         return self.raw['name']
 
-    def fields(self):
+    def fields(self) -> List[LrpcEnumField]:
         all_fields = list()
         index = 0
         for field in self.raw['fields']:
@@ -39,6 +40,13 @@ class LrpcEnum(object):
             index = all_fields[-1].id() + 1
         
         return all_fields
+
+    def field_id(self, name: str):
+        for f in self.fields():
+            if f.name() == name:
+                return f.id()
+
+        return None
 
     def is_external(self):
         return 'external' in self.raw

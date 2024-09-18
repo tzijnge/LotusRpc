@@ -1,5 +1,11 @@
-from lrpc.core import LrpcService, LrpcConstant, LrpcStruct, LrpcEnum
+from typing import Optional
+
 from lrpc import LrpcVisitor
+from lrpc.core import LrpcConstant, LrpcEnum, LrpcService, LrpcStruct
+from lrpc import schema as lrpc_schema
+import jsonschema
+from importlib import resources
+import yaml
 
 class LrpcDef(object):
     def __init__(self, raw) -> None:
@@ -87,12 +93,26 @@ class LrpcDef(object):
 
     def rx_buffer_size(self):
         return self.raw['rx_buffer_size']
-    
+
     def tx_buffer_size(self):
         return self.raw['tx_buffer_size']
 
     def services(self):
         return [LrpcService(s) for s in self.raw['services']]
+
+    def service_by_name(self, name: str) -> Optional[LrpcService]:
+        for s in self.services():
+            if s.name() == name:
+                return s
+
+        return None
+
+    def service_by_id(self, id: int) -> Optional[LrpcService]:
+        for s in self.services():
+            if s.id() == id:
+                return s
+
+        return None
 
     def max_service_id(self):
         service_ids = [s.id() for s in self.services()]
@@ -101,8 +121,22 @@ class LrpcDef(object):
     def structs(self):
         return [LrpcStruct(s) for s in self.raw['structs']]
 
+    def struct(self, name: str) -> Optional[LrpcStruct]:
+        for s in self.structs():
+            if s.name() == name:
+                return s
+
+        return None
+
     def enums(self):
         return [LrpcEnum(s) for s in self.raw['enums']]
+
+    def enum(self, name: str) -> Optional[LrpcEnum]:
+        for s in self.enums():
+            if s.name() == name:
+                return s
+
+        return None
 
     def constants(self):
         return [LrpcConstant(c) for c in self.raw['constants']]
@@ -118,3 +152,23 @@ class LrpcDef(object):
 
     def __base_type_is_enum(self, var):
         return var['type'].strip('@') in self.__enum_names()
+    
+    def load(definition_url: str) -> 'LrpcDef':
+        from lrpc.validation import SemanticAnalyzer
+
+        schema_url = resources.files(lrpc_schema).joinpath('lotusrpc-schema.json')
+
+        with open(definition_url, 'rt') as rpc_def:
+            definition = yaml.safe_load(rpc_def)
+            schema = yaml.safe_load(schema_url.read_text())
+            jsonschema.validate(definition, schema)
+
+            lrpc_def = LrpcDef(definition)
+            sa = SemanticAnalyzer(lrpc_def)
+            sa.analyze()
+
+            assert len(sa.errors) == 0
+            assert len(sa.warnings) == 0
+
+            return lrpc_def
+

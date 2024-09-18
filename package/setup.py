@@ -13,9 +13,12 @@ setup(
    author_email='tzijnge@example.com',
    url="https://github.com/tzijnge/LotusRpc",
    packages=find_packages(),
-   install_requires=['click', 'code-generation', 'pyyaml', 'jsonschema'], #external packages as dependencies
+   package_data={'lrpc.schema': ['lotusrpc-schema.json']},
+   include_package_data=True,
+   install_requires=['click', 'code-generation', 'pyyaml', 'jsonschema', 'pyserial'],
    entry_points = '''
         [console_scripts]
         lotusrpc=lrpc.lotusrpc:generate
+        lrpcc=lrpc.lrpcc:cli
     ''',
 )

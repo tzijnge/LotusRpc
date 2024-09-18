@@ -1,5 +1,5 @@
 from lrpc.core import LrpcDef, LrpcService, LrpcFun
-from lrpc.LrpcVisitor import LrpcVisitor
+from lrpc import LrpcVisitor
 
 class FunctionChecker(LrpcVisitor):
     def __init__(self) -> None:

@@ -1,5 +1,5 @@
 from lrpc.core import LrpcStruct, LrpcService, LrpcConstant, LrpcEnum, LrpcDef
-from lrpc.LrpcVisitor import LrpcVisitor
+from lrpc import LrpcVisitor
 from typing import Set, List
 
 class NamesChecker(LrpcVisitor):

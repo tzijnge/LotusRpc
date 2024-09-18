@@ -1,6 +1,6 @@
 from code_generation.code_generator import CppFile
 from lrpc.core import LrpcFun, LrpcService, LrpcVar
-from lrpc.LrpcVisitor import LrpcVisitor
+from lrpc import LrpcVisitor
 from typing import Set
 from lrpc.codegen.common import lrpc_var_includes
 

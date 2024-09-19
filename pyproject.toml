@@ -1,1 +1,21 @@
 [tool.black]
+
+[tool.mypy]
+# Increase strictness of checks
+disallow_any_decorated = false
+#disallow_any_expr = true
+#disallow_any_generics = true
+#disallow_subclassing_any = true
+disallow_untyped_defs = true
+disallow_untyped_calls = true
+#strict_optional = true
+#warn_no_return = true
+check_untyped_defs = false
+
+# Display statistics after running
+#dump_type_stats = true
+#dump_inference_stats = false
+
+# Ignore errors in 'tests' directory
+#[mypy-tests]
+#ignore_errors = true

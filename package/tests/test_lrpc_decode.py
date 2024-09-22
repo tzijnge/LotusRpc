@@ -6,13 +6,11 @@ import pytest
 from lrpc.client import lrpc_decode
 from lrpc.core import LrpcDef, LrpcVar
 
-definition_file = path.join(
-    path.dirname(path.abspath(__file__)), "test_lrpc_encode_decode.lrpc.yaml"
-)
+definition_file = path.join(path.dirname(path.abspath(__file__)), "test_lrpc_encode_decode.lrpc.yaml")
 lrpc_def = LrpcDef.load(definition_file)
 
 
-def test_decode_uint8_t():
+def test_decode_uint8_t() -> None:
     var = LrpcVar({"name": "v1", "type": "uint8_t"})
 
     assert lrpc_decode(b"\x00", var, lrpc_def) == 0
@@ -25,7 +23,7 @@ def test_decode_uint8_t():
         lrpc_decode(b"", var, lrpc_def)
 
 
-def test_decode_int8_t():
+def test_decode_int8_t() -> None:
     var = LrpcVar({"name": "v1", "type": "int8_t"})
 
     assert lrpc_decode(b"\x00", var, lrpc_def) == 0
@@ -34,14 +32,14 @@ def test_decode_int8_t():
     assert lrpc_decode(b"\x80", var, lrpc_def) == -128
 
 
-def test_decode_uint16_t():
+def test_decode_uint16_t() -> None:
     var = LrpcVar({"name": "v1", "type": "uint16_t"})
 
     assert lrpc_decode(b"\x00\x00", var, lrpc_def) == 0
     assert lrpc_decode(b"\xFF\xFF", var, lrpc_def) == 65535
 
 
-def test_decode_int16_t():
+def test_decode_int16_t() -> None:
     var = LrpcVar({"name": "v1", "type": "int16_t"})
 
     assert lrpc_decode(b"\x00\x00", var, lrpc_def) == 0
@@ -50,14 +48,14 @@ def test_decode_int16_t():
     assert lrpc_decode(b"\x00\x80", var, lrpc_def) == -32768
 
 
-def test_decode_uint32_t():
+def test_decode_uint32_t() -> None:
     var = LrpcVar({"name": "v1", "type": "uint32_t"})
 
     assert lrpc_decode(b"\x00\x00\x00\x00", var, lrpc_def) == 0
     assert lrpc_decode(b"\xFF\xFF\xFF\xFF", var, lrpc_def) == (2**32) - 1
 
 
-def test_decode_int32_t():
+def test_decode_int32_t() -> None:
     var = LrpcVar({"name": "v1", "type": "int32_t"})
 
     assert lrpc_decode(b"\x00\x00\x00\x00", var, lrpc_def) == 0
@@ -66,27 +64,23 @@ def test_decode_int32_t():
     assert lrpc_decode(b"\x00\x00\x00\x80", var, lrpc_def) == -(2**31)
 
 
-def test_decode_uint64_t():
+def test_decode_uint64_t() -> None:
     var = LrpcVar({"name": "v1", "type": "uint64_t"})
 
     assert lrpc_decode(b"\x00\x00\x00\x00\x00\x00\x00\x00", var, lrpc_def) == 0
-    assert (
-        lrpc_decode(b"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF", var, lrpc_def) == (2**64) - 1
-    )
+    assert lrpc_decode(b"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF", var, lrpc_def) == (2**64) - 1
 
 
-def test_decode_int64_t():
+def test_decode_int64_t() -> None:
     var = LrpcVar({"name": "v1", "type": "int64_t"})
 
     assert lrpc_decode(b"\x00\x00\x00\x00\x00\x00\x00\x00", var, lrpc_def) == 0
-    assert (
-        lrpc_decode(b"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x7F", var, lrpc_def) == (2**63) - 1
-    )
+    assert lrpc_decode(b"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x7F", var, lrpc_def) == (2**63) - 1
     assert lrpc_decode(b"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF", var, lrpc_def) == -1
     assert lrpc_decode(b"\x00\x00\x00\x00\x00\x00\x00\x80", var, lrpc_def) == -(2**63)
 
 
-def test_decode_float():
+def test_decode_float() -> None:
     var = LrpcVar({"name": "v1", "type": "float"})
 
     assert lrpc_decode(b"\x00\x00\x00\x00", var, lrpc_def) == 0
@@ -94,14 +88,14 @@ def test_decode_float():
     assert math.isclose(decoded, 123.456, abs_tol=0.00001)
 
 
-def test_decode_double():
+def test_decode_double() -> None:
     var = LrpcVar({"name": "v1", "type": "double"})
 
     assert lrpc_decode(b"\x00\x00\x00\x00\x00\x00\x00\x00", var, lrpc_def) == 0
     assert lrpc_decode(b"\x77\xBE\x9F\x1A\x2F\xDD\x5E\x40", var, lrpc_def) == 123.456
 
 
-def test_decode_bool():
+def test_decode_bool() -> None:
     var = LrpcVar({"name": "v1", "type": "bool"})
 
     assert not lrpc_decode(b"\x00", var, lrpc_def)
@@ -110,7 +104,7 @@ def test_decode_bool():
     assert lrpc_decode(b"\xFF", var, lrpc_def)
 
 
-def test_decode_string():
+def test_decode_string() -> None:
     var = LrpcVar({"name": "v1", "type": "string"})
 
     assert lrpc_decode(b"test123\x00", var, lrpc_def) == "test123"
@@ -124,7 +118,7 @@ def test_decode_string():
     assert lrpc_decode(b"test123\x00test345\x00", var, lrpc_def) == "test123"
 
 
-def test_decode_fixed_size_string():
+def test_decode_fixed_size_string() -> None:
     var = LrpcVar({"name": "v1", "type": "string_10"})
 
     assert lrpc_decode(b"test123\x00\x00\x00\x00", var, lrpc_def) == "test123"
@@ -149,7 +143,7 @@ def test_decode_fixed_size_string():
         lrpc_decode(b"01234567890\x00", var, lrpc_def)
 
 
-def test_decode_array():
+def test_decode_array() -> None:
     var = LrpcVar({"name": "v1", "type": "uint8_t", "count": 4})
 
     assert lrpc_decode(b"\x01\x02\x03\x04", var, lrpc_def) == [1, 2, 3, 4]
@@ -159,7 +153,7 @@ def test_decode_array():
         lrpc_decode(b"\x01\x02\x03", var, lrpc_def)
 
 
-def test_decode_array_of_fixed_size_string():
+def test_decode_array_of_fixed_size_string() -> None:
     var = LrpcVar({"name": "v1", "type": "string_2", "count": 3})
 
     assert lrpc_decode(b"ab\x00cd\x00ef\x00", var, lrpc_def) == ["ab", "cd", "ef"]
@@ -179,7 +173,7 @@ def test_decode_array_of_fixed_size_string():
         lrpc_decode(b"ab\x00", var, lrpc_def)
 
 
-def test_decode_array_of_auto_string():
+def test_decode_array_of_auto_string() -> None:
     var = LrpcVar({"name": "v1", "type": "string", "count": 3})
 
     assert lrpc_decode(b"abcd\x00ef\x00\x00", var, lrpc_def) == ["abcd", "ef", ""]
@@ -198,7 +192,7 @@ def test_decode_array_of_auto_string():
         lrpc_decode(b"ab\x00cd\x00", var, lrpc_def)
 
 
-def test_decode_optional():
+def test_decode_optional() -> None:
     var = LrpcVar({"name": "v1", "type": "uint8_t", "count": "?"})
 
     assert lrpc_decode(b"\x00", var, lrpc_def) is None
@@ -210,7 +204,7 @@ def test_decode_optional():
         lrpc_decode(b"\x01", var, lrpc_def)
 
 
-def test_decode_optional_fixed_size_string():
+def test_decode_optional_fixed_size_string() -> None:
     var = LrpcVar({"name": "v1", "type": "string_2", "count": "?"})
 
     assert lrpc_decode(b"\x00", var, lrpc_def) is None
@@ -223,7 +217,7 @@ def test_decode_optional_fixed_size_string():
         lrpc_decode(b"\x01ab", var, lrpc_def)
 
 
-def test_decode_optional_auto_string():
+def test_decode_optional_auto_string() -> None:
     var = LrpcVar({"name": "v1", "type": "string", "count": "?"})
 
     assert lrpc_decode(b"\x00", var, lrpc_def) is None
@@ -236,7 +230,7 @@ def test_decode_optional_auto_string():
         lrpc_decode(b"\x01ab", var, lrpc_def)
 
 
-def test_decode_struct():
+def test_decode_struct() -> None:
     var = LrpcVar({"name": "v1", "type": "@MyStruct1", "base_type_is_struct": True})
 
     assert lrpc_decode(b"\xD7\x11\x7B\x01", var, lrpc_def) == {
@@ -256,10 +250,8 @@ def test_decode_struct():
         lrpc_decode(b"\xD7\x11\x7B", var, lrpc_def)
 
 
-def test_decode_optional_struct():
-    var = LrpcVar(
-        {"name": "v1", "type": "@MyStruct1", "base_type_is_struct": True, "count": "?"}
-    )
+def test_decode_optional_struct() -> None:
+    var = LrpcVar({"name": "v1", "type": "@MyStruct1", "base_type_is_struct": True, "count": "?"})
 
     assert lrpc_decode(b"\x00", var, lrpc_def) is None
     assert lrpc_decode(b"\x01\xD7\x11\x7B\x01", var, lrpc_def) == {
@@ -269,15 +261,13 @@ def test_decode_optional_struct():
     }
 
 
-def test_decode_nested_struct():
+def test_decode_nested_struct() -> None:
     var = LrpcVar({"name": "v1", "type": "@MyStruct2", "base_type_is_struct": True})
 
-    assert lrpc_decode(b"\xD7\x11\x7B\x01", var, lrpc_def) == {
-        "a": {"b": 123, "a": 4567, "c": True}
-    }
+    assert lrpc_decode(b"\xD7\x11\x7B\x01", var, lrpc_def) == {"a": {"b": 123, "a": 4567, "c": True}}
 
 
-def test_decode_enum():
+def test_decode_enum() -> None:
     var = LrpcVar({"name": "v1", "type": "@MyEnum1", "base_type_is_enum": True})
 
     assert lrpc_decode(b"\x00", var, lrpc_def) == "test1"
@@ -287,19 +277,15 @@ def test_decode_enum():
         lrpc_decode(b"\x22", var, lrpc_def)
 
 
-def test_decode_optional_enum():
-    var = LrpcVar(
-        {"name": "v1", "type": "@MyEnum1", "base_type_is_enum": True, "count": "?"}
-    )
+def test_decode_optional_enum() -> None:
+    var = LrpcVar({"name": "v1", "type": "@MyEnum1", "base_type_is_enum": True, "count": "?"})
 
     assert lrpc_decode(b"\x00", var, lrpc_def) is None
     assert lrpc_decode(b"\x01\x37", var, lrpc_def) == "test2"
 
 
-def test_decode_array_of_struct():
-    var = LrpcVar(
-        {"name": "v1", "type": "@MyStruct2", "base_type_is_struct": True, "count": 2}
-    )
+def test_decode_array_of_struct() -> None:
+    var = LrpcVar({"name": "v1", "type": "@MyStruct2", "base_type_is_struct": True, "count": 2})
 
     decoded = lrpc_decode(b"\xD7\x11\x7B\x01\x11\x22\x33\x00", var, lrpc_def)
 

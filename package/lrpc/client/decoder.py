@@ -1,11 +1,10 @@
 import struct
-from copy import deepcopy
 from typing import Any, List
 
 from lrpc.core import LrpcDef, LrpcVar
 
 
-class LrpcDecoder(object):
+class LrpcDecoder:
     def __init__(self, encoded: bytes, lrpc_def: LrpcDef) -> None:
         self.encoded: bytes = encoded
         self.start: int = 0
@@ -19,7 +18,9 @@ class LrpcDecoder(object):
 
     def __decode_fixed_size_string(self, var: LrpcVar) -> str:
         if len(self.encoded) < (var.string_size() + 1):
-            raise ValueError(f'Wrong string size (including string termination): expected {var.string_size() + 1}, got {len(self.encoded)}')
+            raise ValueError(
+                f"Wrong string size (including string termination): expected {var.string_size() + 1}, got {len(self.encoded)}"
+            )
 
         s = self.__decode_string_from(var.string_size() + 1)
         self.start += var.string_size() + 1
@@ -32,11 +33,11 @@ class LrpcDecoder(object):
 
     def __decode_string_from(self, max_len: int) -> str:
         try:
-            end = self.encoded.index(b'\x00', self.start, self.start + max_len)
+            end = self.encoded.index(b"\x00", self.start, self.start + max_len)
         except Exception as e:
-            raise ValueError(f'String not terminated: {self.encoded!r}') from e
+            raise ValueError(f"String not terminated: {self.encoded!r}") from e
 
-        return self.encoded[self.start : end].decode('utf-8')
+        return self.encoded[self.start : end].decode("utf-8")
 
     def __decode_array_of_strings(self, var: LrpcVar) -> List[str]:
         decoded = []
@@ -52,19 +53,15 @@ class LrpcDecoder(object):
     def __decode_array(self, var: LrpcVar) -> Any:
         decoded = []
         for _ in range(0, var.array_size()):
-            contained_var = deepcopy(var)
-            contained_var.raw['count'] = 1
-            item = self.lrpc_decode(contained_var)
+            item = self.lrpc_decode(var.contained())
             decoded.append(item)
 
         return decoded
 
     def __decode_optional(self, var: LrpcVar) -> Any:
-        has_value = self.__unpack('?')
+        has_value = self.__unpack("?")
         if has_value:
-            contained_var = deepcopy(var)
-            contained_var.raw['count'] = 1
-            return self.lrpc_decode(contained_var)
+            return self.lrpc_decode(var.contained())
 
         return None
 
@@ -73,7 +70,7 @@ class LrpcDecoder(object):
         s = self.lrpc_def.struct(var.base_type())
 
         if not s:
-            raise ValueError(f'Type {var.base_type()} not found in LRPC definition')
+            raise ValueError(f"Type {var.base_type()} not found in LRPC definition")
 
         for field in s.fields():
             decoded_field = self.lrpc_decode(field)
@@ -85,22 +82,20 @@ class LrpcDecoder(object):
         e = self.lrpc_def.enum(var.base_type())
 
         if not e:
-            raise ValueError(f'Type {var.base_type()} not found in LRPC definition')
+            raise ValueError(f"Type {var.base_type()} not found in LRPC definition")
 
         fields = e.fields()
 
-        identifier = self.__unpack('B')
+        identifier = self.__unpack("B")
 
         for f in fields:
             if f.id() == identifier:
                 return f.name()
 
-        raise ValueError(
-            f'Value {identifier} ({hex(identifier)}) is not valid for enum {var.base_type()}'
-        )
+        raise ValueError(f"Value {identifier} ({hex(identifier)}) is not valid for enum {var.base_type()}")
 
     def __unpack(self, pack_format: str) -> Any:
-        pack_format = '<' + pack_format
+        pack_format = "<" + pack_format
         unpacked = struct.unpack_from(pack_format, self.encoded, offset=self.start)
         self.start += struct.calcsize(pack_format)
         return unpacked[0]
@@ -125,6 +120,7 @@ class LrpcDecoder(object):
             return self.__decode_enum(var)
 
         return self.__unpack(var.pack_type())
+
 
 def lrpc_decode(encoded: bytes, var: LrpcVar, lrpc_def: LrpcDef) -> Any:
     return LrpcDecoder(encoded, lrpc_def).lrpc_decode(var)

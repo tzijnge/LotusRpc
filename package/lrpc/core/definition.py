@@ -1,72 +1,86 @@
 from importlib import resources
-from typing import Optional
+from typing import List, TypedDict, NotRequired
 
 import jsonschema
 import yaml
 from lrpc import LrpcVisitor
 from lrpc import schema as lrpc_schema
-from lrpc.core import LrpcConstant, LrpcEnum, LrpcService, LrpcStruct
+from lrpc.core import LrpcConstant, LrpcEnum, LrpcService, LrpcStruct, LrpcVarDict
+from lrpc.core import LrpcStructDict, LrpcServiceDict, LrpcConstantDict, LrpcEnumDict
 
 
-class LrpcDef(object):
-    def __init__(self, raw) -> None:
-        self.raw = raw
-        self.__init_structs()
-        self.__init_enums()
-        self.__init_buffer_sizes()
-        self.__init_namespace()
-        self.__init_service_ids()
-        self.__init_base_types()
-        self.__init_constants()
+class LrpcDefDict(TypedDict):
+    name: str
+    services: List[LrpcServiceDict]
+    namespace: NotRequired[str]
+    rx_buffer_size: NotRequired[int]
+    tx_buffer_size: NotRequired[int]
+    structs: NotRequired[List[LrpcStructDict]]
+    enums: NotRequired[List[LrpcEnumDict]]
+    constants: NotRequired[List[LrpcConstantDict]]
 
-    def __init_base_types(self):
-        for s in self.raw['services']:
-            for f in s['functions']:
-                for p in f.get('params', []):
-                    p['base_type_is_struct'] = self.__base_type_is_struct(p)
-                    p['base_type_is_enum'] = self.__base_type_is_enum(p)
-                for r in f.get('returns', []):
-                    r['base_type_is_struct'] = self.__base_type_is_struct(r)
-                    r['base_type_is_enum'] = self.__base_type_is_enum(r)
 
-        for s in self.raw['structs']:
-            for f in s['fields']:
-                f['base_type_is_struct'] = self.__base_type_is_struct(f)
-                f['base_type_is_enum'] = self.__base_type_is_enum(f)
+class LrpcDef:
 
-    def __init_service_ids(self):
+    def __init__(self, raw: LrpcDefDict) -> None:
+        assert "name" in raw and isinstance(raw["name"], str)
+        assert "services" in raw and isinstance(raw["services"], List)
+
+        struct_names = []
+        if "structs" in raw:
+            struct_names.extend([s["name"] for s in raw["structs"]])
+
+        enum_names = []
+        if "enums" in raw:
+            enum_names.extend([e["name"] for e in raw["enums"]])
+
+        self.__init_base_types(raw, struct_names, enum_names)
+        self.__init_service_ids(raw)
+
+        self.__name = raw["name"]
+        self.__services = [LrpcService(s) for s in raw["services"]]
+        self.__namespace = raw.get("namespace", None)
+        self.__rx_buffer_size = raw.get("rx_buffer_size", 256)
+        self.__tx_buffer_size = raw.get("tx_buffer_size", 256)
+
+        self.__structs = []
+        if "structs" in raw:
+            self.__structs.extend([LrpcStruct(s) for s in raw["structs"]])
+
+        self.__enums = []
+        if "enums" in raw:
+            self.__enums.extend([LrpcEnum(s) for s in raw["enums"]])
+
+        self.__constants = []
+        if "constants" in raw:
+            self.__constants.extend([LrpcConstant(c) for c in raw["constants"]])
+
+    def __init_base_types(self, raw: LrpcDefDict, struct_names: List[str], enum_names: List[str]) -> None:
+        for service in raw["services"]:
+            for function in service["functions"]:
+                for p in function.get("params", []):
+                    p["base_type_is_struct"] = self.__base_type_is_struct(p, struct_names)
+                    p["base_type_is_enum"] = self.__base_type_is_enum(p, enum_names)
+                for r in function.get("returns", []):
+                    r["base_type_is_struct"] = self.__base_type_is_struct(r, struct_names)
+                    r["base_type_is_enum"] = self.__base_type_is_enum(r, enum_names)
+
+        for struct in raw.get("structs", []):
+            for field in struct["fields"]:
+                field["base_type_is_struct"] = self.__base_type_is_struct(field, struct_names)
+                field["base_type_is_enum"] = self.__base_type_is_enum(field, enum_names)
+
+    def __init_service_ids(self, raw: LrpcDefDict) -> None:
         last_service_id = -1
 
-        for s in self.raw['services']:
-            if 'id' in s:
-                last_service_id = s['id']
+        for s in raw["services"]:
+            if "id" in s:
+                last_service_id = s["id"]
             else:
                 last_service_id = last_service_id + 1
-                s['id'] = last_service_id
+                s["id"] = last_service_id
 
-    def __init_namespace(self):
-        if 'namespace' not in self.raw:
-            self.raw['namespace'] = None
-
-    def __init_buffer_sizes(self):
-        if 'tx_buffer_size' not in self.raw:
-            self.raw['tx_buffer_size'] = 256
-        if 'rx_buffer_size' not in self.raw:
-            self.raw['rx_buffer_size'] = 256
-
-    def __init_structs(self):
-        if 'structs' not in self.raw:
-            self.raw['structs'] = list()
-
-    def __init_enums(self):
-        if 'enums' not in self.raw:
-            self.raw['enums'] = list()
-
-    def __init_constants(self):
-        if 'constants' not in self.raw:
-            self.raw['constants'] = list()
-
-    def accept(self, visitor: LrpcVisitor):
+    def accept(self, visitor: LrpcVisitor) -> None:
         visitor.visit_lrpc_def(self)
 
         if len(self.constants()) != 0:
@@ -78,89 +92,91 @@ class LrpcDef(object):
         for e in self.enums():
             e.accept(visitor)
 
-        for s in self.structs():
-            s.accept(visitor)
+        for struct in self.structs():
+            struct.accept(visitor)
 
-        for s in self.services():
-            s.accept(visitor)
+        for service in self.services():
+            service.accept(visitor)
 
         visitor.visit_lrpc_def_end()
 
-    def name(self):
-        return self.raw['name']
+    def name(self) -> str:
+        return self.__name
 
-    def namespace(self):
-        return self.raw['namespace']
+    def namespace(self) -> str | None:
+        return self.__namespace
 
-    def rx_buffer_size(self):
-        return self.raw['rx_buffer_size']
+    def rx_buffer_size(self) -> int:
+        return self.__rx_buffer_size
 
-    def tx_buffer_size(self):
-        return self.raw['tx_buffer_size']
+    def tx_buffer_size(self) -> int:
+        return self.__tx_buffer_size
 
-    def services(self):
-        return [LrpcService(s) for s in self.raw['services']]
+    def services(self) -> List[LrpcService]:
+        return self.__services
 
-    def service_by_name(self, name: str) -> Optional[LrpcService]:
+    def service_by_name(self, name: str) -> LrpcService | None:
         for s in self.services():
             if s.name() == name:
                 return s
 
         return None
 
-    def service_by_id(self, identifier: int) -> Optional[LrpcService]:
+    def service_by_id(self, identifier: int) -> LrpcService | None:
         for s in self.services():
             if s.id() == identifier:
                 return s
 
         return None
 
-    def max_service_id(self):
+    def max_service_id(self) -> int:
         service_ids = [s.id() for s in self.services()]
         return max(service_ids)
 
-    def structs(self):
-        return [LrpcStruct(s) for s in self.raw['structs']]
+    def structs(self) -> List[LrpcStruct]:
+        return self.__structs
 
-    def struct(self, name: str) -> Optional[LrpcStruct]:
+    def struct(self, name: str) -> LrpcStruct | None:
         for s in self.structs():
             if s.name() == name:
                 return s
 
         return None
 
-    def enums(self):
-        return [LrpcEnum(s) for s in self.raw['enums']]
+    def enums(self) -> List[LrpcEnum]:
+        return self.__enums
 
-    def enum(self, name: str) -> Optional[LrpcEnum]:
+    def enum(self, name: str) -> LrpcEnum | None:
         for s in self.enums():
             if s.name() == name:
                 return s
 
         return None
 
-    def constants(self):
-        return [LrpcConstant(c) for c in self.raw['constants']]
+    def constants(self) -> List[LrpcConstant]:
+        return self.__constants
 
-    def __struct_names(self):
-        return [s['name'] for s in self.raw['structs']]
+    def __struct_names(self) -> List[str]:
+        return [s.name() for s in self.structs()]
 
-    def __enum_names(self):
-        return [e['name'] for e in self.raw['enums']]
+    def __enum_names(self) -> List[str]:
+        return [e.name() for e in self.enums()]
 
-    def __base_type_is_struct(self, var):
-        return var['type'].strip('@') in self.__struct_names()
+    @classmethod
+    def __base_type_is_struct(cls, var: LrpcVarDict, struct_names: List[str]) -> bool:
+        return var["type"].strip("@") in struct_names
 
-    def __base_type_is_enum(self, var):
-        return var['type'].strip('@') in self.__enum_names()
+    @classmethod
+    def __base_type_is_enum(cls, var: LrpcVarDict, enum_names: List[str]) -> bool:
+        return var["type"].strip("@") in enum_names
 
     @staticmethod
-    def load(definition_url: str) -> 'LrpcDef':
+    def load(definition_url: str) -> "LrpcDef":
         from lrpc.validation import SemanticAnalyzer
 
-        schema_url = resources.files(lrpc_schema).joinpath('lotusrpc-schema.json')
+        schema_url = resources.files(lrpc_schema).joinpath("lotusrpc-schema.json")
 
-        with open(definition_url, mode='rt', encoding='utf-8') as rpc_def:
+        with open(definition_url, mode="rt", encoding="utf-8") as rpc_def:
             definition = yaml.safe_load(rpc_def)
             schema = yaml.safe_load(schema_url.read_text())
             jsonschema.validate(definition, schema)

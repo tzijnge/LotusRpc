@@ -10,7 +10,7 @@ from lrpc.validation import (
 from lrpc import LrpcVisitor
 
 
-class SemanticAnalyzer(object):
+class SemanticAnalyzer:
     def __init__(self, definition: LrpcDef) -> None:
         self.errors: List[str] = []
         self.warnings: List[str] = []
@@ -48,9 +48,7 @@ class SemanticAnalyzer(object):
     def __check_auto_string_in_struct(self):
         offenders = list()
         for s in self.definition.structs():
-            auto_strings = [
-                (s.name(), f.name()) for f in s.fields() if f.is_auto_string()
-            ]
+            auto_strings = [(s.name(), f.name()) for f in s.fields() if f.is_auto_string()]
             offenders.extend(auto_strings)
 
         if len(offenders) > 0:
@@ -60,9 +58,7 @@ class SemanticAnalyzer(object):
         offenders = list()
         for s in self.__services:
             for f in s.functions():
-                auto_string_params = [
-                    (f.name(), p.name()) for p in f.params() if p.is_auto_string()
-                ]
+                auto_string_params = [(f.name(), p.name()) for p in f.params() if p.is_auto_string()]
                 if len(auto_string_params) > 1:
                     offenders.extend(auto_string_params)
 
@@ -84,11 +80,7 @@ class SemanticAnalyzer(object):
         offenders = list()
         for s in self.__services:
             for f in s.functions():
-                auto_string_arrays = [
-                    (f.name(), p.name())
-                    for p in f.params()
-                    if self.__is_auto_string_array(p)
-                ]
+                auto_string_arrays = [(f.name(), p.name()) for p in f.params() if self.__is_auto_string_array(p)]
                 offenders.extend(auto_string_arrays)
 
         if len(offenders) > 0:
@@ -98,11 +90,7 @@ class SemanticAnalyzer(object):
         offenders = list()
         for s in self.__services:
             for f in s.functions():
-                auto_string_returns = [
-                    (s.name(), f.name(), r.name())
-                    for r in f.returns()
-                    if r.is_auto_string()
-                ]
+                auto_string_returns = [(s.name(), f.name(), r.name()) for r in f.returns() if r.is_auto_string()]
                 offenders.extend(auto_string_returns)
 
         if len(offenders) > 0:

@@ -1,43 +1,87 @@
-from lrpc.core import LrpcVar
+from lrpc.core import LrpcVar, LrpcVarDict
 
-def test_construct_basic():
-    v = { 'name': 'v1', 'type': 'uint8_t' }
+
+def test_construct_basic() -> None:
+    v: LrpcVarDict = {"name": "v1", "type": "uint8_t", "base_type_is_struct": False, "base_type_is_enum": False}
     var = LrpcVar(v)
 
-    assert var.name() == 'v1'
-    assert var.base_type() == 'uint8_t'
-    assert var.base_type_is_integral() == True
+    assert var.name() == "v1"
+    assert var.base_type() == "uint8_t"
+    assert var.base_type_is_integral() is True
 
 
-def test_base_type_is_bool():
-    v = { 'name': 'v1', 'type': 'bool' }
+def test_base_type_is_bool() -> None:
+    v: LrpcVarDict = {"name": "v1", "type": "bool", "base_type_is_struct": False, "base_type_is_enum": False}
     var = LrpcVar(v)
 
-    assert var.base_type() == 'bool'
-    assert var.base_type_is_bool() == True
+    assert var.base_type() == "bool"
+    assert var.base_type_is_bool() is True
 
-def test_base_type_is_float():
-    v1 = { 'name': 'v1', 'type': 'float' }
-    v2 = { 'name': 'v2', 'type': 'double' }
-    
+
+def test_base_type_is_float() -> None:
+    v1: LrpcVarDict = {"name": "v1", "type": "float", "base_type_is_struct": False, "base_type_is_enum": False}
+    v2: LrpcVarDict = {"name": "v2", "type": "double", "base_type_is_struct": False, "base_type_is_enum": False}
+
     var = LrpcVar(v1)
-    assert var.base_type() == 'float'
-    assert var.base_type_is_float() == True
+    assert var.base_type() == "float"
+    assert var.base_type_is_float() is True
 
     var = LrpcVar(v2)
-    assert var.base_type() == 'double'
-    assert var.base_type_is_float() == True
+    assert var.base_type() == "double"
+    assert var.base_type_is_float() is True
 
-def test_base_type_is_string():
-    v1 = { 'name': 'v1', 'type': 'string' }
-    v2 = { 'name': 'v2', 'type': 'string_10', 'count': 3 }
-    
+
+def test_base_type_is_string() -> None:
+    v1: LrpcVarDict = {"name": "v1", "type": "string", "base_type_is_struct": False, "base_type_is_enum": False}
+    v2: LrpcVarDict = {
+        "name": "v2",
+        "type": "string_10",
+        "count": 3,
+        "base_type_is_struct": False,
+        "base_type_is_enum": False,
+    }
+
     var = LrpcVar(v1)
-    assert var.base_type() == 'string'
-    assert var.base_type_is_string() == True
-    assert var.is_array_of_strings() == False
+    assert var.base_type() == "string"
+    assert var.base_type_is_string() is True
+    assert var.is_array_of_strings() is False
 
     var = LrpcVar(v2)
-    assert var.base_type() == 'string_10'
-    assert var.base_type_is_string() == True
-    assert var.is_array_of_strings() == True
+    assert var.base_type() == "string_10"
+    assert var.base_type_is_string() is True
+    assert var.is_array_of_strings() is True
+
+
+def test_contained() -> None:
+    v1: LrpcVarDict = {
+        "name": "v1",
+        "type": "bool",
+        "base_type_is_struct": False,
+        "base_type_is_enum": False,
+    }
+    v2: LrpcVarDict = {
+        "name": "v2",
+        "type": "bool",
+        "count": "?",
+        "base_type_is_struct": False,
+        "base_type_is_enum": False,
+    }
+    v3: LrpcVarDict = {
+        "name": "v3",
+        "type": "bool",
+        "count": 3,
+        "base_type_is_struct": False,
+        "base_type_is_enum": False,
+    }
+
+    var1 = LrpcVar(v1).contained()
+    assert var1.is_array() is False
+    assert var1.array_size() == 1
+
+    var2 = LrpcVar(v2).contained()
+    assert var2.is_array() is False
+    assert var2.array_size() == 1
+
+    var3 = LrpcVar(v3).contained()
+    assert var3.is_array() is False
+    assert var3.array_size() == 1

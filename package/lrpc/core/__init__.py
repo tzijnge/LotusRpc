@@ -1,7 +1,7 @@
-from .var import LrpcVar
-from .enum import LrpcEnum, LrpcEnumField
-from. struct import LrpcStruct
-from .constant import LrpcConstant
-from .function import LrpcFun
-from .service import LrpcService
+from .var import LrpcVar, LrpcVarDict
+from .enum import LrpcEnum, LrpcEnumField, LrpcEnumDict
+from .struct import LrpcStruct, LrpcStructDict
+from .constant import LrpcConstant, LrpcConstantDict
+from .function import LrpcFun, LrpcFunDict
+from .service import LrpcService, LrpcServiceDict
 from .definition import LrpcDef

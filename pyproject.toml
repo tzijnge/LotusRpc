@@ -1,6 +1,18 @@
 [tool.black]
+line-length = 120
+
+[tool.pylint]
+disable = [
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "missing-module-docstring",
+]
+
+[tool.pylint.format]
+max-line-length = 120
 
 [tool.mypy]
+exclude = "external"
 # Increase strictness of checks
 disallow_any_decorated = false
 #disallow_any_expr = true

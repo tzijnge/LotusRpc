@@ -1,15 +1,18 @@
-import pytest
+from importlib import resources
+from typing import List, Tuple
+
 import jsonschema
 import yaml
-from lrpc.validation import SemanticAnalyzer
-from lrpc.core import LrpcDef
 from lrpc import schema as lrpc_schema
-from importlib import resources
+from lrpc.core import LrpcDef
+from lrpc.validation import SemanticAnalyzer
 
-def semantic_errors(rpc_def):
-    url = (resources.files(lrpc_schema) / 'lotusrpc-schema.json')
 
-    with open(url, 'rt') as schema_file:
+def semantic_errors(rpc_def: str) -> Tuple[List[str], List[str]]:
+    url = resources.files(lrpc_schema) / "lotusrpc-schema.json"
+
+    # Not sure how to make type hints work from Traversable to PathLike, hence ignored
+    with open(url, mode="rt", encoding="utf8") as schema_file:  # type: ignore[call-overload]
         definition = yaml.safe_load(rpc_def)
         schema = yaml.safe_load(schema_file)
         jsonschema.validate(definition, schema)
@@ -18,9 +21,9 @@ def semantic_errors(rpc_def):
         sa.analyze()
         return sa.errors, sa.warnings
 
-def test_duplicate_enum_field_names():
-    rpc_def = \
-'''name: "test"
+
+def test_duplicate_enum_field_names() -> None:
+    rpc_def = """name: "test"
 namespace: "a"
 services:
   - name: "a"
@@ -41,16 +44,16 @@ enums:
         id: 0
       - name: "g"
         id: 1
-'''
+"""
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 2
     assert len(warnings) == 2
     assert "Duplicate field name in enum e0: f" in errors
     assert "Duplicate field name in enum e1: g" in errors
 
-def test_duplicate_enum_field_ids():
-    rpc_def = \
-'''name: "test"
+
+def test_duplicate_enum_field_ids() -> None:
+    rpc_def = """name: "test"
 namespace: "a"
 services:
   - name: "a"
@@ -71,7 +74,7 @@ enums:
         id: 222
       - name: "f1"
         id: 222
-'''
+"""
 
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 2
@@ -79,9 +82,9 @@ enums:
     assert "Duplicate field id in enum e0: 111" in errors
     assert "Duplicate field id in enum e1: 222" in errors
 
-def test_duplicate_enum_names():
-    rpc_def = \
-'''name: "test"
+
+def test_duplicate_enum_names() -> None:
+    rpc_def = """name: "test"
 namespace: "a"
 services:
   - name: "a"
@@ -98,16 +101,16 @@ enums:
     fields:
       - name: "f1"
         id: 222
-'''
+"""
 
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
     assert len(warnings) == 1
     assert "Duplicate name: e0" in errors
 
-def test_duplicate_struct_names():
-    rpc_def = \
-'''name: "test"
+
+def test_duplicate_struct_names() -> None:
+    rpc_def = """name: "test"
 namespace: "a"
 services:
   - name: "a"
@@ -124,16 +127,16 @@ structs:
     fields:
       - name: "f1"
         type: bool
-'''
+"""
 
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
     assert len(warnings) == 1
     assert "Duplicate name: s0" in errors
 
-def test_duplicate_names():
-    rpc_def = \
-'''name: "test"
+
+def test_duplicate_names() -> None:
+    rpc_def = """name: "test"
 namespace: "a"
 services:
   - name: "s0"
@@ -158,7 +161,7 @@ constants:
     value: 123
   - name: s2
     value: 123
-'''
+"""
 
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 3
@@ -167,9 +170,9 @@ constants:
     assert "Duplicate name: s1" in errors
     assert "Duplicate name: s2" in errors
 
-def test_duplicate_struct_field_names():
-    rpc_def = \
-'''name: "test"
+
+def test_duplicate_struct_field_names() -> None:
+    rpc_def = """name: "test"
 namespace: "a"
 services:
   - name: "a"
@@ -190,15 +193,15 @@ structs:
         type: bool
       - name: "g"
         type: uint32_t
-'''
+"""
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
     assert len(warnings) == 2
     assert "Duplicate struct field name(s): [('s0', 'f'), ('s1', 'g')]" in errors
 
-def test_duplicate_service_names():
-    rpc_def = \
-'''name: "test"
+
+def test_duplicate_service_names() -> None:
+    rpc_def = """name: "test"
 namespace: "a"
 services:
   - name: "i0"
@@ -211,7 +214,7 @@ services:
     functions:
       - name: "f1"
         id: 1
-'''
+"""
 
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 2
@@ -219,9 +222,9 @@ services:
     assert "Duplicate name: i0" in errors
     assert "Duplicate name: i0ServiceShim" in errors
 
-def test_duplicate_service_ids():
-    rpc_def = \
-'''name: "test"
+
+def test_duplicate_service_ids() -> None:
+    rpc_def = """name: "test"
 namespace: "a"
 services:
   - name: "i0"
@@ -234,16 +237,16 @@ services:
     functions:
       - name: "f1"
         id: 1
-'''
+"""
 
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
     assert len(warnings) == 0
     assert "Duplicate service id: 111" in errors
 
-def test_duplicate_function_ids():
-    rpc_def = \
-'''name: "test"
+
+def test_duplicate_function_ids() -> None:
+    rpc_def = """name: "test"
 namespace: "a"
 services:
   - name: "i0"
@@ -260,7 +263,7 @@ services:
         id: 111
       - name: "f1"
         id: 111
-'''
+"""
 
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 2
@@ -268,9 +271,9 @@ services:
     assert "Duplicate function id in service i0: 111" in errors
     assert "Duplicate function id in service i1: 111" in errors
 
-def test_duplicate_function_names():
-    rpc_def = \
-'''name: "test"
+
+def test_duplicate_function_names() -> None:
+    rpc_def = """name: "test"
 namespace: "a"
 services:
   - name: "i0"
@@ -287,7 +290,7 @@ services:
         id: 111
       - name: "f1"
         id: 222
-'''
+"""
 
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 2
@@ -295,23 +298,26 @@ services:
     assert "Duplicate function name in service i0: f0" in errors
     assert "Duplicate function name in service i1: f1" in errors
 
-def test_invalid_function_name():
-    rpc_def = \
-'''name: "test"
+
+def test_invalid_function_name() -> None:
+    rpc_def = """name: "test"
 services:
   - name: "s0"
     functions:
       - { name: "s0ServiceShim" }
-'''
+"""
 
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
     assert len(warnings) == 0
-    assert 'Invalid function name: s0ServiceShim. This name is incompatible with the generated code for the containing service' in errors
+    assert (
+        "Invalid function name: s0ServiceShim. This name is incompatible with the generated code for the containing service"
+        in errors
+    )
 
-def test_duplicate_server_name():
-    rpc_def = \
-'''name: "server"
+
+def test_duplicate_server_name() -> None:
+    rpc_def = """name: "server"
 services:
   - name: "server"
     functions:
@@ -325,7 +331,7 @@ enums:
 structs:
   - name: server
     fields: [{name: f1, type: bool}]
-'''
+"""
 
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 4
@@ -333,9 +339,8 @@ structs:
     assert errors.count("Duplicate name: server") == 4
 
 
-def test_duplicate_constant_names():
-    rpc_def = \
-'''name: "test"
+def test_duplicate_constant_names() -> None:
+    rpc_def = """name: "test"
 constants:
   - name : c0
     value : 1
@@ -349,7 +354,7 @@ services:
   - name: "s0"
     functions:
       - name: "f0"
-'''
+"""
 
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 2
@@ -357,9 +362,9 @@ services:
     assert "Duplicate name: c0" in errors
     assert "Duplicate name: c1" in errors
 
-def test_undeclared_custom_type():
-    rpc_def = \
-'''name: "test"
+
+def test_undeclared_custom_type() -> None:
+    rpc_def = """name: "test"
 namespace: "a"
 services:
   - name: "i0"
@@ -397,7 +402,7 @@ enums:
     fields:
       - name: "f1"
         id: 0
-'''
+"""
 
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 3
@@ -406,9 +411,9 @@ enums:
     assert "Undeclared custom type: MyType2" in errors
     assert "Undeclared custom type: MyType3" in errors
 
-def test_unused_custom_type():
-    rpc_def = \
-'''name: "test"
+
+def test_unused_custom_type() -> None:
+    rpc_def = """name: "test"
 namespace: "ns"
 services:
   - name: "i0"
@@ -429,7 +434,7 @@ enums:
     fields:
       - name: "f0"
         id: 0
-'''
+"""
 
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 0
@@ -437,9 +442,9 @@ enums:
     assert "Unused custom type: s0" in warnings
     assert "Unused custom type: e0" in warnings
 
-def test_auto_string_not_allowed_in_struct():
-    rpc_def = \
-'''name: "test"
+
+def test_auto_string_not_allowed_in_struct() -> None:
+    rpc_def = """name: "test"
 namespace: "a"
 services:
   - name: "i0"
@@ -456,16 +461,16 @@ structs:
     fields:
       - name: "f1"
         type: "string"
-'''
+"""
 
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
     assert len(warnings) == 2
     assert "Auto string not allowed in struct: [('s0', 'f0'), ('s1', 'f1')]" in errors
 
-def test_only_one_auto_string_param_allowed():
-    rpc_def = \
-'''name: "test"
+
+def test_only_one_auto_string_param_allowed() -> None:
+    rpc_def = """name: "test"
 namespace: "ns"
 services:
   - name: "i0"
@@ -478,16 +483,19 @@ services:
             type: string
           - name: "p1"
             type: "string"
-'''
+"""
 
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
     assert len(warnings) == 0
-    assert "More than one auto string per parameter list or return value list is not allowed: [('f0', 'p0'), ('f0', 'p1')]" in errors
+    assert (
+        "More than one auto string per parameter list or return value list is not allowed: [('f0', 'p0'), ('f0', 'p1')]"
+        in errors
+    )
 
-def test_array_of_auto_strings_is_not_allowed():
-    rpc_def = \
-'''name: "test"
+
+def test_array_of_auto_strings_is_not_allowed() -> None:
+    rpc_def = """name: "test"
 namespace: "ns"
 services:
   - name: "i0"
@@ -499,16 +507,16 @@ services:
           - name: "p0"
             type: string
             count: 10
-'''
+"""
 
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
     assert len(warnings) == 0
     assert "Array of auto strings is not allowed: [('f2', 'p0')]" in errors
 
-def test_auto_string_return_value_is_not_allowed():
-    rpc_def = \
-'''name: "test"
+
+def test_auto_string_return_value_is_not_allowed() -> None:
+    rpc_def = """name: "test"
 namespace: "ns"
 services:
   - name: "s0"
@@ -539,9 +547,12 @@ services:
             type: string
             count: 10
 
-'''
+"""
 
     errors, warnings = semantic_errors(rpc_def)
     assert len(errors) == 1
     assert len(warnings) == 0
-    assert "A function cannot return an auto string: [('s0', 'f0', 'r0'), ('s0', 'f1', 'r0'), ('s0', 'f1', 'r1'), ('s0', 'f2', 'r0'), ('s0', 'f3', 'r0')]" in errors
+    assert (
+        "A function cannot return an auto string: [('s0', 'f0', 'r0'), ('s0', 'f1', 'r0'), ('s0', 'f1', 'r1'), ('s0', 'f2', 'r0'), ('s0', 'f3', 'r0')]"
+        in errors
+    )

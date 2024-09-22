@@ -1,8 +1,8 @@
-name: Reviewdog-MyPy
+name: Reviewdog
 on: [pull_request]
 jobs:
-  mypy:
-    name: runner / mypy
+  Reviewdog:
+    name: Reviewdog
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -15,8 +15,14 @@ jobs:
         uses: tsuyoshicho/action-mypy@v4
         with:
           github_token: ${{ secrets.github_token }}
-          # Change reviewdog reporter if you need [github-pr-check,github-check,github-pr-review].
           reporter: github-pr-review
-          # Change reporter level if you need.
-          # GitHub Status Check won't become failure with warning.
-          level: warning
+          level: error
+          fail_on_error: true
+      - name: Run PyLint
+        uses: dciborow/action-pylint@0.1.0
+        with:
+          github_token: ${{ secrets.github_token }}
+          reporter: github-pr-review
+          level: error
+          glob_pattern: "package"
+          fail_on_error: true

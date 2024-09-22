@@ -1,23 +1,25 @@
 """LRPC client CLI"""
 
-from lrpc.core.definition import LrpcDef
-from lrpc.client import ClientCliVisitor, LrpcClient
-import serial
+import os
 import sys
 from glob import glob
-import yaml
 from os import path
-import os
+from typing import Callable
+
 import click
+import serial
+import yaml
+from lrpc.client import ClientCliVisitor, LrpcClient
+from lrpc.core.definition import LrpcDef
 
 LRPCC_CONFIG_ENV_VAR = "LRPCC_CONFIG"
 LRPCC_CONFIG_YAML = "lrpcc.config.yaml"
 DEFINITION_URL = "definition_url"
 TRANSPORT_TYPE = "transport_type"
-TRANSPORT_PARAMS = "transport__params"
+TRANSPORT_PARAMS = "transport_params"
 
 
-def __load_config():
+def __load_config() -> dict | None:
     configs = glob(f"**/{LRPCC_CONFIG_YAML}", recursive=True)
     if len(configs) == 0:
         if LRPCC_CONFIG_ENV_VAR in os.environ:
@@ -27,7 +29,7 @@ def __load_config():
 
     config_url = path.abspath(configs[0])
 
-    with open(config_url, "rt") as config_file:
+    with open(config_url, mode="rt", encoding="utf-8") as config_file:
         config = yaml.safe_load(config_file)
 
     if DEFINITION_URL not in config:
@@ -43,15 +45,13 @@ def __load_config():
         return None
 
     if not path.isabs(config[DEFINITION_URL]):
-        config[DEFINITION_URL] = path.join(
-            path.dirname(config_url), config[DEFINITION_URL]
-        )
+        config[DEFINITION_URL] = path.join(path.dirname(config_url), config[DEFINITION_URL])
 
     return config
 
 
 @click.group()
-def run_lrpcc_config_creator():
+def run_lrpcc_config_creator() -> None:
     """
     No or invalid config file found. lrpcc needs a configuration file
     named lrpcc.config.yaml. See https://github.com/tzijnge/LotusRpc for
@@ -63,7 +63,6 @@ def run_lrpcc_config_creator():
 
     Use the CREATE command to create a new configuration file template
     """
-    pass
 
 
 @run_lrpcc_config_creator.command()
@@ -81,7 +80,7 @@ def run_lrpcc_config_creator():
     required=True,
     help="lrpcc transport type",
 )
-def create(definition, transport_type: str):
+def create(definition_url: str, transport_type: str) -> None:
     """Create a new lrpcc configuration file template"""
     transport_params = {}
 
@@ -90,32 +89,31 @@ def create(definition, transport_type: str):
         transport_params["baudrate"] = "<BAUDRATE>"
 
     lrpcc_config = {
-        DEFINITION_URL: definition,
+        DEFINITION_URL: definition_url,
         TRANSPORT_TYPE: transport_type,
         TRANSPORT_PARAMS: transport_params,
     }
-    with open(LRPCC_CONFIG_YAML, "wt") as lrpcc_config_file:
+    with open(LRPCC_CONFIG_YAML, mode="wt", encoding="utf-8") as lrpcc_config_file:
         yaml.safe_dump(lrpcc_config, lrpcc_config_file)
 
     print(f"Created file {LRPCC_CONFIG_YAML}")
 
 
 class Lrpcc:
-    def __init__(self, config) -> None:
+    def __init__(self, config: dict) -> None:
         self.lrpc_def: LrpcDef = LrpcDef.load(config[DEFINITION_URL])
         self.client = LrpcClient(config[DEFINITION_URL])
         self.transport_type: str = config[TRANSPORT_TYPE]
         self.transport_params: dict = config[TRANSPORT_PARAMS]
-        self.__communicate: callable = None
 
         if self.transport_type == "serial":
-            self.__communicate: callable = self.__communicate_serial
+            self.__communicate: Callable = self.__communicate_serial
         else:
             print(f"Unsupported transport type: {self.transport_type}")
             sys.exit(1)
 
     def __communicate_serial(self, encoded: bytes):
-        with serial.Serial(**self.config[TRANSPORT_PARAMS]) as transport:
+        with serial.Serial(**self.transport_params) as transport:
             transport.write(encoded)
             while True:
                 received = transport.read(1)
@@ -127,18 +125,18 @@ class Lrpcc:
                 if response is not None:
                     return response
 
-    def __command_handler(self, service_name: str, function_name: str, **kwargs):
+    def __command_handler(self, service_name: str, function_name: str, **kwargs) -> None:
         encoded = self.client.encode(service_name, function_name, **kwargs)
         response = self.__communicate(encoded)
         print(response)
 
-    def run(self):
+    def run(self) -> None:
         cli = ClientCliVisitor(self.__command_handler)
         self.lrpc_def.accept(cli)
         cli.root()
 
 
-def run_cli():
+def run_cli() -> None:
     config = __load_config()
 
     if config:

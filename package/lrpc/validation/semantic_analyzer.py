@@ -1,4 +1,4 @@
-from typing import List, Any
+from typing import Any
 from lrpc.core import LrpcDef
 from lrpc.validation import (
     ServiceChecker,
@@ -8,15 +8,16 @@ from lrpc.validation import (
     CustomTypesChecker,
 )
 from lrpc import LrpcVisitor
+from lrpc.core import LrpcVar
 
 
 class SemanticAnalyzer:
     def __init__(self, definition: LrpcDef) -> None:
-        self.errors: List[str] = []
-        self.warnings: List[str] = []
+        self.errors: list[str] = []
+        self.warnings: list[str] = []
         self.definition = definition
         self.__services = definition.services()
-        self.checkers: List[LrpcVisitor] = [
+        self.checkers: list[LrpcVisitor] = [
             ServiceChecker(),
             FunctionChecker(),
             EnumChecker(),
@@ -24,9 +25,9 @@ class SemanticAnalyzer:
             CustomTypesChecker(),
         ]
 
-    def __duplicates(self, input_list: List[Any]):
-        unique: List[str] = []
-        duplicates: List[str] = []
+    def __duplicates(self, input_list: list[Any]) -> list[str]:
+        unique: list[str] = []
+        duplicates: list[str] = []
 
         for n in input_list:
             if n in unique:
@@ -36,7 +37,7 @@ class SemanticAnalyzer:
 
         return duplicates
 
-    def __check_duplicate_struct_field_names(self):
+    def __check_duplicate_struct_field_names(self) -> None:
         duplicate_names = []
         for s in self.definition.structs():
             names = [(s.name(), field.name()) for field in s.fields()]
@@ -45,7 +46,7 @@ class SemanticAnalyzer:
         if len(duplicate_names) > 0:
             self.errors.append(f"Duplicate struct field name(s): {duplicate_names}")
 
-    def __check_auto_string_in_struct(self):
+    def __check_auto_string_in_struct(self) -> None:
         offenders = list()
         for s in self.definition.structs():
             auto_strings = [(s.name(), f.name()) for f in s.fields() if f.is_auto_string()]
@@ -54,7 +55,7 @@ class SemanticAnalyzer:
         if len(offenders) > 0:
             self.errors.append(f"Auto string not allowed in struct: {offenders}")
 
-    def __check_multiple_auto_strings_in_param_list_or_return_list(self):
+    def __check_multiple_auto_strings_in_param_list_or_return_list(self) -> None:
         offenders = list()
         for s in self.__services:
             for f in s.functions():
@@ -67,7 +68,7 @@ class SemanticAnalyzer:
                 f"More than one auto string per parameter list or return value list is not allowed: {offenders}"
             )
 
-    def __is_auto_string_array(self, p):
+    def __is_auto_string_array(self, p: LrpcVar) -> bool:
         if not p.is_auto_string():
             return False
 
@@ -76,8 +77,8 @@ class SemanticAnalyzer:
 
         return p.array_size() > 1
 
-    def __check_array_of_auto_strings(self):
-        offenders = list()
+    def __check_array_of_auto_strings(self) -> None:
+        offenders = []
         for s in self.__services:
             for f in s.functions():
                 auto_string_arrays = [(f.name(), p.name()) for p in f.params() if self.__is_auto_string_array(p)]
@@ -86,7 +87,7 @@ class SemanticAnalyzer:
         if len(offenders) > 0:
             self.errors.append(f"Array of auto strings is not allowed: {offenders}")
 
-    def __check_return_auto_string(self):
+    def __check_return_auto_string(self) -> None:
         offenders = list()
         for s in self.__services:
             for f in s.functions():

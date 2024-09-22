@@ -1,21 +1,19 @@
-from typing import List, Set
-
 from lrpc.core import LrpcDef, LrpcService
 from lrpc import LrpcVisitor
 
 
 class ServiceChecker(LrpcVisitor):
     def __init__(self) -> None:
-        self.errors: List[str] = []
-        self.warnings: List[str] = []
-        self.service_ids: Set[str] = set()
+        self.errors: list[str] = []
+        self.warnings: list[str] = []
+        self.service_ids: set[int] = set()
 
-    def visit_lrpc_def(self, lrpc_def: LrpcDef):
+    def visit_lrpc_def(self, _: LrpcDef) -> None:
         self.errors.clear()
         self.warnings.clear()
         self.service_ids.clear()
 
-    def visit_lrpc_service(self, service: LrpcService):
+    def visit_lrpc_service(self, service: LrpcService) -> None:
         service_id = service.id()
 
         if service_id in self.service_ids:

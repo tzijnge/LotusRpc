@@ -1,4 +1,5 @@
-from typing import List, TypedDict, NotRequired
+from typing import List, TypedDict
+from typing_extensions import NotRequired
 
 from lrpc import LrpcVisitor
 

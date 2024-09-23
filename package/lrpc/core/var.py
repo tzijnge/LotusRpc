@@ -1,4 +1,6 @@
-from typing import Dict, TypedDict, NotRequired, Literal, Self
+from typing import Dict, TypedDict, Literal, Self
+from typing_extensions import NotRequired
+
 from copy import deepcopy
 
 PACK_TYPES: Dict[str, str] = {

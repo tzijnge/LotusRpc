@@ -5,7 +5,7 @@ from lrpc import LrpcVisitor
 from lrpc.core import LrpcFun, LrpcVar, LrpcEnum, LrpcEnumField, LrpcConstant, LrpcDef, LrpcService, LrpcStruct
 
 
-def in_color(t: Union[str, int], c: str):
+def in_color(t: Union[str, int], c: str) -> str:
     return f"<color:{c}>{t}</color>"
 
 
@@ -98,7 +98,7 @@ class PumlFile:
     def icon(self, i: str) -> None:
         self.write(f"<&{i}>")
 
-    def legend(self, items, size: int) -> None:
+    def legend(self, items: list[tuple[str, str, str]], size: int) -> None:
         self.write("legend left\n")
 
         for color, icon, text in items:
@@ -185,7 +185,7 @@ class PlantUmlVisitor(LrpcVisitor):
         self.constants: list[LrpcConstant] = []
         self.const_items_max = 10
 
-    def visit_lrpc_def(self, lrpc_def: LrpcDef):
+    def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
         self.puml = PumlFile(f"{self.output}/{lrpc_def.name()}.puml")
 
         self.puml.block(lrpc_def.name(), "Yellow", level=1)
@@ -194,30 +194,30 @@ class PlantUmlVisitor(LrpcVisitor):
         self.puml.list_item(f"TX Buffer size: {lrpc_def.tx_buffer_size()}", level=0)
         self.puml.list_end()
 
-    def visit_lrpc_def_end(self):
+    def visit_lrpc_def_end(self) -> None:
         self.puml.write("\n")
 
         legend_items = [
-            ["Yellow", "medical-cross", "Server"],
-            ["PeachPuff", "medical-cross", "Services"],
-            ["Blue", "medical-cross", "Structs"],
-            ["PaleGreen", "medical-cross", "Enums"],
-            ["Pink", "medical-cross", "Constants"],
-            ["Black", "external-link", "External"],
-            ["Black", "transfer", "Two-way function"],
+            ("Yellow", "medical-cross", "Server"),
+            ("PeachPuff", "medical-cross", "Services"),
+            ("Blue", "medical-cross", "Structs"),
+            ("PaleGreen", "medical-cross", "Enums"),
+            ("Pink", "medical-cross", "Constants"),
+            ("Black", "external-link", "External"),
+            ("Black", "transfer", "Two-way function"),
         ]
         self.puml.legend(legend_items, 20)
 
         self.puml.dump_to_file()
 
-    def visit_lrpc_constants(self):
+    def visit_lrpc_constants(self) -> None:
         self.puml.block("Constants", "Pink", 2)
         self.constants = list()
 
-    def visit_lrpc_constant(self, constant: LrpcConstant):
+    def visit_lrpc_constant(self, constant: LrpcConstant) -> None:
         self.constants.append(constant)
 
-    def visit_lrpc_constants_end(self):
+    def visit_lrpc_constants_end(self) -> None:
         const_strings = [const_string(c) for c in self.constants[0 : self.const_items_max]]
         if len(self.constants) > self.const_items_max:
             const_strings.append("...")
@@ -227,11 +227,11 @@ class PlantUmlVisitor(LrpcVisitor):
 
         self.puml.list_end()
 
-    def visit_lrpc_enum(self, enum: LrpcEnum):
+    def visit_lrpc_enum(self, enum: LrpcEnum) -> None:
         icon = "external-link" if enum.is_external() else None
         self.puml.block(enum.name(), "PaleGreen", self.enum_indent, icon)
 
-    def visit_lrpc_enum_end(self, enum: LrpcEnum):
+    def visit_lrpc_enum_end(self, enum: LrpcEnum) -> None:
         enum_field_strings = [enum_field_string(ef) for ef in self.enum_fields[0 : self.enum_fields_max]]
         if len(self.enum_fields) > self.enum_fields_max:
             enum_field_strings.append("...")
@@ -245,37 +245,37 @@ class PlantUmlVisitor(LrpcVisitor):
         if self.enum_indent > self.enum_indent_max:
             self.enum_indent = 2
 
-    def visit_lrpc_enum_field(self, enum: LrpcEnum, field: LrpcEnumField):
+    def visit_lrpc_enum_field(self, enum: LrpcEnum, field: LrpcEnumField) -> None:
         self.enum_fields.append(field)
 
-    def visit_lrpc_function(self, function: LrpcFun):
+    def visit_lrpc_function(self, function: LrpcFun) -> None:
         self.fsb = FunctionStringBuilder(self.max_function_id)
         self.fsb.add_function(function)
 
-    def visit_lrpc_function_end(self):
+    def visit_lrpc_function_end(self) -> None:
         self.puml.write("***_ ")
         self.puml.function_string(self.fsb)
         self.puml.write("\n")
 
-    def visit_lrpc_function_param(self, param: LrpcVar):
+    def visit_lrpc_function_param(self, param: LrpcVar) -> None:
         self.fsb.add_param(param)
 
-    def visit_lrpc_function_return(self, ret: LrpcVar):
+    def visit_lrpc_function_return(self, ret: LrpcVar) -> None:
         self.fsb.add_return(ret)
 
-    def visit_lrpc_service(self, service: LrpcService):
+    def visit_lrpc_service(self, service: LrpcService) -> None:
         self.puml.block(service.name(), "PeachPuff", 2)
         self.puml.list_item(f"ID: {service.id()}", level=0)
         self.puml.list_end()
 
         self.max_function_id = max([f.id() for f in service.functions()])
 
-    def visit_lrpc_struct(self, struct: LrpcStruct):
+    def visit_lrpc_struct(self, struct: LrpcStruct) -> None:
         self.struct_fields = list()
         icon = "external-link" if struct.is_external() else None
         self.puml.block(struct.name(), "lightblue", self.struct_indent, icon)
 
-    def visit_lrpc_struct_end(self):
+    def visit_lrpc_struct_end(self) -> None:
         struct_field_strings = [var_string(sf) for sf in self.struct_fields[0 : self.struct_fields_max]]
         if len(self.struct_fields) > self.struct_fields_max:
             struct_field_strings.append("...")
@@ -289,5 +289,5 @@ class PlantUmlVisitor(LrpcVisitor):
         if self.struct_indent > self.struct_indent_max:
             self.struct_indent = 2
 
-    def visit_lrpc_struct_field(self, field: LrpcVar):
+    def visit_lrpc_struct_field(self, field: LrpcVar) -> None:
         self.struct_fields.append(field)

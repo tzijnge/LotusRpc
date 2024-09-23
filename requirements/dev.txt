@@ -4,4 +4,3 @@ types-pyyaml
 pyserial
 types-pyserial
 black
-typing_extensions

@@ -2,3 +2,4 @@ code-generation
 pyyaml
 jsonschema
 click
+typing_extensions

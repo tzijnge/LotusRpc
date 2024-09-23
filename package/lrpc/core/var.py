@@ -1,4 +1,4 @@
-from typing import Dict, TypedDict, Literal
+from typing import Dict, TypedDict, Literal, Union
 from typing_extensions import NotRequired
 
 from copy import deepcopy
@@ -21,7 +21,7 @@ PACK_TYPES: Dict[str, str] = {
 class LrpcVarDict(TypedDict):
     name: str
     type: str
-    count: NotRequired[int | Literal["?"]]
+    count: NotRequired[Union[int, Literal["?"]]]
     base_type_is_struct: bool
     base_type_is_enum: bool
 

@@ -1,9 +1,9 @@
-from typing import Dict, TypedDict, Literal, Union
+from typing import TypedDict, Literal, Union
 from typing_extensions import NotRequired
 
 from copy import deepcopy
 
-PACK_TYPES: Dict[str, str] = {
+PACK_TYPES: dict[str, str] = {
     "uint8_t": "B",
     "int8_t": "b",
     "uint16_t": "H",

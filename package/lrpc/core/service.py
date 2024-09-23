@@ -1,4 +1,4 @@
-from typing import List, Optional, TypedDict
+from typing import Optional, TypedDict
 
 from lrpc import LrpcVisitor
 from lrpc.core import LrpcFun, LrpcFunDict
@@ -7,14 +7,14 @@ from lrpc.core import LrpcFun, LrpcFunDict
 class LrpcServiceDict(TypedDict):
     name: str
     id: int
-    functions: List[LrpcFunDict]
+    functions: list[LrpcFunDict]
 
 
 class LrpcService:
     def __init__(self, raw: LrpcServiceDict) -> None:
         assert "name" in raw and isinstance(raw["name"], str)
         assert "id" in raw and isinstance(raw["id"], int)
-        assert "functions" in raw and isinstance(raw["functions"], List)
+        assert "functions" in raw and isinstance(raw["functions"], list)
 
         self.__init_functions_ids(raw["functions"])
 
@@ -22,7 +22,7 @@ class LrpcService:
         self.__id = raw["id"]
         self.__functions = [LrpcFun(f) for f in raw["functions"]]
 
-    def __init_functions_ids(self, functions: List[LrpcFunDict]) -> None:
+    def __init_functions_ids(self, functions: list[LrpcFunDict]) -> None:
         last_function_id = -1
 
         for f in functions:
@@ -44,7 +44,7 @@ class LrpcService:
     def id(self) -> int:
         return self.__id
 
-    def functions(self) -> List[LrpcFun]:
+    def functions(self) -> list[LrpcFun]:
         return self.__functions
 
     def function_by_name(self, name: str) -> Optional[LrpcFun]:

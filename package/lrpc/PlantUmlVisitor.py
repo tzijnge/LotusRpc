@@ -1,4 +1,4 @@
-from typing import List, Optional, Union
+from typing import Optional, Union
 from contextlib import contextmanager
 
 from lrpc import LrpcVisitor
@@ -11,8 +11,8 @@ def in_color(t: Union[str, int], c: str):
 
 class FunctionStringBuilder:
     def __init__(self, max_function_id: int) -> None:
-        self.param_strings: List[str] = []
-        self.return_strings: List[str] = []
+        self.param_strings: list[str] = []
+        self.return_strings: list[str] = []
         self.function_name: str = ""
         self.function_id: str = ""
         self.id_width: int = len(str(max_function_id))
@@ -172,17 +172,17 @@ class PlantUmlVisitor(LrpcVisitor):
         self.puml: PumlFile
         self.max_function_id = 0
 
-        self.enum_fields: List[LrpcEnumField] = []
+        self.enum_fields: list[LrpcEnumField] = []
         self.enum_indent = 2
         self.enum_indent_max = 7
         self.enum_fields_max = 10
         self.struct_indent = 2
 
         self.struct_indent_max = 7
-        self.struct_fields: List[LrpcVar] = []
+        self.struct_fields: list[LrpcVar] = []
         self.struct_fields_max = 10
 
-        self.constants: List[LrpcConstant] = []
+        self.constants: list[LrpcConstant] = []
         self.const_items_max = 10
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef):

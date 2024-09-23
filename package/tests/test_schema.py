@@ -1,5 +1,4 @@
 from importlib import resources
-from typing import List, Tuple
 
 import jsonschema
 import yaml
@@ -8,7 +7,7 @@ from lrpc.core import LrpcDef
 from lrpc.validation import SemanticAnalyzer
 
 
-def semantic_errors(rpc_def: str) -> Tuple[List[str], List[str]]:
+def semantic_errors(rpc_def: str) -> tuple[list[str], list[str]]:
     url = resources.files(lrpc_schema) / "lotusrpc-schema.json"
 
     # Not sure how to make type hints work from Traversable to PathLike, hence ignored

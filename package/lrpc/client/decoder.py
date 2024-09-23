@@ -1,5 +1,5 @@
 import struct
-from typing import Any, List
+from typing import Any
 
 from lrpc.core import LrpcDef, LrpcVar
 
@@ -39,7 +39,7 @@ class LrpcDecoder:
 
         return self.encoded[self.start : end].decode("utf-8")
 
-    def __decode_array_of_strings(self, var: LrpcVar) -> List[str]:
+    def __decode_array_of_strings(self, var: LrpcVar) -> list[str]:
         decoded = []
         if var.is_auto_string():
             for _ in range(0, var.array_size()):

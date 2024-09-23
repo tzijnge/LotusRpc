@@ -1,5 +1,5 @@
 import struct
-from typing import Any, Optional, List
+from typing import Any, Optional
 
 from lrpc.core import LrpcDef, LrpcVar
 
@@ -34,7 +34,7 @@ def __encode_struct(value: Any, var: LrpcVar, lrpc_def: Optional[LrpcDef]) -> by
     return encoded
 
 
-def __encode_array(value: List[Any], var: LrpcVar, lrpc_def: Optional[LrpcDef]) -> bytes:
+def __encode_array(value: list[Any], var: LrpcVar, lrpc_def: Optional[LrpcDef]) -> bytes:
     encoded = b""
     for i in range(0, var.array_size()):
         item = lrpc_encode(value[i], var.contained(), lrpc_def)

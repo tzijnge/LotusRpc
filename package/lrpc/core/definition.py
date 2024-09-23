@@ -1,5 +1,5 @@
 from importlib import resources
-from typing import List, Optional, TypedDict
+from typing import Optional, TypedDict
 from typing_extensions import NotRequired
 
 import jsonschema
@@ -12,20 +12,20 @@ from lrpc.core import LrpcStructDict, LrpcServiceDict, LrpcConstantDict, LrpcEnu
 
 class LrpcDefDict(TypedDict):
     name: str
-    services: List[LrpcServiceDict]
+    services: list[LrpcServiceDict]
     namespace: NotRequired[str]
     rx_buffer_size: NotRequired[int]
     tx_buffer_size: NotRequired[int]
-    structs: NotRequired[List[LrpcStructDict]]
-    enums: NotRequired[List[LrpcEnumDict]]
-    constants: NotRequired[List[LrpcConstantDict]]
+    structs: NotRequired[list[LrpcStructDict]]
+    enums: NotRequired[list[LrpcEnumDict]]
+    constants: NotRequired[list[LrpcConstantDict]]
 
 
 class LrpcDef:
 
     def __init__(self, raw: LrpcDefDict) -> None:
         assert "name" in raw and isinstance(raw["name"], str)
-        assert "services" in raw and isinstance(raw["services"], List)
+        assert "services" in raw and isinstance(raw["services"], list)
 
         struct_names = []
         if "structs" in raw:
@@ -56,7 +56,7 @@ class LrpcDef:
         if "constants" in raw:
             self.__constants.extend([LrpcConstant(c) for c in raw["constants"]])
 
-    def __init_base_types(self, raw: LrpcDefDict, struct_names: List[str], enum_names: List[str]) -> None:
+    def __init_base_types(self, raw: LrpcDefDict, struct_names: list[str], enum_names: list[str]) -> None:
         for service in raw["services"]:
             for function in service["functions"]:
                 for p in function.get("params", []):
@@ -113,7 +113,7 @@ class LrpcDef:
     def tx_buffer_size(self) -> int:
         return self.__tx_buffer_size
 
-    def services(self) -> List[LrpcService]:
+    def services(self) -> list[LrpcService]:
         return self.__services
 
     def service_by_name(self, name: str) -> Optional[LrpcService]:
@@ -134,7 +134,7 @@ class LrpcDef:
         service_ids = [s.id() for s in self.services()]
         return max(service_ids)
 
-    def structs(self) -> List[LrpcStruct]:
+    def structs(self) -> list[LrpcStruct]:
         return self.__structs
 
     def struct(self, name: str) -> Optional[LrpcStruct]:
@@ -144,7 +144,7 @@ class LrpcDef:
 
         return None
 
-    def enums(self) -> List[LrpcEnum]:
+    def enums(self) -> list[LrpcEnum]:
         return self.__enums
 
     def enum(self, name: str) -> Optional[LrpcEnum]:
@@ -154,21 +154,21 @@ class LrpcDef:
 
         return None
 
-    def constants(self) -> List[LrpcConstant]:
+    def constants(self) -> list[LrpcConstant]:
         return self.__constants
 
-    def __struct_names(self) -> List[str]:
+    def __struct_names(self) -> list[str]:
         return [s.name() for s in self.structs()]
 
-    def __enum_names(self) -> List[str]:
+    def __enum_names(self) -> list[str]:
         return [e.name() for e in self.enums()]
 
     @classmethod
-    def __base_type_is_struct(cls, var: LrpcVarDict, struct_names: List[str]) -> bool:
+    def __base_type_is_struct(cls, var: LrpcVarDict, struct_names: list[str]) -> bool:
         return var["type"].strip("@") in struct_names
 
     @classmethod
-    def __base_type_is_enum(cls, var: LrpcVarDict, enum_names: List[str]) -> bool:
+    def __base_type_is_enum(cls, var: LrpcVarDict, enum_names: list[str]) -> bool:
         return var["type"].strip("@") in enum_names
 
     @staticmethod

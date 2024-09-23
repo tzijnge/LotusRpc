@@ -1,4 +1,4 @@
-from typing import List, Optional, TypedDict, Union
+from typing import Optional, TypedDict, Union
 from typing_extensions import NotRequired
 
 from lrpc import LrpcVisitor
@@ -30,7 +30,7 @@ class LrpcEnumField:
 
 class LrpcEnumDict(TypedDict):
     name: str
-    fields: List[Union[LrpcEnumFieldDict, str]]
+    fields: list[Union[LrpcEnumFieldDict, str]]
     external: NotRequired[str]
     external_namespace: NotRequired[str]
 
@@ -39,7 +39,7 @@ class LrpcEnum:
 
     def __init__(self, raw: LrpcEnumDict) -> None:
         assert "name" in raw and isinstance(raw["name"], str)
-        assert "fields" in raw and isinstance(raw["fields"], List)
+        assert "fields" in raw and isinstance(raw["fields"], list)
 
         self.__name = raw["name"]
         self.__fields = raw["fields"]
@@ -57,7 +57,7 @@ class LrpcEnum:
     def name(self) -> str:
         return self.__name
 
-    def fields(self) -> List[LrpcEnumField]:
+    def fields(self) -> list[LrpcEnumField]:
         all_fields = []
         index = 0
         for field in self.__fields:

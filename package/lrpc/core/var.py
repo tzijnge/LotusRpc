@@ -1,4 +1,4 @@
-from typing import Dict, TypedDict, Literal, Self
+from typing import Dict, TypedDict, Literal
 from typing_extensions import NotRequired
 
 from copy import deepcopy
@@ -203,8 +203,8 @@ class LrpcVar:
     def pack_type(self) -> str:
         return PACK_TYPES[self.base_type()]
 
-    def contained(self) -> Self:
-        contained_item: Self = deepcopy(self)
+    def contained(self) -> "LrpcVar":
+        contained_item = deepcopy(self)
         contained_item.__is_optional = False
         contained_item.__count = 1
         return contained_item

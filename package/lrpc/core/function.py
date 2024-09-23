@@ -1,4 +1,4 @@
-from typing import List, TypedDict
+from typing import List, Optional, TypedDict
 from typing_extensions import NotRequired
 
 from lrpc import LrpcVisitor
@@ -46,7 +46,7 @@ class LrpcFun:
     def params(self) -> List[LrpcVar]:
         return self.__params
 
-    def param(self, name: str) -> LrpcVar | None:
+    def param(self, name: str) -> Optional[LrpcVar]:
         for p in self.params():
             if p.name() == name:
                 return p
@@ -56,7 +56,7 @@ class LrpcFun:
     def returns(self) -> List[LrpcVar]:
         return self.__returns
 
-    def ret(self, name: str) -> LrpcVar | None:
+    def ret(self, name: str) -> Optional[LrpcVar]:
         for r in self.returns():
             if r.name() == name:
                 return r

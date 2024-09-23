@@ -1,4 +1,4 @@
-from typing import List, TypedDict
+from typing import List, Optional, TypedDict, Union
 from typing_extensions import NotRequired
 
 from lrpc import LrpcVisitor
@@ -30,7 +30,7 @@ class LrpcEnumField:
 
 class LrpcEnumDict(TypedDict):
     name: str
-    fields: List[LrpcEnumFieldDict | str]
+    fields: List[Union[LrpcEnumFieldDict, str]]
     external: NotRequired[str]
     external_namespace: NotRequired[str]
 
@@ -72,7 +72,7 @@ class LrpcEnum:
 
         return all_fields
 
-    def field_id(self, name: str) -> int | None:
+    def field_id(self, name: str) -> Optional[int]:
         for f in self.fields():
             if f.name() == name:
                 return f.id()
@@ -82,8 +82,8 @@ class LrpcEnum:
     def is_external(self) -> bool:
         return self.__external is not None
 
-    def external_file(self) -> str | None:
+    def external_file(self) -> Optional[str]:
         return self.__external
 
-    def external_namespace(self) -> str | None:
+    def external_namespace(self) -> Optional[str]:
         return self.__external_namespace

@@ -4,7 +4,7 @@ import os
 import sys
 from glob import glob
 from os import path
-from typing import Callable
+from typing import Callable, Optional
 
 import click
 import serial
@@ -19,7 +19,7 @@ TRANSPORT_TYPE = "transport_type"
 TRANSPORT_PARAMS = "transport_params"
 
 
-def __load_config() -> dict | None:
+def __load_config() -> Optional[dict]:
     configs = glob(f"**/{LRPCC_CONFIG_YAML}", recursive=True)
     if len(configs) == 0:
         if LRPCC_CONFIG_ENV_VAR in os.environ:

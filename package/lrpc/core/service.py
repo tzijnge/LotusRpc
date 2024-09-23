@@ -1,4 +1,4 @@
-from typing import List, TypedDict
+from typing import List, Optional, TypedDict
 
 from lrpc import LrpcVisitor
 from lrpc.core import LrpcFun, LrpcFunDict
@@ -47,14 +47,14 @@ class LrpcService:
     def functions(self) -> List[LrpcFun]:
         return self.__functions
 
-    def function_by_name(self, name: str) -> LrpcFun | None:
+    def function_by_name(self, name: str) -> Optional[LrpcFun]:
         for f in self.functions():
             if f.name() == name:
                 return f
 
         return None
 
-    def function_by_id(self, function_id: int) -> LrpcFun | None:
+    def function_by_id(self, function_id: int) -> Optional[LrpcFun]:
         for f in self.functions():
             if f.id() == function_id:
                 return f

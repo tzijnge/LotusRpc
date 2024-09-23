@@ -1,4 +1,4 @@
-from typing import List, TypedDict
+from typing import List, Optional, TypedDict
 from typing_extensions import NotRequired
 
 from lrpc import LrpcVisitor
@@ -39,8 +39,8 @@ class LrpcStruct:
     def is_external(self) -> bool:
         return self.__external is not None
 
-    def external_file(self) -> str | None:
+    def external_file(self) -> Optional[str]:
         return self.__external
 
-    def external_namespace(self) -> str | None:
+    def external_namespace(self) -> Optional[str]:
         return self.__external_namespace

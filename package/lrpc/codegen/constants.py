@@ -1,3 +1,4 @@
+from typing import Optional
 from code_generation.code_generator import CppFile
 from lrpc import LrpcVisitor
 from lrpc.codegen.utils import optionally_in_namespace
@@ -7,7 +8,7 @@ from lrpc.core import LrpcConstant, LrpcDef
 class ConstantsFileVisitor(LrpcVisitor):
     def __init__(self, output: str):
         self.output = output
-        self.namespace: str | None = None
+        self.namespace: Optional[str] = None
         self.file: CppFile
         self.includes: set[str] = set()
         self.constant_definitions: list[str] = []

@@ -1,11 +1,11 @@
-from typing import List
+from typing import List, Optional, Union
 from contextlib import contextmanager
 
 from lrpc import LrpcVisitor
 from lrpc.core import LrpcFun, LrpcVar, LrpcEnum, LrpcEnumField, LrpcConstant, LrpcDef, LrpcService, LrpcStruct
 
 
-def in_color(t: str | int, c: str):
+def in_color(t: Union[str, int], c: str):
     return f"<color:{c}>{t}</color>"
 
 
@@ -111,7 +111,7 @@ class PumlFile:
 
         self.write("endlegend\n")
 
-    def block(self, name: str, background: str, level: int, icon: str | None = None) -> None:
+    def block(self, name: str, background: str, level: int, icon: Optional[str] = None) -> None:
         indent = "*" * level
         self.write(f"{indent}[#{background}]: ")
         if icon:
@@ -123,7 +123,7 @@ class PumlFile:
 
         self.write("\n----")
 
-    def list_item(self, text: str, level: int = 1, font: str | None = None) -> None:
+    def list_item(self, text: str, level: int = 1, font: Optional[str] = None) -> None:
         indent = "*" * level
         if level != 0:
             indent += " "

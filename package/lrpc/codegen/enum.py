@@ -1,3 +1,4 @@
+from typing import Optional
 from code_generation.code_generator import CppFile
 from lrpc import LrpcVisitor
 from lrpc.core import LrpcDef
@@ -9,7 +10,7 @@ class EnumFileVisitor(LrpcVisitor):
     def __init__(self, output: str) -> None:
         self.descriptor: LrpcEnum
         self.file: CppFile
-        self.namespace: str | None
+        self.namespace: Optional[str]
         self.output: str = output
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:

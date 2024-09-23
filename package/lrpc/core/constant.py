@@ -1,4 +1,4 @@
-from typing import TypedDict
+from typing import TypedDict, Union
 from typing_extensions import NotRequired
 
 from lrpc import LrpcVisitor
@@ -6,7 +6,7 @@ from lrpc import LrpcVisitor
 
 class LrpcConstantDict(TypedDict):
     name: str
-    value: int | float | bool | str
+    value: Union[int, float, bool, str]
     cppType: NotRequired[str]
 
 
@@ -16,7 +16,7 @@ class LrpcConstant:
         assert "value" in raw
 
         self.__name: str = raw["name"]
-        self.__value: int | float | bool | str = raw["value"]
+        self.__value: Union[int, float, bool, str] = raw["value"]
         self.__cpp_type: str = self.__init_cpp_type(raw)
 
     def __init_cpp_type(self, raw: LrpcConstantDict) -> str:
@@ -40,7 +40,7 @@ class LrpcConstant:
     def name(self) -> str:
         return self.__name
 
-    def value(self) -> int | float | bool | str:
+    def value(self) -> Union[int, float, bool, str]:
         return self.__value
 
     def cpp_type(self) -> str:

@@ -1,5 +1,5 @@
 from importlib import resources
-from typing import List, TypedDict
+from typing import List, Optional, TypedDict
 from typing_extensions import NotRequired
 
 import jsonschema
@@ -104,7 +104,7 @@ class LrpcDef:
     def name(self) -> str:
         return self.__name
 
-    def namespace(self) -> str | None:
+    def namespace(self) -> Optional[str]:
         return self.__namespace
 
     def rx_buffer_size(self) -> int:
@@ -116,14 +116,14 @@ class LrpcDef:
     def services(self) -> List[LrpcService]:
         return self.__services
 
-    def service_by_name(self, name: str) -> LrpcService | None:
+    def service_by_name(self, name: str) -> Optional[LrpcService]:
         for s in self.services():
             if s.name() == name:
                 return s
 
         return None
 
-    def service_by_id(self, identifier: int) -> LrpcService | None:
+    def service_by_id(self, identifier: int) -> Optional[LrpcService]:
         for s in self.services():
             if s.id() == identifier:
                 return s
@@ -137,7 +137,7 @@ class LrpcDef:
     def structs(self) -> List[LrpcStruct]:
         return self.__structs
 
-    def struct(self, name: str) -> LrpcStruct | None:
+    def struct(self, name: str) -> Optional[LrpcStruct]:
         for s in self.structs():
             if s.name() == name:
                 return s
@@ -147,7 +147,7 @@ class LrpcDef:
     def enums(self) -> List[LrpcEnum]:
         return self.__enums
 
-    def enum(self, name: str) -> LrpcEnum | None:
+    def enum(self, name: str) -> Optional[LrpcEnum]:
         for s in self.enums():
             if s.name() == name:
                 return s

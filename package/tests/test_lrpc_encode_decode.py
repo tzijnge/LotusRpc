@@ -7,7 +7,7 @@ lrpc_def = LrpcDef.load(definition_file)
 
 
 def test_encode_decode() -> None:
-    var = LrpcVar({"name": "v1", "type": "@MyStruct2", "base_type_is_struct": True})
+    var = LrpcVar({"name": "v1", "type": "struct@MyStruct2"})
 
     before = {"a": {"b": 123, "a": 4567, "c": True}}
     encoded = lrpc_encode(before, var, lrpc_def)

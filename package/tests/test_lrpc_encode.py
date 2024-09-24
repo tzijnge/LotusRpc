@@ -219,7 +219,7 @@ def test_encode_optional_auto_string() -> None:
 
 
 def test_encode_struct() -> None:
-    var = LrpcVar({"name": "v1", "type": "@MyStruct1", "base_type_is_struct": True})
+    var = LrpcVar({"name": "v1", "type": "struct@MyStruct1"})
 
     encoded = lrpc_encode({"b": 123, "a": 4567, "c": True}, var, lrpc_def)
     assert encoded == b"\xD7\x11\x7B\x01"
@@ -238,7 +238,7 @@ def test_encode_struct() -> None:
 
 
 def test_encode_optional_struct() -> None:
-    var = LrpcVar({"name": "v1", "type": "@MyStruct1", "base_type_is_struct": True, "count": "?"})
+    var = LrpcVar({"name": "v1", "type": "struct@MyStruct1", "count": "?"})
 
     encoded = lrpc_encode(None, var, lrpc_def)
     assert encoded == b"\x00"
@@ -247,14 +247,14 @@ def test_encode_optional_struct() -> None:
 
 
 def test_encode_nested_struct() -> None:
-    var = LrpcVar({"name": "v1", "type": "@MyStruct2", "base_type_is_struct": True})
+    var = LrpcVar({"name": "v1", "type": "struct@MyStruct2"})
 
     encoded = lrpc_encode({"a": {"b": 123, "a": 4567, "c": True}}, var, lrpc_def)
     assert encoded == b"\xD7\x11\x7B\x01"
 
 
 def test_encode_enum() -> None:
-    var = LrpcVar({"name": "v1", "type": "@MyEnum1", "base_type_is_enum": True})
+    var = LrpcVar({"name": "v1", "type": "enum@MyEnum1"})
 
     encoded = lrpc_encode("test1", var, lrpc_def)
     assert encoded == b"\x00"
@@ -266,7 +266,7 @@ def test_encode_enum() -> None:
 
 
 def test_encode_optional_enum() -> None:
-    var = LrpcVar({"name": "v1", "type": "@MyEnum1", "base_type_is_enum": True, "count": "?"})
+    var = LrpcVar({"name": "v1", "type": "enum@MyEnum1", "count": "?"})
 
     encoded = lrpc_encode(None, var, lrpc_def)
     assert encoded == b"\x00"
@@ -275,7 +275,7 @@ def test_encode_optional_enum() -> None:
 
 
 def test_encode_array_of_struct() -> None:
-    var = LrpcVar({"name": "v1", "type": "@MyStruct2", "base_type_is_struct": True, "count": 2})
+    var = LrpcVar({"name": "v1", "type": "struct@MyStruct2", "count": 2})
 
     array_of_structs = [{"a": {"b": 123, "a": 4567, "c": True}}, {"a": {"b": 51, "a": 8721, "c": False}}]
     encoded = lrpc_encode(array_of_structs, var, lrpc_def)

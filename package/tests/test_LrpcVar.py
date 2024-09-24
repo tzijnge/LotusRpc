@@ -2,7 +2,7 @@ from lrpc.core import LrpcVar, LrpcVarDict
 
 
 def test_construct_basic() -> None:
-    v: LrpcVarDict = {"name": "v1", "type": "uint8_t", "base_type_is_struct": False, "base_type_is_enum": False}
+    v: LrpcVarDict = {"name": "v1", "type": "uint8_t"}
     var = LrpcVar(v)
 
     assert var.name() == "v1"
@@ -11,7 +11,7 @@ def test_construct_basic() -> None:
 
 
 def test_base_type_is_bool() -> None:
-    v: LrpcVarDict = {"name": "v1", "type": "bool", "base_type_is_struct": False, "base_type_is_enum": False}
+    v: LrpcVarDict = {"name": "v1", "type": "bool"}
     var = LrpcVar(v)
 
     assert var.base_type() == "bool"
@@ -19,8 +19,8 @@ def test_base_type_is_bool() -> None:
 
 
 def test_base_type_is_float() -> None:
-    v1: LrpcVarDict = {"name": "v1", "type": "float", "base_type_is_struct": False, "base_type_is_enum": False}
-    v2: LrpcVarDict = {"name": "v2", "type": "double", "base_type_is_struct": False, "base_type_is_enum": False}
+    v1: LrpcVarDict = {"name": "v1", "type": "float"}
+    v2: LrpcVarDict = {"name": "v2", "type": "double"}
 
     var = LrpcVar(v1)
     assert var.base_type() == "float"
@@ -32,13 +32,11 @@ def test_base_type_is_float() -> None:
 
 
 def test_base_type_is_string() -> None:
-    v1: LrpcVarDict = {"name": "v1", "type": "string", "base_type_is_struct": False, "base_type_is_enum": False}
+    v1: LrpcVarDict = {"name": "v1", "type": "string"}
     v2: LrpcVarDict = {
         "name": "v2",
         "type": "string_10",
         "count": 3,
-        "base_type_is_struct": False,
-        "base_type_is_enum": False,
     }
 
     var = LrpcVar(v1)
@@ -56,22 +54,16 @@ def test_contained() -> None:
     v1: LrpcVarDict = {
         "name": "v1",
         "type": "bool",
-        "base_type_is_struct": False,
-        "base_type_is_enum": False,
     }
     v2: LrpcVarDict = {
         "name": "v2",
         "type": "bool",
         "count": "?",
-        "base_type_is_struct": False,
-        "base_type_is_enum": False,
     }
     v3: LrpcVarDict = {
         "name": "v3",
         "type": "bool",
         "count": 3,
-        "base_type_is_struct": False,
-        "base_type_is_enum": False,
     }
 
     var1 = LrpcVar(v1).contained()

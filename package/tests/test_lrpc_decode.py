@@ -231,7 +231,7 @@ def test_decode_optional_auto_string() -> None:
 
 
 def test_decode_struct() -> None:
-    var = LrpcVar({"name": "v1", "type": "@MyStruct1", "base_type_is_struct": True})
+    var = LrpcVar({"name": "v1", "type": "struct@MyStruct1"})
 
     assert lrpc_decode(b"\xD7\x11\x7B\x01", var, lrpc_def) == {
         "b": 123,
@@ -251,7 +251,7 @@ def test_decode_struct() -> None:
 
 
 def test_decode_optional_struct() -> None:
-    var = LrpcVar({"name": "v1", "type": "@MyStruct1", "base_type_is_struct": True, "count": "?"})
+    var = LrpcVar({"name": "v1", "type": "struct@MyStruct1", "count": "?"})
 
     assert lrpc_decode(b"\x00", var, lrpc_def) is None
     assert lrpc_decode(b"\x01\xD7\x11\x7B\x01", var, lrpc_def) == {
@@ -262,13 +262,13 @@ def test_decode_optional_struct() -> None:
 
 
 def test_decode_nested_struct() -> None:
-    var = LrpcVar({"name": "v1", "type": "@MyStruct2", "base_type_is_struct": True})
+    var = LrpcVar({"name": "v1", "type": "struct@MyStruct2"})
 
     assert lrpc_decode(b"\xD7\x11\x7B\x01", var, lrpc_def) == {"a": {"b": 123, "a": 4567, "c": True}}
 
 
 def test_decode_enum() -> None:
-    var = LrpcVar({"name": "v1", "type": "@MyEnum1", "base_type_is_enum": True})
+    var = LrpcVar({"name": "v1", "type": "enum@MyEnum1"})
 
     assert lrpc_decode(b"\x00", var, lrpc_def) == "test1"
     assert lrpc_decode(b"\x37", var, lrpc_def) == "test2"
@@ -278,14 +278,14 @@ def test_decode_enum() -> None:
 
 
 def test_decode_optional_enum() -> None:
-    var = LrpcVar({"name": "v1", "type": "@MyEnum1", "base_type_is_enum": True, "count": "?"})
+    var = LrpcVar({"name": "v1", "type": "enum@MyEnum1", "count": "?"})
 
     assert lrpc_decode(b"\x00", var, lrpc_def) is None
     assert lrpc_decode(b"\x01\x37", var, lrpc_def) == "test2"
 
 
 def test_decode_array_of_struct() -> None:
-    var = LrpcVar({"name": "v1", "type": "@MyStruct2", "base_type_is_struct": True, "count": 2})
+    var = LrpcVar({"name": "v1", "type": "struct@MyStruct2", "count": 2})
 
     decoded = lrpc_decode(b"\xD7\x11\x7B\x01\x11\x22\x33\x00", var, lrpc_def)
 

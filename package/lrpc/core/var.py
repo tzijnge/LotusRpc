@@ -22,8 +22,6 @@ class LrpcVarDict(TypedDict):
     name: str
     type: str
     count: NotRequired[Union[int, Literal["?"]]]
-    base_type_is_struct: bool
-    base_type_is_enum: bool
 
 
 class LrpcVar:
@@ -32,10 +30,10 @@ class LrpcVar:
         assert "type" in raw and isinstance(raw["type"], str)
 
         self.__name = raw["name"]
-        self.__base_type_is_custom = raw["type"].startswith("@")
-        self.__type = raw["type"].strip("@")
-        self.__base_type_is_struct = raw.get("base_type_is_struct", False)
-        self.__base_type_is_enum = raw.get("base_type_is_enum", False)
+        self.__type = raw["type"].replace("struct@", "").replace("enum@", "").strip("@")
+        self.__base_type_is_struct = raw["type"].startswith("struct@")
+        self.__base_type_is_enum = raw["type"].startswith("enum@")
+        self.__base_type_is_custom = "@" in raw["type"]
 
         c = raw.get("count", 1)
         if isinstance(c, int):

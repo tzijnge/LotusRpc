@@ -60,16 +60,13 @@ class LrpcDef:
         for service in raw["services"]:
             for function in service["functions"]:
                 for p in function.get("params", []):
-                    p["base_type_is_struct"] = self.__base_type_is_struct(p, struct_names)
-                    p["base_type_is_enum"] = self.__base_type_is_enum(p, enum_names)
+                    self.__update_type(p, struct_names, enum_names)
                 for r in function.get("returns", []):
-                    r["base_type_is_struct"] = self.__base_type_is_struct(r, struct_names)
-                    r["base_type_is_enum"] = self.__base_type_is_enum(r, enum_names)
+                    self.__update_type(r, struct_names, enum_names)
 
         for struct in raw.get("structs", []):
             for field in struct["fields"]:
-                field["base_type_is_struct"] = self.__base_type_is_struct(field, struct_names)
-                field["base_type_is_enum"] = self.__base_type_is_enum(field, enum_names)
+                self.__update_type(field, struct_names, enum_names)
 
     def __init_service_ids(self, raw: LrpcDefDict) -> None:
         last_service_id = -1
@@ -157,19 +154,13 @@ class LrpcDef:
     def constants(self) -> list[LrpcConstant]:
         return self.__constants
 
-    def __struct_names(self) -> list[str]:
-        return [s.name() for s in self.structs()]
-
-    def __enum_names(self) -> list[str]:
-        return [e.name() for e in self.enums()]
-
     @classmethod
-    def __base_type_is_struct(cls, var: LrpcVarDict, struct_names: list[str]) -> bool:
-        return var["type"].strip("@") in struct_names
+    def __update_type(cls, var: LrpcVarDict, struct_names: list[str], enum_names: list[str]) -> None:
+        if var["type"].strip("@") in struct_names:
+            var["type"] = "struct" + var["type"]
 
-    @classmethod
-    def __base_type_is_enum(cls, var: LrpcVarDict, enum_names: list[str]) -> bool:
-        return var["type"].strip("@") in enum_names
+        if var["type"].strip("@") in enum_names:
+            var["type"] = "enum" + var["type"]
 
     @staticmethod
     def load(definition_url: str) -> "LrpcDef":

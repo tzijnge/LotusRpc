@@ -1,5 +1,4 @@
 from functools import partial
-from typing import Dict, List
 
 import click
 import yaml
@@ -9,10 +8,12 @@ from lrpc.core import LrpcDef, LrpcEnum, LrpcEnumField, LrpcFun, LrpcService, Lr
 
 NONE_ARG = "7bc9ddaa-b6c9-4afb-93c1-5240ec91ab9c"
 
+
 class YamlParamType(click.ParamType):
-    '''Convert command line input to a struct. Command line
-       input must be valid YAML with every key being a field
-       and every value being the value of the field'''
+    """Convert command line input to a struct. Command line
+    input must be valid YAML with every key being a field
+    and every value being the value of the field"""
+
     name = "YAML"
 
     def convert(self, value, param, ctx):
@@ -22,13 +23,15 @@ class YamlParamType(click.ParamType):
         try:
             return yaml.safe_load(value)
         except yaml.parser.ParserError:
-            self.fail(f'{value} does not contain valid YAML', param, ctx)
+            self.fail(f"{value} does not contain valid YAML", param, ctx)
+
 
 class OptionalParamType(click.ParamType):
-    '''Convert command line input to LRPC optional. "_" maps to None,
-       any other input is converted to the underlying type. A string input
-       which is a sequence of underscores must be escaped with an additional
-       underscore'''
+    """Convert command line input to LRPC optional. "_" maps to None,
+    any other input is converted to the underlying type. A string input
+    which is a sequence of underscores must be escaped with an additional
+    underscore"""
+
     name = "LRPC optional"
 
     def __init__(self, contained_type: click.ParamType) -> None:
@@ -36,26 +39,28 @@ class OptionalParamType(click.ParamType):
 
     def convert(self, value, param, ctx):
         if not isinstance(value, str):
-            self.fail(f'{value} is not a string', param, ctx)
+            self.fail(f"{value} is not a string", param, ctx)
 
-        if value == '_':
+        if value == "_":
             return NONE_ARG
-        elif len(value) != 0 and len(value.replace('_', '')) == 0: # value only contains underscores
-            value = value.removeprefix('_')
+        elif len(value) != 0 and len(value.replace("_", "")) == 0:  # value only contains underscores
+            value = value.removeprefix("_")
 
         return self.contained_type.convert(value, param, ctx)
 
+
 class ClientCliVisitor(LrpcVisitor):
-    '''
+    """
     Class to create an LRPC client CLI (based on click) from spec.
     Pass an instance of this class to LrpcDef.accept() to build the CLI.
     Call ClientCliVisitor.root() to activate the CLI
-    '''
+    """
+
     def __init__(self, callback) -> None:
         self.root: click.Group = None
         self.current_service: click.Group = None
         self.current_function: click.Command = None
-        self.enum_values: Dict[str, List[str]] = {}
+        self.enum_values: dict[str, list[str]] = {}
 
         self.callback = callback
 
@@ -70,7 +75,7 @@ class ClientCliVisitor(LrpcVisitor):
 
     def visit_lrpc_enum_field(self, enum: LrpcEnum, field: LrpcEnumField):
         if enum.name() not in self.enum_values:
-            self.enum_values.update({enum.name() : []})
+            self.enum_values.update({enum.name(): []})
 
         self.enum_values[enum.name()].append(field.name())
 
@@ -78,17 +83,14 @@ class ClientCliVisitor(LrpcVisitor):
         self.current_function = click.Command(
             name=function.name(),
             callback=partial(self.__handle_command, self.current_service.name, function.name()),
-            help='my help 123'
-            )
+            help="my help 123",
+        )
 
     def visit_lrpc_function_end(self):
         self.current_service.add_command(self.current_function)
 
     def visit_lrpc_function_param(self, param: LrpcVar):
-        attributes = {
-            'type': self.__click_type(param),
-            'nargs': param.array_size() if param.is_array() else 1
-        }
+        attributes = {"type": self.__click_type(param), "nargs": param.array_size() if param.is_array() else 1}
 
         arg = click.Argument([param.name()], **attributes)
         self.current_function.params.append(arg)

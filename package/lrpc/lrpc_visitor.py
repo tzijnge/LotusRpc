@@ -1,4 +1,8 @@
 from abc import ABC
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from lrpc.core import LrpcDef, LrpcService, LrpcStruct, LrpcVar, LrpcEnum, LrpcEnumField, LrpcFun, LrpcConstant
 
 
 class LrpcVisitor(ABC):
@@ -38,7 +42,7 @@ class LrpcVisitor(ABC):
         """Called before visiting the constants in the LRPC definition. All
         constants are visited before the first service"""
 
-    def visit_lrpc_constant(self, constant: "LrpcVar") -> None:
+    def visit_lrpc_constant(self, constant: "LrpcConstant") -> None:
         """Called for each constant in the LRPC definition"""
 
     def visit_lrpc_constants_end(self) -> None:

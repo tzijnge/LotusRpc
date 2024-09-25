@@ -1,7 +1,8 @@
 import struct
+from typing import Optional, Any
 
+from lrpc.client import LrpcDecoder, lrpc_encode
 from lrpc.core import LrpcDef
-from lrpc.client import lrpc_encode, LrpcDecoder
 
 
 class LrpcClient:
@@ -9,7 +10,7 @@ class LrpcClient:
         self.lrpc_def: LrpcDef = LrpcDef.load(definition_file)
         self.receive_buffer = b""
 
-    def process(self, encoded: bytes):
+    def process(self, encoded: bytes) -> Optional[dict[str, Any]]:
         self.receive_buffer += encoded
         received = len(self.receive_buffer)
 
@@ -25,7 +26,7 @@ class LrpcClient:
 
         return None
 
-    def decode(self, encoded: bytes):
+    def decode(self, encoded: bytes) -> dict[str, Any]:
         ret = {}
 
         # skip packet length at index 0
@@ -46,7 +47,7 @@ class LrpcClient:
 
         return ret
 
-    def encode(self, service_name: str, function_name: str, **kwargs):
+    def encode(self, service_name: str, function_name: str, **kwargs: Any) -> bytes:
         service = self.lrpc_def.service_by_name(service_name)
         if not service:
             raise ValueError(f"Service {service_name} not found in the LRPC definition file")

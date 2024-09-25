@@ -1,3 +1,4 @@
+import os
 from code_generation.code_generator import CppFile
 from lrpc import LrpcVisitor
 from lrpc.core import LrpcDef, LrpcService, LrpcFun, LrpcVar
@@ -5,7 +6,8 @@ from lrpc.codegen.utils import optionally_in_namespace
 
 
 class ServiceShimVisitor(LrpcVisitor):
-    def __init__(self, output: str):
+
+    def __init__(self, output: os.PathLike):
         self.file: CppFile
         self.lrpc_def: LrpcDef
         self.output = output

@@ -1,4 +1,5 @@
 from functools import partial
+from typing import Any, Callable, Optional
 
 import click
 import yaml
@@ -16,7 +17,7 @@ class YamlParamType(click.ParamType):
 
     name = "YAML"
 
-    def convert(self, value, param, ctx):
+    def convert(self, value: Any, param: Optional[click.Parameter], ctx: Optional[click.Context]) -> Any:
         if isinstance(value, dict):
             return value
 
@@ -37,7 +38,7 @@ class OptionalParamType(click.ParamType):
     def __init__(self, contained_type: click.ParamType) -> None:
         self.contained_type: click.ParamType = contained_type
 
-    def convert(self, value, param, ctx):
+    def convert(self, value: Any, param: Optional[click.Parameter], ctx: Optional[click.Context]) -> Any:
         if not isinstance(value, str):
             self.fail(f"{value} is not a string", param, ctx)
 
@@ -56,43 +57,43 @@ class ClientCliVisitor(LrpcVisitor):
     Call ClientCliVisitor.root() to activate the CLI
     """
 
-    def __init__(self, callback) -> None:
-        self.root: click.Group = None
-        self.current_service: click.Group = None
-        self.current_function: click.Command = None
+    def __init__(self, callback: Callable) -> None:
+        self.root: click.Group
+        self.current_service: click.Group
+        self.current_function: click.Command
         self.enum_values: dict[str, list[str]] = {}
 
         self.callback = callback
 
-    def visit_lrpc_def(self, lrpc_def: LrpcDef):
+    def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
         self.root = click.Group(lrpc_def.name())
 
-    def visit_lrpc_service(self, service: LrpcService):
+    def visit_lrpc_service(self, service: LrpcService) -> None:
         self.current_service = click.Group(service.name())
 
-    def visit_lrpc_service_end(self):
+    def visit_lrpc_service_end(self) -> None:
         self.root.add_command(self.current_service)
 
-    def visit_lrpc_enum_field(self, enum: LrpcEnum, field: LrpcEnumField):
+    def visit_lrpc_enum_field(self, enum: LrpcEnum, field: LrpcEnumField) -> None:
         if enum.name() not in self.enum_values:
             self.enum_values.update({enum.name(): []})
 
         self.enum_values[enum.name()].append(field.name())
 
-    def visit_lrpc_function(self, function: LrpcFun):
+    def visit_lrpc_function(self, function: LrpcFun) -> None:
         self.current_function = click.Command(
             name=function.name(),
             callback=partial(self.__handle_command, self.current_service.name, function.name()),
             help="my help 123",
         )
 
-    def visit_lrpc_function_end(self):
+    def visit_lrpc_function_end(self) -> None:
         self.current_service.add_command(self.current_function)
 
-    def visit_lrpc_function_param(self, param: LrpcVar):
+    def visit_lrpc_function_param(self, param: LrpcVar) -> None:
         attributes = {"type": self.__click_type(param), "nargs": param.array_size() if param.is_array() else 1}
 
-        arg = click.Argument([param.name()], **attributes)
+        arg = click.Argument([param.name()], True, **attributes)
         self.current_function.params.append(arg)
 
     def __click_type(self, param: LrpcVar) -> click.ParamType:
@@ -121,7 +122,7 @@ class ClientCliVisitor(LrpcVisitor):
         else:
             return t
 
-    def __handle_command(self, service, function, **kwargs):
+    def __handle_command(self, service: Optional[str], function: str, **kwargs: Any) -> Callable:
         for a, v in kwargs.items():
             if v == NONE_ARG:
                 kwargs[a] = None

@@ -1,3 +1,4 @@
+import os
 from typing import Optional
 from code_generation.code_generator import CppFile
 from lrpc import LrpcVisitor
@@ -6,7 +7,8 @@ from lrpc.core import LrpcConstant, LrpcDef
 
 
 class ConstantsFileVisitor(LrpcVisitor):
-    def __init__(self, output: str):
+
+    def __init__(self, output: os.PathLike):
         self.output = output
         self.namespace: Optional[str] = None
         self.file: CppFile

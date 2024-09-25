@@ -1,24 +1,17 @@
-from importlib import resources
-
 import jsonschema
 import yaml
-from lrpc import schema as lrpc_schema
+from lrpc.schema import load_lrpc_schema
 from lrpc.core import LrpcDef
 from lrpc.validation import SemanticAnalyzer
 
 
 def semantic_errors(rpc_def: str) -> tuple[list[str], list[str]]:
-    url = resources.files(lrpc_schema) / "lotusrpc-schema.json"
+    definition = yaml.safe_load(rpc_def)
+    jsonschema.validate(definition, load_lrpc_schema())
 
-    # Not sure how to make type hints work from Traversable to PathLike, hence ignored
-    with open(url, mode="rt", encoding="utf8") as schema_file:  # type: ignore[call-overload]
-        definition = yaml.safe_load(rpc_def)
-        schema = yaml.safe_load(schema_file)
-        jsonschema.validate(definition, schema)
-
-        sa = SemanticAnalyzer(LrpcDef(definition))
-        sa.analyze()
-        return sa.errors, sa.warnings
+    sa = SemanticAnalyzer(LrpcDef(definition))
+    sa.analyze()
+    return sa.errors, sa.warnings
 
 
 def test_duplicate_enum_field_names() -> None:

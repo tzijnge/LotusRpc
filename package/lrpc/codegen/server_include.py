@@ -2,10 +2,11 @@ from code_generation.code_generator import CppFile
 from lrpc.core import LrpcDef, LrpcService
 from lrpc import LrpcVisitor
 from lrpc.codegen.utils import optionally_in_namespace
+import os
 
 
 class ServerIncludeVisitor(LrpcVisitor):
-    def __init__(self, output: str) -> None:
+    def __init__(self, output: os.PathLike) -> None:
         self.lrpc_def: LrpcDef
         self.output = output
         self.file: CppFile

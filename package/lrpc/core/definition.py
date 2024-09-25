@@ -1,11 +1,10 @@
-from importlib import resources
 from typing import Optional, TypedDict
 from typing_extensions import NotRequired
 
 import jsonschema
 import yaml
 from lrpc import LrpcVisitor
-from lrpc import schema as lrpc_schema
+from lrpc.schema import load_lrpc_schema
 from lrpc.core import LrpcConstant, LrpcEnum, LrpcService, LrpcStruct, LrpcVarDict
 from lrpc.core import LrpcStructDict, LrpcServiceDict, LrpcConstantDict, LrpcEnumDict
 
@@ -166,12 +165,9 @@ class LrpcDef:
     def load(definition_url: str) -> "LrpcDef":
         from lrpc.validation import SemanticAnalyzer
 
-        schema_url = resources.files(lrpc_schema).joinpath("lotusrpc-schema.json")
-
         with open(definition_url, mode="rt", encoding="utf-8") as rpc_def:
             definition = yaml.safe_load(rpc_def)
-            schema = yaml.safe_load(schema_url.read_text())
-            jsonschema.validate(definition, schema)
+            jsonschema.validate(definition, load_lrpc_schema())
 
             lrpc_def = LrpcDef(definition)
             sa = SemanticAnalyzer(lrpc_def)

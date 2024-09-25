@@ -1,3 +1,4 @@
+import os
 from typing import Optional, Union
 from contextlib import contextmanager
 
@@ -166,7 +167,8 @@ class PumlFile:
 
 
 class PlantUmlVisitor(LrpcVisitor):
-    def __init__(self, output: str) -> None:
+
+    def __init__(self, output: os.PathLike) -> None:
         self.output = output
         self.fsb: FunctionStringBuilder
         self.puml: PumlFile

@@ -9,7 +9,8 @@ disable = [
 ]
 
 [tool.pylint.format]
-max-line-length = 120
+# line length is handled by black. Any remaining long lines cannot be formatted properly
+disable = ["line-too-long"]
 
 [tool.mypy]
 exclude = "external"

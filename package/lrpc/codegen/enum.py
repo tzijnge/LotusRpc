@@ -1,3 +1,4 @@
+import os
 from typing import Optional
 from code_generation.code_generator import CppFile
 from lrpc import LrpcVisitor
@@ -7,7 +8,8 @@ from lrpc.codegen.utils import optionally_in_namespace
 
 
 class EnumFileVisitor(LrpcVisitor):
-    def __init__(self, output: str) -> None:
+
+    def __init__(self, output: os.PathLike) -> None:
         self.descriptor: LrpcEnum
         self.file: CppFile
         self.namespace: Optional[str]

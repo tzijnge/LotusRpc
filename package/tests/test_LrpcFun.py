@@ -1,3 +1,4 @@
+import pytest
 from lrpc.core import LrpcFun, LrpcFunDict
 
 
@@ -45,7 +46,8 @@ def test_get_param_by_name() -> None:
 
     fun = LrpcFun(f)
 
-    assert fun.param("") is None
+    with pytest.raises(ValueError):
+        fun.param("")
     p1 = fun.param("p1")
     assert p1 is not None
     assert p1.name() == "p1"
@@ -61,7 +63,8 @@ def test_get_return_by_name() -> None:
 
     fun = LrpcFun(f)
 
-    assert fun.ret("") is None
+    with pytest.raises(ValueError):
+        fun.ret("")
     r1 = fun.ret("r1")
     assert r1 is not None
     assert r1.name() == "r1"

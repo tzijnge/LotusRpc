@@ -1,3 +1,4 @@
+import os
 from typing import Set
 
 from code_generation.code_generator import CppFile
@@ -8,7 +9,8 @@ from lrpc.core import LrpcDef, LrpcStruct, LrpcVar
 
 
 class StructFileVisitor(LrpcVisitor):
-    def __init__(self, output: str) -> None:
+
+    def __init__(self, output: os.PathLike) -> None:
         self.output = output
         self.namespace = None
         self.file: CppFile

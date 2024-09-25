@@ -1,11 +1,13 @@
+import os
+
 from code_generation.code_generator import CppFile
-from lrpc.core import LrpcFun, LrpcService, LrpcVar
 from lrpc import LrpcVisitor
 from lrpc.codegen.common import lrpc_var_includes
+from lrpc.core import LrpcFun, LrpcService, LrpcVar
 
 
 class ServiceIncludeVisitor(LrpcVisitor):
-    def __init__(self, output: str) -> None:
+    def __init__(self, output: os.PathLike) -> None:
         self.output = output
         self.file: CppFile
         self.includes: set[str] = set()

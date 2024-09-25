@@ -93,7 +93,7 @@ class ClientCliVisitor(LrpcVisitor):
     def visit_lrpc_function_param(self, param: LrpcVar) -> None:
         attributes = {"type": self.__click_type(param), "nargs": param.array_size() if param.is_array() else 1}
 
-        arg = click.Argument([param.name()], True, **attributes)
+        arg = click.Argument([param.name()], **attributes)
         self.current_function.params.append(arg)
 
     def __click_type(self, param: LrpcVar) -> click.ParamType:

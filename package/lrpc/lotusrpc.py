@@ -72,9 +72,9 @@ def generate_rpc(lrpc_def: LrpcDef, output: os.PathLike) -> None:
     "-w", "--warnings_as_errors", help="Treat warnings as errors", required=False, default=None, is_flag=True, type=str
 )
 @click.option("-o", "--output", help="Path to put the generated files", required=False, default=".", type=click.Path())
-@click.argument("input", "input_file", type=click.File("r"))
+@click.argument("input_file", type=click.File("r"), metavar="input")
 def generate(warnings_as_errors: bool, output: os.PathLike, input_file: TextIO) -> None:
-    """Generate code for file(s) INPUTS"""
+    """Generate code for file INPUT"""
 
     definition = yaml.safe_load(input_file)
     errors_found = validate_yaml(definition, input_file.name)

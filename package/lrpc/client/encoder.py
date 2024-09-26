@@ -1,7 +1,7 @@
 import struct
 from typing import Any
 
-from lrpc.core import LrpcDef, LrpcVar
+from ..core import LrpcDef, LrpcVar
 
 
 def __encode_string(s: str, var: LrpcVar) -> bytes:

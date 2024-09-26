@@ -1,7 +1,7 @@
 from typing import TypedDict, Union
 from typing_extensions import NotRequired
 
-from lrpc import LrpcVisitor
+from ..visitors import LrpcVisitor
 
 
 class LrpcConstantDict(TypedDict):

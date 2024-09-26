@@ -1,5 +1,5 @@
-from lrpc.core import LrpcDef, LrpcEnum, LrpcEnumField
-from lrpc.validation import LrpcValidator
+from ..core import LrpcDef, LrpcEnum, LrpcEnumField
+from .validator import LrpcValidator
 
 
 class EnumValidator(LrpcValidator):

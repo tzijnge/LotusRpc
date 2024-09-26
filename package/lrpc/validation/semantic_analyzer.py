@@ -1,14 +1,20 @@
 from typing import Any
-from lrpc.core import LrpcDef
-from lrpc.validation import (
-    ServiceValidator,
-    FunctionValidator,
-    EnumValidator,
-    NamesValidator,
-    CustomTypesValidator,
-)
-from lrpc.validation import LrpcValidator
-from lrpc.core import LrpcVar
+
+# from . import (
+#     LrpcValidator,
+#     ServiceValidator,
+#     FunctionValidator,
+#     EnumValidator,
+#     NamesValidator,
+#     CustomTypesValidator,
+# )
+from .validator import LrpcValidator
+from .service import ServiceValidator
+from .function import FunctionValidator
+from .enum import EnumValidator
+from .names import NamesValidator
+from .custom_types import CustomTypesValidator
+from ..core import LrpcVar, LrpcDef
 
 
 class SemanticAnalyzer:
@@ -47,7 +53,7 @@ class SemanticAnalyzer:
             self.errors.append(f"Duplicate struct field name(s): {duplicate_names}")
 
     def __check_auto_string_in_struct(self) -> None:
-        offenders = list()
+        offenders = []
         for s in self.definition.structs():
             auto_strings = [(s.name(), f.name()) for f in s.fields() if f.is_auto_string()]
             offenders.extend(auto_strings)
@@ -56,7 +62,7 @@ class SemanticAnalyzer:
             self.errors.append(f"Auto string not allowed in struct: {offenders}")
 
     def __check_multiple_auto_strings_in_param_list_or_return_list(self) -> None:
-        offenders = list()
+        offenders = []
         for s in self.__services:
             for f in s.functions():
                 auto_string_params = [(f.name(), p.name()) for p in f.params() if p.is_auto_string()]
@@ -88,7 +94,7 @@ class SemanticAnalyzer:
             self.errors.append(f"Array of auto strings is not allowed: {offenders}")
 
     def __check_return_auto_string(self) -> None:
-        offenders = list()
+        offenders = []
         for s in self.__services:
             for f in s.functions():
                 auto_string_returns = [(s.name(), f.name(), r.name()) for r in f.returns() if r.is_auto_string()]

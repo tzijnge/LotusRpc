@@ -1,8 +1,8 @@
 from typing import Optional, TypedDict
 from typing_extensions import NotRequired
 
-from lrpc import LrpcVisitor
-from lrpc.core import LrpcVar, LrpcVarDict
+from ..visitors import LrpcVisitor
+from .var import LrpcVar, LrpcVarDict
 
 
 class LrpcStructDict(TypedDict):

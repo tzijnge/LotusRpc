@@ -1,13 +1,14 @@
 import struct
-from typing import Optional, Any
+from typing import Any
 
-from lrpc.client import LrpcDecoder, lrpc_encode
-from lrpc.core import LrpcDef
+from .decoder import LrpcDecoder
+from .encoder import lrpc_encode
+from ..utils import load_lrpc_def
 
 
 class LrpcClient:
     def __init__(self, definition_file: str) -> None:
-        self.lrpc_def: LrpcDef = LrpcDef.load(definition_file)
+        self.lrpc_def = load_lrpc_def(definition_file)
         self.receive_buffer = b""
 
     def process(self, encoded: bytes) -> dict[str, Any]:

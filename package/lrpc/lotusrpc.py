@@ -6,9 +6,9 @@ import click
 import jsonschema
 import jsonschema.exceptions
 import yaml
-from lrpc import PlantUmlVisitor
-from lrpc.schema import load_lrpc_schema
-from lrpc.codegen import (
+from .visitors import PlantUmlVisitor
+from .schema import load_lrpc_schema
+from .codegen import (
     ConstantsFileVisitor,
     EnumFileVisitor,
     ServerIncludeVisitor,
@@ -16,8 +16,8 @@ from lrpc.codegen import (
     ServiceShimVisitor,
     StructFileVisitor,
 )
-from lrpc.core import LrpcDef
-from lrpc.validation import SemanticAnalyzer
+from .core import LrpcDef
+from .validation import SemanticAnalyzer
 
 
 def create_dir_if_not_exists(target_dir: os.PathLike) -> None:

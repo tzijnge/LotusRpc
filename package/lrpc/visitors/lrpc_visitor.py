@@ -2,7 +2,7 @@ from abc import ABC
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from lrpc.core import LrpcDef, LrpcService, LrpcStruct, LrpcVar, LrpcEnum, LrpcEnumField, LrpcFun, LrpcConstant
+    from ..core import LrpcDef, LrpcService, LrpcStruct, LrpcVar, LrpcEnum, LrpcEnumField, LrpcFun, LrpcConstant
 
 
 class LrpcVisitor(ABC):

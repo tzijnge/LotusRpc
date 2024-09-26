@@ -4,10 +4,11 @@ from typing import Any
 
 import pytest
 from lrpc.client import lrpc_encode
-from lrpc.core import LrpcDef, LrpcVar
+from lrpc.core import LrpcVar
+from lrpc.utils import load_lrpc_def
 
 definition_file = path.join(path.dirname(path.abspath(__file__)), "test_encode_var_decode.lrpc.yaml")
-lrpc_def = LrpcDef.load(definition_file)
+lrpc_def = load_lrpc_def(definition_file)
 
 
 def encode_var(value: Any, var: LrpcVar) -> bytes:

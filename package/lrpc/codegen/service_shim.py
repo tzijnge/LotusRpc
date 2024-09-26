@@ -1,8 +1,8 @@
 import os
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
-from lrpc import LrpcVisitor
-from lrpc.core import LrpcDef, LrpcService, LrpcFun, LrpcVar
-from lrpc.codegen.utils import optionally_in_namespace
+from ..visitors import LrpcVisitor
+from ..core import LrpcDef, LrpcService, LrpcFun, LrpcVar
+from ..codegen.utils import optionally_in_namespace
 
 
 class ServiceShimVisitor(LrpcVisitor):
@@ -115,7 +115,7 @@ class ServiceShimVisitor(LrpcVisitor):
             self.file.write("return shims.at(functionId);")
 
     def __function_shim_body(self) -> list[str]:
-        body = list()
+        body = []
 
         for p in self.function_params:
             n = p.name()
@@ -144,11 +144,12 @@ class ServiceShimVisitor(LrpcVisitor):
     def __returns_string(self) -> str:
         if len(self.function_returns) == 0:
             return "void"
-        elif len(self.function_returns) == 1:
+
+        if len(self.function_returns) == 1:
             return self.function_returns[0].return_type()
-        else:
-            types = ", ".join([r.return_type() for r in self.function_returns])
-            return f"std::tuple<{types}>"
+
+        types = ", ".join([r.return_type() for r in self.function_returns])
+        return f"std::tuple<{types}>"
 
     def __write_include_guard(self) -> None:
         self.file("#pragma once")

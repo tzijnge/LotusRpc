@@ -1,5 +1,5 @@
 import abc
-from lrpc import LrpcVisitor
+from ..visitors import LrpcVisitor
 
 
 class LrpcValidator(LrpcVisitor):

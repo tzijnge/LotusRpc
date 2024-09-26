@@ -1,5 +1,5 @@
-from lrpc.core import LrpcDef, LrpcService, LrpcFun
-from lrpc.validation import LrpcValidator
+from ..core import LrpcDef, LrpcService, LrpcFun
+from .validator import LrpcValidator
 
 
 class FunctionValidator(LrpcValidator):

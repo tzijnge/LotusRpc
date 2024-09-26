@@ -1,7 +1,7 @@
-from typing import TypedDict, Literal, Union
-from typing_extensions import NotRequired
-
 from copy import deepcopy
+from typing import Literal, TypedDict, Union
+
+from typing_extensions import NotRequired
 
 PACK_TYPES: dict[str, str] = {
     "uint8_t": "B",
@@ -85,13 +85,14 @@ class LrpcVar:
 
         if self.is_array():
             return f"const etl::span<const {t}>&"
-        elif self.is_optional():
+
+        if self.is_optional():
             return f"const etl::optional<{t}>&"
-        else:
-            if self.base_type_is_struct() or self.base_type_is_string():
-                return f"const {t}&"
-            else:
-                return t
+
+        if self.base_type_is_struct() or self.base_type_is_string():
+            return f"const {t}&"
+
+        return t
 
     def read_type(self) -> str:
         if self.base_type_is_string():
@@ -105,10 +106,11 @@ class LrpcVar:
 
         if self.is_array():
             return f"etl::array<{t}, {self.array_size()}>"
-        elif self.is_optional():
+
+        if self.is_optional():
             return f"etl::optional<{t}>"
-        else:
-            return t
+
+        return t
 
     def write_type(self) -> str:
         t = self.base_type()

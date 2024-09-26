@@ -1,12 +1,12 @@
 from typing import Optional, TypedDict
 from typing_extensions import NotRequired
 
-import jsonschema
-import yaml
-from lrpc import LrpcVisitor
-from lrpc.schema import load_lrpc_schema
-from lrpc.core import LrpcConstant, LrpcEnum, LrpcService, LrpcStruct, LrpcVarDict
-from lrpc.core import LrpcStructDict, LrpcServiceDict, LrpcConstantDict, LrpcEnumDict
+from .constant import LrpcConstant, LrpcConstantDict
+from .enum import LrpcEnum, LrpcEnumDict
+from .service import LrpcService, LrpcServiceDict
+from .struct import LrpcStruct, LrpcStructDict
+from .var import LrpcVarDict
+from ..visitors import LrpcVisitor
 
 
 class LrpcDefDict(TypedDict):
@@ -160,20 +160,3 @@ class LrpcDef:
 
         if var["type"].strip("@") in enum_names:
             var["type"] = "enum" + var["type"]
-
-    @staticmethod
-    def load(definition_url: str) -> "LrpcDef":
-        from lrpc.validation import SemanticAnalyzer
-
-        with open(definition_url, mode="rt", encoding="utf-8") as rpc_def:
-            definition = yaml.safe_load(rpc_def)
-            jsonschema.validate(definition, load_lrpc_schema())
-
-            lrpc_def = LrpcDef(definition)
-            sa = SemanticAnalyzer(lrpc_def)
-            sa.analyze()
-
-            assert len(sa.errors) == 0
-            assert len(sa.warnings) == 0
-
-            return lrpc_def

@@ -9,8 +9,9 @@ from typing import Any, Callable, Optional
 import click
 import serial
 import yaml
-from lrpc.client import ClientCliVisitor, LrpcClient
-from lrpc.core.definition import LrpcDef
+from .client import ClientCliVisitor, LrpcClient
+from .core.definition import LrpcDef
+from .utils import load_lrpc_def
 
 LRPCC_CONFIG_ENV_VAR = "LRPCC_CONFIG"
 LRPCC_CONFIG_YAML = "lrpcc.config.yaml"
@@ -101,7 +102,7 @@ def create(definition_url: str, transport_type: str) -> None:
 
 class Lrpcc:
     def __init__(self, config: dict) -> None:
-        self.lrpc_def: LrpcDef = LrpcDef.load(config[DEFINITION_URL])
+        self.lrpc_def: LrpcDef = load_lrpc_def(config[DEFINITION_URL])
         self.client = LrpcClient(config[DEFINITION_URL])
         self.transport_type: str = config[TRANSPORT_TYPE]
         self.transport_params: dict = config[TRANSPORT_PARAMS]

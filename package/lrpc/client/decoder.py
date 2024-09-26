@@ -1,7 +1,7 @@
 import struct
 from typing import Any
 
-from lrpc.core import LrpcDef, LrpcVar
+from ..core import LrpcDef, LrpcVar
 
 
 class LrpcDecoder:
@@ -13,8 +13,8 @@ class LrpcDecoder:
     def __decode_string(self, var: LrpcVar) -> str:
         if var.is_auto_string():
             return self.__decode_auto_string()
-        else:
-            return self.__decode_fixed_size_string(var)
+
+        return self.__decode_fixed_size_string(var)
 
     def __decode_fixed_size_string(self, var: LrpcVar) -> str:
         if len(self.encoded) < (var.string_size() + 1):

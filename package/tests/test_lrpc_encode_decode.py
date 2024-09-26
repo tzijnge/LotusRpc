@@ -1,9 +1,11 @@
-from lrpc.core import LrpcVar, LrpcDef
-from lrpc.client import lrpc_encode, lrpc_decode
 from os import path
 
+from lrpc.client import lrpc_decode, lrpc_encode
+from lrpc.core import LrpcVar
+from lrpc.utils import load_lrpc_def
+
 definition_file = path.join(path.dirname(path.abspath(__file__)), "test_lrpc_encode_decode.lrpc.yaml")
-lrpc_def = LrpcDef.load(definition_file)
+lrpc_def = load_lrpc_def(definition_file)
 
 
 def test_encode_decode() -> None:

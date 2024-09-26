@@ -119,7 +119,7 @@ services:
 
     c1 = constants[0]
     assert c1.name() == "c1"
-    assert c1.value() == True
+    assert c1.value() is True
     assert c1.cpp_type() == "bool"
 
     c2 = constants[1]
@@ -199,7 +199,7 @@ enums:
     lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
     enum = lrpc_def.enums()[0]
 
-    assert enum.is_external() == True
+    assert enum.is_external() is True
     assert enum.external_file() == "a/b/c/d.hpp"
 
 
@@ -289,7 +289,7 @@ structs:
     lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
     struct = lrpc_def.structs()[0]
 
-    assert struct.is_external() == True
+    assert struct.is_external() is True
     assert struct.external_file() == "a/b/c/d.hpp"
     assert struct.external_namespace() == "a::b::c"
 

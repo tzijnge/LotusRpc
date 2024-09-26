@@ -1,9 +1,9 @@
 import os
 from typing import Optional
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
-from lrpc import LrpcVisitor
-from lrpc.codegen.utils import optionally_in_namespace
-from lrpc.core import LrpcConstant, LrpcDef
+from ..visitors import LrpcVisitor
+from ..codegen.utils import optionally_in_namespace
+from ..core import LrpcConstant, LrpcDef
 
 
 class ConstantsFileVisitor(LrpcVisitor):

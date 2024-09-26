@@ -1,10 +1,10 @@
 import os
 from typing import Optional
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
-from lrpc import LrpcVisitor
-from lrpc.core import LrpcDef
-from lrpc.core import LrpcEnum
-from lrpc.codegen.utils import optionally_in_namespace
+from ..visitors import LrpcVisitor
+from ..core import LrpcDef
+from ..core import LrpcEnum
+from ..codegen.utils import optionally_in_namespace
 
 
 class EnumFileVisitor(LrpcVisitor):

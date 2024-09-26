@@ -1,7 +1,7 @@
 from typing import Optional, TypedDict
 
-from lrpc import LrpcVisitor
-from lrpc.core import LrpcFun, LrpcFunDict
+from ..visitors import LrpcVisitor
+from .function import LrpcFun, LrpcFunDict
 
 
 class LrpcServiceDict(TypedDict):

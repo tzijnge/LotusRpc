@@ -1,9 +1,9 @@
 import os
 
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
-from lrpc import LrpcVisitor
-from lrpc.codegen.utils import optionally_in_namespace
-from lrpc.core import LrpcDef, LrpcService
+from ..visitors import LrpcVisitor
+from ..codegen.utils import optionally_in_namespace
+from ..core import LrpcDef, LrpcService
 
 
 class ServerIncludeVisitor(LrpcVisitor):

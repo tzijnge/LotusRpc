@@ -4,8 +4,8 @@ from typing import Any, Callable, Optional
 import click
 import yaml
 import yaml.parser
-from lrpc import LrpcVisitor
-from lrpc.core import LrpcDef, LrpcEnum, LrpcEnumField, LrpcFun, LrpcService, LrpcVar
+from ..visitors import LrpcVisitor
+from ..core import LrpcDef, LrpcEnum, LrpcEnumField, LrpcFun, LrpcService, LrpcVar
 
 NONE_ARG = "7bc9ddaa-b6c9-4afb-93c1-5240ec91ab9c"
 
@@ -17,7 +17,7 @@ class YamlParamType(click.ParamType):
 
     name = "YAML"
 
-    def convert(self, value: Any, param: Optional[click.Parameter], ctx: Optional[click.Context]) -> Any:
+    def convert(self, value: Any, param: Optional[click.Parameter], ctx: Optional[click.Context]) -> dict:
         if isinstance(value, dict):
             return value
 
@@ -25,6 +25,8 @@ class YamlParamType(click.ParamType):
             return yaml.safe_load(value)
         except yaml.parser.ParserError:
             self.fail(f"{value} does not contain valid YAML", param, ctx)
+
+        return {}
 
 
 class OptionalParamType(click.ParamType):
@@ -44,7 +46,8 @@ class OptionalParamType(click.ParamType):
 
         if value == "_":
             return NONE_ARG
-        elif len(value) != 0 and len(value.replace("_", "")) == 0:  # value only contains underscores
+
+        if len(value) != 0 and len(value.replace("_", "")) == 0:  # value only contains underscores
             value = value.removeprefix("_")
 
         return self.contained_type.convert(value, param, ctx)
@@ -119,8 +122,8 @@ class ClientCliVisitor(LrpcVisitor):
 
         if param.is_optional():
             return OptionalParamType(t)
-        else:
-            return t
+
+        return t
 
     def __handle_command(self, service: Optional[str], function: str, **kwargs: Any) -> Callable:
         for a, v in kwargs.items():

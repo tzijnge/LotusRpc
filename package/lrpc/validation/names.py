@@ -1,24 +1,30 @@
-from lrpc import LrpcVisitor
+from lrpc.validation import LrpcValidator
 from lrpc.core import LrpcConstant, LrpcDef, LrpcEnum, LrpcService, LrpcStruct
 
 
-class NamesChecker(LrpcVisitor):
+class NamesValidator(LrpcValidator):
     def __init__(self) -> None:
-        self.errors: list[str] = []
-        self.warnings: list[str] = []
-        self.names: set[str] = set()
+        self.__errors: list[str] = []
+        self.__warnings: list[str] = []
+        self.__names: set[str] = set()
+
+    def errors(self) -> list[str]:
+        return self.__errors
+
+    def warnings(self) -> list[str]:
+        return self.__warnings
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
-        self.errors.clear()
-        self.warnings.clear()
-        self.names.clear()
-        self.names.add(lrpc_def.name())
+        self.__errors.clear()
+        self.__warnings.clear()
+        self.__names.clear()
+        self.__names.add(lrpc_def.name())
 
     def __check(self, name: str) -> None:
-        if name in self.names:
-            self.errors.append(f"Duplicate name: {name}")
+        if name in self.__names:
+            self.__errors.append(f"Duplicate name: {name}")
 
-        self.names.add(name)
+        self.__names.add(name)
 
     def visit_lrpc_struct(self, struct: LrpcStruct) -> None:
         self.__check(struct.name())

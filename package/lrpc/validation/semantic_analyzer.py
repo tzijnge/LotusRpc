@@ -1,13 +1,13 @@
 from typing import Any
 from lrpc.core import LrpcDef
 from lrpc.validation import (
-    ServiceChecker,
-    FunctionChecker,
-    EnumChecker,
-    NamesChecker,
-    CustomTypesChecker,
+    ServiceValidator,
+    FunctionValidator,
+    EnumValidator,
+    NamesValidator,
+    CustomTypesValidator,
 )
-from lrpc import LrpcVisitor
+from lrpc.validation import LrpcValidator
 from lrpc.core import LrpcVar
 
 
@@ -17,12 +17,12 @@ class SemanticAnalyzer:
         self.warnings: list[str] = []
         self.definition = definition
         self.__services = definition.services()
-        self.checkers: list[LrpcVisitor] = [
-            ServiceChecker(),
-            FunctionChecker(),
-            EnumChecker(),
-            NamesChecker(),
-            CustomTypesChecker(),
+        self.validators: list[LrpcValidator] = [
+            ServiceValidator(),
+            FunctionValidator(),
+            EnumValidator(),
+            NamesValidator(),
+            CustomTypesValidator(),
         ]
 
     def __duplicates(self, input_list: list[Any]) -> list[str]:
@@ -98,10 +98,10 @@ class SemanticAnalyzer:
             self.errors.append(f"A function cannot return an auto string: {offenders}")
 
     def analyze(self) -> None:
-        for checker in self.checkers:
-            self.definition.accept(checker)
-            self.errors.extend(checker.errors)
-            self.warnings.extend(checker.warnings)
+        for validator in self.validators:
+            self.definition.accept(validator)
+            self.errors.extend(validator.errors())
+            self.warnings.extend(validator.warnings())
 
         self.__check_duplicate_struct_field_names()
         self.__check_auto_string_in_struct()

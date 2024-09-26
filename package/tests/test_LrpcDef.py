@@ -1,3 +1,4 @@
+import pytest
 from lrpc.core import LrpcDef
 import yaml
 
@@ -339,9 +340,10 @@ structs:
     lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
 
     s = lrpc_def.struct("MyStruct1")
-    assert s is not None
     assert s.name() == "MyStruct1"
-    assert lrpc_def.struct("") is None
+
+    with pytest.raises(ValueError):
+        lrpc_def.struct("")
 
 
 def test_get_enum_by_name() -> None:
@@ -359,6 +361,7 @@ enums:
     lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
 
     e = lrpc_def.enum("MyEnum1")
-    assert e is not None
     assert e.name() == "MyEnum1"
-    assert lrpc_def.enum("") is None
+
+    with pytest.raises(ValueError):
+        lrpc_def.enum("")

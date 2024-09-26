@@ -1,5 +1,5 @@
 import struct
-from typing import Any, Optional
+from typing import Any
 
 from lrpc.core import LrpcDef, LrpcVar
 
@@ -13,14 +13,14 @@ def __encode_string(s: str, var: LrpcVar) -> bytes:
     return struct.pack(f"<{len(s)}s", s.encode("utf-8")) + b"\x00"
 
 
-def __encode_optional(value: Any, var: LrpcVar, lrpc_def: Optional[LrpcDef]) -> bytes:
+def __encode_optional(value: Any, var: LrpcVar, lrpc_def: LrpcDef) -> bytes:
     if value is None:
         return struct.pack("<?", False)
 
     return struct.pack("<?", True) + lrpc_encode(value, var.contained(), lrpc_def)
 
 
-def __encode_struct(value: Any, var: LrpcVar, lrpc_def: Optional[LrpcDef]) -> bytes:
+def __encode_struct(value: Any, var: LrpcVar, lrpc_def: LrpcDef) -> bytes:
     encoded = b""
     s = lrpc_def.struct(var.base_type())
 
@@ -34,7 +34,7 @@ def __encode_struct(value: Any, var: LrpcVar, lrpc_def: Optional[LrpcDef]) -> by
     return encoded
 
 
-def __encode_array(value: list[Any], var: LrpcVar, lrpc_def: Optional[LrpcDef]) -> bytes:
+def __encode_array(value: list[Any], var: LrpcVar, lrpc_def: LrpcDef) -> bytes:
     encoded = b""
     for i in range(0, var.array_size()):
         item = lrpc_encode(value[i], var.contained(), lrpc_def)
@@ -43,7 +43,7 @@ def __encode_array(value: list[Any], var: LrpcVar, lrpc_def: Optional[LrpcDef]) 
     return encoded
 
 
-def lrpc_encode(value: Any, var: LrpcVar, lrpc_def: Optional[LrpcDef] = None) -> bytes:
+def lrpc_encode(value: Any, var: LrpcVar, lrpc_def: LrpcDef) -> bytes:
     if var.is_array():
         if not isinstance(value, list):
             raise TypeError(f"Type error for {var.name()}: expected array/list, but got {type(value)}")

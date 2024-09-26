@@ -4,7 +4,7 @@ import os
 import sys
 from glob import glob
 from os import path
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 import click
 import serial
@@ -112,20 +112,19 @@ class Lrpcc:
             print(f"Unsupported transport type: {self.transport_type}")
             sys.exit(1)
 
-    def __communicate_serial(self, encoded: bytes):
+    def __communicate_serial(self, encoded: bytes) -> dict[str, Any]:
         with serial.Serial(**self.transport_params) as transport:
             transport.write(encoded)
             while True:
                 received = transport.read(1)
                 if len(received) == 0:
-                    print("Timeout waiting for response")
-                    break
+                    return {"Error": "Timeout waiting for response"}
 
                 response = self.client.process(received)
-                if response is not None:
+                if response:
                     return response
 
-    def __command_handler(self, service_name: str, function_name: str, **kwargs) -> None:
+    def __command_handler(self, service_name: str, function_name: str, **kwargs: Any) -> None:
         encoded = self.client.encode(service_name, function_name, **kwargs)
         response = self.__communicate(encoded)
         print(response)

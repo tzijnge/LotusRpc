@@ -1,5 +1,5 @@
 import os
-from code_generation.code_generator import CppFile
+from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 from lrpc import LrpcVisitor
 from lrpc.core import LrpcDef, LrpcService, LrpcFun, LrpcVar
 from lrpc.codegen.utils import optionally_in_namespace

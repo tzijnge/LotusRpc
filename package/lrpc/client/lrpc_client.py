@@ -10,12 +10,12 @@ class LrpcClient:
         self.lrpc_def: LrpcDef = LrpcDef.load(definition_file)
         self.receive_buffer = b""
 
-    def process(self, encoded: bytes) -> Optional[dict[str, Any]]:
+    def process(self, encoded: bytes) -> dict[str, Any]:
         self.receive_buffer += encoded
         received = len(self.receive_buffer)
 
         if received == 0:
-            return None
+            return {}
 
         message_length = self.receive_buffer[0]
 
@@ -24,7 +24,7 @@ class LrpcClient:
             self.receive_buffer = self.receive_buffer[message_length + 1 :]
             return result
 
-        return None
+        return {}
 
     def decode(self, encoded: bytes) -> dict[str, Any]:
         ret = {}

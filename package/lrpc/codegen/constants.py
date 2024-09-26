@@ -1,6 +1,6 @@
 import os
 from typing import Optional
-from code_generation.code_generator import CppFile
+from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 from lrpc import LrpcVisitor
 from lrpc.codegen.utils import optionally_in_namespace
 from lrpc.core import LrpcConstant, LrpcDef

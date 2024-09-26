@@ -4,3 +4,4 @@ types-pyyaml
 pyserial
 types-pyserial
 black
+types-setuptools

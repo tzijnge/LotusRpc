@@ -1,22 +1,28 @@
 from lrpc.core import LrpcDef, LrpcService
-from lrpc import LrpcVisitor
+from lrpc.validation import LrpcValidator
 
 
-class ServiceChecker(LrpcVisitor):
+class ServiceValidator(LrpcValidator):
     def __init__(self) -> None:
-        self.errors: list[str] = []
-        self.warnings: list[str] = []
-        self.service_ids: set[int] = set()
+        self.__errors: list[str] = []
+        self.__warnings: list[str] = []
+        self.__service_ids: set[int] = set()
+
+    def errors(self) -> list[str]:
+        return self.__errors
+
+    def warnings(self) -> list[str]:
+        return self.__warnings
 
     def visit_lrpc_def(self, _: LrpcDef) -> None:
-        self.errors.clear()
-        self.warnings.clear()
-        self.service_ids.clear()
+        self.__errors.clear()
+        self.__warnings.clear()
+        self.__service_ids.clear()
 
     def visit_lrpc_service(self, service: LrpcService) -> None:
         service_id = service.id()
 
-        if service_id in self.service_ids:
-            self.errors.append(f"Duplicate service id: {service_id}")
+        if service_id in self.__service_ids:
+            self.__errors.append(f"Duplicate service id: {service_id}")
 
-        self.service_ids.add(service_id)
+        self.__service_ids.add(service_id)

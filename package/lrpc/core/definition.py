@@ -133,22 +133,22 @@ class LrpcDef:
     def structs(self) -> list[LrpcStruct]:
         return self.__structs
 
-    def struct(self, name: str) -> Optional[LrpcStruct]:
+    def struct(self, name: str) -> LrpcStruct:
         for s in self.structs():
             if s.name() == name:
                 return s
 
-        return None
+        raise ValueError(f"No struct {name} in LRPC definition {self.name()}")
 
     def enums(self) -> list[LrpcEnum]:
         return self.__enums
 
-    def enum(self, name: str) -> Optional[LrpcEnum]:
+    def enum(self, name: str) -> LrpcEnum:
         for s in self.enums():
             if s.name() == name:
                 return s
 
-        return None
+        raise ValueError(f"No enum {name} in LRPC definition {self.name()}")
 
     def constants(self) -> list[LrpcConstant]:
         return self.__constants

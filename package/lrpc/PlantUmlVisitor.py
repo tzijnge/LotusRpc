@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Union
+from typing import Iterator, Optional, Union
 from contextlib import contextmanager
 
 from lrpc import LrpcVisitor
@@ -67,31 +67,31 @@ class PumlFile:
         self.text += t
 
     @contextmanager
-    def font(self, f: str):
+    def font(self, f: str) -> Iterator[None]:
         self.write(f"<font:{f}>")
         yield
         self.write("</font>")
 
     @contextmanager
-    def color(self, c: str):
+    def color(self, c: str) -> Iterator[None]:
         self.write(f"<color:{c}>")
         yield
         self.write("</color>")
 
     @contextmanager
-    def size(self, s: int):
+    def size(self, s: int) -> Iterator[None]:
         self.write(f"<size:{s}>")
         yield
         self.write("</size>")
 
     @contextmanager
-    def bold(self):
+    def bold(self) -> Iterator[None]:
         self.write("**")
         yield
         self.write("**")
 
     @contextmanager
-    def enclosed_in(self, open_str: str, close_str: str):
+    def enclosed_in(self, open_str: str, close_str: str) -> Iterator[None]:
         self.write(open_str)
         yield
         self.write(close_str)

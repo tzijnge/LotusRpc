@@ -38,6 +38,11 @@ jobs:
         with:
           submodules: "true"
 
+      - name: Install Python requirements
+        run: |
+          pip install -r requirements/package.txt
+          pip install -r requirements/dev.txt
+
       - name: Configure CMake
         run: cmake -B ${{ env.build }}
 

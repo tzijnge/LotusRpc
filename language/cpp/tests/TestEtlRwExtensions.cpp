@@ -59,7 +59,7 @@ TEST(TestEtlRwExtensions, readArithmetic)
     EXPECT_TRUE(lrpc::read_unchecked<bool>(reader));
     EXPECT_EQ(0x02, lrpc::read_unchecked<uint8_t>(reader));
     EXPECT_EQ(0x0403, lrpc::read_unchecked<uint16_t>(reader));
-    EXPECT_FLOAT_EQ(123.456, lrpc::read_unchecked<float>(reader));
+    EXPECT_FLOAT_EQ(123.456F, lrpc::read_unchecked<float>(reader));
 }
 
 TEST(TestEtlRwExtensions, readAutoString)
@@ -160,7 +160,7 @@ TEST(TestEtlRwExtensions, copyString)
 
 TEST(TestEtlRwExtensions, copyArrayOfString)
 {
-    etl::array<etl::string_view, 2> source {"T1", "T2"};
+    etl::array<etl::string_view, 2> source{"T1", "T2"};
     etl::array<etl::string<2>, 2> dest;
     lrpc::copy<etl::array<etl::string<2>, 2>>(source, dest);
     EXPECT_EQ("T1", dest[0]);
@@ -169,13 +169,13 @@ TEST(TestEtlRwExtensions, copyArrayOfString)
 
 TEST(TestEtlRwExtensions, copyOptionalString)
 {
-    etl::optional<etl::string_view> source1 {"T1"};
+    etl::optional<etl::string_view> source1{"T1"};
     etl::optional<etl::string<2>> dest1;
     lrpc::copy<etl::optional<etl::string<2>>>(source1, dest1);
     ASSERT_TRUE(dest1.has_value());
     EXPECT_EQ("T1", dest1.value());
 
-    etl::optional<etl::string<2>> dest2 {"~~"};
+    etl::optional<etl::string<2>> dest2{"~~"};
     lrpc::copy<etl::optional<etl::string<2>>>(source1, dest2);
     ASSERT_TRUE(dest2.has_value());
     EXPECT_EQ("T1", dest2.value());
@@ -194,7 +194,7 @@ TEST(TestEtlRwExtensions, writeArithmetic)
     lrpc::write_unchecked<bool>(writer, true);
     lrpc::write_unchecked<uint8_t>(writer, 0x02);
     lrpc::write_unchecked<uint16_t>(writer, 0x0403);
-    lrpc::write_unchecked<float>(writer, 123.456);
+    lrpc::write_unchecked<float>(writer, 123.456F);
 
     auto written = writer.used_data();
     ASSERT_EQ(9, written.size());
@@ -248,11 +248,11 @@ TEST(TestEtlRwExtensions, writeArray)
     etl::array<uint8_t, 10> storage;
     etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
 
-    etl::array<uint8_t, 2> t2 {0x01, 0x02};
+    etl::array<uint8_t, 2> t2{0x01, 0x02};
     lrpc::write_unchecked<etl::array<uint8_t, 2>>(writer, t2);
 
     auto written = writer.used_data();
-    ASSERT_EQ(2,  written.size());
+    ASSERT_EQ(2, written.size());
     EXPECT_EQ(0x01, written[0]);
     EXPECT_EQ(0x02, written[1]);
 }
@@ -262,7 +262,7 @@ TEST(TestEtlRwExtensions, writeArrayOfString)
     etl::array<uint8_t, 10> storage;
     etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
 
-    etl::array<etl::string<2>, 2> a {"T1", "T2"};
+    etl::array<etl::string<2>, 2> a{"T1", "T2"};
     lrpc::write_unchecked<etl::array<etl::string<2>, 2>>(writer, a);
 
     auto written = writer.used_data();

@@ -117,7 +117,7 @@ TEST_F(TestServer1, decodeF3)
 // Decode function f4 with float arg
 TEST_F(TestServer1, decodeF4)
 {
-    EXPECT_CALL(s0Service, f4(123.456));
+    EXPECT_CALL(s0Service, f4(123.456F));
     auto response = receive({4, 0x79, 0xE9, 0xF6, 0x42});
     EXPECT_RESPONSE({4}, response);
 }

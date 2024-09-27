@@ -56,7 +56,13 @@ target_include_directories(UnitTests PRIVATE .)
 target_include_directories(UnitTests PRIVATE ../include)
 target_include_directories(UnitTests PRIVATE ../../../external/etl/include)
 
-target_compile_options(UnitTests PRIVATE -Werror -Wall -Wextra)
+if(MSVC)
+  target_compile_options(UnitTests PRIVATE /W4)
+else()
+  target_compile_options(UnitTests  PRIVATE -Wall -Wextra)
+endif()
+
+set_property(TARGET UnitTests PROPERTY COMPILE_WARNING_AS_ERROR ON)
 
 target_link_libraries(
   UnitTests

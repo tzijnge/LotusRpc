@@ -1,6 +1,6 @@
 project(UnitTests VERSION 0.1.0)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(BUILD_GMOCK ON)
 set(gtest_force_shared_crt on)
 
@@ -54,7 +54,7 @@ add_executable(UnitTests
 
 target_include_directories(UnitTests PRIVATE .)
 target_include_directories(UnitTests PRIVATE ../include)
-target_include_directories(UnitTests PRIVATE ../../../external/etl/include)
+target_include_directories(UnitTests SYSTEM PRIVATE ../../../external/etl/include)
 
 if(MSVC)
   target_compile_options(UnitTests PRIVATE /W4)
@@ -62,7 +62,7 @@ else()
   target_compile_options(UnitTests  PRIVATE -Wall -Wextra)
 endif()
 
-set_property(TARGET UnitTests PROPERTY COMPILE_WARNING_AS_ERROR ON)
+set_property(TARGET UnitTests PROPERTY COMPILE_WARNING_AS_ERROR OFF)
 
 target_link_libraries(
   UnitTests

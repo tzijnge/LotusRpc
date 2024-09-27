@@ -60,20 +60,20 @@ public:
         const etl::span<const uint8_t> s(bytes.begin(), bytes.end());
 
         lrpc::Service::Reader reader(s.begin(), s.end(), etl::endian::little);
-        lrpc::Service::Writer writer(response.begin(), response.end(), etl::endian::little);
+        lrpc::Service::Writer writer(response_buffer.begin(), response_buffer.end(), etl::endian::little);
         s0Service.invoke(reader, writer);
 
-        return { response.begin(), writer.size_bytes()};
+        return {response_buffer.begin(), writer.size_bytes()};
     }
 
     void EXPECT_RESPONSE(const std::vector<uint8_t> &expected, const etl::span<uint8_t> actual)
     {
-        std::vector<uint8_t> actualVec {actual.begin(), actual.end()};
+        std::vector<uint8_t> actualVec{actual.begin(), actual.end()};
         EXPECT_EQ(expected, actualVec);
     }
 
 private:
-    etl::array<uint8_t, 256> response;
+    etl::array<uint8_t, 256> response_buffer;
 };
 
 static_assert(std::is_same<ts1::Server1, lrpc::Server<0, 100, 200>>::value, "RX and/or TX buffer size are unequal to the definition file");
@@ -125,7 +125,7 @@ TEST_F(TestServer1, decodeF4)
 // Decode function f5 with array of uint16_t arg
 TEST_F(TestServer1, decodeF5)
 {
-    std::vector<uint16_t> expected {0xBBAA, 0xDDCC};
+    std::vector<uint16_t> expected{0xBBAA, 0xDDCC};
     EXPECT_CALL(s0Service, f5(SPAN_EQ(expected)));
     auto response = receive({5, 0xAA, 0xBB, 0xCC, 0xDD});
     EXPECT_RESPONSE({5}, response);

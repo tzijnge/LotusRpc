@@ -18,7 +18,6 @@ MATCHER_P(SPAN_EQ, e, "Equality matcher for etl::span")
         }
     }
     return true;
-
 }
 
 class MockS01Service : public s01ServiceShim
@@ -44,20 +43,20 @@ public:
         const etl::span<const uint8_t> s(bytes.begin(), bytes.end());
 
         lrpc::Service::Reader reader(s.begin(), s.end(), etl::endian::little);
-        lrpc::Service::Writer writer(response.begin(), response.end(), etl::endian::little);
+        lrpc::Service::Writer writer(response_buffer.begin(), response_buffer.end(), etl::endian::little);
         service.invoke(reader, writer);
 
-        return { response.begin(), writer.size_bytes()};
+        return {response_buffer.begin(), writer.size_bytes()};
     }
 
     void EXPECT_RESPONSE(const std::vector<uint8_t> &expected, const etl::span<uint8_t> actual)
     {
-        std::vector<uint8_t> actualVec {actual.begin(), actual.end()};
+        std::vector<uint8_t> actualVec{actual.begin(), actual.end()};
         EXPECT_EQ(expected, actualVec);
     }
 
 private:
-    etl::array<uint8_t, 256> response;
+    etl::array<uint8_t, 256> response_buffer;
 };
 
 // Decode void function with array of strings param
@@ -82,7 +81,7 @@ TEST_F(TestServer2_s1, decodeF0WithStringShorterThanMax)
 // Decode function that returns array of strings
 TEST_F(TestServer2_s1, decodeF1)
 {
-    etl::array<etl::string<2>, 2> retVal {"T1", "T2"};
+    etl::array<etl::string<2>, 2> retVal{"T1", "T2"};
     EXPECT_CALL(service, f1()).WillOnce(Return(retVal));
     auto response = receive({1});
     EXPECT_RESPONSE({1, 'T', '1', '\0', 'T', '2', '\0'}, response);
@@ -144,8 +143,8 @@ TEST_F(TestServer2_s1, decodeF6)
 // Decode function that takes auto string argument and returns fixed size string
 TEST_F(TestServer2_s1, decodeF7)
 {
-    etl::string<5> retVal {"T1234"};
-    etl::string_view expected {"T0"};
+    etl::string<5> retVal{"T1234"};
+    etl::string_view expected{"T0"};
     EXPECT_CALL(service, f7(expected)).WillOnce(Return(retVal));
     auto response = receive({7, 'T', '0', '\0'});
     EXPECT_RESPONSE({7, 'T', '1', '2', '3', '4', '\0'}, response);

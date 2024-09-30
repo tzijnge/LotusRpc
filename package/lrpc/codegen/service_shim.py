@@ -1,15 +1,17 @@
 import os
+from typing import Optional
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
+
+from ..codegen.utils import optionally_in_namespace
 from ..visitors import LrpcVisitor
 from ..core import LrpcDef, LrpcService, LrpcFun, LrpcVar
-from ..codegen.utils import optionally_in_namespace
 
 
 class ServiceShimVisitor(LrpcVisitor):
 
     def __init__(self, output: os.PathLike):
         self.file: CppFile
-        self.lrpc_def: LrpcDef
+        self.namespace: Optional[str]
         self.output = output
         self.function_info: dict
         self.max_function_id = 0
@@ -24,7 +26,7 @@ class ServiceShimVisitor(LrpcVisitor):
         self.number_functions = 0
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
-        self.lrpc_def = lrpc_def
+        self.namespace = lrpc_def.namespace()
 
     def visit_lrpc_service(self, service: LrpcService) -> None:
         self.file = CppFile(f"{self.output}/{service.name()}_ServiceShim.hpp")
@@ -41,7 +43,7 @@ class ServiceShimVisitor(LrpcVisitor):
         self.__write_includes()
 
     def visit_lrpc_service_end(self) -> None:
-        self.__write_shim(self.lrpc_def.namespace())
+        optionally_in_namespace(self.file, self.__write_shim, self.namespace)
 
     def visit_lrpc_function(self, function: LrpcFun) -> None:
         self.function_params = []
@@ -69,7 +71,6 @@ class ServiceShimVisitor(LrpcVisitor):
     def visit_lrpc_function_return(self, ret: LrpcVar) -> None:
         self.function_returns.append(ret)
 
-    @optionally_in_namespace
     def __write_shim(self) -> None:
         with self.file.block(f"class {self.service_name}ServiceShim : public lrpc::Service", ";"):
             self.file.label("public")

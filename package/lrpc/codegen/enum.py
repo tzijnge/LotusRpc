@@ -31,14 +31,13 @@ class EnumFileVisitor(LrpcVisitor):
             self.__write_external_enum_checks()
         else:
             self.file.newline()
-            self.__write_enum(self.namespace)
+            optionally_in_namespace(self.file, self.__write_enum, self.namespace)
 
     def __write_external_alias_if_needed(self) -> None:
         if self.namespace or self.descriptor.external_namespace():
-            self.__write_external_alias(self.namespace)
+            optionally_in_namespace(self.file, self.__write_external_alias, self.namespace)
             self.file.newline()
 
-    @optionally_in_namespace
     def __write_external_alias(self) -> None:
         name = self.__qualified_name()
         ext_ns = self.descriptor.external_namespace()
@@ -80,7 +79,6 @@ class EnumFileVisitor(LrpcVisitor):
                     for f in self.descriptor.fields():
                         self.file.write(f"case {self.__name()}::{f.name()}: break;")
 
-    @optionally_in_namespace
     def __write_enum(self) -> None:
         n = self.descriptor.name()
         with self.file.block(f"enum class {n}", ";"):

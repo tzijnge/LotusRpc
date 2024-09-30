@@ -1,5 +1,5 @@
 import os
-from typing import Set
+from typing import Optional, Set
 
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 from ..visitors import LrpcVisitor
@@ -12,7 +12,7 @@ class StructFileVisitor(LrpcVisitor):
 
     def __init__(self, output: os.PathLike) -> None:
         self.output = output
-        self.namespace = None
+        self.namespace: Optional[str]
         self.file: CppFile
         self.descriptor: LrpcStruct
         self.alias: str = ""
@@ -34,7 +34,7 @@ class StructFileVisitor(LrpcVisitor):
         if self.descriptor.is_external():
             self.__write_external_alias_if_needed()
         else:
-            self.__write_struct(self.namespace)
+            optionally_in_namespace(self.file, self.__write_struct, self.namespace)
 
         self.file.newline()
         self.__write_codec()
@@ -65,7 +65,7 @@ class StructFileVisitor(LrpcVisitor):
 
     def __write_external_alias_if_needed(self) -> None:
         if len(self.alias) > 0:
-            self.__write_external_alias(self.namespace)
+            optionally_in_namespace(self.file, self.__write_external_alias, self.namespace)
             self.file.newline()
 
     def __write_external_struct_checks(self) -> None:
@@ -85,7 +85,6 @@ class StructFileVisitor(LrpcVisitor):
                     f'static_assert(std::is_same<decltype(dummy::{self.__qualified_name()}::{f.name()}), decltype({self.__name()}::{f.name()})>::value, "Type of field {f.name()} is not as specified in LRPC");'
                 )
 
-    @optionally_in_namespace
     def __write_external_alias(self) -> None:
         ext_ns = self.descriptor.external_namespace()
         name = self.descriptor.name()
@@ -100,7 +99,6 @@ class StructFileVisitor(LrpcVisitor):
         for i in sorted(self.includes):
             self.file(f"#include {i}")
 
-    @optionally_in_namespace
     def __write_struct(self) -> None:
         with self.file.block(f"struct {self.__qualified_name()}", ";"):
             for f in self.descriptor.fields():

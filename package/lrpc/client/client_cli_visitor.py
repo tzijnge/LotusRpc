@@ -87,7 +87,7 @@ class ClientCliVisitor(LrpcVisitor):
         self.current_function = click.Command(
             name=function.name(),
             callback=partial(self.__handle_command, self.current_service.name, function.name()),
-            help="my help 123",
+            help=f"Call LRPC function {self.current_service.name}.{function.name()}",
         )
 
     def visit_lrpc_function_end(self) -> None:
@@ -95,8 +95,9 @@ class ClientCliVisitor(LrpcVisitor):
 
     def visit_lrpc_function_param(self, param: LrpcVar) -> None:
         attributes = {"type": self.__click_type(param), "nargs": param.array_size() if param.is_array() else 1}
+        required = True
 
-        arg = click.Argument([param.name()], **attributes)
+        arg = click.Argument([param.name()], required, **attributes)
         self.current_function.params.append(arg)
 
     def __click_type(self, param: LrpcVar) -> click.ParamType:

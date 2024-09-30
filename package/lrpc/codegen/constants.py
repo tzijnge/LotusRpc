@@ -33,7 +33,7 @@ class ConstantsFileVisitor(LrpcVisitor):
         self.__write_include_guard()
         self.__write_includes()
         self.file.newline()
-        self.__write_constant_definitions(self.namespace)
+        optionally_in_namespace(self.file, self.__write_constant_definitions, self.namespace)
 
     def __write_include_guard(self) -> None:
         self.file("#pragma once")
@@ -42,7 +42,6 @@ class ConstantsFileVisitor(LrpcVisitor):
         for i in self.includes:
             self.file.write(f"#include <{i}>")
 
-    @optionally_in_namespace
     def __write_constant_definitions(self) -> None:
         for cd in self.constant_definitions:
             self.file.write(cd)

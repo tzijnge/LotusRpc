@@ -1,13 +1,4 @@
 from typing import Any
-
-# from . import (
-#     LrpcValidator,
-#     ServiceValidator,
-#     FunctionValidator,
-#     EnumValidator,
-#     NamesValidator,
-#     CustomTypesValidator,
-# )
 from .validator import LrpcValidator
 from .service import ServiceValidator
 from .function import FunctionValidator
@@ -31,9 +22,10 @@ class SemanticAnalyzer:
             CustomTypesValidator(),
         ]
 
-    def __duplicates(self, input_list: list[Any]) -> list[str]:
-        unique: list[str] = []
-        duplicates: list[str] = []
+    @staticmethod
+    def __duplicates(input_list: list[tuple[str, str]]) -> list[tuple[str, str]]:
+        unique: list[tuple[str, str]] = []
+        duplicates: list[tuple[str, str]] = []
 
         for n in input_list:
             if n in unique:
@@ -74,7 +66,8 @@ class SemanticAnalyzer:
                 f"More than one auto string per parameter list or return value list is not allowed: {offenders}"
             )
 
-    def __is_auto_string_array(self, p: LrpcVar) -> bool:
+    @staticmethod
+    def __is_auto_string_array(p: LrpcVar) -> bool:
         if not p.is_auto_string():
             return False
 

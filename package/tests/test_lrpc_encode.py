@@ -186,7 +186,7 @@ def test_encode_fixed_size_string() -> None:
     assert encode_var("test123", var) == b"test123\x00\x00\x00\x00"
 
     with pytest.raises(ValueError):
-        assert encode_var("0123456789_", var) == b"0123456789\x00"
+        encode_var("0123456789_", var)
 
 
 def test_encode_array() -> None:

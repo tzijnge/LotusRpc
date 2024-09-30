@@ -1,3 +1,4 @@
+import math
 from lrpc.core import LrpcConstant, LrpcConstantDict
 
 
@@ -17,7 +18,7 @@ def test_default_float() -> None:
     constant = LrpcConstant(c)
 
     assert constant.name() == "t"
-    assert constant.value() == 123.456
+    assert math.isclose(float(constant.value()), 123.456)
     assert constant.cpp_type() == "float"
 
 
@@ -57,7 +58,7 @@ def test_non_default_float() -> None:
     constant = LrpcConstant(c)
 
     assert constant.name() == "t"
-    assert constant.value() == 123.456
+    assert math.isclose(float(constant.value()), 123.456)
     assert constant.cpp_type() == "double"
 
 

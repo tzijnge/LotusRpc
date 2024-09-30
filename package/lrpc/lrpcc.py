@@ -4,7 +4,8 @@ import os
 import sys
 from glob import glob
 from os import path
-from typing import Any, Callable, Optional
+from typing import Any, Optional
+from collections.abc import Callable
 
 import click
 import serial

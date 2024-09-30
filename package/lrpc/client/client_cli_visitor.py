@@ -1,5 +1,6 @@
 from functools import partial
-from typing import Any, Callable, Optional
+from typing import Any, Optional
+from collections.abc import Callable
 
 import click
 import yaml
@@ -47,7 +48,8 @@ class OptionalParamType(click.ParamType):
         if value == "_":
             return NONE_ARG
 
-        if len(value) != 0 and len(value.replace("_", "")) == 0:  # value only contains underscores
+        # value only contains underscores
+        if len(value) != 0 and len(value.replace("_", "")) == 0:
             value = value.removeprefix("_")
 
         return self.contained_type.convert(value, param, ctx)

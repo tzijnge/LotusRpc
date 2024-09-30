@@ -1,3 +1,4 @@
+import math
 import pytest
 from lrpc.core import LrpcDef
 import yaml
@@ -129,12 +130,12 @@ services:
 
     c3 = constants[2]
     assert c3.name() == "c3"
-    assert c3.value() == 123.456
+    assert math.isclose(float(c3.value()), 123.456)
     assert c3.cpp_type() == "float"
 
     c4 = constants[3]
     assert c4.name() == "c4"
-    assert c4.value() == 123.456
+    assert math.isclose(float(c4.value()), 123.456)
     assert c4.cpp_type() == "double"
 
     c5 = constants[4]

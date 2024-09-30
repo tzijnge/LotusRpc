@@ -22,7 +22,8 @@ class LrpcService:
         self.__id = raw["id"]
         self.__functions = [LrpcFun(f) for f in raw["functions"]]
 
-    def __init_functions_ids(self, functions: list[LrpcFunDict]) -> None:
+    @staticmethod
+    def __init_functions_ids(functions: list[LrpcFunDict]) -> None:
         last_function_id = -1
 
         for f in functions:

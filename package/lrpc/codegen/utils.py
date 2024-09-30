@@ -1,4 +1,5 @@
-from typing import Callable, Optional
+from typing import Optional
+from collections.abc import Callable
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 
 

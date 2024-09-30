@@ -93,7 +93,8 @@ def test_decode_double() -> None:
     var = LrpcVar({"name": "v1", "type": "double"})
 
     assert lrpc_decode(b"\x00\x00\x00\x00\x00\x00\x00\x00", var, lrpc_def) == 0
-    assert lrpc_decode(b"\x77\xBE\x9F\x1A\x2F\xDD\x5E\x40", var, lrpc_def) == 123.456
+    v = lrpc_decode(b"\x77\xBE\x9F\x1A\x2F\xDD\x5E\x40", var, lrpc_def)
+    assert math.isclose(float(v), 123.456)
 
 
 def test_decode_bool() -> None:

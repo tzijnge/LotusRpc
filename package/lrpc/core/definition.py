@@ -67,7 +67,8 @@ class LrpcDef:
             for field in struct["fields"]:
                 self.__update_type(field, struct_names, enum_names)
 
-    def __init_service_ids(self, raw: LrpcDefDict) -> None:
+    @staticmethod
+    def __init_service_ids(raw: LrpcDefDict) -> None:
         last_service_id = -1
 
         for s in raw["services"]:

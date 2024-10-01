@@ -6,7 +6,7 @@ class EnumValidator(LrpcValidator):
     def __init__(self) -> None:
         self.__errors: list[str] = []
         self.__warnings: list[str] = []
-        self.__enum_ids: set = set()
+        self.__enum_ids: set[int] = set()
         self.__enum_names: set[str] = set()
 
     def errors(self) -> list[str]:

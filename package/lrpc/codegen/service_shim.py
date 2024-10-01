@@ -13,14 +13,13 @@ class ServiceShimVisitor(LrpcVisitor):
         self.file: CppFile
         self.namespace: Optional[str]
         self.output = output
-        self.function_info: dict
+        self.function_info: dict[int, str]
         self.max_function_id = 0
-        self.function_declarations: list
-        self.function_shims: list
-        self.function_params: list
-        self.function_returns: list
+        self.function_declarations: list[str]
+        self.function_shims: list[list[str]]
+        self.function_params: list[LrpcVar]
+        self.function_returns: list[LrpcVar]
         self.function_name: str
-        self.shim_array: list
         self.service_name: str
         self.service_id: int
         self.number_functions = 0
@@ -34,7 +33,6 @@ class ServiceShimVisitor(LrpcVisitor):
         self.max_function_id = 0
         self.function_declarations = []
         self.function_shims = []
-        self.shim_array = []
         self.service_name = service.name()
         self.service_id = service.id()
         self.number_functions = len(service.functions())

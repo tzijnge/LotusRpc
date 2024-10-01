@@ -6,7 +6,7 @@ class FunctionValidator(LrpcValidator):
     def __init__(self) -> None:
         self.__errors: list[str] = []
         self.__warnings: list[str] = []
-        self.__function_ids: set = set()
+        self.__function_ids: set[int] = set()
         self.__function_names: set[str] = set()
         self.__current_service: str = ""
 

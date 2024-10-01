@@ -21,7 +21,7 @@ TRANSPORT_TYPE = "transport_type"
 TRANSPORT_PARAMS = "transport_params"
 
 
-def __load_config() -> Optional[dict]:
+def __load_config() -> Optional[dict[str, Any]]:
     configs = glob(f"**/{LRPCC_CONFIG_YAML}", recursive=True)
     if len(configs) == 0:
         if LRPCC_CONFIG_ENV_VAR in os.environ:
@@ -102,14 +102,14 @@ def create(definition_url: str, transport_type: str) -> None:
 
 
 class Lrpcc:
-    def __init__(self, config: dict) -> None:
+    def __init__(self, config: dict[str, Any]) -> None:
         self.lrpc_def: LrpcDef = load_lrpc_def(config[DEFINITION_URL])
         self.client = LrpcClient(config[DEFINITION_URL])
         self.transport_type: str = config[TRANSPORT_TYPE]
-        self.transport_params: dict = config[TRANSPORT_PARAMS]
+        self.transport_params: dict[str, Any] = config[TRANSPORT_PARAMS]
 
         if self.transport_type == "serial":
-            self.__communicate: Callable = self.__communicate_serial
+            self.__communicate: Callable[[bytes], dict[str, Any]] = self.__communicate_serial
         else:
             print(f"Unsupported transport type: {self.transport_type}")
             sys.exit(1)

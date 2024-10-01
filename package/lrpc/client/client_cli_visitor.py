@@ -18,7 +18,7 @@ class YamlParamType(click.ParamType):
 
     name = "YAML"
 
-    def convert(self, value: Any, param: Optional[click.Parameter], ctx: Optional[click.Context]) -> dict:
+    def convert(self, value: Any, param: Optional[click.Parameter], ctx: Optional[click.Context]) -> dict[str, Any]:
         if isinstance(value, dict):
             return value
 
@@ -62,7 +62,7 @@ class ClientCliVisitor(LrpcVisitor):
     Call ClientCliVisitor.root() to activate the CLI
     """
 
-    def __init__(self, callback: Callable) -> None:
+    def __init__(self, callback: Callable[..., None]) -> None:
         self.root: click.Group
         self.current_service: click.Group
         self.current_function: click.Command
@@ -128,9 +128,9 @@ class ClientCliVisitor(LrpcVisitor):
 
         return t
 
-    def __handle_command(self, service: Optional[str], function: str, **kwargs: Any) -> Callable:
+    def __handle_command(self, service: str, function: str, **kwargs: Any) -> None:
         for a, v in kwargs.items():
             if v == NONE_ARG:
                 kwargs[a] = None
 
-        return self.callback(service, function, **kwargs)
+        self.callback(service, function, **kwargs)

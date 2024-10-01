@@ -10,7 +10,7 @@ from ..core import LrpcDef, LrpcStruct, LrpcVar
 
 class StructFileVisitor(LrpcVisitor):
 
-    def __init__(self, output: os.PathLike) -> None:
+    def __init__(self, output: os.PathLike[str]) -> None:
         self.output = output
         self.namespace: Optional[str]
         self.file: CppFile

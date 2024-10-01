@@ -8,7 +8,7 @@ from ..core import LrpcDef, LrpcService
 
 
 class ServerIncludeVisitor(LrpcVisitor):
-    def __init__(self, output: os.PathLike) -> None:
+    def __init__(self, output: os.PathLike[str]) -> None:
         self.namespace: Optional[str]
         self.output = output
         self.file: CppFile

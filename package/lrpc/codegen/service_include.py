@@ -7,7 +7,7 @@ from ..core import LrpcFun, LrpcService, LrpcVar
 
 
 class ServiceIncludeVisitor(LrpcVisitor):
-    def __init__(self, output: os.PathLike) -> None:
+    def __init__(self, output: os.PathLike[str]) -> None:
         self.output = output
         self.file: CppFile
         self.includes: set[str] = set()

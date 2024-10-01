@@ -8,7 +8,7 @@ from ..core import LrpcConstant, LrpcDef
 
 class ConstantsFileVisitor(LrpcVisitor):
 
-    def __init__(self, output: os.PathLike) -> None:
+    def __init__(self, output: os.PathLike[str]) -> None:
         self.output = output
         self.namespace: Optional[str] = None
         self.file: CppFile

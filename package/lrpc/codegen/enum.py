@@ -9,11 +9,11 @@ from ..codegen.utils import optionally_in_namespace
 
 class EnumFileVisitor(LrpcVisitor):
 
-    def __init__(self, output: os.PathLike) -> None:
+    def __init__(self, output: os.PathLike[str]) -> None:
         self.descriptor: LrpcEnum
         self.file: CppFile
         self.namespace: Optional[str]
-        self.output: os.PathLike = output
+        self.output = output
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
         self.namespace = lrpc_def.namespace()

@@ -9,7 +9,7 @@ from ..core import LrpcDef, LrpcService, LrpcFun, LrpcVar
 
 class ServiceShimVisitor(LrpcVisitor):
 
-    def __init__(self, output: os.PathLike) -> None:
+    def __init__(self, output: os.PathLike[str]) -> None:
         self.file: CppFile
         self.namespace: Optional[str]
         self.output = output

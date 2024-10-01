@@ -170,7 +170,7 @@ class PumlFile:
 
 class PlantUmlVisitor(LrpcVisitor):
 
-    def __init__(self, output: os.PathLike) -> None:
+    def __init__(self, output: os.PathLike[str]) -> None:
         self.output = output
         self.fsb: FunctionStringBuilder
         self.puml: PumlFile

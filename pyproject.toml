@@ -17,7 +17,7 @@ exclude = "external"
 # Increase strictness of checks
 disallow_any_decorated = true
 #disallow_any_expr = true
-#disallow_any_generics = true
+disallow_any_generics = true
 disallow_subclassing_any = true
 disallow_untyped_defs = true
 disallow_untyped_calls = true

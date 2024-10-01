@@ -20,7 +20,7 @@ from .core import LrpcDef
 from .validation import SemanticAnalyzer
 
 
-def create_dir_if_not_exists(target_dir: os.PathLike) -> None:
+def create_dir_if_not_exists(target_dir: os.PathLike[str]) -> None:
     if not path.exists(target_dir):
         os.makedirs(target_dir, 511, True)
 
@@ -55,7 +55,7 @@ def validate_definition(lrpc_def: LrpcDef, warnings_as_errors: bool) -> bool:
     return errors_found
 
 
-def generate_rpc(lrpc_def: LrpcDef, output: os.PathLike) -> None:
+def generate_rpc(lrpc_def: LrpcDef, output: os.PathLike[str]) -> None:
     create_dir_if_not_exists(output)
 
     lrpc_def.accept(ServerIncludeVisitor(output))
@@ -73,7 +73,7 @@ def generate_rpc(lrpc_def: LrpcDef, output: os.PathLike) -> None:
 )
 @click.option("-o", "--output", help="Path to put the generated files", required=False, default=".", type=click.Path())
 @click.argument("input_file", type=click.File("r"), metavar="input")
-def generate(warnings_as_errors: bool, output: os.PathLike, input_file: TextIO) -> None:
+def generate(warnings_as_errors: bool, output: os.PathLike[str], input_file: TextIO) -> None:
     """Generate code for file INPUT"""
 
     definition = yaml.safe_load(input_file)

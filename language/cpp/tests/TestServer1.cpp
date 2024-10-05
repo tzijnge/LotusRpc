@@ -60,10 +60,10 @@ public:
         const etl::span<const uint8_t> s(bytes.begin(), bytes.end());
 
         lrpc::Service::Reader reader(s.begin(), s.end(), etl::endian::little);
-        lrpc::Service::Writer writer(response_buffer.begin(), response_buffer.end(), etl::endian::little);
+        lrpc::Service::Writer writer(responseBuffer.begin(), responseBuffer.end(), etl::endian::little);
         s0Service.invoke(reader, writer);
 
-        return {response_buffer.begin(), writer.size_bytes()};
+        return {responseBuffer.begin(), writer.size_bytes()};
     }
 
     void EXPECT_RESPONSE(const std::vector<uint8_t> &expected, const etl::span<uint8_t> actual)
@@ -73,7 +73,7 @@ public:
     }
 
 private:
-    etl::array<uint8_t, 256> response_buffer;
+    etl::array<uint8_t, 256> responseBuffer;
 };
 
 static_assert(std::is_same<ts1::Server1, lrpc::Server<0, 100, 200>>::value, "RX and/or TX buffer size are unequal to the definition file");
@@ -278,7 +278,20 @@ TEST_F(TestServer1, decodef22)
 
     EXPECT_CALL(s0Service, f22(arg1, arg2)).WillOnce(Return(std::tuple<etl::string<4>, etl::string<4>>{ret1, ret2}));
     auto response = receive({22, 'a', 'r', 'g', '1', '\0', 'a', 'r', 'g', '2', '\0'});
-    EXPECT_RESPONSE({22, 'r','e','t','1','\0','r','e','t','2','\0',}, response);
+    EXPECT_RESPONSE({
+                        22,
+                        'r',
+                        'e',
+                        't',
+                        '1',
+                        '\0',
+                        'r',
+                        'e',
+                        't',
+                        '2',
+                        '\0',
+                    },
+                    response);
 }
 
 // Decode function f6 with string arg

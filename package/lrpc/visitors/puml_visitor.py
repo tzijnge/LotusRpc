@@ -171,35 +171,35 @@ class PumlFile:
 class PlantUmlVisitor(LrpcVisitor):
 
     def __init__(self, output: os.PathLike[str]) -> None:
-        self.output = output
-        self.fsb: FunctionStringBuilder
-        self.puml: PumlFile
-        self.max_function_id = 0
+        self.__output = output
+        self.__fsb: FunctionStringBuilder
+        self.__puml: PumlFile
+        self.__max_function_id = 0
 
-        self.enum_fields: list[LrpcEnumField] = []
-        self.enum_indent = 2
-        self.enum_indent_max = 7
-        self.enum_fields_max = 10
-        self.struct_indent = 2
+        self.__enum_fields: list[LrpcEnumField] = []
+        self.__enum_indent = 2
+        self.__enum_indent_max = 7
+        self.__enum_fields_max = 10
+        self.__struct_indent = 2
 
-        self.struct_indent_max = 7
-        self.struct_fields: list[LrpcVar] = []
-        self.struct_fields_max = 10
+        self.__struct_indent_max = 7
+        self.__struct_fields: list[LrpcVar] = []
+        self.__struct_fields_max = 10
 
-        self.constants: list[LrpcConstant] = []
-        self.const_items_max = 10
+        self.__constants: list[LrpcConstant] = []
+        self.__const_items_max = 10
 
     def visit_lrpc_def(self, lrpc_def: "LrpcDef") -> None:
-        self.puml = PumlFile(f"{self.output}/{lrpc_def.name()}.puml")
+        self.__puml = PumlFile(f"{self.__output}/{lrpc_def.name()}.puml")
 
-        self.puml.block(lrpc_def.name(), "Yellow", level=1)
-        self.puml.list_item(f"Namespace: {lrpc_def.namespace()}", level=0)
-        self.puml.list_item(f"RX buffer size: {lrpc_def.rx_buffer_size()}", level=0)
-        self.puml.list_item(f"TX Buffer size: {lrpc_def.tx_buffer_size()}", level=0)
-        self.puml.list_end()
+        self.__puml.block(lrpc_def.name(), "Yellow", level=1)
+        self.__puml.list_item(f"Namespace: {lrpc_def.namespace()}", level=0)
+        self.__puml.list_item(f"RX buffer size: {lrpc_def.rx_buffer_size()}", level=0)
+        self.__puml.list_item(f"TX Buffer size: {lrpc_def.tx_buffer_size()}", level=0)
+        self.__puml.list_end()
 
     def visit_lrpc_def_end(self) -> None:
-        self.puml.write("\n")
+        self.__puml.write("\n")
 
         legend_items = [
             ("Yellow", "medical-cross", "Server"),
@@ -210,88 +210,88 @@ class PlantUmlVisitor(LrpcVisitor):
             ("Black", "external-link", "External"),
             ("Black", "transfer", "Two-way function"),
         ]
-        self.puml.legend(legend_items, 20)
+        self.__puml.legend(legend_items, 20)
 
-        self.puml.dump_to_file()
+        self.__puml.dump_to_file()
 
     def visit_lrpc_constants(self) -> None:
-        self.puml.block("Constants", "Pink", 2)
-        self.constants = []
+        self.__puml.block("Constants", "Pink", 2)
+        self.__constants = []
 
     def visit_lrpc_constant(self, constant: "LrpcConstant") -> None:
-        self.constants.append(constant)
+        self.__constants.append(constant)
 
     def visit_lrpc_constants_end(self) -> None:
-        const_strings = [const_string(c) for c in self.constants[0 : self.const_items_max]]
-        if len(self.constants) > self.const_items_max:
+        const_strings = [const_string(c) for c in self.__constants[0 : self.__const_items_max]]
+        if len(self.__constants) > self.__const_items_max:
             const_strings.append("...")
 
         for c in const_strings:
-            self.puml.list_item(c, font="monospaced")
+            self.__puml.list_item(c, font="monospaced")
 
-        self.puml.list_end()
+        self.__puml.list_end()
 
     def visit_lrpc_enum(self, enum: "LrpcEnum") -> None:
         icon = "external-link" if enum.is_external() else None
-        self.puml.block(enum.name(), "PaleGreen", self.enum_indent, icon)
+        self.__puml.block(enum.name(), "PaleGreen", self.__enum_indent, icon)
 
     def visit_lrpc_enum_end(self, enum: "LrpcEnum") -> None:
-        enum_field_strings = [enum_field_string(ef) for ef in self.enum_fields[0 : self.enum_fields_max]]
-        if len(self.enum_fields) > self.enum_fields_max:
+        enum_field_strings = [enum_field_string(ef) for ef in self.__enum_fields[0 : self.__enum_fields_max]]
+        if len(self.__enum_fields) > self.__enum_fields_max:
             enum_field_strings.append("...")
 
         for s in enum_field_strings:
-            self.puml.list_item(s, font="monospaced")
+            self.__puml.list_item(s, font="monospaced")
 
-        self.puml.list_end()
+        self.__puml.list_end()
 
-        self.enum_indent = self.enum_indent + 1
-        if self.enum_indent > self.enum_indent_max:
-            self.enum_indent = 2
+        self.__enum_indent = self.__enum_indent + 1
+        if self.__enum_indent > self.__enum_indent_max:
+            self.__enum_indent = 2
 
     def visit_lrpc_enum_field(self, enum: "LrpcEnum", field: "LrpcEnumField") -> None:
-        self.enum_fields.append(field)
+        self.__enum_fields.append(field)
 
     def visit_lrpc_function(self, function: "LrpcFun") -> None:
-        self.fsb = FunctionStringBuilder(self.max_function_id)
-        self.fsb.add_function(function)
+        self.__fsb = FunctionStringBuilder(self.__max_function_id)
+        self.__fsb.add_function(function)
 
     def visit_lrpc_function_end(self) -> None:
-        self.puml.write("***_ ")
-        self.puml.function_string(self.fsb)
-        self.puml.write("\n")
+        self.__puml.write("***_ ")
+        self.__puml.function_string(self.__fsb)
+        self.__puml.write("\n")
 
     def visit_lrpc_function_param(self, param: "LrpcVar") -> None:
-        self.fsb.add_param(param)
+        self.__fsb.add_param(param)
 
     def visit_lrpc_function_return(self, ret: "LrpcVar") -> None:
-        self.fsb.add_return(ret)
+        self.__fsb.add_return(ret)
 
     def visit_lrpc_service(self, service: "LrpcService") -> None:
-        self.puml.block(service.name(), "PeachPuff", 2)
-        self.puml.list_item(f"ID: {service.id()}", level=0)
-        self.puml.list_end()
+        self.__puml.block(service.name(), "PeachPuff", 2)
+        self.__puml.list_item(f"ID: {service.id()}", level=0)
+        self.__puml.list_end()
 
-        self.max_function_id = max([f.id() for f in service.functions()])
+        self.__max_function_id = max(f.id() for f in service.functions())
 
     def visit_lrpc_struct(self, struct: "LrpcStruct") -> None:
-        self.struct_fields = []
+        self.__struct_fields = []
         icon = "external-link" if struct.is_external() else None
-        self.puml.block(struct.name(), "lightblue", self.struct_indent, icon)
+        self.__puml.block(struct.name(), "lightblue", self.__struct_indent, icon)
 
     def visit_lrpc_struct_end(self) -> None:
-        struct_field_strings = [var_string(sf) for sf in self.struct_fields[0 : self.struct_fields_max]]
-        if len(self.struct_fields) > self.struct_fields_max:
+        struct_field_strings = [var_string(sf) for sf in self.__struct_fields[0 : self.__struct_fields_max]]
+        if len(self.__struct_fields) > self.__struct_fields_max:
             struct_field_strings.append("...")
 
         for s in struct_field_strings:
-            self.puml.list_item(s, font="monospaced")
+            self.__puml.list_item(s, font="monospaced")
 
-        self.puml.list_end()
+        self.__puml.list_end()
 
-        self.struct_indent = self.struct_indent + 1
-        if self.struct_indent > self.struct_indent_max:
-            self.struct_indent = 2
+        self.__struct_indent = self.__struct_indent + 1
+        if self.__struct_indent > self.__struct_indent_max:
+            self.__struct_indent = 2
 
     def visit_lrpc_struct_field(self, field: "LrpcVar") -> None:
-        self.struct_fields.append(field)
+        self.__struct_fields.append(field)

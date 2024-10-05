@@ -101,6 +101,7 @@ def create(definition_url: str, transport_type: str) -> None:
     print(f"Created file {LRPCC_CONFIG_YAML}")
 
 
+# pylint: disable = too-few-public-methods
 class Lrpcc:
     def __init__(self, config: dict[str, Any]) -> None:
         self.lrpc_def: LrpcDef = load_lrpc_def(config[DEFINITION_URL])

@@ -201,10 +201,13 @@ class LrpcVar:
         return self.__count
 
     def pack_type(self) -> str:
+        if self.__base_type_is_enum:
+            return "B"
+
         return PACK_TYPES[self.base_type()]
 
     def contained(self) -> "LrpcVar":
         contained_item = deepcopy(self)
-        contained_item.__is_optional = False
-        contained_item.__count = 1
+        contained_item.__is_optional = False  # pylint: disable=protected-access, unused-private-member
+        contained_item.__count = 1  # pylint: disable=protected-access, unused-private-member
         return contained_item

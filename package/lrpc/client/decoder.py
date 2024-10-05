@@ -4,6 +4,7 @@ from typing import Any
 from ..core import LrpcDef, LrpcVar
 
 
+# pylint: disable = too-few-public-methods
 class LrpcDecoder:
     def __init__(self, encoded: bytes, lrpc_def: LrpcDef) -> None:
         self.encoded: bytes = encoded

@@ -1,4 +1,3 @@
-from typing import Any
 from .validator import LrpcValidator
 from .service import ServiceValidator
 from .function import FunctionValidator
@@ -8,6 +7,7 @@ from .custom_types import CustomTypesValidator
 from ..core import LrpcVar, LrpcDef
 
 
+# pylint: disable = too-few-public-methods
 class SemanticAnalyzer:
     def __init__(self, definition: LrpcDef) -> None:
         self.errors: list[str] = []

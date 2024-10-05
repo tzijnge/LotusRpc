@@ -201,7 +201,16 @@ class LrpcVar:
         return self.__count
 
     def pack_type(self) -> str:
-        if self.__base_type_is_enum:
+        if self.base_type_is_struct():
+            raise TypeError("Pack type is not defined for LrpcVar of type struct")
+        if self.is_optional():
+            raise TypeError("Pack type is not defined for LrpcVar of type optional")
+        if self.base_type_is_string():
+            raise TypeError("Pack type is not defined for LrpcVar of type string")
+        if self.is_array():
+            raise TypeError("Pack type is not defined for LrpcVar of type array")
+
+        if self.base_type_is_enum():
             return "B"
 
         return PACK_TYPES[self.base_type()]

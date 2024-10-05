@@ -1,3 +1,4 @@
+import pytest
 from lrpc.core import LrpcVar, LrpcVarDict
 
 
@@ -77,3 +78,96 @@ def test_contained() -> None:
     var3 = LrpcVar(v3).contained()
     assert var3.is_array() is False
     assert var3.array_size() == 1
+
+
+def test_bool_pack_type() -> None:
+    v1: LrpcVarDict = {"name": "v1", "type": "bool"}
+    assert LrpcVar(v1).pack_type() == "?"
+
+
+def test_uint8_t_pack_type() -> None:
+    v1: LrpcVarDict = {"name": "v1", "type": "uint8_t"}
+    assert LrpcVar(v1).pack_type() == "B"
+
+
+def test_int8_t_pack_type() -> None:
+    v1: LrpcVarDict = {"name": "v1", "type": "int8_t"}
+    assert LrpcVar(v1).pack_type() == "b"
+
+
+def test_uint16_t_pack_type() -> None:
+    v1: LrpcVarDict = {"name": "v1", "type": "uint16_t"}
+    assert LrpcVar(v1).pack_type() == "H"
+
+
+def test_int16_t_pack_type() -> None:
+    v1: LrpcVarDict = {"name": "v1", "type": "int16_t"}
+    assert LrpcVar(v1).pack_type() == "h"
+
+
+def test_uint32_t_pack_type() -> None:
+    v1: LrpcVarDict = {"name": "v1", "type": "uint32_t"}
+    assert LrpcVar(v1).pack_type() == "I"
+
+
+def test_int32_t_pack_type() -> None:
+    v1: LrpcVarDict = {"name": "v1", "type": "int32_t"}
+    assert LrpcVar(v1).pack_type() == "i"
+
+
+def test_uint64_t_pack_type() -> None:
+    v1: LrpcVarDict = {"name": "v1", "type": "uint64_t"}
+    assert LrpcVar(v1).pack_type() == "Q"
+
+
+def test_int64_t_pack_type() -> None:
+    v1: LrpcVarDict = {"name": "v1", "type": "int64_t"}
+    assert LrpcVar(v1).pack_type() == "q"
+
+
+def test_float_pack_type() -> None:
+    v1: LrpcVarDict = {"name": "v1", "type": "float"}
+    assert LrpcVar(v1).pack_type() == "f"
+
+
+def test_double_pack_type() -> None:
+    v1: LrpcVarDict = {"name": "v1", "type": "double"}
+    assert LrpcVar(v1).pack_type() == "d"
+
+
+def test_enum_pack_type() -> None:
+    v1: LrpcVarDict = {"name": "v1", "type": "enum@MyEnum"}
+    assert LrpcVar(v1).base_type_is_enum() is True
+    assert LrpcVar(v1).pack_type() == "B"
+
+
+def test_struct_pack_type() -> None:
+    v1: LrpcVarDict = {"name": "v1", "type": "struct@MyStruct"}
+    assert LrpcVar(v1).base_type_is_struct()
+
+    with pytest.raises(TypeError):
+        LrpcVar(v1).pack_type()
+
+
+def test_optional_pack_type() -> None:
+    v1: LrpcVarDict = {"name": "v1", "type": "bool", "count": "?"}
+    assert LrpcVar(v1).is_optional()
+
+    with pytest.raises(TypeError):
+        LrpcVar(v1).pack_type()
+
+
+def test_array_pack_type() -> None:
+    v1: LrpcVarDict = {"name": "v1", "type": "bool", "count": 5}
+    assert LrpcVar(v1).is_array()
+
+    with pytest.raises(TypeError):
+        LrpcVar(v1).pack_type()
+
+
+def test_string_pack_type() -> None:
+    v1: LrpcVarDict = {"name": "v1", "type": "string"}
+    assert LrpcVar(v1).is_string()
+
+    with pytest.raises(TypeError):
+        LrpcVar(v1).pack_type()

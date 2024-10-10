@@ -1,94 +1,113 @@
-import yaml.parser
-from lrpc import LrpcVisitor
-from lrpc.core import LrpcDef, LrpcService, LrpcFun, LrpcVar, LrpcEnum, LrpcEnumField
-import click
-from typing import Dict, List
-import yaml
 from functools import partial
+from typing import Any, Optional
+from collections.abc import Callable
 
-NoneArg = "7bc9ddaa-b6c9-4afb-93c1-5240ec91ab9c"
+import click
+import yaml
+import yaml.parser
+from ..visitors import LrpcVisitor
+from ..core import LrpcDef, LrpcEnum, LrpcEnumField, LrpcFun, LrpcService, LrpcVar
+
+NONE_ARG = "7bc9ddaa-b6c9-4afb-93c1-5240ec91ab9c"
+
 
 class YamlParamType(click.ParamType):
-    '''Convert command line input to a struct. Command line
-       input must be valid YAML with every key being a field
-       and every value being the value of the field'''
+    """Convert command line input to a struct. Command line
+    input must be valid YAML with every key being a field
+    and every value being the value of the field"""
+
     name = "YAML"
 
-    def convert(self, value, param, ctx):
+    # function does not always return
+    # pylint: disable=inconsistent-return-statements
+    def convert(self, value: Any, param: Optional[click.Parameter], ctx: Optional[click.Context]) -> dict[str, Any]:
         if isinstance(value, dict):
             return value
 
         try:
-            return yaml.safe_load(value)
+            v = yaml.safe_load(value)
+            if isinstance(v, dict):
+                return v
         except yaml.parser.ParserError:
-            self.fail(f'{value} does not contain valid YAML', param, ctx)
+            pass
+
+        self.fail(f"{value} does not contain valid YAML", param, ctx)
+
 
 class OptionalParamType(click.ParamType):
-    '''Convert command line input to LRPC optional. "_" maps to None,
-       any other input is converted to the underlying type. A string input
-       which is a sequence of underscores must be escaped with an additional
-       underscore'''
+    """Convert command line input to LRPC optional. "_" maps to None,
+    any other input is converted to the underlying type. A string input
+    which is a sequence of underscores must be escaped with an additional
+    underscore"""
+
     name = "LRPC optional"
 
     def __init__(self, contained_type: click.ParamType) -> None:
         self.contained_type: click.ParamType = contained_type
 
-    def convert(self, value, param, ctx):
+    def convert(self, value: Any, param: Optional[click.Parameter], ctx: Optional[click.Context]) -> Any:
         if not isinstance(value, str):
-            self.fail(f'{value} is not a string', param, ctx)
+            self.fail(f"{value} is not a string", param, ctx)
 
-        if value == '_':
-            return NoneArg
-        elif len(value) != 0 and len(value.replace('_', '')) == 0: # value only contains underscores
-            value = value.removeprefix('_')
+        if value == "_":
+            return NONE_ARG
+
+        # value only contains underscores
+        if len(value) != 0 and len(value.replace("_", "")) == 0:
+            value = value.removeprefix("_")
 
         return self.contained_type.convert(value, param, ctx)
 
+
 class ClientCliVisitor(LrpcVisitor):
-    def __init__(self, callback) -> None:
-        self.root: click.Group = None
-        self.current_service: click.Group = None
-        self.current_function: click.Command = None
-        self.enum_values: Dict[str, List[str]] = {}
+    """
+    Class to create an LRPC client CLI (based on click) from spec.
+    Pass an instance of this class to LrpcDef.accept() to build the CLI.
+    Call ClientCliVisitor.root() to activate the CLI
+    """
+
+    def __init__(self, callback: Callable[..., None]) -> None:
+        self.root: click.Group
+        self.current_service: click.Group
+        self.current_function: click.Command
+        self.enum_values: dict[str, list[str]] = {}
 
         self.callback = callback
 
-    def visit_lrpc_def(self, lrpc_def: LrpcDef):
+    def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
         self.root = click.Group(lrpc_def.name())
 
-    def visit_lrpc_service(self, service: LrpcService):
+    def visit_lrpc_service(self, service: LrpcService) -> None:
         self.current_service = click.Group(service.name())
 
-    def visit_lrpc_service_end(self):
+    def visit_lrpc_service_end(self) -> None:
         self.root.add_command(self.current_service)
 
-    def visit_lrpc_enum_field(self, enum: LrpcEnum, field: LrpcEnumField):
+    def visit_lrpc_enum_field(self, enum: LrpcEnum, field: LrpcEnumField) -> None:
         if enum.name() not in self.enum_values:
-            self.enum_values.update({enum.name() : []})
+            self.enum_values.update({enum.name(): []})
 
         self.enum_values[enum.name()].append(field.name())
 
-    def visit_lrpc_function(self, function: LrpcFun):
+    def visit_lrpc_function(self, function: LrpcFun) -> None:
         self.current_function = click.Command(
             name=function.name(),
             callback=partial(self.__handle_command, self.current_service.name, function.name()),
-            help='my help 123'
-            )
+            help=f"Call LRPC function {self.current_service.name}.{function.name()}",
+        )
 
-    def visit_lrpc_function_end(self):
+    def visit_lrpc_function_end(self) -> None:
         self.current_service.add_command(self.current_function)
 
-    def visit_lrpc_function_param(self, param: LrpcVar):
-        attributes = {
-            'type': self.__click_type(param),
-            'nargs': param.array_size() if param.is_array() else 1
-        }
+    def visit_lrpc_function_param(self, param: LrpcVar) -> None:
+        attributes = {"type": self.__click_type(param), "nargs": param.array_size() if param.is_array() else 1}
+        required = True
 
-        arg = click.Argument([param.name()], **attributes)
+        arg = click.Argument([param.name()], required, **attributes)
         self.current_function.params.append(arg)
 
     def __click_type(self, param: LrpcVar) -> click.ParamType:
-        t = click.UNPROCESSED
+        t: click.ParamType = click.UNPROCESSED
 
         if param.base_type_is_integral():
             t = click.INT
@@ -110,12 +129,12 @@ class ClientCliVisitor(LrpcVisitor):
 
         if param.is_optional():
             return OptionalParamType(t)
-        else:
-            return t
 
-    def __handle_command(self, service, function, **kwargs):
+        return t
+
+    def __handle_command(self, service: str, function: str, **kwargs: Any) -> None:
         for a, v in kwargs.items():
-            if v == NoneArg:
+            if v == NONE_ARG:
                 kwargs[a] = None
 
-        return self.callback(service, function, **kwargs)
+        self.callback(service, function, **kwargs)

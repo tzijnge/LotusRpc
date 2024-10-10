@@ -1,11 +1,11 @@
+from typing import Optional
+from collections.abc import Callable
+from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 
-def optionally_in_namespace(func):
-    '''Decorator to generate code in a namespace or not'''
-    def wrapper(self, namespace):
-        if namespace:
-            with self.file.block(f'namespace {namespace}'):
-                func(self)
-        else:
-            func(self)
 
-    return wrapper
+def optionally_in_namespace(file: CppFile, fun: Callable[..., None], namespace: Optional[str]) -> None:
+    if namespace:
+        with file.block(f"namespace {namespace}"):
+            fun()
+    else:
+        fun()

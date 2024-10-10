@@ -60,20 +60,20 @@ public:
         const etl::span<const uint8_t> s(bytes.begin(), bytes.end());
 
         lrpc::Service::Reader reader(s.begin(), s.end(), etl::endian::little);
-        lrpc::Service::Writer writer(response.begin(), response.end(), etl::endian::little);
+        lrpc::Service::Writer writer(responseBuffer.begin(), responseBuffer.end(), etl::endian::little);
         s0Service.invoke(reader, writer);
 
-        return { response.begin(), writer.size_bytes()};
+        return {responseBuffer.begin(), writer.size_bytes()};
     }
 
     void EXPECT_RESPONSE(const std::vector<uint8_t> &expected, const etl::span<uint8_t> actual)
     {
-        std::vector<uint8_t> actualVec {actual.begin(), actual.end()};
+        std::vector<uint8_t> actualVec{actual.begin(), actual.end()};
         EXPECT_EQ(expected, actualVec);
     }
 
 private:
-    etl::array<uint8_t, 256> response;
+    etl::array<uint8_t, 256> responseBuffer;
 };
 
 static_assert(std::is_same<ts1::Server1, lrpc::Server<0, 100, 200>>::value, "RX and/or TX buffer size are unequal to the definition file");
@@ -117,7 +117,7 @@ TEST_F(TestServer1, decodeF3)
 // Decode function f4 with float arg
 TEST_F(TestServer1, decodeF4)
 {
-    EXPECT_CALL(s0Service, f4(123.456));
+    EXPECT_CALL(s0Service, f4(123.456F));
     auto response = receive({4, 0x79, 0xE9, 0xF6, 0x42});
     EXPECT_RESPONSE({4}, response);
 }
@@ -125,7 +125,7 @@ TEST_F(TestServer1, decodeF4)
 // Decode function f5 with array of uint16_t arg
 TEST_F(TestServer1, decodeF5)
 {
-    std::vector<uint16_t> expected {0xBBAA, 0xDDCC};
+    std::vector<uint16_t> expected{0xBBAA, 0xDDCC};
     EXPECT_CALL(s0Service, f5(SPAN_EQ(expected)));
     auto response = receive({5, 0xAA, 0xBB, 0xCC, 0xDD});
     EXPECT_RESPONSE({5}, response);
@@ -278,7 +278,20 @@ TEST_F(TestServer1, decodef22)
 
     EXPECT_CALL(s0Service, f22(arg1, arg2)).WillOnce(Return(std::tuple<etl::string<4>, etl::string<4>>{ret1, ret2}));
     auto response = receive({22, 'a', 'r', 'g', '1', '\0', 'a', 'r', 'g', '2', '\0'});
-    EXPECT_RESPONSE({22, 'r','e','t','1','\0','r','e','t','2','\0',}, response);
+    EXPECT_RESPONSE({
+                        22,
+                        'r',
+                        'e',
+                        't',
+                        '1',
+                        '\0',
+                        'r',
+                        'e',
+                        't',
+                        '2',
+                        '\0',
+                    },
+                    response);
 }
 
 // Decode function f6 with string arg

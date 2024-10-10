@@ -1,6 +1,7 @@
-from .service import ServiceChecker
-from .function import FunctionChecker
-from .enum import EnumChecker
-from .names import NamesChecker
-from .custom_types import CustomTypesChecker
-from .semantic_analyzer import SemanticAnalyzer
+from .service import ServiceValidator as ServiceValidator
+from .function import FunctionValidator as FunctionValidator
+from .enum import EnumValidator as EnumValidator
+from .names import NamesValidator as NamesValidator
+from .custom_types import CustomTypesValidator as CustomTypesValidator
+from .semantic_analyzer import SemanticAnalyzer as SemanticAnalyzer
+from .validator import LrpcValidator as LrpcValidator

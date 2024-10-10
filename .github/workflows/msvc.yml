@@ -38,6 +38,11 @@ jobs:
         with:
           submodules: "true"
 
+      - name: Install Python requirements
+        run: |
+          pip install -r requirements/package.txt
+          pip install -r requirements/dev.txt
+
       - name: Configure CMake
         run: cmake -B ${{ env.build }}
 
@@ -53,6 +58,8 @@ jobs:
           cmakeBuildDirectory: ${{ env.build }}
           # Ruleset file that will determine what checks will be run
           ruleset: NativeRecommendedRules.ruleset
+          ignoredIncludePaths: external
+          ignoreSystemHeaders: true
 
       # Upload SARIF file to GitHub Code Scanning Alerts
       - name: Upload SARIF to GitHub

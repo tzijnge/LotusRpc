@@ -1,0 +1,28 @@
+name: Reviewdog
+on: [pull_request]
+jobs:
+  Reviewdog:
+    name: Reviewdog
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install mypy
+        run: pip install mypy
+      - name: Install requirements
+        run: pip install -r requirements/dev.txt
+      - name: Run MyPy
+        uses: tsuyoshicho/action-mypy@v4
+        with:
+          github_token: ${{ secrets.github_token }}
+          reporter: github-pr-review
+          level: error
+          fail_on_error: false
+      - name: Run PyLint
+        uses: dciborow/action-pylint@0.1.0
+        with:
+          github_token: ${{ secrets.github_token }}
+          reporter: github-pr-review
+          level: error
+          glob_pattern: "package"
+          fail_on_error: false

@@ -1,53 +1,29 @@
-import click
-from lrpc.codegen import StructFileVisitor, ConstantsFileVisitor, EnumFileVisitor, ServerIncludeVisitor, ServiceShimVisitor, ServiceIncludeVisitor
-from lrpc.validation import SemanticAnalyzer
-from lrpc.core import LrpcDef
-from lrpc import PlantUmlVisitor
-from lrpc import schema as lrpc_schema
-from importlib import resources
-import yaml
-import jsonschema
-import jsonschema.exceptions
-from os import path
+import logging
 import os
+from os import path
+from typing import TextIO
+import click
+from .visitors import PlantUmlVisitor
+from .codegen import (
+    ConstantsFileVisitor,
+    EnumFileVisitor,
+    ServerIncludeVisitor,
+    ServiceIncludeVisitor,
+    ServiceShimVisitor,
+    StructFileVisitor,
+)
+from .core import LrpcDef
+from .utils import load_lrpc_def_from_file
 
-def create_dir_if_not_exists(dir):
-    if not path.exists(dir):
-        os.makedirs(dir, 511, True)
+logging.basicConfig(format="[LRPCC] %(levelname)-8s: %(message)s", level=logging.INFO)
 
-def validate_yaml(definition, input: str):
-    url = (resources.files(lrpc_schema) / 'lotusrpc-schema.json')
-    with open(url, 'rt') as schema_file:
-        schema = yaml.safe_load(schema_file)
 
-        try:
-            jsonschema.validate(definition, schema)
-            return False
-        except jsonschema.exceptions.ValidationError as e:
-            print('#' * 80)
-            print(' LRPC definition parsing error '.center(80, '#'))
-            print(f' {input} '.center(80, '#'))
-            print('#' * 80)
-            print(e)
-            return True
+def create_dir_if_not_exists(target_dir: os.PathLike[str]) -> None:
+    if not path.exists(target_dir):
+        os.makedirs(target_dir, 511, True)
 
-def validate_definition(lrpc_def: LrpcDef, warnings_as_errors: bool):
-    errors_found = False
 
-    sa = SemanticAnalyzer(lrpc_def)
-    sa.analyze()
-
-    if warnings_as_errors:
-        for e in sa.errors + sa.warnings:
-            errors_found = True
-            print(f'Error: {e}')
-    else:
-        for w in sa.warnings:
-            print(f'Warning: {w}')
-
-    return errors_found
-
-def generate_rpc(lrpc_def: LrpcDef, output: str):
+def generate_rpc(lrpc_def: LrpcDef, output: os.PathLike[str]) -> None:
     create_dir_if_not_exists(output)
 
     lrpc_def.accept(ServerIncludeVisitor(output))
@@ -58,33 +34,29 @@ def generate_rpc(lrpc_def: LrpcDef, output: str):
     lrpc_def.accept(ConstantsFileVisitor(output))
     lrpc_def.accept(PlantUmlVisitor(output))
 
+
 @click.command()
-@click.option('-w', '--warnings_as_errors',
-                help='Treat warnings as errors',
-                required=False,
-                default=None,
-                is_flag=True,
-                type=str)
-@click.option('-o', '--output',
-                help='Path to put the generated files',
-                required=False,
-                default='.',
-                type=click.Path())
-@click.argument('input',
-                type=click.File('r'))
-def generate(warnings_as_errors, output, input):
-    '''Generate code for file(s) INPUTS'''
+@click.option(
+    "-w", "--warnings_as_errors", help="Treat warnings as errors", required=False, default=None, is_flag=True, type=str
+)
+@click.option("-o", "--output", help="Path to put the generated files", required=False, default=".", type=click.Path())
+@click.argument("input_file", type=click.File("r"), metavar="input")
+def generate(warnings_as_errors: bool, output: os.PathLike[str], input_file: TextIO) -> None:
+    """Generate code for file INPUT"""
 
-    definition = yaml.safe_load(input)
-    errors_found = validate_yaml(definition, input)
-    if errors_found:
-        return
-
-    lrpc_def = LrpcDef(definition)
-    errors_found = validate_definition(lrpc_def, warnings_as_errors)
-    if not errors_found:
-        input.seek(0)
+    try:
+        lrpc_def = load_lrpc_def_from_file(input_file, warnings_as_errors)
         generate_rpc(lrpc_def, output)
+        logging.info("Generated LRPC code for %s in %s", input_file.name, output)
+
+    # catching general exception here is considered ok, because application will terminate
+    # pylint: disable=broad-exception-caught
+    except Exception as e:
+        logging.error("Error while generating code for %s", input_file.name)
+        logging.error(str(e))
+
 
 if __name__ == "__main__":
+    # parameters are inserted by Click
+    # pylint: disable=no-value-for-parameter
     generate()

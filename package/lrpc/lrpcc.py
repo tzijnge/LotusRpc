@@ -5,13 +5,15 @@ import os
 import sys
 from glob import glob
 from os import path
-from typing import Any, Optional
+from typing import Any
 from collections.abc import Callable
 import click
 import serial
 import yaml
 from .client import ClientCliVisitor, LrpcClient
 from .utils import load_lrpc_def_from_url
+
+logging.basicConfig(format="[LRPCC] %(levelname)-8s: %(message)s", level=logging.INFO)
 
 LRPCC_CONFIG_ENV_VAR = "LRPCC_CONFIG"
 LRPCC_CONFIG_YAML = "lrpcc.config.yaml"
@@ -20,30 +22,36 @@ TRANSPORT_TYPE = "transport_type"
 TRANSPORT_PARAMS = "transport_params"
 
 
-def __load_config() -> Optional[dict[str, Any]]:
+def __load_config() -> dict[str, Any]:
     configs = glob(f"**/{LRPCC_CONFIG_YAML}", recursive=True)
     if len(configs) == 0:
         if LRPCC_CONFIG_ENV_VAR in os.environ:
-            configs.append(os.environ[LRPCC_CONFIG_ENV_VAR])
+            env_var_value = os.environ[LRPCC_CONFIG_ENV_VAR]
+            if not path.exists(env_var_value):
+                raise ValueError(
+                    f"No configuration file found in location {env_var_value} (environment variable {LRPCC_CONFIG_ENV_VAR})"
+                )
+            configs.append(env_var_value)
         else:
-            return None
+            raise ValueError(
+                f"No lrpcc configuration ({LRPCC_CONFIG_YAML}) in current working directory (recursive) or environment variable {LRPCC_CONFIG_ENV_VAR}"
+            )
 
     config_url = path.abspath(configs[0])
 
     with open(config_url, mode="rt", encoding="utf-8") as config_file:
         config = yaml.safe_load(config_file)
+        if not isinstance(config, dict):
+            raise ValueError(f"Invalid YAML input for {config_file.name}")
 
     if DEFINITION_URL not in config:
-        print(f"Missing field `{DEFINITION_URL}` in {config_url}")
-        return None
+        raise ValueError(f"Missing field `{DEFINITION_URL}` in {config_url}")
 
     if TRANSPORT_TYPE not in config:
-        print(f"Missing field `{TRANSPORT_TYPE}` in {config_url}")
-        return None
+        raise ValueError(f"Missing field `{TRANSPORT_TYPE}` in {config_url}")
 
     if TRANSPORT_PARAMS not in config:
-        print(f"Missing field `{TRANSPORT_PARAMS}` in {config_url}")
-        return None
+        raise ValueError(f"Missing field `{TRANSPORT_PARAMS}` in {config_url}")
 
     if not path.isabs(config[DEFINITION_URL]):
         config[DEFINITION_URL] = path.join(path.dirname(config_url), config[DEFINITION_URL])
@@ -54,22 +62,20 @@ def __load_config() -> Optional[dict[str, Any]]:
 @click.group()
 def run_lrpcc_config_creator() -> None:
     """
-    No or invalid config file found. lrpcc needs a configuration file
-    named lrpcc.config.yaml. See https://github.com/tzijnge/LotusRpc for
-    more information about the contents of the configuration file.
-    By default, lrpcc looks for the configuration file in the current
-    working directory and all subdirectories recursively. If no configuration
+    lrpcc needs a configuration file named lrpcc.config.yaml.
+    See https://github.com/tzijnge/LotusRpc for more information
+    about the contents of the configuration file. By default,
+    lrpcc looks for the configuration file in the current working
+    directory and all subdirectories recursively. If no configuration
     file is found, lrpcc tries to use the configuration file specified by
     the LRPCC_CONFIG environment variable.
-
-    Use the CREATE command to create a new configuration file template
     """
 
 
 @run_lrpcc_config_creator.command()
 @click.option(
     "-d",
-    "--definition",
+    "--definition_url",
     type=click.Path(file_okay=True, dir_okay=False),
     required=True,
     help="Path to LRPC definition file, absolute or relative to current working directory",
@@ -97,7 +103,7 @@ def create(definition_url: str, transport_type: str) -> None:
     with open(LRPCC_CONFIG_YAML, mode="wt", encoding="utf-8") as lrpcc_config_file:
         yaml.safe_dump(lrpcc_config, lrpcc_config_file)
 
-    print(f"Created file {LRPCC_CONFIG_YAML}")
+    logging.info("Created file %s", LRPCC_CONFIG_YAML)
 
 
 # pylint: disable = too-few-public-methods
@@ -113,8 +119,7 @@ class Lrpcc:
         if self.transport_type == "serial":
             self.__communicate: Callable[[bytes], dict[str, Any]] = self.__communicate_serial
         else:
-            print(f"Unsupported transport type: {self.transport_type}")
-            sys.exit(1)
+            raise NotImplementedError(f"Unsupported transport type: {self.transport_type}")
 
     def __communicate_serial(self, encoded: bytes) -> dict[str, Any]:
         with serial.Serial(**self.transport_params) as transport:
@@ -140,9 +145,14 @@ class Lrpcc:
 
 
 def run_cli() -> None:
-    config = __load_config()
+    try:
+        config = __load_config()
 
-    if not config:
+    # catching general exception here is considered ok, because application will terminate
+    # pylint: disable=broad-exception-caught
+    except Exception as e:
+        logging.error(str(e))
+        logging.info("Entering lrpcc config creator")
         run_lrpcc_config_creator()
         return
 
@@ -152,7 +162,7 @@ def run_cli() -> None:
     # catching general exception here is considered ok, because application will terminate
     # pylint: disable=broad-exception-caught
     except Exception as e:
-        logging.error("Error running LRPC command line client for %s", config[DEFINITION_URL])
+        logging.error("Error running lrpcc for %s", config[DEFINITION_URL])
         logging.error(str(e))
 
 

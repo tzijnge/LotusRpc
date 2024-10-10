@@ -4,6 +4,12 @@ from typing import Any
 import yaml
 
 
-def load_lrpc_schema() -> Any:
-    schema_text = resources.files(__package__).joinpath("lotusrpc-schema.json").read_text()
-    return yaml.safe_load(schema_text)
+def load_lrpc_schema() -> dict[str, Any]:
+    schema_file = resources.files(__package__).joinpath("lotusrpc-schema.json")
+    schema_text = schema_file.read_text()
+    schema = yaml.safe_load(schema_text)
+
+    if not isinstance(schema, dict):
+        raise ValueError(f"Invalid YAML input for {schema_file.name}")
+
+    return schema

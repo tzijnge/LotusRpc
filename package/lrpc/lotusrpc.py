@@ -15,7 +15,7 @@ from .codegen import (
 from .core import LrpcDef
 from .utils import load_lrpc_def_from_file
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(format="[LRPCC] %(levelname)-8s: %(message)s", level=logging.INFO)
 
 
 def create_dir_if_not_exists(target_dir: os.PathLike[str]) -> None:

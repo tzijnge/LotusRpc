@@ -11,19 +11,16 @@ disable = [
 [tool.pylint.format]
 # line length is handled by black. Any remaining long lines cannot be formatted properly
 disable = ["line-too-long"]
+allow-reexport-from-package = true
 
 [tool.mypy]
 exclude = "external"
+strict = true
 # Increase strictness of checks
 disallow_any_decorated = true
-#disallow_any_expr = true
-disallow_any_generics = true
-disallow_subclassing_any = true
-disallow_untyped_defs = true
-disallow_untyped_calls = true
 strict_optional = true
 warn_no_return = true
-check_untyped_defs = true
+warn_unreachable = true
 
 # Display statistics after running
 # dump_type_stats = true

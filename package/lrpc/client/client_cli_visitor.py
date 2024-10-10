@@ -18,16 +18,20 @@ class YamlParamType(click.ParamType):
 
     name = "YAML"
 
+    # function does not always return
+    # pylint: disable=inconsistent-return-statements
     def convert(self, value: Any, param: Optional[click.Parameter], ctx: Optional[click.Context]) -> dict[str, Any]:
         if isinstance(value, dict):
             return value
 
         try:
-            return yaml.safe_load(value)
+            v = yaml.safe_load(value)
+            if isinstance(v, dict):
+                return v
         except yaml.parser.ParserError:
-            self.fail(f"{value} does not contain valid YAML", param, ctx)
+            pass
 
-        return {}
+        self.fail(f"{value} does not contain valid YAML", param, ctx)
 
 
 class OptionalParamType(click.ParamType):

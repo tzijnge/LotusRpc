@@ -168,6 +168,7 @@ class PumlFile:
                 self.write(")")
 
 
+# pylint: disable = too-many-instance-attributes
 class PlantUmlVisitor(LrpcVisitor):
 
     def __init__(self, output: os.PathLike[str]) -> None:

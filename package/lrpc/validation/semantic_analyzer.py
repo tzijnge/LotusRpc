@@ -1,3 +1,5 @@
+import logging
+
 from .validator import LrpcValidator
 from .service import ServiceValidator
 from .function import FunctionValidator
@@ -10,8 +12,8 @@ from ..core import LrpcVar, LrpcDef
 # pylint: disable = too-few-public-methods
 class SemanticAnalyzer:
     def __init__(self, definition: LrpcDef) -> None:
-        self.errors: list[str] = []
-        self.warnings: list[str] = []
+        self.__errors: list[str] = []
+        self.__warnings: list[str] = []
         self.definition = definition
         self.__services = definition.services()
         self.validators: list[LrpcValidator] = [
@@ -42,7 +44,7 @@ class SemanticAnalyzer:
             duplicate_names.extend(self.__duplicates(names))
 
         if len(duplicate_names) > 0:
-            self.errors.append(f"Duplicate struct field name(s): {duplicate_names}")
+            self.__errors.append(f"Duplicate struct field name(s): {duplicate_names}")
 
     def __check_auto_string_in_struct(self) -> None:
         offenders = []
@@ -51,7 +53,7 @@ class SemanticAnalyzer:
             offenders.extend(auto_strings)
 
         if len(offenders) > 0:
-            self.errors.append(f"Auto string not allowed in struct: {offenders}")
+            self.__errors.append(f"Auto string not allowed in struct: {offenders}")
 
     def __check_multiple_auto_strings_in_param_list_or_return_list(self) -> None:
         offenders = []
@@ -62,7 +64,7 @@ class SemanticAnalyzer:
                     offenders.extend(auto_string_params)
 
         if len(offenders) > 0:
-            self.errors.append(
+            self.__errors.append(
                 f"More than one auto string per parameter list or return value list is not allowed: {offenders}"
             )
 
@@ -84,7 +86,7 @@ class SemanticAnalyzer:
                 offenders.extend(auto_string_arrays)
 
         if len(offenders) > 0:
-            self.errors.append(f"Array of auto strings is not allowed: {offenders}")
+            self.__errors.append(f"Array of auto strings is not allowed: {offenders}")
 
     def __check_return_auto_string(self) -> None:
         offenders = []
@@ -94,16 +96,28 @@ class SemanticAnalyzer:
                 offenders.extend(auto_string_returns)
 
         if len(offenders) > 0:
-            self.errors.append(f"A function cannot return an auto string: {offenders}")
+            self.__errors.append(f"A function cannot return an auto string: {offenders}")
 
-    def analyze(self) -> None:
+    def analyze(self, warnings_as_errors: bool) -> None:
         for validator in self.validators:
             self.definition.accept(validator)
-            self.errors.extend(validator.errors())
-            self.warnings.extend(validator.warnings())
+            self.__errors.extend(validator.errors())
+            self.__warnings.extend(validator.warnings())
 
         self.__check_duplicate_struct_field_names()
         self.__check_auto_string_in_struct()
         self.__check_multiple_auto_strings_in_param_list_or_return_list()
         self.__check_array_of_auto_strings()
         self.__check_return_auto_string()
+
+        for w in self.__warnings:
+            logging.warning(w)
+
+        for e in self.__errors:
+            logging.error(e)
+
+        if len(self.__errors) != 0:
+            raise ValueError("Errors detected in LRPC definition")
+
+        if warnings_as_errors and (len(self.__warnings) != 0):
+            raise ValueError("Warnings detected in LRPC definition and treated as error")

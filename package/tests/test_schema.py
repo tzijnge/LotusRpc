@@ -1,20 +1,20 @@
-import jsonschema
-import yaml
-from lrpc.schema import load_lrpc_schema
-from lrpc.core import LrpcDef
-from lrpc.validation import SemanticAnalyzer
+import logging
+import pytest
+from lrpc.utils import load_lrpc_def_from_str
 
 
-def semantic_errors(rpc_def: str) -> tuple[list[str], list[str]]:
-    definition = yaml.safe_load(rpc_def)
-    jsonschema.validate(definition, load_lrpc_schema())
-
-    sa = SemanticAnalyzer(LrpcDef(definition))
-    sa.analyze()
-    return sa.errors, sa.warnings
+def load_def(rpc_def: str) -> None:
+    _ = load_lrpc_def_from_str(rpc_def, warnings_as_errors=False)
 
 
-def test_duplicate_enum_field_names() -> None:
+def assert_log_entries(expected_entries: list[str], actual: str) -> None:
+    actual_entries = actual.splitlines()
+    assert len(actual_entries) == len(expected_entries)
+    for e in expected_entries:
+        assert e in actual
+
+
+def test_duplicate_enum_field_names(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: "test"
 namespace: "a"
 services:
@@ -37,14 +37,14 @@ enums:
       - name: "g"
         id: 1
 """
-    errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 2
-    assert len(warnings) == 2
-    assert "Duplicate field name in enum e0: f" in errors
-    assert "Duplicate field name in enum e1: g" in errors
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(ValueError):
+        load_def(rpc_def)
+
+    assert_log_entries(["Duplicate field name in enum e0: f", "Duplicate field name in enum e1: g"], caplog.text)
 
 
-def test_duplicate_enum_field_ids() -> None:
+def test_duplicate_enum_field_ids(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: "test"
 namespace: "a"
 services:
@@ -67,15 +67,14 @@ enums:
       - name: "f1"
         id: 222
 """
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(ValueError):
+        load_def(rpc_def)
 
-    errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 2
-    assert len(warnings) == 2
-    assert "Duplicate field id in enum e0: 111" in errors
-    assert "Duplicate field id in enum e1: 222" in errors
+    assert_log_entries(["Duplicate field id in enum e0: 111", "Duplicate field id in enum e1: 222"], caplog.text)
 
 
-def test_duplicate_enum_names() -> None:
+def test_duplicate_enum_names(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: "test"
 namespace: "a"
 services:
@@ -95,13 +94,14 @@ enums:
         id: 222
 """
 
-    errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 1
-    assert len(warnings) == 1
-    assert "Duplicate name: e0" in errors
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(ValueError):
+        load_def(rpc_def)
+
+    assert_log_entries(["Duplicate name: e0"], caplog.text)
 
 
-def test_duplicate_struct_names() -> None:
+def test_duplicate_struct_names(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: "test"
 namespace: "a"
 services:
@@ -121,13 +121,14 @@ structs:
         type: bool
 """
 
-    errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 1
-    assert len(warnings) == 1
-    assert "Duplicate name: s0" in errors
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(ValueError):
+        load_def(rpc_def)
+
+    assert_log_entries(["Duplicate name: s0"], caplog.text)
 
 
-def test_duplicate_names() -> None:
+def test_duplicate_names(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: "test"
 namespace: "a"
 services:
@@ -155,15 +156,14 @@ constants:
     value: 123
 """
 
-    errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 3
-    assert len(warnings) == 2
-    assert "Duplicate name: s0" in errors
-    assert "Duplicate name: s1" in errors
-    assert "Duplicate name: s2" in errors
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(ValueError):
+        load_def(rpc_def)
+
+    assert_log_entries(["Duplicate name: s0", "Duplicate name: s1", "Duplicate name: s2"], caplog.text)
 
 
-def test_duplicate_struct_field_names() -> None:
+def test_duplicate_struct_field_names(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: "test"
 namespace: "a"
 services:
@@ -186,13 +186,15 @@ structs:
       - name: "g"
         type: uint32_t
 """
-    errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 1
-    assert len(warnings) == 2
-    assert "Duplicate struct field name(s): [('s0', 'f'), ('s1', 'g')]" in errors
+
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(ValueError):
+        load_def(rpc_def)
+
+    assert_log_entries(["Duplicate struct field name(s): [('s0', 'f'), ('s1', 'g')]"], caplog.text)
 
 
-def test_duplicate_service_names() -> None:
+def test_duplicate_service_names(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: "test"
 namespace: "a"
 services:
@@ -208,14 +210,14 @@ services:
         id: 1
 """
 
-    errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 2
-    assert len(warnings) == 0
-    assert "Duplicate name: i0" in errors
-    assert "Duplicate name: i0ServiceShim" in errors
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(ValueError):
+        load_def(rpc_def)
+
+    assert_log_entries(["Duplicate name: i0", "Duplicate name: i0ServiceShim"], caplog.text)
 
 
-def test_duplicate_service_ids() -> None:
+def test_duplicate_service_ids(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: "test"
 namespace: "a"
 services:
@@ -231,13 +233,14 @@ services:
         id: 1
 """
 
-    errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 1
-    assert len(warnings) == 0
-    assert "Duplicate service id: 111" in errors
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(ValueError):
+        load_def(rpc_def)
+
+    assert_log_entries(["Duplicate service id: 111"], caplog.text)
 
 
-def test_duplicate_function_ids() -> None:
+def test_duplicate_function_ids(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: "test"
 namespace: "a"
 services:
@@ -257,14 +260,16 @@ services:
         id: 111
 """
 
-    errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 2
-    assert len(warnings) == 0
-    assert "Duplicate function id in service i0: 111" in errors
-    assert "Duplicate function id in service i1: 111" in errors
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(ValueError):
+        load_def(rpc_def)
+
+    assert_log_entries(
+        ["Duplicate function id in service i0: 111", "Duplicate function id in service i1: 111"], caplog.text
+    )
 
 
-def test_duplicate_function_names() -> None:
+def test_duplicate_function_names(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: "test"
 namespace: "a"
 services:
@@ -284,14 +289,16 @@ services:
         id: 222
 """
 
-    errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 2
-    assert len(warnings) == 0
-    assert "Duplicate function name in service i0: f0" in errors
-    assert "Duplicate function name in service i1: f1" in errors
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(ValueError):
+        load_def(rpc_def)
+
+    assert_log_entries(
+        ["Duplicate function name in service i0: f0", "Duplicate function name in service i1: f1"], caplog.text
+    )
 
 
-def test_invalid_function_name() -> None:
+def test_invalid_function_name(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: "test"
 services:
   - name: "s0"
@@ -299,16 +306,19 @@ services:
       - { name: "s0ServiceShim" }
 """
 
-    errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 1
-    assert len(warnings) == 0
-    assert (
-        "Invalid function name: s0ServiceShim. This name is incompatible with the generated code for the containing service"
-        in errors
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(ValueError):
+        load_def(rpc_def)
+
+    assert_log_entries(
+        [
+            "Invalid function name: s0ServiceShim. This name is incompatible with the generated code for the containing service"
+        ],
+        caplog.text,
     )
 
 
-def test_duplicate_server_name() -> None:
+def test_duplicate_server_name(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: "server"
 services:
   - name: "server"
@@ -325,13 +335,16 @@ structs:
     fields: [{name: f1, type: bool}]
 """
 
-    errors, warnings = semantic_errors(rpc_def)
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(ValueError):
+        load_def(rpc_def)
+
+    errors = caplog.text.splitlines()
     assert len(errors) == 4
-    assert len(warnings) == 1
-    assert errors.count("Duplicate name: server") == 4
+    assert caplog.text.count("Duplicate name: server") == 4
 
 
-def test_duplicate_constant_names() -> None:
+def test_duplicate_constant_names(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: "test"
 constants:
   - name : c0
@@ -348,14 +361,14 @@ services:
       - name: "f0"
 """
 
-    errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 2
-    assert len(warnings) == 0
-    assert "Duplicate name: c0" in errors
-    assert "Duplicate name: c1" in errors
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(ValueError):
+        load_def(rpc_def)
+
+    assert_log_entries(["Duplicate name: c0", "Duplicate name: c1"], caplog.text)
 
 
-def test_undeclared_custom_type() -> None:
+def test_undeclared_custom_type(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: "test"
 namespace: "a"
 services:
@@ -396,15 +409,17 @@ enums:
         id: 0
 """
 
-    errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 3
-    assert len(warnings) == 0
-    assert "Undeclared custom type: MyType1" in errors
-    assert "Undeclared custom type: MyType2" in errors
-    assert "Undeclared custom type: MyType3" in errors
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(ValueError):
+        load_def(rpc_def)
+
+    assert_log_entries(
+        ["Undeclared custom type: MyType1", "Undeclared custom type: MyType2", "Undeclared custom type: MyType3"],
+        caplog.text,
+    )
 
 
-def test_unused_custom_type() -> None:
+def test_unused_custom_type(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: "test"
 namespace: "ns"
 services:
@@ -428,14 +443,12 @@ enums:
         id: 0
 """
 
-    errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 0
-    assert len(warnings) == 2
-    assert "Unused custom type: s0" in warnings
-    assert "Unused custom type: e0" in warnings
+    caplog.set_level(logging.WARNING)
+    load_def(rpc_def)
+    assert_log_entries(["Unused custom type: s0", "Unused custom type: e0"], caplog.text)
 
 
-def test_auto_string_not_allowed_in_struct() -> None:
+def test_auto_string_not_allowed_in_struct(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: "test"
 namespace: "a"
 services:
@@ -455,13 +468,14 @@ structs:
         type: "string"
 """
 
-    errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 1
-    assert len(warnings) == 2
-    assert "Auto string not allowed in struct: [('s0', 'f0'), ('s1', 'f1')]" in errors
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(ValueError):
+        load_def(rpc_def)
+
+    assert_log_entries(["Auto string not allowed in struct: [('s0', 'f0'), ('s1', 'f1')]"], caplog.text)
 
 
-def test_only_one_auto_string_param_allowed() -> None:
+def test_only_one_auto_string_param_allowed(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: "test"
 namespace: "ns"
 services:
@@ -477,16 +491,19 @@ services:
             type: "string"
 """
 
-    errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 1
-    assert len(warnings) == 0
-    assert (
-        "More than one auto string per parameter list or return value list is not allowed: [('f0', 'p0'), ('f0', 'p1')]"
-        in errors
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(ValueError):
+        load_def(rpc_def)
+
+    assert_log_entries(
+        [
+            "More than one auto string per parameter list or return value list is not allowed: [('f0', 'p0'), ('f0', 'p1')]"
+        ],
+        caplog.text,
     )
 
 
-def test_array_of_auto_strings_is_not_allowed() -> None:
+def test_array_of_auto_strings_is_not_allowed(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: "test"
 namespace: "ns"
 services:
@@ -501,13 +518,14 @@ services:
             count: 10
 """
 
-    errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 1
-    assert len(warnings) == 0
-    assert "Array of auto strings is not allowed: [('f2', 'p0')]" in errors
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(ValueError):
+        load_def(rpc_def)
+
+    assert_log_entries(["Array of auto strings is not allowed: [('f2', 'p0')]"], caplog.text)
 
 
-def test_auto_string_return_value_is_not_allowed() -> None:
+def test_auto_string_return_value_is_not_allowed(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: "test"
 namespace: "ns"
 services:
@@ -541,10 +559,13 @@ services:
 
 """
 
-    errors, warnings = semantic_errors(rpc_def)
-    assert len(errors) == 1
-    assert len(warnings) == 0
-    assert (
-        "A function cannot return an auto string: [('s0', 'f0', 'r0'), ('s0', 'f1', 'r0'), ('s0', 'f1', 'r1'), ('s0', 'f2', 'r0'), ('s0', 'f3', 'r0')]"
-        in errors
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(ValueError):
+        load_def(rpc_def)
+
+    assert_log_entries(
+        [
+            "A function cannot return an auto string: [('s0', 'f0', 'r0'), ('s0', 'f1', 'r0'), ('s0', 'f1', 'r1'), ('s0', 'f2', 'r0'), ('s0', 'f3', 'r0')]"
+        ],
+        caplog.text,
     )

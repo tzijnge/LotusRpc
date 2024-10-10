@@ -5,10 +5,10 @@ from os import path
 import pytest
 from lrpc.client import lrpc_decode
 from lrpc.core import LrpcVar
-from lrpc.utils import load_lrpc_def
+from lrpc.utils import load_lrpc_def_from_url
 
 definition_file = path.join(path.dirname(path.abspath(__file__)), "test_lrpc_encode_decode.lrpc.yaml")
-lrpc_def = load_lrpc_def(definition_file)
+lrpc_def = load_lrpc_def_from_url(definition_file, warnings_as_errors=False)
 
 
 def test_decode_uint8_t() -> None:

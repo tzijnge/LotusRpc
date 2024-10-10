@@ -30,7 +30,10 @@ class LrpcService:
             if "id" in f:
                 last_function_id = f["id"]
             else:
-                last_function_id = last_function_id + 1
+                # id field must be present in LrpcFunDict to construct LrpcFun
+                # but it is optional when constructing LrpcService. This method
+                # makes sure that function IDs are initialized properly
+                last_function_id = last_function_id + 1  # type: ignore[unreachable]
                 f["id"] = last_function_id
 
     def accept(self, visitor: LrpcVisitor) -> None:

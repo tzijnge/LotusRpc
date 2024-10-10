@@ -1,18 +1,17 @@
 """LRPC client CLI"""
 
+import logging
 import os
 import sys
 from glob import glob
 from os import path
 from typing import Any, Optional
 from collections.abc import Callable
-
 import click
 import serial
 import yaml
 from .client import ClientCliVisitor, LrpcClient
-from .core.definition import LrpcDef
-from .utils import load_lrpc_def
+from .utils import load_lrpc_def_from_url
 
 LRPCC_CONFIG_ENV_VAR = "LRPCC_CONFIG"
 LRPCC_CONFIG_YAML = "lrpcc.config.yaml"
@@ -104,8 +103,10 @@ def create(definition_url: str, transport_type: str) -> None:
 # pylint: disable = too-few-public-methods
 class Lrpcc:
     def __init__(self, config: dict[str, Any]) -> None:
-        self.lrpc_def: LrpcDef = load_lrpc_def(config[DEFINITION_URL])
-        self.client = LrpcClient(config[DEFINITION_URL])
+        input_file = config[DEFINITION_URL]
+        self.lrpc_def = load_lrpc_def_from_url(input_file, warnings_as_errors=True)
+
+        self.client = LrpcClient(self.lrpc_def)
         self.transport_type: str = config[TRANSPORT_TYPE]
         self.transport_params: dict[str, Any] = config[TRANSPORT_PARAMS]
 
@@ -141,10 +142,18 @@ class Lrpcc:
 def run_cli() -> None:
     config = __load_config()
 
-    if config:
-        Lrpcc(config).run()
-    else:
+    if not config:
         run_lrpcc_config_creator()
+        return
+
+    try:
+        Lrpcc(config).run()
+
+    # catching general exception here is considered ok, because application will terminate
+    # pylint: disable=broad-exception-caught
+    except Exception as e:
+        logging.error("Error running LRPC command line client for %s", config[DEFINITION_URL])
+        logging.error(str(e))
 
 
 if __name__ == "__main__":

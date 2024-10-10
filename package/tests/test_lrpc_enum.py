@@ -72,18 +72,13 @@ def test_external_with_namespace() -> None:
 
 
 def test_omitted_id() -> None:
-    # Although field `id` is required for LrpcEnumFieldDict,
-    # it may be assigned automatically by LrpcEnum and therefore
-    # not required at the level of LrpcEnumDict. This test
-    # verifies the auto ID assignment and therefore the type
-    # warning is ignored
     e: LrpcEnumDict = {
         "name": "e1",
         "fields": [
-            {"name": "function1"},  # type: ignore[list-item]
-            {"name": "function2"},  # type: ignore[list-item]
+            {"name": "function1"},
+            {"name": "function2"},
             {"name": "function3", "id": 123},
-            {"name": "function4"},  # type: ignore[list-item]
+            {"name": "function4"},
         ],
     }
 

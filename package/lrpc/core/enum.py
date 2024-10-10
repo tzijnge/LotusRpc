@@ -4,6 +4,11 @@ from typing_extensions import NotRequired
 from ..visitors import LrpcVisitor
 
 
+class LrpcEnumFieldSimpleDict(TypedDict):
+    name: str
+    id: NotRequired[int]
+
+
 class LrpcEnumFieldDict(TypedDict):
     name: str
     id: int
@@ -17,10 +22,6 @@ class LrpcEnumField:
         self.__name = raw["name"]
         self.__id = raw["id"]
 
-    @classmethod
-    def from_name_and_index(cls, name: str, index: int) -> "LrpcEnumField":
-        return cls({"name": name, "id": index})
-
     def name(self) -> str:
         return self.__name
 
@@ -30,7 +31,7 @@ class LrpcEnumField:
 
 class LrpcEnumDict(TypedDict):
     name: str
-    fields: list[Union[LrpcEnumFieldDict, str]]
+    fields: list[Union[LrpcEnumFieldSimpleDict, str]]
     external: NotRequired[str]
     external_namespace: NotRequired[str]
 
@@ -62,11 +63,16 @@ class LrpcEnum:
         index = 0
         for field in self.__fields:
             if isinstance(field, str):
-                all_fields.append(LrpcEnumField.from_name_and_index(field, index))
+                f = field
+                i = index
             elif "id" not in field:
-                all_fields.append(LrpcEnumField.from_name_and_index(field["name"], index))
+                f = field["name"]
+                i = index
             else:
-                all_fields.append(LrpcEnumField(field))
+                f = field["name"]
+                i = field["id"]
+
+            all_fields.append(LrpcEnumField({"name": f, "id": i}))
 
             index = all_fields[-1].id() + 1
 

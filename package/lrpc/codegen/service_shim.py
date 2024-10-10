@@ -7,6 +7,7 @@ from ..visitors import LrpcVisitor
 from ..core import LrpcDef, LrpcService, LrpcFun, LrpcVar
 
 
+# pylint: disable = too-many-instance-attributes
 class ServiceShimVisitor(LrpcVisitor):
 
     def __init__(self, output: os.PathLike[str]) -> None:

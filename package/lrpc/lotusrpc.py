@@ -1,13 +1,9 @@
+import logging
 import os
 from os import path
-from typing import TextIO, Any
-
+from typing import TextIO
 import click
-import jsonschema
-import jsonschema.exceptions
-import yaml
 from .visitors import PlantUmlVisitor
-from .schema import load_lrpc_schema
 from .codegen import (
     ConstantsFileVisitor,
     EnumFileVisitor,
@@ -17,42 +13,14 @@ from .codegen import (
     StructFileVisitor,
 )
 from .core import LrpcDef
-from .validation import SemanticAnalyzer
+from .utils import load_lrpc_def_from_file
+
+logging.basicConfig(level=logging.INFO)
 
 
 def create_dir_if_not_exists(target_dir: os.PathLike[str]) -> None:
     if not path.exists(target_dir):
         os.makedirs(target_dir, 511, True)
-
-
-def validate_yaml(definition: dict[str, Any], input_file_name: str) -> bool:
-    try:
-        jsonschema.validate(definition, load_lrpc_schema())
-        return False
-    except jsonschema.exceptions.ValidationError as e:
-        print("#" * 80)
-        print(" LRPC definition parsing error ".center(80, "#"))
-        print(f" {input_file_name} ".center(80, "#"))
-        print("#" * 80)
-        print(e)
-        return True
-
-
-def validate_definition(lrpc_def: LrpcDef, warnings_as_errors: bool) -> bool:
-    errors_found = False
-
-    sa = SemanticAnalyzer(lrpc_def)
-    sa.analyze()
-
-    if warnings_as_errors:
-        for e in sa.errors + sa.warnings:
-            errors_found = True
-            print(f"Error: {e}")
-    else:
-        for w in sa.warnings:
-            print(f"Warning: {w}")
-
-    return errors_found
 
 
 def generate_rpc(lrpc_def: LrpcDef, output: os.PathLike[str]) -> None:
@@ -76,16 +44,16 @@ def generate_rpc(lrpc_def: LrpcDef, output: os.PathLike[str]) -> None:
 def generate(warnings_as_errors: bool, output: os.PathLike[str], input_file: TextIO) -> None:
     """Generate code for file INPUT"""
 
-    definition = yaml.safe_load(input_file)
-    errors_found = validate_yaml(definition, input_file.name)
-    if errors_found:
-        return
-
-    lrpc_def = LrpcDef(definition)
-    errors_found = validate_definition(lrpc_def, warnings_as_errors)
-    if not errors_found:
-        input_file.seek(0)
+    try:
+        lrpc_def = load_lrpc_def_from_file(input_file, warnings_as_errors)
         generate_rpc(lrpc_def, output)
+        logging.info("Generated LRPC code for %s in %s", input_file.name, output)
+
+    # catching general exception here is considered ok, because application will terminate
+    # pylint: disable=broad-exception-caught
+    except Exception as e:
+        logging.error("Error while generating code for %s", input_file.name)
+        logging.error(str(e))
 
 
 if __name__ == "__main__":

@@ -20,6 +20,7 @@ class LrpcDefDict(TypedDict):
     constants: NotRequired[list[LrpcConstantDict]]
 
 
+# pylint: disable = too-many-instance-attributes
 class LrpcDef:
 
     def __init__(self, raw: LrpcDefDict) -> None:
@@ -75,7 +76,10 @@ class LrpcDef:
             if "id" in s:
                 last_service_id = s["id"]
             else:
-                last_service_id = last_service_id + 1
+                # id field must be present in LrpcServiceDict to construct LrpcService
+                # but it is optional when constructing LrpcDef. This method
+                # makes sure that service IDs are initialized properly
+                last_service_id = last_service_id + 1  # type: ignore[unreachable]
                 s["id"] = last_service_id
 
     def accept(self, visitor: LrpcVisitor) -> None:

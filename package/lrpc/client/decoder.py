@@ -101,6 +101,7 @@ class LrpcDecoder:
         self.start += struct.calcsize(pack_format)
         return unpacked[0]
 
+    # pylint: disable = too-many-return-statements
     def lrpc_decode(self, var: LrpcVar) -> Any:
         if var.is_array_of_strings():
             return self.__decode_array_of_strings(var)

@@ -1,11 +1,16 @@
 import math
 import pytest
-from lrpc.core import LrpcDef
-import yaml
+from lrpc.utils import load_lrpc_def_from_str
+from lrpc.core.definition import LrpcDef
+
+
+def load_lrpc_def(def_str: str) -> LrpcDef:
+    lrpc_def = load_lrpc_def_from_str(def_str, warnings_as_errors=False)
+    return lrpc_def
 
 
 def test_optional_service_id() -> None:
-    rpc_def = """name: "test"
+    def_str = """name: "test"
 services:
   - name: "a4"
     functions:
@@ -25,7 +30,7 @@ services:
       - name: "a"
         id: 0
 """
-    lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
+    lrpc_def = load_lrpc_def(def_str)
     services = lrpc_def.services()
     assert len(services) == 4
     assert services[0].id() == 0
@@ -35,7 +40,7 @@ services:
 
 
 def test_optional_function_id() -> None:
-    rpc_def = """name: "test"
+    def_str = """name: "test"
 services:
   - name: "s1"
     functions:
@@ -45,7 +50,7 @@ services:
         id: 17
       - name: "a1"
 """
-    lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
+    lrpc_def = load_lrpc_def(def_str)
     services = lrpc_def.services()
     assert len(services) == 1
     functions = services[0].functions()
@@ -58,7 +63,7 @@ services:
 
 
 def test_max_service_id() -> None:
-    rpc_def = """name: "test"
+    def_str = """name: "test"
 services:
   - name: "a4"
     functions:
@@ -75,25 +80,25 @@ services:
       - name: "a"
         id: 0
 """
-    lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
+    lrpc_def = load_lrpc_def(def_str)
     assert lrpc_def.max_service_id() == 43
 
 
 def test_no_constants_no_enums_no_structs() -> None:
-    rpc_def = """name: "test"
+    def_str = """name: "test"
 services:
   - name: "s1"
     functions:
       - name: "f1"
 """
-    lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
+    lrpc_def = load_lrpc_def(def_str)
     assert len(lrpc_def.constants()) == 0
     assert len(lrpc_def.enums()) == 0
     assert len(lrpc_def.structs()) == 0
 
 
 def test_constants() -> None:
-    rpc_def = """name: "test"
+    def_str = """name: "test"
 constants:
   - name: "c1"
     value: true
@@ -114,7 +119,7 @@ services:
     functions:
       - name: "f1"
 """
-    lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
+    lrpc_def = load_lrpc_def(def_str)
     constants = lrpc_def.constants()
     assert len(constants) == 6
 
@@ -150,7 +155,7 @@ services:
 
 
 def test_enums() -> None:
-    rpc_def = """name: "test"
+    def_str = """name: "test"
 services:
   - name: "s1"
     functions:
@@ -165,7 +170,7 @@ enums:
   - name: "MyEnum2"
     fields: [f1, f2]
 """
-    lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
+    lrpc_def = load_lrpc_def(def_str)
     enums = lrpc_def.enums()
     assert len(enums) == 2
 
@@ -187,7 +192,7 @@ enums:
 
 
 def test_external_enum() -> None:
-    rpc_def = """name: "test"
+    def_str = """name: "test"
 services:
   - name: "s1"
     functions:
@@ -197,7 +202,7 @@ enums:
     fields: [f1, f2]
     external: a/b/c/d.hpp
 """
-    lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
+    lrpc_def = load_lrpc_def(def_str)
     enum = lrpc_def.enums()[0]
 
     assert enum.is_external() is True
@@ -205,7 +210,7 @@ enums:
 
 
 def test_enum_with_omitted_ids() -> None:
-    rpc_def = """name: "test"
+    def_str = """name: "test"
 services:
   - name: "s1"
     functions:
@@ -219,7 +224,7 @@ enums:
         id: 222
       - name: f4
 """
-    lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
+    lrpc_def = load_lrpc_def(def_str)
     enums = lrpc_def.enums()
     assert len(enums) == 1
 
@@ -237,7 +242,7 @@ enums:
 
 
 def test_structs() -> None:
-    rpc_def = """name: "test"
+    def_str = """name: "test"
 services:
   - name: "s1"
     functions:
@@ -254,7 +259,7 @@ structs:
       - name: ms1
         type: float
 """
-    lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
+    lrpc_def = load_lrpc_def(def_str)
     structs = lrpc_def.structs()
     assert len(structs) == 2
 
@@ -274,7 +279,7 @@ structs:
 
 
 def test_external_struct() -> None:
-    rpc_def = """name: "test"
+    def_str = """name: "test"
 services:
   - name: "s1"
     functions:
@@ -287,7 +292,7 @@ structs:
     external: a/b/c/d.hpp
     external_namespace: a::b::c
 """
-    lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
+    lrpc_def = load_lrpc_def(def_str)
     struct = lrpc_def.structs()[0]
 
     assert struct.is_external() is True
@@ -296,13 +301,13 @@ structs:
 
 
 def test_get_service_by_name() -> None:
-    rpc_def = """name: "test"
+    def_str = """name: "test"
 services:
   - name: "s1"
     functions:
       - name: "f1"
 """
-    lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
+    lrpc_def = load_lrpc_def(def_str)
 
     service = lrpc_def.service_by_name("s1")
     assert service is not None
@@ -311,14 +316,14 @@ services:
 
 
 def test_get_service_by_id() -> None:
-    rpc_def = """name: "test"
+    def_str = """name: "test"
 services:
   - name: "s1"
     id: 21
     functions:
       - name: "f1"
 """
-    lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
+    lrpc_def = load_lrpc_def(def_str)
 
     service = lrpc_def.service_by_id(21)
     assert service is not None
@@ -327,7 +332,7 @@ services:
 
 
 def test_get_struct_by_name() -> None:
-    rpc_def = """name: "test"
+    def_str = """name: "test"
 services:
   - name: "s1"
     functions:
@@ -338,7 +343,7 @@ structs:
       - name: ms1
         type: float
 """
-    lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
+    lrpc_def = load_lrpc_def(def_str)
 
     s = lrpc_def.struct("MyStruct1")
     assert s.name() == "MyStruct1"
@@ -348,7 +353,7 @@ structs:
 
 
 def test_get_enum_by_name() -> None:
-    rpc_def = """name: "test"
+    def_str = """name: "test"
 services:
   - name: "s1"
     functions:
@@ -359,7 +364,7 @@ enums:
       - name: ms1
         id: 55
 """
-    lrpc_def = LrpcDef(yaml.safe_load(rpc_def))
+    lrpc_def = load_lrpc_def(def_str)
 
     e = lrpc_def.enum("MyEnum1")
     assert e.name() == "MyEnum1"

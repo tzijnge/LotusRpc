@@ -24,6 +24,7 @@ class LrpcVarDict(TypedDict):
     count: NotRequired[Union[int, Literal["?"]]]
 
 
+# pylint: disable = too-many-public-methods
 class LrpcVar:
     def __init__(self, raw: LrpcVarDict) -> None:
         assert "name" in raw and isinstance(raw["name"], str)
@@ -217,6 +218,7 @@ class LrpcVar:
 
     def contained(self) -> "LrpcVar":
         contained_item = deepcopy(self)
-        contained_item.__is_optional = False  # pylint: disable=protected-access, unused-private-member
-        contained_item.__count = 1  # pylint: disable=protected-access, unused-private-member
+        # pylint: disable=protected-access, unused-private-member
+        contained_item.__is_optional = False
+        contained_item.__count = 1
         return contained_item

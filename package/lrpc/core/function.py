@@ -1,24 +1,38 @@
-from lrpc.core import LrpcVar
-from lrpc import LrpcVisitor
-from typing import Optional, List
+from typing import TypedDict
+from typing_extensions import NotRequired
 
-class LrpcFun(object):
-    def __init__(self, raw) -> None:
-        self.raw = raw
-        self.__init_params()
-        self.__init_returns()
+from ..visitors import LrpcVisitor
+from .var import LrpcVar, LrpcVarDict
 
-    def __init_returns(self) -> None:
-        if 'returns' not in self.raw:
-            self.raw['returns'] = list()
 
-    def __init_params(self) -> None:
-        if 'params' not in self.raw:
-            self.raw['params'] = list()
+class LrpcFunDict(TypedDict):
+    name: str
+    id: int
+    params: NotRequired[list[LrpcVarDict]]
+    returns: NotRequired[list[LrpcVarDict]]
+
+
+class LrpcFun:
+
+    def __init__(self, raw: LrpcFunDict) -> None:
+        assert "name" in raw and isinstance(raw["name"], str)
+        assert "id" in raw and isinstance(raw["id"], int)
+
+        self.__params = []
+        self.__returns = []
+
+        if "params" in raw:
+            self.__params.extend([LrpcVar(p) for p in raw["params"]])
+
+        if "returns" in raw:
+            self.__returns.extend([LrpcVar(p) for p in raw["returns"]])
+
+        self.__name = raw["name"]
+        self.__id = raw["id"]
 
     def accept(self, visitor: LrpcVisitor) -> None:
         visitor.visit_lrpc_function(self)
-        
+
         for r in self.returns():
             visitor.visit_lrpc_function_return(r)
         visitor.visit_lrpc_function_return_end()
@@ -29,34 +43,34 @@ class LrpcFun(object):
 
         visitor.visit_lrpc_function_end()
 
-    def params(self):
-        return [LrpcVar(p) for p in self.raw['params']]
+    def params(self) -> list[LrpcVar]:
+        return self.__params
 
-    def param(self, name: str) -> Optional[LrpcVar]:
+    def param(self, name: str) -> LrpcVar:
         for p in self.params():
             if p.name() == name:
                 return p
 
-        return None
+        raise ValueError(f"No parameter {name} in function {self.name()}")
 
-    def ret(self, name: str) -> Optional[LrpcVar]:
+    def returns(self) -> list[LrpcVar]:
+        return self.__returns
+
+    def ret(self, name: str) -> LrpcVar:
         for r in self.returns():
             if r.name() == name:
                 return r
 
-        return None
-
-    def returns(self) -> List[LrpcVar]:
-        return [LrpcVar(r) for r in self.raw['returns']]
+        raise ValueError(f"No return value {name} in function {self.name()}")
 
     def name(self) -> str:
-        return self.raw['name']
+        return self.__name
 
-    def id(self):
-        return self.raw['id']
+    def id(self) -> int:
+        return self.__id
 
-    def number_returns(self):
+    def number_returns(self) -> int:
         return len(self.returns())
 
-    def param_names(self):
+    def param_names(self) -> list[str]:
         return [p.name() for p in self.params()]

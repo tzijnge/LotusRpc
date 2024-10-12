@@ -1,0 +1,7 @@
+pytest
+types-jsonschema
+types-pyyaml
+pyserial
+types-pyserial
+black
+types-setuptools

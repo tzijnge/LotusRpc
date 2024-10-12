@@ -1,157 +1,162 @@
-from code_generation.code_generator import CppFile
-from lrpc import LrpcVisitor
-from lrpc.core import LrpcDef, LrpcService, LrpcFun, LrpcVar
-from lrpc.codegen.utils import optionally_in_namespace
+import os
+from typing import Optional
+from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 
+from ..codegen.utils import optionally_in_namespace
+from ..visitors import LrpcVisitor
+from ..core import LrpcDef, LrpcService, LrpcFun, LrpcVar
+
+
+# pylint: disable = too-many-instance-attributes
 class ServiceShimVisitor(LrpcVisitor):
-    def __init__(self, output: str):
-        self.file = None
-        self.lrpc_def = None
-        self.output = output
-        self.function_info = None
-        self.max_function_id = 0
-        self.function_declarations = None
-        self.function_shims = None
-        self.function_params = None
-        self.function_returns = None
-        self.function_name = None
-        self.shim_array = None
-        self.service_name = None
-        self.service_id = None
-        self.number_functions = None
 
-    def visit_lrpc_def(self, lrpc_def: LrpcDef):
-        self.lrpc_def = lrpc_def
+    def __init__(self, output: os.PathLike[str]) -> None:
+        self.__file: CppFile
+        self.__namespace: Optional[str]
+        self.__output = output
+        self.__function_info: dict[int, str]
+        self.__max_function_id = 0
+        self.__function_declarations: list[str]
+        self.__function_shims: list[list[str]]
+        self.__function_params: list[LrpcVar]
+        self.__function_returns: list[LrpcVar]
+        self.__function_name: str
+        self.__service_name: str
+        self.__service_id: int
+        self.__number_functions = 0
 
-    def visit_lrpc_service(self, service: LrpcService):
-        self.file = CppFile(f'{self.output}/{service.name()}_ServiceShim.hpp')
-        self.function_info = dict()
-        self.max_function_id = 0
-        self.function_declarations = list()
-        self.function_shims = list()
-        self.shim_array = list()
-        self.service_name = service.name()
-        self.service_id = service.id()
-        self.number_functions = len(service.functions())
+    def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
+        self.__namespace = lrpc_def.namespace()
+
+    def visit_lrpc_service(self, service: LrpcService) -> None:
+        self.__file = CppFile(f"{self.__output}/{service.name()}_ServiceShim.hpp")
+        self.__function_info = {}
+        self.__max_function_id = 0
+        self.__function_declarations = []
+        self.__function_shims = []
+        self.__service_name = service.name()
+        self.__service_id = service.id()
+        self.__number_functions = len(service.functions())
 
         self.__write_include_guard()
         self.__write_includes()
 
-    def visit_lrpc_service_end(self):
-        self.__write_shim(self.lrpc_def.namespace())
+    def visit_lrpc_service_end(self) -> None:
+        optionally_in_namespace(self.__file, self.__write_shim, self.__namespace)
 
-    def visit_lrpc_function(self, function: LrpcFun):
-        self.function_params = list()
-        self.function_returns = list()
-        self.function_name = function.name()
-        self.max_function_id = max(self.max_function_id, function.id())
-        self.function_info.update({function.id(): function.name()})
+    def visit_lrpc_function(self, function: LrpcFun) -> None:
+        self.__function_params = []
+        self.__function_returns = []
+        self.__function_name = function.name()
+        self.__max_function_id = max(self.__max_function_id, function.id())
+        self.__function_info.update({function.id(): function.name()})
 
-    def visit_lrpc_function_end(self):
-        name = self.function_name
+    def visit_lrpc_function_end(self) -> None:
+        name = self.__function_name
         params = self.__params_string()
         returns = self.__returns_string()
-        self.function_declarations.append(f'virtual {returns} {name}({params}) = 0;')
+        self.__function_declarations.append(f"virtual {returns} {name}({params}) = 0;")
 
-        shim = list()
-        reader_name = 'r' if len(self.function_params) != 0 else ''
-        writer_name = 'w' if len(self.function_returns) != 0 else ''
-        shim.append(f'void {name}_shim(Reader& {reader_name}, Writer& {writer_name})')
+        shim = []
+        reader_name = "r" if len(self.__function_params) != 0 else ""
+        writer_name = "w" if len(self.__function_returns) != 0 else ""
+        shim.append(f"void {name}_shim(Reader& {reader_name}, Writer& {writer_name})")
         shim.extend(self.__function_shim_body())
-        self.function_shims.append(shim)
-    
-    def visit_lrpc_function_param(self, param: LrpcVar):
-        self.function_params.append(param)
+        self.__function_shims.append(shim)
 
-    def visit_lrpc_function_return(self, ret: LrpcVar):
-        self.function_returns.append(ret)
+    def visit_lrpc_function_param(self, param: LrpcVar) -> None:
+        self.__function_params.append(param)
 
-    @optionally_in_namespace
-    def __write_shim(self):
-        with self.file.block(f'class {self.service_name}ServiceShim : public lrpc::Service', ';'):
-            self.file.label('public')
-            self.file(f'uint32_t id() const override {{ return {self.service_id}; }}')
-            self.file.newline()
+    def visit_lrpc_function_return(self, ret: LrpcVar) -> None:
+        self.__function_returns.append(ret)
 
-            with self.file.block('void invoke(Reader &reader, Writer &writer) override'):
-                self.file('auto functionId = reader.read_unchecked<uint8_t>();')
-                self.file('writer.write_unchecked<uint8_t>(functionId);')
-                self.file('((this)->*(shim(functionId)))(reader, writer);')
+    def __write_shim(self) -> None:
+        with self.__file.block(f"class {self.__service_name}ServiceShim : public lrpc::Service", ";"):
+            self.__file.label("public")
+            self.__file(f"uint32_t id() const override {{ return {self.__service_id}; }}")
+            self.__file.newline()
 
-            self.file.newline()
-            self.file.label('protected')
-            for decl in self.function_declarations:
-                self.file.write(decl)
+            with self.__file.block("void invoke(Reader &reader, Writer &writer) override"):
+                self.__file("auto functionId = reader.read_unchecked<uint8_t>();")
+                self.__file("writer.write_unchecked<uint8_t>(functionId);")
+                self.__file("((this)->*(shim(functionId)))(reader, writer);")
 
-            self.file.newline()
+            self.__file.newline()
+            self.__file.label("protected")
+            for decl in self.__function_declarations:
+                self.__file.write(decl)
 
-            for shim in self.function_shims:
-                with self.file.block(shim[0]):
+            self.__file.newline()
+
+            for shim in self.__function_shims:
+                with self.__file.block(shim[0]):
                     for l in shim[1:]:
-                        self.file.write(l)
+                        self.__file.write(l)
 
-                self.file.newline()
+                self.__file.newline()
 
-            self.file.label('private')
+            self.__file.label("private")
             self.__write_shim_array()
 
-    def __write_shim_array(self):
-        null_shim_name = 'null'
-        self.file.write(f'using ShimType =  void ({self.service_name}ServiceShim::*)(Reader &, Writer &);')
-        if self.max_function_id != (self.number_functions - 1):
-            self.file.write(f'constexpr void {null_shim_name}_shim(Reader&, Writer&) {{}}')
-            self.file.newline()
+    def __write_shim_array(self) -> None:
+        null_shim_name = "null"
+        self.__file.write(f"using ShimType =  void ({self.__service_name}ServiceShim::*)(Reader &, Writer &);")
+        if self.__max_function_id != (self.__number_functions - 1):
+            self.__file.write(f"constexpr void {null_shim_name}_shim(Reader&, Writer&) {{}}")
+            self.__file.newline()
 
-        with self.file.block('static ShimType shim(const size_t functionId)'):
-            with self.file.block(f'static constexpr etl::array<ShimType, {self.max_function_id + 1}> shims', ';'):
-                for fid in range(0, self.max_function_id + 1):
-                    name = self.function_info.get(fid, null_shim_name)
-                    self.file(f'&{self.service_name}ServiceShim::{name}_shim,')
+        with self.__file.block("static ShimType shim(const size_t functionId)"):
+            with self.__file.block(f"static constexpr etl::array<ShimType, {self.__max_function_id + 1}> shims", ";"):
+                for fid in range(0, self.__max_function_id + 1):
+                    name = self.__function_info.get(fid, null_shim_name)
+                    self.__file(f"&{self.__service_name}ServiceShim::{name}_shim,")
 
-            self.file.newline()
-            self.file.write('return shims.at(functionId);')
+            self.__file.newline()
+            self.__file.write("return shims.at(functionId);")
 
     def __function_shim_body(self) -> list[str]:
-        body = list()
+        body = []
 
-        for p in self.function_params:
+        for p in self.__function_params:
             n = p.name()
             t = p.read_type()
-            body.append(f'const auto {n} = lrpc::read_unchecked<{t}>(r);')
+            body.append(f"const auto {n} = lrpc::read_unchecked<{t}>(r);")
 
-        param_list = ', '.join([p.name() for p in self.function_params])
+        param_list = ", ".join([p.name() for p in self.__function_params])
 
-        response = 'const auto response = ' if len(self.function_returns) != 0 else ''
-        body.append(f'{response}{self.function_name}({param_list});')
+        response = "const auto response = " if len(self.__function_returns) != 0 else ""
+        body.append(f"{response}{self.__function_name}({param_list});")
 
-        returns = self.function_returns
+        returns = self.__function_returns
         if len(returns) == 1:
             t = returns[0].write_type()
-            body.append(f'lrpc::write_unchecked<{t}>(w, response);')
+            body.append(f"lrpc::write_unchecked<{t}>(w, response);")
         else:
             for i, r in enumerate(returns):
                 t = r.write_type()
-                body.append(f'lrpc::write_unchecked<{t}>(w, std::get<{i}>(response));')
+                body.append(f"lrpc::write_unchecked<{t}>(w, std::get<{i}>(response));")
 
         return body
 
-    def __params_string(self):
-        return ', '.join([f'{p.param_type()} {p.name()}' for p in self.function_params])
+    def __params_string(self) -> str:
+        return ", ".join([f"{p.param_type()} {p.name()}" for p in self.__function_params])
 
-    def __returns_string(self):
-        if len(self.function_returns) == 0:
-            return 'void'
-        elif len(self.function_returns) == 1:
-            return self.function_returns[0].return_type()
-        else:
-            return 'std::tuple<{}>'.format(', '.join([r.return_type() for r in self.function_returns]))
+    def __returns_string(self) -> str:
+        if len(self.__function_returns) == 0:
+            return "void"
 
-    def __write_include_guard(self):
-        self.file('#pragma once')
+        if len(self.__function_returns) == 1:
+            return self.__function_returns[0].return_type()
 
-    def __write_includes(self):
-        self.file('#include "lrpc/Service.hpp"')
-        self.file('#include "lrpc/EtlRwExtensions.hpp"')
-        self.file(f'#include "{self.service_name}.hpp"')
+        types = ", ".join([r.return_type() for r in self.__function_returns])
+        return f"std::tuple<{types}>"
 
-        self.file.newline()
+    def __write_include_guard(self) -> None:
+        self.__file("#pragma once")
+
+    def __write_includes(self) -> None:
+        self.__file('#include "lrpc/Service.hpp"')
+        self.__file('#include "lrpc/EtlRwExtensions.hpp"')
+        self.__file(f'#include "{self.__service_name}.hpp"')
+
+        self.__file.newline()

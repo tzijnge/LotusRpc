@@ -90,6 +90,7 @@ class ClientCliVisitor(LrpcVisitor):
         self.enum_values[enum.name()].append(field.name())
 
     def visit_lrpc_function(self, function: LrpcFun) -> None:
+        assert self.current_service.name is not None
         self.current_function = click.Command(
             name=function.name(),
             callback=partial(self.__handle_command, self.current_service.name, function.name()),

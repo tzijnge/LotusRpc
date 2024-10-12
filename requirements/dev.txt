@@ -1,7 +1,9 @@
-pytest
-types-jsonschema
-types-pyyaml
-pyserial
-types-pyserial
-black
-types-setuptools
+pytest==8.3.3
+mypy==1.11.2
+black==24.10.0
+pylint==3.3.1
+types-jsonschema==4.23.0.20240813
+types-pyyaml==6.0.12.20240917
+types-pyserial==3.5.0.20240826
+types-setuptools==75.1.0.20240917
+typing_extensions==4.12.2

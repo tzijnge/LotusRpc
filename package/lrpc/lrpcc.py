@@ -2,7 +2,6 @@
 
 import logging
 import os
-import sys
 from glob import glob
 from os import path
 from typing import Any

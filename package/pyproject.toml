@@ -1,0 +1,77 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lrpc"
+version = "0.1.0"
+description = "A code generator for remote procedure calls on embedded systems"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "T Zijnge", email = "tzijnge@example.com" }]
+keywords = ["code generation", "embedded systems", "rpc"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Software Development :: Code Generators",
+    "Topic :: Software Development :: Embedded Systems",
+]
+dependencies = [
+    "code-generation==2.3.0",
+    "pyyaml==6.0.2",
+    "jsonschema==4.23.0",
+    "click==8.1.7",
+]
+
+[project.urls]
+homepage = "https://github.com/tzijnge/LotusRpc"
+"Bug Tracker" = "https://github.com/tzijnge/LotusRpc/issues"
+"Documentation" = "https://github.com/tzijnge/LotusRpc/wiki"
+"Source Code" = "https://github.com/tzijnge/LotusRpc"
+
+[project.optional-dependencies]
+serial = ["pyserial==3.5"]
+
+[project.scripts]
+lotusrpc = "lrpc.lotusrpc:generate"
+lrpcc = "lrpc.lrpcc:run_cli"
+
+[tool.setuptools.package-data]
+"lrpc.schema" = ["lotusrpc-schema.json"]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.black]
+line-length = 120
+
+[tool.pylint]
+disable = [
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "missing-module-docstring",
+]
+
+[tool.pylint.format]
+# line length is handled by black. Any remaining long lines cannot be formatted properly
+disable = ["line-too-long"]
+allow-reexport-from-package = true
+
+[tool.mypy]
+exclude = "external"
+strict = true
+# Increase strictness of checks
+disallow_any_decorated = true
+strict_optional = true
+warn_no_return = true
+warn_unreachable = true
+
+# Display statistics after running
+# dump_type_stats = true
+# dump_inference_stats = true

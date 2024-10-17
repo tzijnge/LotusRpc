@@ -3,8 +3,8 @@ import os
 from os import path
 from typing import TextIO
 import click
-from .visitors import PlantUmlVisitor
-from .codegen import (
+from lrpc.visitors import PlantUmlVisitor
+from lrpc.codegen import (
     ConstantsFileVisitor,
     EnumFileVisitor,
     ServerIncludeVisitor,
@@ -12,8 +12,8 @@ from .codegen import (
     ServiceShimVisitor,
     StructFileVisitor,
 )
-from .core import LrpcDef
-from .utils import load_lrpc_def_from_file
+from lrpc.core import LrpcDef
+from lrpc.utils import load_lrpc_def_from_file
 
 logging.basicConfig(format="[LRPCC] %(levelname)-8s: %(message)s", level=logging.INFO)
 

@@ -9,8 +9,8 @@ from collections.abc import Callable
 import click
 import serial
 import yaml
-from .client import ClientCliVisitor, LrpcClient
-from .utils import load_lrpc_def_from_url
+from lrpc.client import ClientCliVisitor, LrpcClient
+from lrpc.utils import load_lrpc_def_from_url
 
 logging.basicConfig(format="[LRPCC] %(levelname)-8s: %(message)s", level=logging.INFO)
 

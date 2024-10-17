@@ -52,6 +52,7 @@ jobs:
         run: lrpcc --help
 
       - name: Publish Test Results
+        if: ${{ github.triggering_actor != 'dependabot[bot]' }}
         uses: EnricoMi/publish-unit-test-result-action/linux@v2
         with:
           junit_files: "testresults/*.xml"

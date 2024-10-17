@@ -46,6 +46,10 @@ lrpcc = "lrpc.lrpcc:run_cli"
 
 [tool.setuptools]
 include-package-data = true
+packages = ["lrpc"]
+
+[tool.pytest.ini_options]
+pythonpath = "."
 
 [tool.black]
 line-length = 120

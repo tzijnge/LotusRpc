@@ -45,8 +45,8 @@ jobs:
         working-directory: package
         run: pip install .
 
-      - name: Run lotusrpc
-        run: lotusrpc --help
+      - name: Run lotusrpc generator
+        run: lrpcg --help
 
       - name: Run LRPC client CLI
         run: lrpcc --help

@@ -41,7 +41,7 @@ def generate_rpc(lrpc_def: LrpcDef, output: os.PathLike[str]) -> None:
 )
 @click.option("-o", "--output", help="Path to put the generated files", required=False, default=".", type=click.Path())
 @click.argument("input_file", type=click.File("r"), metavar="input")
-def generate(warnings_as_errors: bool, output: os.PathLike[str], input_file: TextIO) -> None:
+def run_cli(warnings_as_errors: bool, output: os.PathLike[str], input_file: TextIO) -> None:
     """Generate code for file INPUT"""
 
     try:
@@ -59,4 +59,4 @@ def generate(warnings_as_errors: bool, output: os.PathLike[str], input_file: Tex
 if __name__ == "__main__":
     # parameters are inserted by Click
     # pylint: disable=no-value-for-parameter
-    generate()
+    run_cli()

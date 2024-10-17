@@ -8,17 +8,16 @@ version = "0.1.0"
 description = "A code generator for remote procedure calls on embedded systems"
 readme = "README.md"
 requires-python = ">=3.9"
-license = { text = "MIT" }
-authors = [{ name = "T Zijnge", email = "tzijnge@example.com" }]
+license = { file = "LICENSE" }
+authors = [{ name = "T Zijnge" }]
 keywords = ["code generation", "embedded systems", "rpc"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
+    "Programming Language :: C++",
     "Topic :: Software Development :: Code Generators",
     "Topic :: Software Development :: Embedded Systems",
 ]
@@ -29,17 +28,17 @@ dependencies = [
     "click==8.1.7",
 ]
 
+[project.optional-dependencies]
+serial = ["pyserial==3.5"]
+
 [project.urls]
 homepage = "https://github.com/tzijnge/LotusRpc"
 "Bug Tracker" = "https://github.com/tzijnge/LotusRpc/issues"
 "Documentation" = "https://github.com/tzijnge/LotusRpc/wiki"
 "Source Code" = "https://github.com/tzijnge/LotusRpc"
 
-[project.optional-dependencies]
-serial = ["pyserial==3.5"]
-
 [project.scripts]
-lotusrpc = "lrpc.lotusrpc:generate"
+lrpcg = "lrpc.lrpcg:run_cli"
 lrpcc = "lrpc.lrpcc:run_cli"
 
 [tool.setuptools.package-data]
@@ -64,7 +63,6 @@ disable = ["line-too-long"]
 allow-reexport-from-package = true
 
 [tool.mypy]
-exclude = "external"
 strict = true
 # Increase strictness of checks
 disallow_any_decorated = true

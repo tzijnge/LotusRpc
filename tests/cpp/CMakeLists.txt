@@ -12,31 +12,31 @@ mark_as_advanced(
     gtest_hide_internal_symbols
 )
 
-add_subdirectory(../../../external/gtest External/gtest EXCLUDE_FROM_ALL)
+add_subdirectory(../../external/gtest External/gtest EXCLUDE_FROM_ALL)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server1/Server1.hpp
-                  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/package
+                  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                   COMMENT "Generate TestServer1 LRPC files"
-                  DEPENDS ${CMAKE_SOURCE_DIR}/testdata/TestServer1.lrpc.yaml
-                  COMMAND python -m lrpc.lotusrpc -w ${CMAKE_SOURCE_DIR}/testdata/TestServer1.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server1)
+                  DEPENDS ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer1.lrpc.yaml
+                  COMMAND python -m lrpc.lrpcg -w ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer1.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server1)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server2/Server2.hpp
-                  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/package
+                  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                   COMMENT "Generate TestServer2 LRPC files"
-                  DEPENDS ${CMAKE_SOURCE_DIR}/testdata/TestServer2.lrpc.yaml
-                  COMMAND python -m lrpc.lotusrpc -w ${CMAKE_SOURCE_DIR}/testdata/TestServer2.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server2)
+                  DEPENDS ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer2.lrpc.yaml
+                  COMMAND python -m lrpc.lrpcg -w ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer2.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server2)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server3/Server3.hpp
-                  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/package
+                  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                   COMMENT "Generate TestServer3 LRPC files"
-                  DEPENDS ${CMAKE_SOURCE_DIR}/testdata/TestServer3.lrpc.yaml
-                  COMMAND python -m lrpc.lotusrpc -w ${CMAKE_SOURCE_DIR}/testdata/TestServer3.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server3)
+                  DEPENDS ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer3.lrpc.yaml
+                  COMMAND python -m lrpc.lrpcg -w ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer3.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server3)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server4/Server4.hpp
-                  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/package
+                  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                   COMMENT "Generate TestServer4 LRPC files"
-                  DEPENDS ${CMAKE_SOURCE_DIR}/testdata/TestServer4.lrpc.yaml
-                  COMMAND python -m lrpc.lotusrpc -w ${CMAKE_SOURCE_DIR}/testdata/TestServer4.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server4)
+                  DEPENDS ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer4.lrpc.yaml
+                  COMMAND python -m lrpc.lrpcg -w ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer4.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server4)
 
 set_directory_properties(PROPERTIES ADDITIONAL_CLEAN_FILES ${CMAKE_CURRENT_SOURCE_DIR}/generated)
 
@@ -53,8 +53,8 @@ add_executable(UnitTests
                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server4/Server4.hpp)
 
 target_include_directories(UnitTests PRIVATE .)
-target_include_directories(UnitTests PRIVATE ../include)
-target_include_directories(UnitTests SYSTEM PRIVATE ../../../external/etl/include)
+target_include_directories(UnitTests PRIVATE ${CMAKE_SOURCE_DIR}/resources/cpp/include)
+target_include_directories(UnitTests SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/external/etl/include)
 
 if(MSVC)
   target_compile_options(UnitTests PRIVATE /W4)

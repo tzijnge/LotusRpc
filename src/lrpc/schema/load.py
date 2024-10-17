@@ -6,7 +6,7 @@ import yaml
 
 def load_lrpc_schema() -> dict[str, Any]:
     schema_file = resources.files(__package__).joinpath("lotusrpc-schema.json")
-    schema_text = schema_file.read_text()
+    schema_text = schema_file.read_text(encoding="utf-8")
     schema = yaml.safe_load(schema_text)
 
     if not isinstance(schema, dict):

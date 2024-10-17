@@ -33,4 +33,5 @@
 build
 .vscode
 **/__pycache__/**/*.*
-/language/cpp/tests/generated
+/tests/cpp/generated
+/VENV

@@ -3,8 +3,8 @@ import os
 from os import path
 from typing import TextIO
 import click
-from .visitors import PlantUmlVisitor
-from .codegen import (
+from lrpc.visitors import PlantUmlVisitor
+from lrpc.codegen import (
     ConstantsFileVisitor,
     EnumFileVisitor,
     ServerIncludeVisitor,
@@ -12,8 +12,8 @@ from .codegen import (
     ServiceShimVisitor,
     StructFileVisitor,
 )
-from .core import LrpcDef
-from .utils import load_lrpc_def_from_file
+from lrpc.core import LrpcDef
+from lrpc.utils import load_lrpc_def_from_file
 
 logging.basicConfig(format="[LRPCC] %(levelname)-8s: %(message)s", level=logging.INFO)
 
@@ -41,7 +41,7 @@ def generate_rpc(lrpc_def: LrpcDef, output: os.PathLike[str]) -> None:
 )
 @click.option("-o", "--output", help="Path to put the generated files", required=False, default=".", type=click.Path())
 @click.argument("input_file", type=click.File("r"), metavar="input")
-def generate(warnings_as_errors: bool, output: os.PathLike[str], input_file: TextIO) -> None:
+def run_cli(warnings_as_errors: bool, output: os.PathLike[str], input_file: TextIO) -> None:
     """Generate code for file INPUT"""
 
     try:
@@ -59,4 +59,4 @@ def generate(warnings_as_errors: bool, output: os.PathLike[str], input_file: Tex
 if __name__ == "__main__":
     # parameters are inserted by Click
     # pylint: disable=no-value-for-parameter
-    generate()
+    run_cli()

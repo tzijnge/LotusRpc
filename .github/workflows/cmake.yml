@@ -51,7 +51,7 @@ jobs:
 
       - name: Run LRPC client CLI
         run: |
-          lrpcc -- version
+          lrpcc --version
           lrpcc --help
 
       - name: Publish Test Results

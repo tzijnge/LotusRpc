@@ -45,10 +45,14 @@ jobs:
         run: pip install .
 
       - name: Run lotusrpc generator
-        run: lrpcg --help
+        run: |
+          lrpcg --version
+          lrpcg --help
 
       - name: Run LRPC client CLI
-        run: lrpcc --help
+        run: |
+          lrpcc -- version
+          lrpcc --help
 
       - name: Publish Test Results
         if: ${{ github.triggering_actor != 'dependabot[bot]' }}

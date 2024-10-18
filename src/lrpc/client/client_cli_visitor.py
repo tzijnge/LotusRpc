@@ -76,6 +76,7 @@ class ClientCliVisitor(LrpcVisitor):
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
         self.root = click.Group(lrpc_def.name())
+        self.root.add_command(self.__version_option())
 
     def visit_lrpc_service(self, service: LrpcService) -> None:
         self.current_service = click.Group(service.name())
@@ -139,3 +140,9 @@ class ClientCliVisitor(LrpcVisitor):
                 kwargs[a] = None
 
         self.callback(service, function, **kwargs)
+
+    @staticmethod
+    @click.command()
+    @click.version_option(package_name="lrpc", message="%(version)s")
+    def __version_option() -> None:
+        pass

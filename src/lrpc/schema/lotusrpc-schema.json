@@ -11,7 +11,13 @@
       "minimum": 0,
       "maximum": 255
     },
-    "enum_field":{
+    "service_id": {
+      "type": "integer",
+      "description": "Service ID (0-254)",
+      "minimum": 0,
+      "maximum": 254
+    },
+    "enum_field": {
       "type": "object",
       "description": "Enumeration field consisting of a name and an optional ID",
       "additionalProperties": false,
@@ -103,7 +109,7 @@
       "additionalProperties": false,
       "properties": {
         "name": { "$ref": "#/$defs/cppid" },
-        "id": { "$ref": "#/$defs/uint8" },
+        "id": { "$ref": "#/$defs/service_id" },
         "functions": { "type": "array", "minItems": 1, "maxItems": 256, "items": { "$ref": "#/$defs/function_decl" }, "description": "List of functions in the service (max 256 functions)" }
       }
     }
@@ -119,6 +125,10 @@
     "name": {
       "$ref": "#/$defs/cppid",
       "description": "Name of the RPC"
+    },
+    "version": {
+      "type": "string",
+      "description": "Version of the definition file"
     },
     "namespace": {
       "$ref": "#/$defs/cppid",

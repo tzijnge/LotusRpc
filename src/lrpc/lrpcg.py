@@ -11,6 +11,7 @@ from lrpc.codegen import (
     ServiceIncludeVisitor,
     ServiceShimVisitor,
     StructFileVisitor,
+    MetaFileVisitor,
 )
 from lrpc.core import LrpcDef
 from lrpc.utils import load_lrpc_def_from_file
@@ -32,6 +33,7 @@ def generate_rpc(lrpc_def: LrpcDef, output: os.PathLike[str]) -> None:
     lrpc_def.accept(EnumFileVisitor(output))
     lrpc_def.accept(ServiceShimVisitor(output))
     lrpc_def.accept(ConstantsFileVisitor(output))
+    lrpc_def.accept(MetaFileVisitor(output))
     lrpc_def.accept(PlantUmlVisitor(output))
 
 

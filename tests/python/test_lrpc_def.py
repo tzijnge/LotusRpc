@@ -371,3 +371,26 @@ enums:
 
     with pytest.raises(ValueError):
         lrpc_def.enum("")
+
+
+def test_no_version() -> None:
+    def_str = """name: "test"
+services:
+  - name: "s1"
+    functions:
+      - name: "f1"
+"""
+    lrpc_def = load_lrpc_def(def_str)
+    assert lrpc_def.version() is None
+
+
+def test_version() -> None:
+    def_str = """name: "test"
+version: 1.2.3
+services:
+  - name: "s1"
+    functions:
+      - name: "f1"
+"""
+    lrpc_def = load_lrpc_def(def_str)
+    assert lrpc_def.version() == "1.2.3"

@@ -60,7 +60,7 @@ All code is generated in the namespace specified in the interface definition fil
 Receive and transmit buffer sizes can be configured in the interface definition file. If not specified, both take the value of 256 bytes
 
 ## Fully configurable service and function IDs
-Every LRPC service has an ID with a value between 0 and 255. This means that LRPC supports a maximum of 256 services. Duplicate service IDs are not allowed. The service ID can optionally be specified in the definition file. If it is not specified an ID is generated, starting with 0 for the first service, 1 for the second service, etc. It is possible to specify only some service IDs and let the rest be generated automatically. For example, if a definition contains 4 services, but only the third service has a specified ID of 17, then the resulting service IDs are [0, 1, 17, 18]
+Every LRPC service has an ID with a value between 0 and 254 (ID 255 is reserved for). This means that LRPC supports a maximum of 255 services. Duplicate service IDs are not allowed. The service ID can optionally be specified in the definition file. If it is not specified an ID is generated, starting with 0 for the first service, 1 for the second service, etc. It is possible to specify only some service IDs and let the rest be generated automatically. For example, if a definition contains 4 services, but only the third service has a specified ID of 17, then the resulting service IDs are [0, 1, 17, 18]
 
 The same applies to LRPC functions inside a service.
 

@@ -31,7 +31,7 @@ class MetaFileVisitor(LrpcVisitor):
 
     def __write_attributes(self) -> None:
         with self.__file.block("namespace meta"):
-            lrpc_version = version(__package__)
+            lrpc_version = version("lrpc")
             lrpc_version_string = f'"{lrpc_version}"'
 
             self.__file.write(f"constexpr etl::string_view LrpcVersion {{{lrpc_version_string}}};")

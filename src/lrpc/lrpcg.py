@@ -38,7 +38,7 @@ def generate_rpc(lrpc_def: LrpcDef, output: os.PathLike[str]) -> None:
 
 
 @click.command()
-@click.version_option(package_name=__package__, message="%(version)s")
+@click.version_option(package_name="lrpc", message="%(version)s")
 @click.option(
     "-w", "--warnings_as_errors", help="Treat warnings as errors", required=False, default=None, is_flag=True, type=str
 )

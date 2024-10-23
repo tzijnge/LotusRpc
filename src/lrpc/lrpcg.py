@@ -38,7 +38,7 @@ def generate_rpc(lrpc_def: LrpcDef, output: os.PathLike[str]) -> None:
 
 
 @click.command()
-@click.version_option(package_name="lrpc", message="%(version)s")
+@click.version_option(package_name=__package__, message="%(version)s")
 @click.option(
     "-w", "--warnings_as_errors", help="Treat warnings as errors", required=False, default=None, is_flag=True, type=str
 )
@@ -56,8 +56,8 @@ def run_cli(warnings_as_errors: bool, output: os.PathLike[str], input_file: Text
     # pylint: disable=broad-exception-caught
     except Exception as e:
         logging.error("Error while generating code for %s", input_file.name)
-        logging.error(str(e))
         logging.error(type(e))
+        logging.error(str(e))
 
 
 if __name__ == "__main__":

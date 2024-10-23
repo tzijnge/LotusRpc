@@ -57,6 +57,7 @@ def run_cli(warnings_as_errors: bool, output: os.PathLike[str], input_file: Text
     except Exception as e:
         logging.error("Error while generating code for %s", input_file.name)
         logging.error(str(e))
+        logging.error(type(e))
 
 
 if __name__ == "__main__":

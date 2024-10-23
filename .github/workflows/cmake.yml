@@ -28,6 +28,10 @@ jobs:
           pip install -r requirements/package.txt
           pip install -r requirements/dev.txt
 
+      - name: test123
+        run: python -m lrpc.lrpcg --version
+        working-directory: src
+
       - name: Configure CMake
         run: cmake -B ${{github.workspace}}/cmake_build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 

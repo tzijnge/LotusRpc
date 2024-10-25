@@ -18,25 +18,25 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server1/Server1.
                   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src
                   COMMENT "Generate TestServer1 LRPC files"
                   DEPENDS ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer1.lrpc.yaml
-                  COMMAND python -m lrpc.lrpcg -w ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer1.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server1)
+                  COMMAND lrpcg -w ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer1.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server1)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server2/Server2.hpp
                   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src
                   COMMENT "Generate TestServer2 LRPC files"
                   DEPENDS ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer2.lrpc.yaml
-                  COMMAND python -m lrpc.lrpcg -w ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer2.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server2)
+                  COMMAND lrpcg -w ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer2.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server2)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server3/Server3.hpp
                   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src
                   COMMENT "Generate TestServer3 LRPC files"
                   DEPENDS ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer3.lrpc.yaml
-                  COMMAND python -m lrpc.lrpcg -w ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer3.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server3)
+                  COMMAND lrpcg -w ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer3.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server3)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server4/Server4.hpp
                   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src
                   COMMENT "Generate TestServer4 LRPC files"
                   DEPENDS ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer4.lrpc.yaml
-                  COMMAND python -m lrpc.lrpcg -w ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer4.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server4)
+                  COMMAND lrpcg -w ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer4.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server4)
 
 set_directory_properties(PROPERTIES ADDITIONAL_CLEAN_FILES ${CMAKE_CURRENT_SOURCE_DIR}/generated)
 

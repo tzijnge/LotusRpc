@@ -14,28 +14,33 @@ mark_as_advanced(
 
 add_subdirectory(../../external/gtest External/gtest EXCLUDE_FROM_ALL)
 
+set(LRPC_IS_BUILT ${CMAKE_BINARY_DIR}/lrpc_is_built)
+file(GLOB_RECURSE LRPC_PY_SRC_FILES ${CMAKE_SOURCE_DIR}/src/lrpc/*.py ${CMAKE_SOURCE_DIR}/**/lotusrpc-schema.json)
+
+add_custom_command(OUTPUT ${LRPC_IS_BUILT}
+                  COMMAND pip install --upgrade --no-deps --force-reinstall ${CMAKE_SOURCE_DIR}
+                  COMMAND ${CMAKE_COMMAND} -E touch ${LRPC_IS_BUILT}
+                  COMMENT "Build LRPC Python package"
+                  DEPENDS ${LRPC_PY_SRC_FILES})
+
 add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server1/Server1.hpp
-                  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src
                   COMMENT "Generate TestServer1 LRPC files"
-                  DEPENDS ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer1.lrpc.yaml
+                  DEPENDS ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer1.lrpc.yaml ${LRPC_IS_BUILT}
                   COMMAND lrpcg -w ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer1.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server1)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server2/Server2.hpp
-                  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src
                   COMMENT "Generate TestServer2 LRPC files"
-                  DEPENDS ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer2.lrpc.yaml
+                  DEPENDS ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer2.lrpc.yaml ${LRPC_IS_BUILT}
                   COMMAND lrpcg -w ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer2.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server2)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server3/Server3.hpp
-                  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src
                   COMMENT "Generate TestServer3 LRPC files"
-                  DEPENDS ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer3.lrpc.yaml
+                  DEPENDS ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer3.lrpc.yaml ${LRPC_IS_BUILT}
                   COMMAND lrpcg -w ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer3.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server3)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server4/Server4.hpp
-                  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src
                   COMMENT "Generate TestServer4 LRPC files"
-                  DEPENDS ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer4.lrpc.yaml
+                  DEPENDS ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer4.lrpc.yaml ${LRPC_IS_BUILT}
                   COMMAND lrpcg -w ${CMAKE_SOURCE_DIR}/tests/testdata/TestServer4.lrpc.yaml -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server4)
 
 set_directory_properties(PROPERTIES ADDITIONAL_CLEAN_FILES ${CMAKE_CURRENT_SOURCE_DIR}/generated)

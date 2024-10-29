@@ -4,6 +4,7 @@ from typing import Optional
 
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 
+from ..codegen.common import write_file_banner
 from ..codegen.utils import optionally_in_namespace
 from ..core import LrpcDef
 from ..visitors import LrpcVisitor
@@ -22,6 +23,7 @@ class MetaFileVisitor(LrpcVisitor):
         self.__namespace = lrpc_def.namespace()
         self.__version = lrpc_def.version()
 
+        write_file_banner(self.__file)
         self.__write_includes()
         optionally_in_namespace(self.__file, self.__write_attributes, self.__namespace)
 

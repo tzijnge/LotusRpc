@@ -2,30 +2,31 @@ import os
 
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 from ..visitors import LrpcVisitor
-from ..codegen.common import lrpc_var_includes
+from ..codegen.common import lrpc_var_includes, write_file_banner
 from ..core import LrpcFun, LrpcService, LrpcVar
 
 
 class ServiceIncludeVisitor(LrpcVisitor):
     def __init__(self, output: os.PathLike[str]) -> None:
-        self.output = output
-        self.file: CppFile
-        self.includes: set[str] = set()
+        self.__output = output
+        self.__file: CppFile
+        self.__includes: set[str] = set()
 
     def visit_lrpc_service(self, service: LrpcService) -> None:
-        self.file = CppFile(f"{self.output}/{service.name()}.hpp")
-        self.file.write("#pragma once")
+        self.__file = CppFile(f"{self.__output}/{service.name()}.hpp")
+        write_file_banner(self.__file)
+        self.__file.write("#pragma once")
 
     def visit_lrpc_service_end(self) -> None:
-        for i in sorted(self.includes):
-            self.file.write(f"#include {i}")
+        for i in sorted(self.__includes):
+            self.__file.write(f"#include {i}")
 
     def visit_lrpc_function(self, function: LrpcFun) -> None:
         if function.number_returns() > 1:
-            self.includes.add("<tuple>")
+            self.__includes.add("<tuple>")
 
     def visit_lrpc_function_return(self, ret: LrpcVar) -> None:
-        self.includes.update(lrpc_var_includes(ret))
+        self.__includes.update(lrpc_var_includes(ret))
 
     def visit_lrpc_function_param(self, param: LrpcVar) -> None:
-        self.includes.update(lrpc_var_includes(param))
+        self.__includes.update(lrpc_var_includes(param))

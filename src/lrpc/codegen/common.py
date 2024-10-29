@@ -1,4 +1,6 @@
 from typing import Set
+from importlib.metadata import version
+from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 
 from ..core import LrpcVar
 
@@ -22,3 +24,9 @@ def lrpc_var_includes(var: LrpcVar) -> Set[str]:
         includes.add("<etl/optional.h>")
 
     return includes
+
+
+def write_file_banner(file: CppFile) -> None:
+    v = version("lrpc")
+    file.write(f"// This file has been generated with LRPC version {v}")
+    file.newline()

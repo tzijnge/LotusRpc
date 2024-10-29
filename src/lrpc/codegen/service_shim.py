@@ -2,6 +2,7 @@ import os
 from typing import Optional
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 
+from ..codegen.common import write_file_banner
 from ..codegen.utils import optionally_in_namespace
 from ..visitors import LrpcVisitor
 from ..core import LrpcDef, LrpcService, LrpcFun, LrpcVar
@@ -38,6 +39,7 @@ class ServiceShimVisitor(LrpcVisitor):
         self.__service_id = service.id()
         self.__number_functions = len(service.functions())
 
+        write_file_banner(self.__file)
         self.__write_include_guard()
         self.__write_includes()
 

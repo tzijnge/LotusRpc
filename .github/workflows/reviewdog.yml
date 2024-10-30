@@ -18,13 +18,12 @@ jobs:
           reporter: github-pr-review
           level: error
           fail_on_error: false
-          workdir: src
+          target: src
       - name: Run PyLint
         uses: dciborow/action-pylint@0.1.0
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review
           level: error
-          glob_pattern: "package"
+          glob_pattern: src
           fail_on_error: false
-          workdir: src

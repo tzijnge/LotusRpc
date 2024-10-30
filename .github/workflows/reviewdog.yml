@@ -18,6 +18,7 @@ jobs:
           reporter: github-pr-review
           level: error
           fail_on_error: false
+          workdir: src
       - name: Run PyLint
         uses: dciborow/action-pylint@0.1.0
         with:
@@ -26,3 +27,4 @@ jobs:
           level: error
           glob_pattern: "package"
           fail_on_error: false
+          workdir: src

@@ -1,5 +1,6 @@
 name: "Server4"
 namespace: "srv4"
+version: "11.22.33.44"
 some_local_variable: &array_size 55
 constants:
   - name: c0
@@ -82,20 +83,25 @@ services:
             type: uint16_t
             count: *array_size
 enums:
-  - { name: "MyEnum", fields: [V0, V1, V2, V3]}
-  - { name: "MyEnum2", fields: [V0, V1, V2, V3], external: ext_files/MyEnum2.hpp, external_namespace: "ext"}
+  - { name: "MyEnum", fields: [V0, V1, V2, V3] }
+  - {
+      name: "MyEnum2",
+      fields: [V0, V1, V2, V3],
+      external: ext_files/MyEnum2.hpp,
+      external_namespace: "ext",
+    }
   - name: "MyEnum3"
     external: ext_files/MyEnum3.hpp
     fields:
-      - {name: V0, id: 0}
-      - {name: V55, id: 55}
-      - {name: V200, id: 200}
+      - { name: V0, id: 0 }
+      - { name: V55, id: 55 }
+      - { name: V200, id: 200 }
   - name: MyEnum4
     fields:
-      - {name: f1}
-      - {name: f2}
-      - {name: f3, id: 222}
-      - {name: f4}
+      - { name: f1 }
+      - { name: f2 }
+      - { name: f3, id: 222 }
+      - { name: f4 }
 structs:
   - name: MyStruct1
     fields:

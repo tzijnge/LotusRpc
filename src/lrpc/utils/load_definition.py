@@ -1,6 +1,5 @@
 from typing import TextIO, Union
 import jsonschema
-import jsonschema.exceptions
 import yaml
 
 from ..core import LrpcDef, LrpcDefDict

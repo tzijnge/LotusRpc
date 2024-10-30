@@ -11,6 +11,7 @@ from ..visitors import LrpcVisitor
 
 class LrpcDefDict(TypedDict):
     name: str
+    version: NotRequired[str]
     services: list[LrpcServiceDict]
     namespace: NotRequired[str]
     rx_buffer_size: NotRequired[int]
@@ -39,6 +40,7 @@ class LrpcDef:
         self.__init_service_ids(raw)
 
         self.__name = raw["name"]
+        self.__version = raw.get("version", None)
         self.__services = [LrpcService(s) for s in raw["services"]]
         self.__namespace = raw.get("namespace", None)
         self.__rx_buffer_size = raw.get("rx_buffer_size", 256)
@@ -104,6 +106,9 @@ class LrpcDef:
 
     def name(self) -> str:
         return self.__name
+
+    def version(self) -> Optional[str]:
+        return self.__version
 
     def namespace(self) -> Optional[str]:
         return self.__namespace

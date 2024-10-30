@@ -1,4 +1,5 @@
 #include "generated/Server4/Server4_Constants.hpp"
+#include "generated/Server4/Server4_Meta.hpp"
 #include "generated/Server4/s00_ServiceShim.hpp"
 #include <gtest/gtest.h>
 #include <type_traits>
@@ -26,15 +27,15 @@ static_assert(std::is_same<decltype(srv4::c7), const uint64_t>::value, "");
 static_assert(srv4::c8 == -111222333444, "");
 static_assert(std::is_same<decltype(srv4::c8), const int64_t>::value, "");
 
-constexpr float testc9 {111.222};
+constexpr float testc9{111.222F};
 static_assert(srv4::c9 == testc9, "");
 static_assert(std::is_same<decltype(srv4::c9), const float>::value, "");
 
-constexpr float testc10 {222.333};
+constexpr float testc10{222.333F};
 static_assert(srv4::c10 == testc10, "");
 static_assert(std::is_same<decltype(srv4::c10), const float>::value, "");
 
-constexpr double testc11 {333.444};
+constexpr double testc11{333.444};
 static_assert(srv4::c11 == testc11, "");
 static_assert(std::is_same<decltype(srv4::c11), const double>::value, "");
 
@@ -53,7 +54,7 @@ static_assert(std::is_same<decltype(srv4::c15), const bool>::value, "");
 static_assert(srv4::c16 == false, "");
 static_assert(std::is_same<decltype(srv4::c16), const bool>::value, "");
 
-constexpr double testc17 {2.3e-5};
+constexpr double testc17{2.3e-5};
 static_assert(srv4::c17 == testc17, "");
 static_assert(std::is_same<decltype(srv4::c17), const double>::value, "");
 
@@ -66,7 +67,6 @@ static_assert(std::is_same<decltype(srv4::c19), const etl::string_view>::value, 
 static_assert(srv4::c20 == "333.444", "");
 static_assert(std::is_same<decltype(srv4::c20), const etl::string_view>::value, "");
 
-
 static_assert(static_cast<int>(srv4::MyEnum::V0) == 0, "");
 static_assert(static_cast<int>(srv4::MyEnum::V1) == 1, "");
 static_assert(static_cast<int>(srv4::MyEnum::V2) == 2, "");
@@ -76,3 +76,9 @@ static_assert(static_cast<int>(srv4::MyEnum4::f1) == 0, "");
 static_assert(static_cast<int>(srv4::MyEnum4::f2) == 1, "");
 static_assert(static_cast<int>(srv4::MyEnum4::f3) == 222, "");
 static_assert(static_cast<int>(srv4::MyEnum4::f4) == 223, "");
+
+static_assert(srv4::meta::DefinitionVersion == "11.22.33.44", "");
+static_assert(std::is_same<decltype(srv4::meta::DefinitionVersion), const etl::string_view>::value, "");
+
+static_assert(!srv4::meta::LrpcVersion.empty(), "");
+static_assert(std::is_same<decltype(srv4::meta::LrpcVersion), const etl::string_view>::value, "");

@@ -31,6 +31,8 @@
 *.out
 *.app
 build
+cmake_build
+lrpc.egg-info
 .vscode
 **/__pycache__/**/*.*
 /tests/cpp/generated

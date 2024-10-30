@@ -28,6 +28,9 @@ jobs:
           pip install -r requirements/package.txt
           pip install -r requirements/dev.txt
 
+      - name: Install LRPC Python package
+        run: pip install .
+
       - name: Configure CMake
         run: cmake -B ${{github.workspace}}/cmake_build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
@@ -41,14 +44,15 @@ jobs:
       - name: Python tests
         run: pytest tests/python -v --junitxml=testresults/pytestresults.xml
 
-      - name: Install LRPC Python package
-        run: pip install .
-
       - name: Run lotusrpc generator
-        run: lrpcg --help
+        run: |
+          lrpcg --version
+          lrpcg --help
 
       - name: Run LRPC client CLI
-        run: lrpcc --help
+        run: |
+          lrpcc --version
+          lrpcc --help
 
       - name: Publish Test Results
         if: ${{ github.triggering_actor != 'dependabot[bot]' }}

@@ -1,5 +1,7 @@
 import logging
+import jsonschema.exceptions
 import pytest
+
 from lrpc.utils import load_lrpc_def_from_str
 
 
@@ -569,3 +571,23 @@ services:
         ],
         caplog.text,
     )
+
+
+def test_service_id_out_of_range(caplog: pytest.LogCaptureFixture) -> None:
+    rpc_def = """name: test
+services:
+  - name: s0
+    id: 254
+    functions:
+      - name: f0
+  - name: s1
+    id: 255
+    functions:
+      - name: f0
+"""
+
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(jsonschema.ValidationError) as e:
+        load_def(rpc_def)
+
+    assert e.value.message == "255 is greater than the maximum of 254"

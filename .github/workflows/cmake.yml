@@ -23,6 +23,9 @@ jobs:
         with:
           submodules: "true"
 
+      - name: Install sonar-scanner and build-wrapper
+        uses: SonarSource/sonarcloud-github-c-cpp@v3
+
       - name: Install Python requirements
         run: |
           pip install -r requirements/package.txt
@@ -30,19 +33,6 @@ jobs:
 
       - name: Install LRPC Python package
         run: pip install .
-
-      - name: Configure CMake
-        run: cmake -B ${{github.workspace}}/cmake_build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
-
-      - name: Build
-        run: cmake --build ${{github.workspace}}/cmake_build --config ${{env.BUILD_TYPE}}
-
-      - name: C++ tests
-        working-directory: ${{github.workspace}}/cmake_build
-        run: ctest -C ${{env.BUILD_TYPE}} --output-junit ../testresults/cpptestresults.xml
-
-      - name: Python tests
-        run: pytest tests/python -v --junitxml=testresults/pytestresults.xml
 
       - name: Run lotusrpc generator
         run: |
@@ -53,6 +43,27 @@ jobs:
         run: |
           lrpcc --version
           lrpcc --help
+
+      - name: Configure CMake
+        run: cmake -B ${{github.workspace}}/cmake_build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+      - name: Run build-wrapper
+        run: |
+          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build ${{github.workspace}}/cmake_build --config ${{env.BUILD_TYPE}}
+
+      - name: Run sonar-scanner
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          sonar-scanner --define sonar.cfamily.compile-commands="${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json"
+
+      - name: C++ tests
+        working-directory: ${{github.workspace}}/cmake_build
+        run: ctest -C ${{env.BUILD_TYPE}} --output-junit ../testresults/cpptestresults.xml
+
+      - name: Python tests
+        run: pytest tests/python -v --junitxml=testresults/pytestresults.xml
 
       - name: Publish Test Results
         if: ${{ github.triggering_actor != 'dependabot[bot]' }}

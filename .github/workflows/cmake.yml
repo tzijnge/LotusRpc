@@ -53,13 +53,6 @@ jobs:
         run: |
           build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build ${{github.workspace}}/cmake_build --config ${{env.BUILD_TYPE}}
 
-      - name: Run sonar-scanner
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          sonar-scanner --define sonar.cfamily.compile-commands="${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json"
-
       - name: C++ tests
         working-directory: ${{github.workspace}}/cmake_build
         run: ctest -C ${{env.BUILD_TYPE}} --output-junit ../testresults/cpptestresults.xml
@@ -77,3 +70,10 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action/linux@v2
         with:
           junit_files: "testresults/*.xml"
+
+      - name: Run sonar-scanner
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          sonar-scanner --define sonar.cfamily.compile-commands="${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json"

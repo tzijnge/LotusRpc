@@ -85,3 +85,7 @@ warn_unreachable = true
 # Display statistics after running
 # dump_type_stats = true
 # dump_inference_stats = true
+
+[tool.coverage.run]
+branch=true
+command_line="-m pytest tests/python"

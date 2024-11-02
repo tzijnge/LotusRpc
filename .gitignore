@@ -37,3 +37,5 @@ lrpc.egg-info
 **/__pycache__/**/*.*
 /tests/cpp/generated
 /VENV
+/.coverage
+/coverage.xml

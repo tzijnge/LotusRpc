@@ -3,6 +3,20 @@ from typing_extensions import NotRequired
 
 from ..visitors import LrpcVisitor
 
+CPP_TYPES: list[str] = [
+    "uint8_t",
+    "int8_t",
+    "uint16_t",
+    "int16_t",
+    "uint32_t",
+    "int32_t",
+    "uint64_t",
+    "int64_t",
+    "float",
+    "double",
+    "bool",
+    "string"
+]
 
 class LrpcConstantDict(TypedDict):
     name: str
@@ -20,19 +34,23 @@ class LrpcConstant:
         self.__cpp_type: str = self.__init_cpp_type(raw)
 
     def __init_cpp_type(self, raw: LrpcConstantDict) -> str:
-        if "cppType" in raw:
-            return raw["cppType"]
+        if "cppType" not in raw:
+            if isinstance(self.value(), bool):
+                return "bool"
+            if isinstance(self.value(), int):
+                return "int32_t"
+            if isinstance(self.value(), float):
+                return "float"
+            if isinstance(self.value(), str):
+                return "string"
 
-        if isinstance(self.value(), bool):
-            return "bool"
-        if isinstance(self.value(), int):
-            return "int32_t"
-        if isinstance(self.value(), float):
-            return "float"
-        if isinstance(self.value(), str):
-            return "string"
+            raise ValueError(f"Unable to infer cppType for LrpcConstant value: {self.value()}")
 
-        assert False, f"Invalid LrpcConstant type: {self.value()}"
+        cpp_type = raw["cppType"]
+        if cpp_type in CPP_TYPES:
+            return cpp_type
+
+        raise ValueError(f"Invalid cppType for LrpcConstant {self.__name}: {cpp_type}")
 
     def accept(self, visitor: LrpcVisitor) -> None:
         visitor.visit_lrpc_constant(self)

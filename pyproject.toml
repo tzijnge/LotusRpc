@@ -88,4 +88,3 @@ warn_unreachable = true
 
 [tool.coverage.run]
 branch=true
-command_line="-m pytest tests/python"

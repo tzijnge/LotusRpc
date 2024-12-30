@@ -4,6 +4,6 @@ black==24.10.0
 pylint==3.3.3
 types-jsonschema==4.23.0.20241208
 types-pyyaml==6.0.12.20241221
-types-pyserial==3.5.0.20240826
+types-pyserial==3.5.0.20241221
 types-setuptools==75.6.0.20241223
 typing_extensions==4.12.2

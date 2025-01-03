@@ -231,6 +231,13 @@ def test_decode_optional_auto_string() -> None:
     with pytest.raises(ValueError):
         lrpc_decode(b"\x01ab", var, lrpc_def)
 
+def test_decode_struct_not_in_def() -> None:
+    var = LrpcVar({"name": "v1", "type": "struct@not_in_def"})
+
+    with pytest.raises(ValueError) as e:
+        lrpc_decode(b"\xD7\x11\x7B\x01", var, lrpc_def)
+
+    assert  "No struct not_in_def in LRPC definition" in str(e.value)
 
 def test_decode_struct() -> None:
     var = LrpcVar({"name": "v1", "type": "struct@MyStruct1"})

@@ -394,3 +394,19 @@ services:
 """
     lrpc_def = load_lrpc_def(def_str)
     assert lrpc_def.version() == "1.2.3"
+
+
+def test_top_level_properties() -> None:
+    def_str = """name: "test"
+namespace: ns
+rx_buffer_size: 123
+tx_buffer_size: 456
+services:
+  - name: "s1"
+    functions:
+      - name: "f1"
+"""
+    lrpc_def = load_lrpc_def(def_str)
+    assert lrpc_def.namespace() == "ns"
+    assert lrpc_def.rx_buffer_size() == 123
+    assert lrpc_def.tx_buffer_size() == 456

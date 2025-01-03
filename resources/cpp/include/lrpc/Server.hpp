@@ -67,7 +67,7 @@ private:
 
         sendBuffer[0] = writer.size_bytes();
 
-        const auto b = (const uint8_t *)writer.cbegin();
+        const auto b = reinterpret_cast<const uint8_t *>(writer.cbegin());
         const auto e = reinterpret_cast<const uint8_t *>(writer.cend());
         lrpcTransmit({b, e});
     }

@@ -54,7 +54,7 @@ lrpcc = "lrpc.lrpcc:run_cli"
 include-package-data = true
 
 [tool.setuptools_scm]
-# intentionally empty
+local_scheme = "no-local-version"
 
 [tool.pytest.ini_options]
 pythonpath = "src"

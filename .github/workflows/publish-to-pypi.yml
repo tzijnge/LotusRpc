@@ -4,7 +4,7 @@ on: push
 
 jobs:
   build:
-    name: Build distribution 📦
+    name: Build LotusRPC 🌼 distribution 📦
     runs-on: ubuntu-latest
 
     steps:

@@ -1,0 +1,5 @@
+nav:
+  - title: "Test 123"
+    url: /test123.html
+  - title: "Test 456"
+    url: /test456.html

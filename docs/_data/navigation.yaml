@@ -1,5 +1,9 @@
-nav:
-  - title: "Test 123"
-    url: /test123.html
-  - title: "Test 456"
-    url: /test456.html
+main:
+  - title: "Getting started"
+    url: /getting_started
+  - title: "Tools"
+    url: /tools
+  - title: "Extending LotusRPC"
+    url: /extending_lrpc
+  - title: "Reference"
+    url: /reference

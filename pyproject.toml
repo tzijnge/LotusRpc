@@ -40,7 +40,7 @@ serial = ["pyserial==3.5"]
 [project.urls]
 homepage = "https://github.com/tzijnge/LotusRpc"
 "Bug Tracker" = "https://github.com/tzijnge/LotusRpc/issues"
-"Documentation" = "https://github.com/tzijnge/LotusRpc/wiki"
+"Documentation" = "https://tzijnge.github.io/LotusRpc/"
 "Source Code" = "https://github.com/tzijnge/LotusRpc"
 
 [project.scripts]
@@ -54,7 +54,7 @@ lrpcc = "lrpc.lrpcc:run_cli"
 include-package-data = true
 
 [tool.setuptools_scm]
-# intentionally empty
+local_scheme = "no-local-version"
 
 [tool.pytest.ini_options]
 pythonpath = "src"

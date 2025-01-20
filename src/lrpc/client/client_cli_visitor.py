@@ -143,7 +143,7 @@ class ClientCliVisitor(LrpcVisitor):
 
     @staticmethod
     @click.command()
-    @click.version_option(package_name="lrpc", message="%(version)s")
+    @click.version_option(package_name="lotusrpc", message="%(version)s")
     def __version_option() -> None:
         # intentionally empty because all functionality is handled by the click decorator
         pass

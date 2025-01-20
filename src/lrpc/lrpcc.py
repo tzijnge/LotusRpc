@@ -59,7 +59,7 @@ def __load_config() -> dict[str, Any]:
 
 
 @click.group()
-@click.version_option(package_name="lrpc", message="%(version)s")
+@click.version_option(package_name="lotusrpc", message="%(version)s")
 def run_lrpcc_config_creator() -> None:
     """
     lrpcc needs a configuration file named lrpcc.config.yaml.

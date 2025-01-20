@@ -27,6 +27,6 @@ def lrpc_var_includes(var: LrpcVar) -> Set[str]:
 
 
 def write_file_banner(file: CppFile) -> None:
-    v = version("lrpc")
+    v = version("lotusrpc")
     file.write(f"// This file has been generated with LRPC version {v}")
     file.newline()

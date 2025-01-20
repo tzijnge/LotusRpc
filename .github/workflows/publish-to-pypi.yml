@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/lrpc
+      url: https://pypi.org/p/lotusrpc
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
 
@@ -87,14 +87,14 @@ jobs:
 
   publish-to-testpypi:
     name: Publish LotusRPC 🌼 to TestPyPI
-    if: github.ref == 'refs/heads/main'  # only publish to PyPI on tag pushes
+    if: github.ref == 'refs/heads/main'
     needs:
     - build
     runs-on: ubuntu-latest
 
     environment:
       name: testpypi
-      url: https://test.pypi.org/p/lrpc
+      url: https://test.pypi.org/p/lotusrpc
 
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing

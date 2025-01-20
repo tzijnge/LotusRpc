@@ -12,7 +12,7 @@
 LotusRPC is an RPC framework for embedded systems based on [ETL](https://github.com/ETLCPP/etl). It generates C++ code with no dynamic memory allocations, no exceptions, no RTTI, etc. Code generator and client side CLI application in a simple Python package.
 
 ## Installation
-Install from [PyPI](https://test.pypi.org/project/lrpc/) with ```pip install lrpc```
+Install from [PyPI](https://pypi.org/project/lotusrpc/) with ```pip install lotusrpc```
 
 ## Basic usage
 Installing the Python package installs the `lrpcg` tool on your system. This is the LotusRPC generator. It also installs the `lrpcc` tool on your system. This is the LotusRpc CLI client.

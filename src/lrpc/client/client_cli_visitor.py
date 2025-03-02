@@ -1,6 +1,6 @@
 from functools import partial
-from typing import Any, Optional, Sequence
-from collections.abc import Callable
+from typing import Any, Optional
+from collections.abc import Callable, Sequence
 from importlib import metadata
 
 import click

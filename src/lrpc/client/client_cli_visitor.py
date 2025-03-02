@@ -1,6 +1,7 @@
 from functools import partial
-from typing import Any, Optional
+from typing import Any, Optional, Sequence
 from collections.abc import Callable
+from importlib import metadata
 
 import click
 import yaml
@@ -58,6 +59,36 @@ class OptionalParamType(click.ParamType):
 
         return self.contained_type.convert(value, param, ctx)
 
+class VersionOption(click.Option):
+    """``--version`` option which immediately prints the version
+    and exits the program.
+    """
+
+    def __init__(
+        self,
+        param_decls: Optional[Sequence[str]] = None,
+        **kwargs: Any,
+    ) -> None:
+        if not param_decls:
+            param_decls = ("--version",)
+
+        kwargs.setdefault("is_flag", True)
+        kwargs.setdefault("expose_value", False)
+        kwargs.setdefault("is_eager", True)
+        kwargs.setdefault("help", "Show version and exit.")
+        kwargs.setdefault("callback", self.show_version)
+
+        super().__init__(param_decls, **kwargs)
+
+    # argument 'param' required by click
+    # pylint: disable=unused-argument
+    @staticmethod
+    def show_version(ctx: click.Context, param: click.Parameter, value: bool) -> None:
+        if not value or ctx.resilient_parsing:
+            return
+        click.echo(metadata.version("lotusrpc"))
+        ctx.exit()
+
 
 class ClientCliVisitor(LrpcVisitor):
     """
@@ -76,7 +107,7 @@ class ClientCliVisitor(LrpcVisitor):
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
         self.root = click.Group(lrpc_def.name())
-        self.root.add_command(self.__version_option())
+        self.root.params.append(VersionOption())
 
     def visit_lrpc_service(self, service: LrpcService) -> None:
         self.current_service = click.Group(service.name())
@@ -140,10 +171,3 @@ class ClientCliVisitor(LrpcVisitor):
                 kwargs[a] = None
 
         self.callback(service, function, **kwargs)
-
-    @staticmethod
-    @click.command()
-    @click.version_option(package_name="lotusrpc", message="%(version)s")
-    def __version_option() -> None:
-        # intentionally empty because all functionality is handled by the click decorator
-        pass

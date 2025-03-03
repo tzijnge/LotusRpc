@@ -6,6 +6,6 @@ pylint==3.3.3
 types-jsonschema==4.23.0.20241208
 types-pyyaml==6.0.12.20241230
 types-pyserial==3.5.0.20250130
-types-setuptools==75.8.0.20250110
+types-setuptools==75.8.2.20250301
 typing_extensions==4.12.2
 coverage==7.6.10

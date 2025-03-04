@@ -33,10 +33,7 @@ public:
 
     void receive(const std::vector<uint8_t> &bytes)
     {
-        for (const auto &b : bytes)
-        {
-            lrpcReceive(b);
-        }
+        lrpcReceive(bytes);
     }
 
     void lrpcTransmit(etl::span<const uint8_t> bytes) override

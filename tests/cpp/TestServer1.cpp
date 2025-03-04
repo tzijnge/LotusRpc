@@ -41,7 +41,7 @@ public:
     MOCK_METHOD(uint16_t, f13, (), (override));
     MOCK_METHOD(float, f14, (), (override));
     MOCK_METHOD((etl::array<uint16_t, 2>), f15, (), (override));
-    MOCK_METHOD(etl::string<20>, f16, (), (override));
+    MOCK_METHOD(etl::string<8>, f16, (), (override));
     MOCK_METHOD(ts1::CompositeData, f17, (), (override));
     MOCK_METHOD(ts1::MyEnum, f18, (), (override));
     MOCK_METHOD((etl::array<ts1::CompositeData2, 2>), f19, (), (override));
@@ -220,9 +220,9 @@ TEST_F(TestServer1, decodeF15)
 // Decode function f16 which returns a string
 TEST_F(TestServer1, decodeF16)
 {
-    EXPECT_CALL(s0Service, f16()).WillOnce(Return(etl::string<20>("Test")));
+    EXPECT_CALL(s0Service, f16()).WillOnce(Return(etl::string<8>("Test")));
     auto response = receive({16});
-    EXPECT_RESPONSE({16, 'T', 'e', 's', 't', '\0'}, response);
+    EXPECT_RESPONSE({16, 'T', 'e', 's', 't', '\0', '\0', '\0', '\0', '\0'}, response);
 }
 
 // Decode function f17 which returns custom type

@@ -62,7 +62,7 @@ services:
       - name: "f16"
         returns:
           - name: "a"
-            type: string_20
+            type: string_8
       - name: "f17"
         returns:
           - name: "cd"

@@ -29,6 +29,14 @@ public:
         services[service.id()] = &service;
     }
 
+    void lrpcReceive(etl::span<const uint8_t> bytes)
+    {
+        for (const auto b : bytes)
+        {
+            lrpcReceive(b);
+        }
+    }
+
     void lrpcReceive(uint8_t byte)
     {
         receiveBuffer.push_back(byte);
@@ -65,7 +73,7 @@ private:
 
         services.at(serviceId)->invoke(reader, writer);
 
-        sendBuffer[0] = writer.size_bytes();
+        sendBuffer[0] = static_cast<uint8_t>(writer.size_bytes());
 
         const auto b = reinterpret_cast<const uint8_t *>(writer.cbegin());
         const auto e = reinterpret_cast<const uint8_t *>(writer.cend());

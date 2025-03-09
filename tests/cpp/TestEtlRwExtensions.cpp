@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "lrpc/EtlRwExtensions.hpp"
+#include "EtlRwExtensions.hpp"
 #include <string>
 #include <array>
 #include <etl/vector.h>

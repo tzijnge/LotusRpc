@@ -32,7 +32,7 @@ function(generate_lrpc server_name)
   add_custom_command(OUTPUT ${LRPC_SERVER_HEADER}
                   COMMENT "Generate Test${server_name} LRPC files"
                   DEPENDS ${LRPC_DEF} ${LRPC_IS_BUILT}
-                  COMMAND lrpcg -w ${LRPC_DEF} -o ${LRPC_OUT_DIR})
+                  COMMAND lrpcg cpp -d ${LRPC_DEF} -o ${LRPC_OUT_DIR} -w)
 
 endfunction()
 
@@ -56,7 +56,7 @@ add_executable(UnitTests
                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server4/Server4.hpp)
 
 target_include_directories(UnitTests PRIVATE .)
-target_include_directories(UnitTests PRIVATE ${CMAKE_SOURCE_DIR}/resources/cpp/include)
+target_include_directories(UnitTests PRIVATE ${CMAKE_SOURCE_DIR}/src/lrpc/resources/cpp)
 target_include_directories(UnitTests SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/external/etl/include)
 
 if(MSVC)

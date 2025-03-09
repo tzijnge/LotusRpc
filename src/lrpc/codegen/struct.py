@@ -94,7 +94,7 @@ class StructFileVisitor(LrpcVisitor):
 
     def __write_includes(self) -> None:
         self.__includes.add("<etl/byte_stream.h>")
-        self.__includes.add('"lrpc/EtlRwExtensions.hpp"')
+        self.__includes.add('"lrpccore/EtlRwExtensions.hpp"')
         if self.__descriptor.is_external():
             self.__includes.add(f'"{self.__descriptor.external_file()}"')
         for i in sorted(self.__includes):

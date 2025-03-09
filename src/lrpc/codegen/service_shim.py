@@ -157,8 +157,8 @@ class ServiceShimVisitor(LrpcVisitor):
         self.__file("#pragma once")
 
     def __write_includes(self) -> None:
-        self.__file('#include "lrpc/Service.hpp"')
-        self.__file('#include "lrpc/EtlRwExtensions.hpp"')
+        self.__file('#include "lrpccore/Service.hpp"')
+        self.__file('#include "lrpccore/EtlRwExtensions.hpp"')
         self.__file(f'#include "{self.__service_name}.hpp"')
 
         self.__file.newline()

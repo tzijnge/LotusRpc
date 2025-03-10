@@ -90,17 +90,17 @@ def schema(output: os.PathLike[str]) -> None:
     export_lrpc_schema(output)
 
 @run_cli.command()
+@click.option("-d", "--definition_file", help="LRPC definition file", required = True, type=click.File("r"))
 @click.option(
     "-w", "--warnings_as_errors", help="Treat LRPC definition warnings as errors", required=False, default=False, is_flag=True, type=bool
 )
 @click.option("-o", "--output", help="Path to put the generated files", required=False, default=".", type=click.Path())
-@click.argument("input_file", type=click.File("r"), metavar="input")
-def puml(warnings_as_errors: bool, output: os.PathLike[str], input_file: TextIO) -> None:
+def puml(definition_file: TextIO, warnings_as_errors: bool, output: os.PathLike[str]) -> None:
     """Generate a PlantUML diagram for lrpc definition INPUT"""
 
-    lrpc_def = load_lrpc_def_from_file(input_file, warnings_as_errors)
+    lrpc_def = load_lrpc_def_from_file(definition_file, warnings_as_errors)
     generate_puml(lrpc_def, output)
-    logging.info("Generated PlantUML diagram for %s in %s", input_file.name, output)
+    logging.info("Generated PlantUML diagram for %s in %s", definition_file.name, output)
 
 if __name__ == "__main__":
     # parameters are inserted by Click

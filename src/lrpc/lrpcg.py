@@ -82,13 +82,15 @@ def cppcore(output: os.PathLike[str]) -> None:
     allows for having multiple servers in a single project without conflicting and/or duplicate files.
     Use in combination with the 'cpp' command and the '--no-core' option"""
     copy_resources(output)
+    logging.info("Generated LRPC core code in %s", output)
 
 @run_cli.command()
 @click.option("-o", "--output", help="Path to put the generated files", required=False, default=".", type=click.Path())
 def schema(output: os.PathLike[str]) -> None:
-    """Generate the schema for the lrpc definition file"""
+    """Export the schema for the LRPC definition file"""
     create_dir_if_not_exists(output)
     export_lrpc_schema(output)
+    logging.info("Exported LRPC schema to %s", output)
 
 @run_cli.command()
 @click.option("-d", "--definition_file", help="LRPC definition file", required = True, type=click.File("r"))

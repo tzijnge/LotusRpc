@@ -14,7 +14,7 @@ def export(resource: str, output: str) -> None:
         with open(resource_file, mode="rt", encoding="utf8") as source:
             with open(path.join(output, resource_file.name), mode="wt", encoding="utf-8") as dest:
                 v = version("lotusrpc")
-                dest.write(f"// This file has been generated with LRPC version {v}")
+                dest.write(f"// This file has been generated with LRPC version {v}\r\n")
 
                 for l in source.readlines():
                     dest.write(l)

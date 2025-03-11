@@ -70,7 +70,7 @@ else()
   target_compile_options(UnitTests  PRIVATE -Wall -Wextra)
 endif()
 
-set_property(TARGET UnitTests PROPERTY COMPILE_WARNING_AS_ERROR OFF)
+set_property(TARGET UnitTests PROPERTY COMPILE_WARNING_AS_ERROR ON)
 
 target_link_libraries(
   UnitTests

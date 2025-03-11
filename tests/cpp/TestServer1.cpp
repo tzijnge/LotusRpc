@@ -6,6 +6,11 @@
 
 using ::testing::Return;
 
+#ifdef _MSC_VER
+# pragma warning(push)
+# pragma warning(disable:4100)
+#endif
+
 MATCHER_P(SPAN_EQ, e, "Equality matcher for etl::span")
 {
     if (e.size() != arg.size())
@@ -21,6 +26,10 @@ MATCHER_P(SPAN_EQ, e, "Equality matcher for etl::span")
     }
     return true;
 }
+
+#ifdef _MSC_VER
+# pragma warning(pop)
+#endif
 
 class MockS0Service : public ts1::s0ServiceShim
 {

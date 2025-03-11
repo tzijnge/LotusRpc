@@ -280,16 +280,16 @@ namespace lrpc
     template <typename T, typename etl::enable_if<is_etl_string<T>::value, bool>::type = true>
     void write_unchecked(etl::byte_stream_writer &stream, const T& value)
     {
-        for (auto c : value)
+        for (const char c : value)
         {
             stream.write_unchecked<char>(c);
         }
 
         // fill remainder with null terminators
-        for (auto i = value.size(); i < value.capacity(); ++i)
-        {
-            stream.write_unchecked<char>('\0');
-        }
+        // for (auto i = value.size(); i < value.capacity(); ++i)
+        // {
+        //     stream.write_unchecked<char>('\0');
+        // }
 
         // final null terminator
         stream.write_unchecked<char>('\0');

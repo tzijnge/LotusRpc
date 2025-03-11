@@ -1,5 +1,5 @@
 from importlib import resources
-import shutil
+from importlib.metadata import version
 import os
 from os import path
 
@@ -8,10 +8,16 @@ def create_dir_if_not_exists(target_dir: str) -> None:
         os.makedirs(target_dir, 511, True)
 
 def export(resource: str, output: str) -> None:
-    resource_file = resources.files(__package__).joinpath(resource)
+    resource_path = resources.files(__package__).joinpath(resource)
 
-    with resources.as_file(resource_file) as f:
-        shutil.copy2(f, path.join(output, resource_file.name))
+    with resources.as_file(resource_path) as resource_file:
+        with open(resource_file, mode="rt", encoding="utf8") as source:
+            with open(path.join(output, resource_file.name), mode="wt", encoding="utf-8") as dest:
+                v = version("lotusrpc")
+                dest.write(f"// This file has been generated with LRPC version {v}")
+
+                for l in source.readlines():
+                    dest.write(l)
 
 def export_to(output: os.PathLike[str]) -> None:
     core_dir = path.join(output, "lrpccore")

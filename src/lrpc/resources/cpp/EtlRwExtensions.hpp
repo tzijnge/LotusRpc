@@ -1,5 +1,3 @@
-// This file has been generated with LRPC version
-
 #pragma once
 #include <etl/array.h>
 #include <etl/byte_stream.h>

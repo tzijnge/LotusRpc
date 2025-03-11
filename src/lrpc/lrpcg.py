@@ -48,6 +48,7 @@ def generate_puml(lrpc_def: LrpcDef, output: os.PathLike[str]) -> None:
 @click.group()
 @click.version_option(package_name="lotusrpc", message="%(version)s")
 def run_cli() -> None:
+    # All functionality provided by Click decorators
     pass
 
 @run_cli.command()
@@ -103,6 +104,4 @@ def puml(definition_file: TextIO, warnings_as_errors: bool, output: os.PathLike[
     logging.info("Generated PlantUML diagram for %s in %s", definition_file.name, output)
 
 if __name__ == "__main__":
-    # parameters are inserted by Click
-    # pylint: disable=no-value-for-parameter
     run_cli()

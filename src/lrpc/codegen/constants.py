@@ -51,6 +51,7 @@ class ConstantsFileVisitor(LrpcVisitor):
 
     def __constant_definition(self, constant: LrpcConstant) -> str:
         n = constant.name()
+        literal = "f" if constant.cpp_type() == "float" else ""
 
         if constant.cpp_type() == "string":
             t = "etl::string_view"
@@ -59,4 +60,4 @@ class ConstantsFileVisitor(LrpcVisitor):
             t = constant.cpp_type()
             v = str(constant.value()).lower()
 
-        return f"constexpr {t} {n} {{{v}}};"
+        return f"constexpr {t} {n} {{{v}{literal}}};"

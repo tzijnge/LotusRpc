@@ -1,3 +1,5 @@
+// This file has been generated with LRPC version
+
 #pragma once
 #include <etl/byte_stream.h>
 #include <stdint.h>
@@ -7,6 +9,8 @@ namespace lrpc
 class Service
 {
 public:
+    virtual ~Service() = default;
+
     using Reader = etl::byte_stream_reader;
     using Writer = etl::byte_stream_writer;
 

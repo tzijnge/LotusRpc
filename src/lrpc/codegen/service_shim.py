@@ -75,6 +75,8 @@ class ServiceShimVisitor(LrpcVisitor):
     def __write_shim(self) -> None:
         with self.__file.block(f"class {self.__service_name}ServiceShim : public lrpc::Service", ";"):
             self.__file.label("public")
+            self.__file(f"virtual ~{self.__service_name}ServiceShim() = default;")
+            self.__file.newline()
             self.__file(f"uint32_t id() const override {{ return {self.__service_id}; }}")
             self.__file.newline()
 
@@ -109,9 +111,10 @@ class ServiceShimVisitor(LrpcVisitor):
 
         with self.__file.block("static ShimType shim(const size_t functionId)"):
             with self.__file.block(f"static constexpr etl::array<ShimType, {self.__max_function_id + 1}> shims", ";"):
-                for fid in range(0, self.__max_function_id + 1):
-                    name = self.__function_info.get(fid, null_shim_name)
-                    self.__file(f"&{self.__service_name}ServiceShim::{name}_shim,")
+                with self.__file.block(""):
+                    for fid in range(0, self.__max_function_id + 1):
+                        name = self.__function_info.get(fid, null_shim_name)
+                        self.__file(f"&{self.__service_name}ServiceShim::{name}_shim,")
 
             self.__file.newline()
             self.__file.write("return shims.at(functionId);")

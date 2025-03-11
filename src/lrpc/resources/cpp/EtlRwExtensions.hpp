@@ -1,3 +1,5 @@
+// This file has been generated with LRPC version
+
 #pragma once
 #include <etl/array.h>
 #include <etl/byte_stream.h>
@@ -7,32 +9,32 @@
 namespace lrpc
 {
     template <typename T>
-    struct is_etl_optional : etl::false_type
+    struct is_etl_optional : public etl::false_type
     {
     };
 
     template <typename T>
-    struct is_etl_optional<etl::optional<T>> : etl::true_type
+    struct is_etl_optional<etl::optional<T>> : public etl::true_type
     {
     };
 
     template <typename T>
-    struct is_etl_string : etl::false_type
+    struct is_etl_string : public etl::false_type
     {
     };
 
     template <size_t N>
-    struct is_etl_string<etl::string<N>> : etl::true_type
+    struct is_etl_string<etl::string<N>> : public etl::true_type
     {
     };
 
     template <typename T>
-    struct is_etl_array : etl::false_type
+    struct is_etl_array : public etl::false_type
     {
     };
 
     template <typename T, size_t N>
-    struct is_etl_array<etl::array<T, N>> : etl::true_type
+    struct is_etl_array<etl::array<T, N>> : public etl::true_type
     {
     };
 
@@ -64,7 +66,7 @@ namespace lrpc
     };
 
     template <typename T, size_t N>
-    struct etl_array_size<etl::array<T, N>> : etl::integral_constant<size_t, N>
+    struct etl_array_size<etl::array<T, N>> : public etl::integral_constant<size_t, N>
     {
     };
 
@@ -74,7 +76,7 @@ namespace lrpc
     };
 
     template <size_t N>
-    struct etl_string_size<etl::string<N>> : etl::integral_constant<size_t, N>
+    struct etl_string_size<etl::string<N>> : public etl::integral_constant<size_t, N>
     {
     };
 
@@ -89,12 +91,12 @@ namespace lrpc
 
     // deleted read function to allow specializations for custom structs
     template <typename T>
-    typename etl::enable_if<!etl::is_arithmetic<T>::value &&
-                                !etl::is_enum<T>::value &&
-                                !is_etl_optional<T>::value &&
-                                !is_etl_array<T>::value &&
-                                !etl::is_same<T, etl::string_view>::value &&
-                                !is_etl_string<T>::value,
+    typename etl::enable_if<(!etl::is_arithmetic<T>::value) &&
+                                (!etl::is_enum<T>::value) &&
+                                (!is_etl_optional<T>::value) &&
+                                (!is_etl_array<T>::value) &&
+                                (!etl::is_same<T, etl::string_view>::value) &&
+                                (!is_etl_string<T>::value),
                             T>::type
     read_unchecked(etl::byte_stream_reader &stream) = delete;
 
@@ -128,13 +130,15 @@ namespace lrpc
     typename enable_for_auto_string<T>::type
     read_unchecked(etl::byte_stream_reader &stream)
     {
-        auto found = reinterpret_cast<const char *>(memchr(stream.end(), '\0', stream.available_bytes()));
+        size_t stringSize {0};
+        size_t skipSize {0};
 
-        size_t stringSize = 0;
-        size_t skipSize = 0;
-        if (found != nullptr)
+        const auto fd = stream.free_data();
+        const auto found = etl::find(fd.begin(), fd.end(), '\0');
+
+        if (found != fd.end())
         {
-            stringSize = std::distance(stream.end(), found);
+            stringSize = static_cast<size_t>(etl::distance(fd.begin(), found));
             skipSize = stringSize + 1;
         }
         else
@@ -144,7 +148,7 @@ namespace lrpc
         }
 
         const etl::string_view s{stream.end(), stringSize};
-        stream.read_unchecked<uint8_t>(skipSize);
+        (void)stream.read_unchecked<uint8_t>(skipSize);
         return s;
     };
 
@@ -156,13 +160,15 @@ namespace lrpc
     typename enable_for_fixed_size_string<T>::type
     read_unchecked(etl::byte_stream_reader &stream)
     {
-        auto found = reinterpret_cast<const char *>(memchr(stream.end(), '\0', stream.available_bytes()));
+        size_t stringSize {0};
+        size_t skipSize = {0};
 
-        size_t stringSize = 0;
-        size_t skipSize = 0;
-        if (found != nullptr)
+        const auto fd = stream.free_data();
+        const auto found = etl::find(fd.begin(), fd.end(), '\0');
+
+        if (found != fd.end())
         {
-            stringSize = std::distance(stream.end(), found);
+            stringSize = static_cast<size_t>(std::distance(fd.begin(), found));
             stringSize = std::min(stringSize, etl_string_size<T>::value);
             skipSize = stringSize + 1;
         }
@@ -174,20 +180,20 @@ namespace lrpc
         }
 
         const etl::string_view s{stream.end(), stringSize};
-        stream.read_unchecked<uint8_t>(skipSize);
+        (void)stream.read_unchecked<uint8_t>(skipSize);
         return s;
     }
 
     // Optional, but not of fixed size string
     template <typename T>
-    using enable_for_optional = etl::enable_if<is_etl_optional<T>::value && !etl_optional_type_is_string<T>::value, T>;
+    using enable_for_optional = etl::enable_if<is_etl_optional<T>::value && (!etl_optional_type_is_string<T>::value), T>;
 
     template <typename T>
     typename enable_for_optional<T>::type
     read_unchecked(etl::byte_stream_reader &stream)
     {
-        auto has_value = etl::read_unchecked<bool>(stream);
-        if (has_value)
+        const auto hasValue = etl::read_unchecked<bool>(stream);
+        if (hasValue)
         {
             return lrpc::read_unchecked<typename etl_optional_type<T>::type>(stream);
         }
@@ -206,8 +212,8 @@ namespace lrpc
     typename enable_for_optional_string<T>::type
     read_unchecked(etl::byte_stream_reader &stream)
     {
-        auto has_value = etl::read_unchecked<bool>(stream);
-        if (has_value)
+        const auto hasValue = etl::read_unchecked<bool>(stream);
+        if (hasValue)
         {
             return lrpc::read_unchecked<etl::string<optional_string_size<T>::value>>(stream);
         }
@@ -217,7 +223,7 @@ namespace lrpc
 
     // Array, but not of fixed size string
     template <typename T>
-    using enable_for_array = etl::enable_if<is_etl_array<T>::value && !etl_array_type_is_string<T>::value, T>;
+    using enable_for_array = etl::enable_if<is_etl_array<T>::value && (!etl_array_type_is_string<T>::value), T>;
 
     template <typename T>
     typename enable_for_array<T>::type
@@ -250,11 +256,11 @@ namespace lrpc
     };
 
     // deleted write function to allow specializations for custom structs
-    template <typename T, typename etl::enable_if<!etl::is_arithmetic<T>::value &&
-                                           !etl::is_enum<T>::value &&
-                                           !is_etl_optional<T>::value &&
-                                           !is_etl_array<T>::value &&
-                                           !is_etl_string<T>::value,
+    template <typename T, typename etl::enable_if<(!etl::is_arithmetic<T>::value) &&
+                                           (!etl::is_enum<T>::value) &&
+                                           (!is_etl_optional<T>::value) &&
+                                           (!is_etl_array<T>::value) &&
+                                           (!is_etl_string<T>::value),
                                            bool>::type = true>
     void write_unchecked(etl::byte_stream_writer &stream, const T &value) = delete;
 

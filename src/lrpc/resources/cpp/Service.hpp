@@ -7,6 +7,8 @@ namespace lrpc
 class Service
 {
 public:
+    virtual ~Service() = default;
+
     using Reader = etl::byte_stream_reader;
     using Writer = etl::byte_stream_writer;
 

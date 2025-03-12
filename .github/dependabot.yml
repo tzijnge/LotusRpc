@@ -7,5 +7,9 @@ version: 2
 updates:
   - package-ecosystem: "pip" # See documentation for possible values
     directory: "/" # Location of package manifests
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-patch
     schedule:
-      interval: "weekly"
+      interval: monthly

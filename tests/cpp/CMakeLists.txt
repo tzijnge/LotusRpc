@@ -1,4 +1,4 @@
-project(UnitTests VERSION 0.1.0)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_CXX_STANDARD 14)
 set(BUILD_GMOCK ON)
@@ -23,6 +23,10 @@ add_custom_command(OUTPUT ${LRPC_IS_BUILT}
                   COMMENT "Build LRPC Python package"
                   DEPENDS ${LRPC_PY_SRC_FILES})
 
+add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/lrpccore/EtlRwExtensions.hpp
+                  COMMAND lrpcg cppcore -o ${CMAKE_CURRENT_SOURCE_DIR}/generated
+                  COMMENT "Generate LRPC server core")
+
 
 function(generate_lrpc server_name)
   set(LRPC_OUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/generated/${server_name})
@@ -32,7 +36,7 @@ function(generate_lrpc server_name)
   add_custom_command(OUTPUT ${LRPC_SERVER_HEADER}
                   COMMENT "Generate Test${server_name} LRPC files"
                   DEPENDS ${LRPC_DEF} ${LRPC_IS_BUILT}
-                  COMMAND lrpcg -w ${LRPC_DEF} -o ${LRPC_OUT_DIR})
+                  COMMAND lrpcg cpp -d ${LRPC_DEF} -o ${LRPC_OUT_DIR} -w --no-core)
 
 endfunction()
 
@@ -53,10 +57,11 @@ add_executable(UnitTests
                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server1/Server1.hpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server2/Server2.hpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server3/Server3.hpp
-                ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server4/Server4.hpp)
+                ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server4/Server4.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/generated/lrpccore/EtlRwExtensions.hpp)
 
 target_include_directories(UnitTests PRIVATE .)
-target_include_directories(UnitTests PRIVATE ${CMAKE_SOURCE_DIR}/resources/cpp/include)
+target_include_directories(UnitTests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/generated)
 target_include_directories(UnitTests SYSTEM PRIVATE ${CMAKE_SOURCE_DIR}/external/etl/include)
 
 if(MSVC)
@@ -65,7 +70,7 @@ else()
   target_compile_options(UnitTests  PRIVATE -Wall -Wextra)
 endif()
 
-set_property(TARGET UnitTests PROPERTY COMPILE_WARNING_AS_ERROR OFF)
+set_property(TARGET UnitTests PROPERTY COMPILE_WARNING_AS_ERROR ON)
 
 target_link_libraries(
   UnitTests
@@ -75,4 +80,3 @@ target_link_libraries(
 )
 
 gtest_discover_tests(UnitTests XML_OUTPUT_DIR TestResults)
-

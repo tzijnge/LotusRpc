@@ -4,10 +4,37 @@ toc: true
 ---
 
 ## LRPCG
-Basic usage: `lrpcg example.lrpc.yaml -o output-dir`
+Basic usage: `lrpcg cpp -d example.lrpc.yaml -o output-dir`
 
 For more info type `lrpg --help`
 
+### C++ server side code generation
+The `cpp` command generates all C++ files needed for the RPC server.
+
+`lrpcg cpp -d example.lrpc.yaml -o output-dir`
+
+For more info type `lrpg cpp --help`
+
+### C++ server core code generation
+The `cppcore` command generates only the core files of the RPC server. These files are static and do not depend on the definition file. In some cases it may be beneficial to generate them separately from the rest of the RPC server.
+
+`lrpcg cppcore -o output-dir`
+
+For more info type `lrpg cppcore --help`
+
+### Schema export
+The `schema` command exports the [LotusRPC definition schema](schema.md) to the specified directory.
+
+`lrpcg schema -o output-dir`
+
+For more info type `lrpg schema --help`
+
+### PlantUML diagram
+The `puml` command transforms your LotusRPC definition file into a PlantUML diagram. The output of this command is a _.puml_ file that can be rendered to an image with PlantUML. This can be useful for documentation purposes
+
+`lrpcg puml -o output-dir`
+
+For more info type `lrpg puml --help`
 
 ## LRPCC
 `lrpcc` is the LRPC client tool. A common use case of LRPC is to control a device running an LRPC server from a PC. This means the user must implement an LRPC client on the PC. `lrpcc` makes this very easy by constructing a client at runtime from the definition file and present itself as a CLI tool. `lrpcc` is installed as a command line tool with LRPC and can be called from any location.

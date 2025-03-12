@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "lrpc/EtlRwExtensions.hpp"
+#include "lrpccore/EtlRwExtensions.hpp"
 #include <string>
 #include <array>
 #include <etl/vector.h>
@@ -60,6 +60,19 @@ TEST(TestEtlRwExtensions, readArithmetic)
     EXPECT_EQ(0x02, lrpc::read_unchecked<uint8_t>(reader));
     EXPECT_EQ(0x0403, lrpc::read_unchecked<uint16_t>(reader));
     EXPECT_FLOAT_EQ(123.456F, lrpc::read_unchecked<float>(reader));
+}
+
+TEST(TestEtlRwExtensions, readEnum)
+{
+    enum class Dummy
+    {
+        V1 = 0xAA
+    };
+
+    etl::vector<uint8_t, 1> storage{0xAA};
+    etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
+
+    EXPECT_EQ(Dummy::V1, lrpc::read_unchecked<Dummy>(reader));
 }
 
 TEST(TestEtlRwExtensions, readAutoString)
@@ -196,7 +209,7 @@ TEST(TestEtlRwExtensions, writeArithmetic)
     lrpc::write_unchecked<uint16_t>(writer, 0x0403);
     lrpc::write_unchecked<float>(writer, 123.456F);
 
-    auto written = writer.used_data();
+    const auto written = writer.used_data();
     ASSERT_EQ(9, written.size());
     EXPECT_EQ(0x00, static_cast<uint8_t>(written[0]));
     EXPECT_EQ(0x01, static_cast<uint8_t>(written[1]));
@@ -209,6 +222,22 @@ TEST(TestEtlRwExtensions, writeArithmetic)
     EXPECT_EQ(0x42, static_cast<uint8_t>(written[8]));
 }
 
+TEST(TestEtlRwExtensions, writeEnum)
+{
+    enum class Dummy
+    {
+        V1 = 0xBB
+    };
+
+    etl::vector<uint8_t, 1> storage;
+    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+
+    lrpc::write_unchecked<Dummy>(writer, Dummy::V1);
+    const auto written = writer.used_data();
+    ASSERT_EQ(1, written.size());
+    EXPECT_EQ(0xBB, static_cast<uint8_t>(written[0]));
+}
+
 TEST(TestEtlRwExtensions, writeOptional)
 {
     etl::array<uint8_t, 10> storage;
@@ -217,7 +246,7 @@ TEST(TestEtlRwExtensions, writeOptional)
     lrpc::write_unchecked<etl::optional<uint8_t>>(writer, {});
     lrpc::write_unchecked<etl::optional<uint8_t>>(writer, 0x02);
 
-    auto written = writer.used_data();
+    const auto written = writer.used_data();
     ASSERT_EQ(3, written.size());
     EXPECT_EQ(0x00, static_cast<uint8_t>(written[0]));
     EXPECT_EQ(0x01, static_cast<uint8_t>(written[1]));
@@ -230,10 +259,10 @@ TEST(TestEtlRwExtensions, writeString)
     etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
 
     lrpc::write_unchecked<etl::string<4>>(writer, "T1");
-    etl::string<2> t2("T2");
+    const etl::string<2> t2("T2");
     lrpc::write_unchecked<etl::string<2>>(writer, t2);
 
-    auto written = writer.used_data();
+    const auto written = writer.used_data();
     ASSERT_EQ(8, written.size());
     EXPECT_EQ('T', written[0]);
     EXPECT_EQ('1', written[1]);
@@ -253,7 +282,7 @@ TEST(TestEtlRwExtensions, writeArray)
     etl::array<uint8_t, 2> t2{0x01, 0x02};
     lrpc::write_unchecked<etl::array<uint8_t, 2>>(writer, t2);
 
-    auto written = writer.used_data();
+    const auto written = writer.used_data();
     ASSERT_EQ(2, written.size());
     EXPECT_EQ(0x01, written[0]);
     EXPECT_EQ(0x02, written[1]);
@@ -267,7 +296,7 @@ TEST(TestEtlRwExtensions, writeArrayOfString)
     etl::array<etl::string<2>, 2> a{"T1", "T2"};
     lrpc::write_unchecked<etl::array<etl::string<2>, 2>>(writer, a);
 
-    auto written = writer.used_data();
+    const auto written = writer.used_data();
     ASSERT_EQ(6, written.size());
     EXPECT_EQ('T', written[0]);
     EXPECT_EQ('1', written[1]);
@@ -287,7 +316,7 @@ TEST(TestEtlRwExtensions, writeOptionalString)
     lrpc::write_unchecked<etl::optional<etl::string<2>>>(writer, a);
     lrpc::write_unchecked<etl::optional<etl::string<5>>>(writer, b);
 
-    auto written = writer.used_data();
+    const auto written = writer.used_data();
     ASSERT_EQ(5, written.size());
     EXPECT_EQ(0x01, written[0]);
     EXPECT_EQ('T', written[1]);

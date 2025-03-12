@@ -27,10 +27,11 @@ class ServerIncludeVisitor(LrpcVisitor):
 
         write_file_banner(self.__file)
         self.__file.write("#pragma once")
-        self.__file.write('#include "lrpc/Server.hpp"')
+        self.__file.write('#include "lrpccore/Server.hpp"')
 
     def visit_lrpc_service(self, service: LrpcService) -> None:
         self.__file.write(f'#include "{service.name()}.hpp"')
+        self.__file.write(f'#include "{service.name()}_ServiceShim.hpp"')
 
     def visit_lrpc_def_end(self) -> None:
         self.__file.newline()

@@ -1,5 +1,5 @@
 import struct
-from typing import Any
+from typing import Any, Union
 
 from ..core.definition import LrpcDef
 from .decoder import LrpcDecoder
@@ -17,7 +17,7 @@ class LrpcClient:
         self.lrpc_def = lrpc_def
         self.receive_buffer = b""
 
-    def process(self, encoded: bytes) -> dict[str, Any] | VoidResponse | IncompleteResponse:
+    def process(self, encoded: bytes) -> Union[dict[str, Any], VoidResponse, IncompleteResponse]:
         self.receive_buffer += encoded
         received = len(self.receive_buffer)
 
@@ -33,7 +33,7 @@ class LrpcClient:
 
         return LrpcClient.IncompleteResponse()
 
-    def decode(self, encoded: bytes) -> dict[str, Any] | VoidResponse:
+    def decode(self, encoded: bytes) -> Union[dict[str, Any], VoidResponse]:
         # skip packet length at index 0
         service_id = encoded[1]
         function_id = encoded[2]

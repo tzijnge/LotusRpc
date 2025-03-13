@@ -4,7 +4,7 @@ import logging
 import os
 from glob import glob
 from os import path
-from typing import Any
+from typing import Any, Union
 from collections.abc import Callable
 import click
 import serial
@@ -121,7 +121,7 @@ class Lrpcc:
         else:
             raise NotImplementedError(f"Unsupported transport type: {self.transport_type}")
 
-    def __communicate_serial(self, encoded: bytes) -> dict[str, Any] | LrpcClient.VoidResponse:
+    def __communicate_serial(self, encoded: bytes) -> Union[dict[str, Any], LrpcClient.VoidResponse]:
         with serial.Serial(**self.transport_params) as transport:
             transport.write(encoded)
             while True:

@@ -7,9 +7,12 @@ from .encoder import lrpc_encode
 
 
 class LrpcClient:
+    # These classes are just tags to signal a kind of result from the process function
+    # pylint: disable=too-few-public-methods
     class VoidResponse:
         pass
 
+    # pylint: disable=too-few-public-methods
     class IncompleteResponse:
         pass
 

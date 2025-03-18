@@ -4,7 +4,7 @@ import logging
 import os
 from glob import glob
 from os import path
-from typing import Any
+from typing import Any, Union
 from collections.abc import Callable
 import click
 import serial
@@ -121,7 +121,7 @@ class Lrpcc:
         else:
             raise NotImplementedError(f"Unsupported transport type: {self.transport_type}")
 
-    def __communicate_serial(self, encoded: bytes) -> dict[str, Any]:
+    def __communicate_serial(self, encoded: bytes) -> Union[dict[str, Any], LrpcClient.VoidResponse]:
         with serial.Serial(**self.transport_params) as transport:
             transport.write(encoded)
             while True:
@@ -130,13 +130,15 @@ class Lrpcc:
                     return {"Error": "Timeout waiting for response"}
 
                 response = self.client.process(received)
-                if response:
+
+                if not isinstance(response, LrpcClient.IncompleteResponse):
                     return response
 
     def __command_handler(self, service_name: str, function_name: str, **kwargs: Any) -> None:
         encoded = self.client.encode(service_name, function_name, **kwargs)
         response = self.__communicate(encoded)
-        print(response)
+        if not isinstance(response, LrpcClient.VoidResponse):
+            print(response)
 
     def run(self) -> None:
         cli = ClientCliVisitor(self.__command_handler)

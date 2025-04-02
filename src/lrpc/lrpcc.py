@@ -137,8 +137,12 @@ class Lrpcc:
     def __command_handler(self, service_name: str, function_name: str, **kwargs: Any) -> None:
         encoded = self.client.encode(service_name, function_name, **kwargs)
         response = self.__communicate(encoded)
-        if not isinstance(response, LrpcClient.VoidResponse):
-            print(response)
+        if isinstance(response, LrpcClient.VoidResponse):
+            return
+
+        for name, value in response.items():
+            post_value = hex(value) if isinstance(value, int) else ""
+            print(f"{name}: {value}{post_value}")
 
     def run(self) -> None:
         cli = ClientCliVisitor(self.__command_handler)

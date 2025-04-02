@@ -77,7 +77,7 @@ class EnumFileVisitor(LrpcVisitor):
                 "// This function does not serve any purpose and is optimized out with the right compiler/linker settings"
             )
 
-            with self.__file.block(f"void CheckEnum(const {self.__name()} v)"):
+            with self.__file.block(f"constexpr void CheckEnum(const {self.__name()} v)"):
                 with self.__file.block("switch (v)"):
                     for f in self.__descriptor.fields():
                         self.__file.write(f"case {self.__name()}::{f.name()}: break;")

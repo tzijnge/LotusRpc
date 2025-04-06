@@ -274,6 +274,25 @@ TEST(TestEtlRwExtensions, writeString)
     EXPECT_EQ('\0', written[7]);
 }
 
+TEST(TestEtlRwExtensions, writeAutoString)
+{
+    etl::array<uint8_t, 10> storage;
+    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+
+    lrpc::write_unchecked<etl::string_view>(writer, "T1");
+    const etl::string_view t2("T2");
+    lrpc::write_unchecked<etl::string_view>(writer, t2);
+
+    const auto written = writer.used_data();
+    ASSERT_EQ(6, written.size());
+    EXPECT_EQ('T', written[0]);
+    EXPECT_EQ('1', written[1]);
+    EXPECT_EQ('\0', written[2]);
+    EXPECT_EQ('T', written[3]);
+    EXPECT_EQ('2', written[4]);
+    EXPECT_EQ('\0', written[5]);
+}
+
 TEST(TestEtlRwExtensions, writeArray)
 {
     etl::array<uint8_t, 10> storage;

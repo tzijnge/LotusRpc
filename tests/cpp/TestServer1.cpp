@@ -57,12 +57,18 @@ public:
     MOCK_METHOD(ts1::CompositeData3, f20, (), (override));
     MOCK_METHOD((std::tuple<uint8_t, uint8_t>), f21, (), (override));
     MOCK_METHOD((std::tuple<etl::string<4>, etl::string<4>>), f22, (const etl::string_view &s1, const etl::string_view &s2), (override));
+    MOCK_METHOD(etl::string_view, f23, (), (override));
 };
 
 class TestServer1 : public ::testing::Test
 {
 public:
     MockS0Service s0Service;
+
+    void SetUp() override
+    {
+        responseBuffer.fill(0xAA);
+    }
 
     etl::span<uint8_t> receive(const std::vector<uint8_t> &bytes)
     {
@@ -301,6 +307,14 @@ TEST_F(TestServer1, decodef22)
                         '\0',
                     },
                     response);
+}
+
+// Decode function that returns auto string
+TEST_F(TestServer1, decodef23)
+{
+    EXPECT_CALL(s0Service, f23()).WillOnce(Return(etl::string_view("Test")));
+    auto response = receive({23});
+    EXPECT_RESPONSE({23, 'T', 'e', 's', 't', '\0'}, response);
 }
 
 // Decode function f6 with string arg

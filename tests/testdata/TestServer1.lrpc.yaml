@@ -1,118 +1,122 @@
-name: "Server1"
-namespace: "ts1"
+name: Server1
+namespace: ts1
 rx_buffer_size: 100
 tx_buffer_size: 200
 services:
-  - name: "s0"
+  - name: s0
     functions:
-      - name: "f0"
-      - name: "f1"
-      - name: "f2"
+      - name: f0
+      - name: f1
+      - name: f2
         params:
           - { name: a, type: uint8_t }
-      - name: "f3"
+      - name: f3
         params:
           - { name: a, type: uint16_t }
-      - name: "f4"
+      - name: f4
         params:
           - { name: a, type: float }
-      - name: "f5"
+      - name: f5
         params:
           - { name: a, type: uint16_t, count: 2 }
-      - name: "f6"
+      - name: f6
         params:
           - { name: a, type: string_20 }
-      - name: "f7"
+      - name: f7
         params:
-          - name: "cd"
+          - name: cd
             type: "@CompositeData"
-      - name: "f8"
+      - name: f8
         params:
-          - name: "a"
+          - name: a
             type: "@MyEnum"
-      - name: "f9"
+      - name: f9
         params:
-          - name: "a"
+          - name: a
             type: "@CompositeData2"
             count: 2
-      - name: "f10"
+      - name: f10
         params:
-          - { name: "a", type: "@CompositeData3" }
-      - name: "f11"
+          - { name: a, type: "@CompositeData3" }
+      - name: f11
         params:
-          - { name: "a", type: uint8_t }
-          - { name: "b", type: uint8_t }
-      - name: "f12"
+          - { name: a, type: uint8_t }
+          - { name: b, type: uint8_t }
+      - name: f12
         returns:
-          - name: "a"
+          - name: a
             type: uint8_t
-      - name: "f13"
+      - name: f13
         returns:
-          - name: "a"
+          - name: a
             type: uint16_t
-      - name: "f14"
+      - name: f14
         returns:
-          - name: "a"
+          - name: a
             type: float
-      - name: "f15"
+      - name: f15
         returns:
-          - name: "a"
+          - name: a
             type: uint16_t
             count: 2
-      - name: "f16"
+      - name: f16
         returns:
-          - name: "a"
+          - name: a
             type: string_8
-      - name: "f17"
+      - name: f17
         returns:
-          - name: "cd"
+          - name: cd
             type: "@CompositeData"
-      - name: "f18"
+      - name: f18
         returns:
-          - name: "a"
+          - name: a
             type: "@MyEnum"
-      - name: "f19"
+      - name: f19
         returns:
-          - name: "a"
+          - name: a
             type: "@CompositeData2"
             count: 2
-      - name: "f20"
+      - name: f20
         returns:
-          - name: "a"
+          - name: a
             type: "@CompositeData3"
-      - name: "f21"
+      - name: f21
         returns:
-          - name: "a"
+          - name: a
             type: uint8_t
-          - name: "b"
+          - name: b
             type: uint8_t
-      - name: "f22"
+      - name: f22
         params:
-          - name: "s1"
+          - name: s1
             type: string_4
-          - name: "s2"
+          - name: s2
             type: string_4
         returns:
-          - name: "r2"
+          - name: r2
             type: string_4
-          - name: "r2"
+          - name: r2
             type: string_4
+      - name: f23
+        returns:
+          - name: r0
+            type: string
 structs:
-  - name: "CompositeData"
+  - name: CompositeData
     fields:
-      - { name: "a", type: uint16_t, count: 2 }
-      - { name: "b", type: uint8_t }
-      - { name: "c", type: bool }
-  - name: "CompositeData2"
+      - { name: a, type: uint16_t, count: 2 }
+      - { name: b, type: uint8_t }
+      - { name: c, type: bool }
+  - name: CompositeData2
     fields:
-      - { name: "a", type: uint8_t }
-      - { name: "b", type: uint8_t }
-  - name: "CompositeData3"
+      - { name: a, type: uint8_t }
+      - { name: b, type: uint8_t }
+  - name: CompositeData3
     fields:
-      - { name: "a", type: "@CompositeData2" }
-      - { name: "b", type: "@MyEnum" }
+      - { name: a, type: "@CompositeData2" }
+      - { name: b, type: "@MyEnum" }
 enums:
-  - name: "MyEnum"
+  - name: MyEnum
     fields:
       - { name: V0, id: 0 }
       - { name: V1, id: 1 }

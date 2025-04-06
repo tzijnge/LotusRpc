@@ -17,6 +17,11 @@ class TestServer2 : public ::testing::Test
 public:
     MockS00Service service;
 
+    void SetUp() override
+    {
+        responseBuffer.fill(0xAA);
+    }
+
     etl::span<uint8_t> receive(const std::vector<uint8_t> &bytes)
     {
         const etl::span<const uint8_t> s(bytes.begin(), bytes.end());

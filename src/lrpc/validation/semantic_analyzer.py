@@ -88,16 +88,6 @@ class SemanticAnalyzer:
         if len(offenders) > 0:
             self.__errors.append(f"Array of auto strings is not allowed: {offenders}")
 
-    def __check_return_auto_string(self) -> None:
-        offenders = []
-        for s in self.__services:
-            for f in s.functions():
-                auto_string_returns = [(s.name(), f.name(), r.name()) for r in f.returns() if r.is_auto_string()]
-                offenders.extend(auto_string_returns)
-
-        if len(offenders) > 0:
-            self.__errors.append(f"A function cannot return an auto string: {offenders}")
-
     def analyze(self, warnings_as_errors: bool) -> None:
         for validator in self.validators:
             self.definition.accept(validator)
@@ -108,7 +98,6 @@ class SemanticAnalyzer:
         self.__check_auto_string_in_struct()
         self.__check_multiple_auto_strings_in_param_list_or_return_list()
         self.__check_array_of_auto_strings()
-        self.__check_return_auto_string()
 
         for w in self.__warnings:
             logging.warning(w)

@@ -356,7 +356,7 @@ constants:
   - name : c1
     value : 1
   - name : c1
-    value : 2 
+    value : 2
 services:
   - name: "s0"
     functions:
@@ -513,9 +513,13 @@ services:
     id: 0
     functions:
       - name: "f2"
-        id: 2
         params:
           - name: "p0"
+            type: string
+            count: 10
+      - name: "f3"
+        returns:
+          - name: "r0"
             type: string
             count: 10
 """
@@ -525,52 +529,6 @@ services:
         load_def(rpc_def)
 
     assert_log_entries(["Array of auto strings is not allowed: [('f2', 'p0')]"], caplog.text)
-
-
-def test_auto_string_return_value_is_not_allowed(caplog: pytest.LogCaptureFixture) -> None:
-    rpc_def = """name: "test"
-namespace: "ns"
-services:
-  - name: "s0"
-    id: 0
-    functions:
-      - name: "f0"
-        id: 0
-        returns:
-          - name: "r0"
-            type: string
-      - name: "f1"
-        id: 1
-        returns:
-          - name: "r0"
-            type: string
-          - name: "r1"
-            type: string
-      - name: "f2"
-        id: 2
-        returns:
-          - name: "r0"
-            type: string
-            count: "?"
-      - name: "f3"
-        id: 3
-        returns:
-          - name: "r0"
-            type: string
-            count: 10
-
-"""
-
-    caplog.set_level(logging.ERROR)
-    with pytest.raises(ValueError):
-        load_def(rpc_def)
-
-    assert_log_entries(
-        [
-            "A function cannot return an auto string: [('s0', 'f0', 'r0'), ('s0', 'f1', 'r0'), ('s0', 'f1', 'r1'), ('s0', 'f2', 'r0'), ('s0', 'f3', 'r0')]"
-        ],
-        caplog.text,
-    )
 
 
 def test_service_id_out_of_range(caplog: pytest.LogCaptureFixture) -> None:

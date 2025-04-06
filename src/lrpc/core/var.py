@@ -67,6 +67,9 @@ class LrpcVar:
     def return_type(self) -> str:
         t = self.base_type()
 
+        if self.is_auto_string():
+            return "etl::string_view"
+
         if self.base_type_is_string():
             t = f"etl::string<{self.string_size()}>"
 
@@ -115,6 +118,9 @@ class LrpcVar:
 
     def write_type(self) -> str:
         t = self.base_type()
+
+        if self.is_auto_string():
+            return "etl::string_view"
 
         if self.base_type_is_string():
             t = f"etl::string<{self.string_size()}>"

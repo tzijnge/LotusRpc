@@ -68,9 +68,8 @@ class LrpcVar:
         t = self.base_type()
 
         if self.is_auto_string():
-            return "etl::string_view"
-
-        if self.base_type_is_string():
+            t = "etl::string_view"
+        elif self.base_type_is_string():
             t = f"etl::string<{self.string_size()}>"
 
         if self.is_optional():
@@ -120,9 +119,8 @@ class LrpcVar:
         t = self.base_type()
 
         if self.is_auto_string():
-            return "etl::string_view"
-
-        if self.base_type_is_string():
+            t = "etl::string_view"
+        elif self.base_type_is_string():
             t = f"etl::string<{self.string_size()}>"
 
         if self.is_array():

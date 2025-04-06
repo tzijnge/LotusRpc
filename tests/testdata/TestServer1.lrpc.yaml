@@ -101,6 +101,16 @@ services:
         returns:
           - name: r0
             type: string
+      - name: f24
+        returns:
+          - { name: r0, type: string }
+          - { name: r1, type: string }
+      - name: f25
+        returns:
+          - { name: r0, type: string, count: "?" }
+      - name: f26
+        returns:
+          - { name: r0, type: string, count: 3 }
 structs:
   - name: CompositeData
     fields:

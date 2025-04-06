@@ -40,6 +40,7 @@ public:
     MOCK_METHOD(void, f5, (const StringStruct &a), (override));
     MOCK_METHOD(StringStruct, f6, (), (override));
     MOCK_METHOD((etl::string<5>), f7, (const etl::string_view &p0), (override));
+    MOCK_METHOD(void, f8, (const etl::span<const etl::string_view> &p0), (override));
 };
 
 class TestServer2_s1 : public ::testing::Test
@@ -162,4 +163,14 @@ TEST_F(TestServer2_s1, decodeF7)
     EXPECT_CALL(service, f7(expected)).WillOnce(Return(retVal));
     auto response = receive({7, 'T', '0', '\0'});
     EXPECT_RESPONSE({7, 'T', '1', '2', '3', '4', '\0'}, response);
+}
+
+// Decode void function with array of auto strings param
+TEST_F(TestServer2_s1, decodeF8)
+{
+    using sv = etl::string_view;
+    std::vector<sv> expected{sv("T1"), sv("T2")};
+    EXPECT_CALL(service, f8(SPAN_EQ(expected)));
+    auto response = receive({8, 'T', '1', '\0', 'T', '2', '\0'});
+    EXPECT_RESPONSE({8}, response);
 }

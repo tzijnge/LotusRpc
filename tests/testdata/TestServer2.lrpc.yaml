@@ -1,83 +1,82 @@
-name: "Server2"
+name: Server2
 rx_buffer_size: 100
 services:
-  - name: "s00"
-    id: 0
+  - name: s00
     functions:
-      - name: "f0"
-        id: 0
+      - name: f0
         params:
-          - name: "p0"
+          - name: p0
             type: bool
-          - name: "p1"
+          - name: p1
             type: string
-      - name: "f1"
-        id: 1
+      - name: f1
         params:
-          - name: "p0"
+          - name: p0
             type: string
-          - name: "p1"
+          - name: p1
             type: bool
-  - name: "s01"
-    id: 1
+      - name: f2
+        params:
+          - name: p0
+            type: string
+          - name: p1
+            type: string
+  - name: s01
     functions:
-      - name: "f0"
-        id: 0
+      - name: f0
         params:
-          - name: "p0"
+          - name: p0
             type: string_2
             count: 2
-      - name: "f1"
-        id: 1
+      - name: f1
         returns:
-          - name: "r00"
+          - name: r00
             type: string_2
             count: 2
-      - name: "f2"
-        id: 2
+      - name: f2
         params:
-          - name: "p01"
+          - name: p01
             type: string_2
             count: "?"
-      - name: "f3"
-        id: 3
+      - name: f3
         params:
-          - name: "p01"
+          - name: p01
             type: string
             count: "?"
-      - name: "f4"
-        id: 4
+      - name: f4
         returns:
-          - name: "r0"
+          - name: r0
             type: string_2
             count: "?"
-      - name: "f5"
-        id: 5
+      - name: f5
         params:
-          - name: "a"
+          - name: a
             type: "@StringStruct"
-      - name: "f6"
-        id: 6
+      - name: f6
         returns:
-          - name: "a"
+          - name: a
             type: "@StringStruct"
-      - name: "f7"
-        id: 7
+      - name: f7
         params:
-          - name: "p0"
+          - name: p0
             type: string
         returns:
-          - name: "r0"
+          - name: r0
             type: string_5
+      - name: f8
+        params:
+          - name: p0
+            type: string
+            count: 2
 structs:
-  - name: "StringStruct"
+  - name: StringStruct
     fields:
-      - name: "aa"
+      - name: aa
         type: string_2
-      - name: "b"
+      - name: b
         type: string_2
         count: 2
-      - name: "c"
+      - name: c
         type: string_2
         count: "?"
 

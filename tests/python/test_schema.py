@@ -477,60 +477,6 @@ structs:
     assert_log_entries(["Auto string not allowed in struct: [('s0', 'f0'), ('s1', 'f1')]"], caplog.text)
 
 
-def test_only_one_auto_string_param_allowed(caplog: pytest.LogCaptureFixture) -> None:
-    rpc_def = """name: "test"
-namespace: "ns"
-services:
-  - name: "i0"
-    id: 0
-    functions:
-      - name: "f0"
-        id: 0
-        params:
-          - name: "p0"
-            type: string
-          - name: "p1"
-            type: "string"
-"""
-
-    caplog.set_level(logging.ERROR)
-    with pytest.raises(ValueError):
-        load_def(rpc_def)
-
-    assert_log_entries(
-        [
-            "More than one auto string per parameter list or return value list is not allowed: [('f0', 'p0'), ('f0', 'p1')]"
-        ],
-        caplog.text,
-    )
-
-
-def test_array_of_auto_strings_is_not_allowed(caplog: pytest.LogCaptureFixture) -> None:
-    rpc_def = """name: "test"
-namespace: "ns"
-services:
-  - name: "i0"
-    id: 0
-    functions:
-      - name: "f2"
-        params:
-          - name: "p0"
-            type: string
-            count: 10
-      - name: "f3"
-        returns:
-          - name: "r0"
-            type: string
-            count: 10
-"""
-
-    caplog.set_level(logging.ERROR)
-    with pytest.raises(ValueError):
-        load_def(rpc_def)
-
-    assert_log_entries(["Array of auto strings is not allowed: [('f2', 'p0')]"], caplog.text)
-
-
 def test_service_id_out_of_range(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: test
 services:

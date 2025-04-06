@@ -6,7 +6,7 @@ from .function import FunctionValidator
 from .enum import EnumValidator
 from .names import NamesValidator
 from .custom_types import CustomTypesValidator
-from ..core import LrpcVar, LrpcDef
+from ..core import LrpcDef
 
 
 # pylint: disable = too-few-public-methods
@@ -55,38 +55,6 @@ class SemanticAnalyzer:
         if len(offenders) > 0:
             self.__errors.append(f"Auto string not allowed in struct: {offenders}")
 
-    def __check_multiple_auto_strings_in_param_list_or_return_list(self) -> None:
-        offenders = []
-        for s in self.__services:
-            for f in s.functions():
-                auto_string_params = [(f.name(), p.name()) for p in f.params() if p.is_auto_string()]
-                if len(auto_string_params) > 1:
-                    offenders.extend(auto_string_params)
-
-        if len(offenders) > 0:
-            self.__errors.append(
-                f"More than one auto string per parameter list or return value list is not allowed: {offenders}"
-            )
-
-    @staticmethod
-    def __is_auto_string_array(p: LrpcVar) -> bool:
-        if not p.is_auto_string():
-            return False
-
-        if p.is_optional():
-            return False
-
-        return p.array_size() > 1
-
-    def __check_array_of_auto_strings(self) -> None:
-        offenders = []
-        for s in self.__services:
-            for f in s.functions():
-                auto_string_arrays = [(f.name(), p.name()) for p in f.params() if self.__is_auto_string_array(p)]
-                offenders.extend(auto_string_arrays)
-
-        if len(offenders) > 0:
-            self.__errors.append(f"Array of auto strings is not allowed: {offenders}")
 
     def analyze(self, warnings_as_errors: bool) -> None:
         for validator in self.validators:
@@ -96,8 +64,6 @@ class SemanticAnalyzer:
 
         self.__check_duplicate_struct_field_names()
         self.__check_auto_string_in_struct()
-        self.__check_multiple_auto_strings_in_param_list_or_return_list()
-        self.__check_array_of_auto_strings()
 
         for w in self.__warnings:
             logging.warning(w)

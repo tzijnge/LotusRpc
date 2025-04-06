@@ -258,7 +258,8 @@ namespace lrpc
                                            (!etl::is_enum<T>::value) &&
                                            (!is_etl_optional<T>::value) &&
                                            (!is_etl_array<T>::value) &&
-                                           (!is_etl_string<T>::value),
+                                           (!is_etl_string<T>::value) &&
+                                           (!etl::is_same<T, etl::string_view>::value),
                                            bool>::type = true>
     void write_unchecked(etl::byte_stream_writer &stream, const T &value) = delete;
 
@@ -274,6 +275,19 @@ namespace lrpc
     void write_unchecked(etl::byte_stream_writer &stream, const ENUM &value)
     {
         stream.write_unchecked<uint8_t>(static_cast<uint8_t>(value));
+    };
+
+    // auto string
+    template <typename T, typename etl::enable_if<etl::is_same<T, etl::string_view>::value, bool>::type = true>
+    void write_unchecked(etl::byte_stream_writer &stream, const T& value)
+    {
+        for (auto i = 0U; i < value.size(); ++i)
+        {
+            stream.write_unchecked<char>(value[i]);
+        }
+
+        // final null terminator
+        stream.write_unchecked<char>('\0');
     };
 
     // string

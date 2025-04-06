@@ -41,7 +41,7 @@ enums:
 
 Generate server side code by simply running this command
 
-```lrpcg example.lrpc.yaml -o output-dir```
+```lrpcg cpp -d example.lrpc.yaml -o output-dir```
 
 Give the generated code a meaningful implementation and hook it up to a transport layer. Flash your embedded device. Then use `lrpcc` to communicate with your device and print the result to the console
 

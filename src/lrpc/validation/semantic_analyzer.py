@@ -46,15 +46,6 @@ class SemanticAnalyzer:
         if len(duplicate_names) > 0:
             self.__errors.append(f"Duplicate struct field name(s): {duplicate_names}")
 
-    def __check_auto_string_in_struct(self) -> None:
-        offenders = []
-        for s in self.definition.structs():
-            auto_strings = [(s.name(), f.name()) for f in s.fields() if f.is_auto_string()]
-            offenders.extend(auto_strings)
-
-        if len(offenders) > 0:
-            self.__errors.append(f"Auto string not allowed in struct: {offenders}")
-
 
     def analyze(self, warnings_as_errors: bool) -> None:
         for validator in self.validators:
@@ -63,7 +54,6 @@ class SemanticAnalyzer:
             self.__warnings.extend(validator.warnings())
 
         self.__check_duplicate_struct_field_names()
-        self.__check_auto_string_in_struct()
 
         for w in self.__warnings:
             logging.warning(w)

@@ -450,33 +450,6 @@ enums:
     assert_log_entries(["Unused custom type: s0", "Unused custom type: e0"], caplog.text)
 
 
-def test_auto_string_not_allowed_in_struct(caplog: pytest.LogCaptureFixture) -> None:
-    rpc_def = """name: "test"
-namespace: "a"
-services:
-  - name: "i0"
-    id: 0
-    functions:
-      - name: "f0"
-        id: 111
-structs:
-  - name: "s0"
-    fields:
-      - name: "f0"
-        type: "string"
-  - name: "s1"
-    fields:
-      - name: "f1"
-        type: "string"
-"""
-
-    caplog.set_level(logging.ERROR)
-    with pytest.raises(ValueError):
-        load_def(rpc_def)
-
-    assert_log_entries(["Auto string not allowed in struct: [('s0', 'f0'), ('s1', 'f1')]"], caplog.text)
-
-
 def test_service_id_out_of_range(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: test
 services:

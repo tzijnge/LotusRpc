@@ -52,7 +52,10 @@ class LrpcVar:
 
     def field_type(self) -> str:
         t = self.base_type()
-        if self.base_type_is_string():
+
+        if self.is_auto_string():
+            t = "etl::string_view"
+        elif self.base_type_is_string():
             t = f"etl::string<{self.string_size()}>"
 
         if self.is_optional():

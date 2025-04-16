@@ -30,12 +30,11 @@ jobs:
         run: pytest
       - name: "Run LRPC generator"
         run: |
-          copy src\lrpc\lrpcg.py src\lrpcg.py
-          cd src
-          python lrpcg.py cpp -d ..\tests\testdata\TestServer1.lrpc.yaml -o .
-          python lrpcg.py cpp -d ..\tests\testdata\TestServer2.lrpc.yaml -o .
-          python lrpcg.py cpp -d ..\tests\testdata\TestServer3.lrpc.yaml -o .
-          python lrpcg.py cpp -d ..\tests\testdata\TestServer4.lrpc.yaml -o .
+          pip install .
+          lrpcg cpp -d tests\testdata\TestServer1.lrpc.yaml -o .
+          lrpcg cpp -d tests\testdata\TestServer2.lrpc.yaml -o .
+          lrpcg cpp -d tests\testdata\TestServer3.lrpc.yaml -o .
+          lrpcg cpp -d tests\testdata\TestServer4.lrpc.yaml -o .
 
   build_and_test:
     runs-on: ubuntu-latest

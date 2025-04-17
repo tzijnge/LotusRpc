@@ -13,9 +13,9 @@ RPC framework for embedded systems based on [ETL](https://github.com/ETLCPP/etl)
 - basic types: `(u)intx_t`, `float`, `double`, `bool`
 - string
   - Fixed size: e.g., `string_10` for a maximum size of 10 characters (excluding termination character)
-  - Automatic size: `string`. For this type the number of bytes that is transferred is determined by how long the actual string is. This can be different for every RPC function call, contrary to the fixed size string.
+  - Automatic size: `string`. For this type the number of bytes that is transferred is determined by how long the actual string is. This can be different for every RPC function call, contrary to the fixed size string. An auto string is represented in the generated code with `etl::string_view`.
 - array
-  - Array can be of any type except `string`
+  - Array can be any of the other supported types
   - Enabled by using the `count` setting in the definition file with any value larger than 1
 - optional
   - Can be used with any type

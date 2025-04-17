@@ -57,12 +57,21 @@ public:
     MOCK_METHOD(ts1::CompositeData3, f20, (), (override));
     MOCK_METHOD((std::tuple<uint8_t, uint8_t>), f21, (), (override));
     MOCK_METHOD((std::tuple<etl::string<4>, etl::string<4>>), f22, (const etl::string_view &s1, const etl::string_view &s2), (override));
+    MOCK_METHOD(etl::string_view, f23, (), (override));
+    MOCK_METHOD((std::tuple<etl::string_view, etl::string_view>), f24, (), (override));
+    MOCK_METHOD((etl::optional<etl::string_view>), f25, (), (override));
+    MOCK_METHOD((etl::array<etl::string_view, 3>), f26, (), (override));
 };
 
 class TestServer1 : public ::testing::Test
 {
 public:
     MockS0Service s0Service;
+
+    void SetUp() override
+    {
+        responseBuffer.fill(0xAA);
+    }
 
     etl::span<uint8_t> receive(const std::vector<uint8_t> &bytes)
     {
@@ -145,6 +154,14 @@ TEST_F(TestServer1, decodeF6)
 {
     EXPECT_CALL(s0Service, f6(etl::string_view("Test")));
     auto response = receive({6, 'T', 'e', 's', 't', '\0'});
+    EXPECT_RESPONSE({6}, response);
+}
+
+// Decode function f6 with string arg and missing terminator
+TEST_F(TestServer1, decodeF6WithMissingStringTerminator)
+{
+    EXPECT_CALL(s0Service, f6(etl::string_view("Test")));
+    auto response = receive({6, 'T', 'e', 's', 't'});
     EXPECT_RESPONSE({6}, response);
 }
 
@@ -303,10 +320,38 @@ TEST_F(TestServer1, decodef22)
                     response);
 }
 
-// Decode function f6 with string arg
-TEST_F(TestServer1, decodeF6WithMissingStringTerminator)
+// Decode function that returns auto string
+TEST_F(TestServer1, decodef23)
 {
-    EXPECT_CALL(s0Service, f6(etl::string_view("Test")));
-    auto response = receive({6, 'T', 'e', 's', 't'});
-    EXPECT_RESPONSE({6}, response);
+    EXPECT_CALL(s0Service, f23()).WillOnce(Return(etl::string_view("Test")));
+    auto response = receive({23});
+    EXPECT_RESPONSE({23, 'T', 'e', 's', 't', '\0'}, response);
+}
+
+// Decode function that returns two auto strings
+TEST_F(TestServer1, decodef24)
+{
+    EXPECT_CALL(s0Service, f24()).WillOnce(Return(std::tuple<etl::string_view, etl::string_view>{"T1", "T2"}));
+    auto response = receive({24});
+    EXPECT_RESPONSE({24, 'T', '1', '\0', 'T', '2', '\0'}, response);
+}
+
+// Decode function that returns optional auto string
+TEST_F(TestServer1, decodef25)
+{
+    EXPECT_CALL(s0Service, f25()).WillOnce(Return(etl::optional<etl::string_view>{"T1"}));
+    auto response = receive({25});
+    EXPECT_RESPONSE({25, 0x01, 'T', '1', '\0'}, response);
+
+    EXPECT_CALL(s0Service, f25()).WillOnce(Return(etl::optional<etl::string_view>{}));
+    response = receive({25});
+    EXPECT_RESPONSE({25, 0x00}, response);
+}
+
+// Decode function that returns array of auto string
+TEST_F(TestServer1, decodef26)
+{
+    EXPECT_CALL(s0Service, f26()).WillOnce(Return(etl::array<etl::string_view, 3>{"Test1", "T2", "T3"}));
+    auto response = receive({26});
+    EXPECT_RESPONSE({26, 'T', 'e', 's', 't', '1', '\0', 'T', '2', '\0', 'T', '3', '\0'}, response);
 }

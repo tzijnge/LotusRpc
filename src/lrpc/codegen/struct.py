@@ -137,7 +137,7 @@ class StructFileVisitor(LrpcVisitor):
         self.__file(f"{self.__name()} obj;")
 
         for f in self.__descriptor.fields():
-            if f.base_type_is_string():
+            if f.is_fixed_size_string():
                 self.__file(f"const auto {f.name()} = lrpc::read_unchecked<{f.read_type()}>(reader);")
                 self.__file(f"lrpc::copy<{f.read_type()}>({f.name()}, obj.{f.name()});")
             elif f.base_type_is_custom():

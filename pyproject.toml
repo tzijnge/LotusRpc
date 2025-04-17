@@ -60,6 +60,7 @@ local_scheme = "no-local-version"
 
 [tool.pytest.ini_options]
 pythonpath = "src"
+testpaths = ["tests"]
 
 [tool.black]
 line-length = 120

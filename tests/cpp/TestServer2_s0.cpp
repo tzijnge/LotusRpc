@@ -10,12 +10,18 @@ class MockS00Service : public s00ServiceShim
 public:
     MOCK_METHOD(void, f0, (bool p0, const etl::string_view &p1), (override));
     MOCK_METHOD(void, f1, (const etl::string_view &p0, bool p1), (override));
+    MOCK_METHOD(void, f2, (const etl::string_view &p0, const etl::string_view &p1), (override));
 };
 
 class TestServer2 : public ::testing::Test
 {
 public:
     MockS00Service service;
+
+    void SetUp() override
+    {
+        responseBuffer.fill(0xAA);
+    }
 
     etl::span<uint8_t> receive(const std::vector<uint8_t> &bytes)
     {
@@ -54,4 +60,13 @@ TEST_F(TestServer2, decodeF1)
     EXPECT_CALL(service, f1(etl::string_view("Test"), true));
     auto response = receive({1, 'T', 'e', 's', 't', '\0', 0x01});
     EXPECT_RESPONSE({1}, response);
+}
+
+// Decode void function with two auto string first params
+TEST_F(TestServer2, decodeF2)
+{
+    using sv = etl::string_view;
+    EXPECT_CALL(service, f2(sv("T1"), sv("T2")));
+    auto response = receive({2, 'T', '1', '\0', 'T', '2', '\0'});
+    EXPECT_RESPONSE({2}, response);
 }

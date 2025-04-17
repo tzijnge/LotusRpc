@@ -40,12 +40,20 @@ public:
     MOCK_METHOD(void, f5, (const StringStruct &a), (override));
     MOCK_METHOD(StringStruct, f6, (), (override));
     MOCK_METHOD((etl::string<5>), f7, (const etl::string_view &p0), (override));
+    MOCK_METHOD(void, f8, (const etl::span<const etl::string_view> &p0), (override));
+    MOCK_METHOD(void, f9, (const StringStruct2 &a), (override));
+    MOCK_METHOD(StringStruct2, f10, (), (override));
 };
 
 class TestServer2_s1 : public ::testing::Test
 {
 public:
     MockS01Service service;
+
+    void SetUp() override
+    {
+        responseBuffer.fill(0xAA);
+    }
 
     etl::span<uint8_t> receive(const std::vector<uint8_t> &bytes)
     {
@@ -132,6 +140,7 @@ TEST_F(TestServer2_s1, decodeF5)
     expected.aa = "T1";
     expected.b = {"T2", "T3"};
     expected.c = "T4";
+
     EXPECT_CALL(service, f5(expected));
     auto response = receive({5, 'T', '1', '\0', 'T', '2', '\0', 'T', '3', '\0', 0x01, 'T', '4', '\0'});
     EXPECT_RESPONSE({5}, response);
@@ -144,6 +153,7 @@ TEST_F(TestServer2_s1, decodeF6)
     retVal.aa = "T1";
     retVal.b = {"T2", "T3"};
     retVal.c = "T4";
+
     EXPECT_CALL(service, f6()).WillOnce(Return(retVal));
     auto response = receive({6});
     EXPECT_RESPONSE({6, 'T', '1', '\0', 'T', '2', '\0', 'T', '3', '\0', 0x01, 'T', '4', '\0'}, response);
@@ -157,4 +167,40 @@ TEST_F(TestServer2_s1, decodeF7)
     EXPECT_CALL(service, f7(expected)).WillOnce(Return(retVal));
     auto response = receive({7, 'T', '0', '\0'});
     EXPECT_RESPONSE({7, 'T', '1', '2', '3', '4', '\0'}, response);
+}
+
+// Decode void function with array of auto strings param
+TEST_F(TestServer2_s1, decodeF8)
+{
+    using sv = etl::string_view;
+    std::vector<sv> expected{sv("T1"), sv("T2")};
+    EXPECT_CALL(service, f8(SPAN_EQ(expected)));
+    auto response = receive({8, 'T', '1', '\0', 'T', '2', '\0'});
+    EXPECT_RESPONSE({8}, response);
+}
+
+// Decode function that takes custom struct argument
+TEST_F(TestServer2_s1, decodeF9)
+{
+    StringStruct2 expected;
+    expected.aa = "T1";
+    expected.b = {"T2", "T3"};
+    expected.c = "T4";
+
+    EXPECT_CALL(service, f9(expected));
+    auto response = receive({9, 'T', '1', '\0', 'T', '2', '\0', 'T', '3', '\0', 0x01, 'T', '4', '\0'});
+    EXPECT_RESPONSE({9}, response);
+}
+
+// Decode function that returns custom struct
+TEST_F(TestServer2_s1, decodeF10)
+{
+    StringStruct2 retVal;
+    retVal.aa = "T1";
+    retVal.b = {"T2", "T3"};
+    retVal.c = "T4";
+
+    EXPECT_CALL(service, f10()).WillOnce(Return(retVal));
+    auto response = receive({10});
+    EXPECT_RESPONSE({10, 'T', '1', '\0', 'T', '2', '\0', 'T', '3', '\0', 0x01, 'T', '4', '\0'}, response);
 }

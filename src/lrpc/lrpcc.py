@@ -142,7 +142,7 @@ class Lrpcc:
 
         for name, value in response.items():
             post_value = hex(value) if isinstance(value, int) else ""
-            print(f"{name}: {value}{post_value}")
+            print(f"{name}: {value} ({post_value})")
 
     def run(self) -> None:
         cli = ClientCliVisitor(self.__command_handler)

@@ -83,7 +83,7 @@ TEST_F(TestServer2_s1, decodeF0)
     std::vector<sv> expected{sv("T1"), sv("T2")};
     EXPECT_CALL(service, f0(SPAN_EQ(expected)));
     auto response = receive({0, 'T', '1', '\0', 'T', '2', '\0'});
-    EXPECT_RESPONSE({0}, response);
+    EXPECT_RESPONSE({1, 0}, response);
 }
 
 TEST_F(TestServer2_s1, decodeF0WithStringShorterThanMax)
@@ -92,7 +92,7 @@ TEST_F(TestServer2_s1, decodeF0WithStringShorterThanMax)
     std::vector<sv> expected{sv("1"), sv("2")};
     EXPECT_CALL(service, f0(SPAN_EQ(expected)));
     auto response = receive({0, '1', '\0', '2', '\0'});
-    EXPECT_RESPONSE({0}, response);
+    EXPECT_RESPONSE({1, 0}, response);
 }
 
 // Decode function that returns array of strings
@@ -101,7 +101,7 @@ TEST_F(TestServer2_s1, decodeF1)
     etl::array<etl::string<2>, 2> retVal{"T1", "T2"};
     EXPECT_CALL(service, f1()).WillOnce(Return(retVal));
     auto response = receive({1});
-    EXPECT_RESPONSE({1, 'T', '1', '\0', 'T', '2', '\0'}, response);
+    EXPECT_RESPONSE({1, 1, 'T', '1', '\0', 'T', '2', '\0'}, response);
 }
 
 // Decode void function with optional fixed size string param
@@ -111,7 +111,7 @@ TEST_F(TestServer2_s1, decodeF2)
     etl::optional<sv> expected{"T1"};
     EXPECT_CALL(service, f2(expected));
     auto response = receive({2, 0x01, 'T', '1', '\0'});
-    EXPECT_RESPONSE({2}, response);
+    EXPECT_RESPONSE({1, 2}, response);
 }
 
 // Decode void function with optional auto string param
@@ -121,7 +121,7 @@ TEST_F(TestServer2_s1, decodeF3)
     etl::optional<sv> expected{"T1"};
     EXPECT_CALL(service, f3(expected));
     auto response = receive({3, 0x01, 'T', '1', '\0'});
-    EXPECT_RESPONSE({3}, response);
+    EXPECT_RESPONSE({1, 3}, response);
 }
 
 // Decode function that returns optional string
@@ -130,7 +130,7 @@ TEST_F(TestServer2_s1, decodeF4)
     etl::optional<etl::string<2>> expected{"T1"};
     EXPECT_CALL(service, f4()).WillOnce(Return(expected));
     auto response = receive({4});
-    EXPECT_RESPONSE({4, 0x01, 'T', '1', '\0'}, response);
+    EXPECT_RESPONSE({1, 4, 0x01, 'T', '1', '\0'}, response);
 }
 
 // Decode function that takes custom struct argument
@@ -143,7 +143,7 @@ TEST_F(TestServer2_s1, decodeF5)
 
     EXPECT_CALL(service, f5(expected));
     auto response = receive({5, 'T', '1', '\0', 'T', '2', '\0', 'T', '3', '\0', 0x01, 'T', '4', '\0'});
-    EXPECT_RESPONSE({5}, response);
+    EXPECT_RESPONSE({1, 5}, response);
 }
 
 // Decode function that returns custom struct
@@ -156,7 +156,7 @@ TEST_F(TestServer2_s1, decodeF6)
 
     EXPECT_CALL(service, f6()).WillOnce(Return(retVal));
     auto response = receive({6});
-    EXPECT_RESPONSE({6, 'T', '1', '\0', 'T', '2', '\0', 'T', '3', '\0', 0x01, 'T', '4', '\0'}, response);
+    EXPECT_RESPONSE({1, 6, 'T', '1', '\0', 'T', '2', '\0', 'T', '3', '\0', 0x01, 'T', '4', '\0'}, response);
 }
 
 // Decode function that takes auto string argument and returns fixed size string
@@ -166,7 +166,7 @@ TEST_F(TestServer2_s1, decodeF7)
     etl::string_view expected{"T0"};
     EXPECT_CALL(service, f7(expected)).WillOnce(Return(retVal));
     auto response = receive({7, 'T', '0', '\0'});
-    EXPECT_RESPONSE({7, 'T', '1', '2', '3', '4', '\0'}, response);
+    EXPECT_RESPONSE({1, 7, 'T', '1', '2', '3', '4', '\0'}, response);
 }
 
 // Decode void function with array of auto strings param
@@ -176,7 +176,7 @@ TEST_F(TestServer2_s1, decodeF8)
     std::vector<sv> expected{sv("T1"), sv("T2")};
     EXPECT_CALL(service, f8(SPAN_EQ(expected)));
     auto response = receive({8, 'T', '1', '\0', 'T', '2', '\0'});
-    EXPECT_RESPONSE({8}, response);
+    EXPECT_RESPONSE({1, 8}, response);
 }
 
 // Decode function that takes custom struct argument
@@ -189,7 +189,7 @@ TEST_F(TestServer2_s1, decodeF9)
 
     EXPECT_CALL(service, f9(expected));
     auto response = receive({9, 'T', '1', '\0', 'T', '2', '\0', 'T', '3', '\0', 0x01, 'T', '4', '\0'});
-    EXPECT_RESPONSE({9}, response);
+    EXPECT_RESPONSE({1, 9}, response);
 }
 
 // Decode function that returns custom struct
@@ -202,5 +202,5 @@ TEST_F(TestServer2_s1, decodeF10)
 
     EXPECT_CALL(service, f10()).WillOnce(Return(retVal));
     auto response = receive({10});
-    EXPECT_RESPONSE({10, 'T', '1', '\0', 'T', '2', '\0', 'T', '3', '\0', 0x01, 'T', '4', '\0'}, response);
+    EXPECT_RESPONSE({1, 10, 'T', '1', '\0', 'T', '2', '\0', 'T', '3', '\0', 0x01, 'T', '4', '\0'}, response);
 }

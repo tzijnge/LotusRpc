@@ -1,3 +1,4 @@
+// This file has been generated with LRPC version 0.9.4.dev0
 #pragma once
 #include "Service.hpp"
 #include <etl/array.h>
@@ -13,8 +14,19 @@ private:
     class NullService : public Service
     {
     public:
-        uint32_t id() const override { return 0; };
-        void invoke(Reader&, Writer&) override {};
+        uint8_t id() const override { return 0; };
+        bool invoke(Reader&, Writer& writer) override
+        {
+            writer.write_unchecked<uint8_t>(0xFF); // service ID
+            writer.write_unchecked<uint8_t>(0); // function ID
+            writer.write_unchecked<uint8_t>(0); // error type
+            writer.write_unchecked<int32_t>(0); // p0
+            writer.write_unchecked<int32_t>(0); // p1
+            writer.write_unchecked<int32_t>(0); // p2
+            writer.write_unchecked<int32_t>(0); // p3
+
+            return true;
+        };
     };
 
 public:
@@ -62,6 +74,8 @@ private:
 
     void invokeService()
     {
+        static NullService nullService;
+
         Service::Reader reader(receiveBuffer.begin(), receiveBuffer.end(), etl::endian::little);
         Service::Writer writer(sendBuffer.begin(), sendBuffer.end(), etl::endian::little);
 
@@ -69,9 +83,17 @@ private:
         writer.write_unchecked<uint8_t>(0); // placeholder for message size
 
         auto serviceId = reader.read_unchecked<uint8_t>();
-        writer.write_unchecked<uint8_t>(serviceId);
 
-        services.at(serviceId)->invoke(reader, writer);
+        bool serviceOk = serviceId < services.size();
+        if (serviceOk)
+        {
+            serviceOk = services.at(serviceId)->invoke(reader, writer);
+        }
+
+        if (!serviceOk)
+        {
+            nullService.invoke(reader, writer);
+        }
 
         sendBuffer[0] = static_cast<uint8_t>(writer.size_bytes());
 

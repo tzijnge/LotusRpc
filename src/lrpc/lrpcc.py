@@ -1,14 +1,18 @@
 """LRPC client CLI"""
 
+import importlib.util
 import logging
 import os
+import traceback
 from glob import glob
+from importlib import import_module
 from os import path
+from pathlib import Path
 from typing import Any, Union
-from collections.abc import Callable
+
 import click
-import serial
 import yaml
+
 from lrpc.client import ClientCliVisitor, LrpcClient
 from lrpc.utils import load_lrpc_def_from_url
 
@@ -19,6 +23,7 @@ LRPCC_CONFIG_YAML = "lrpcc.config.yaml"
 DEFINITION_URL = "definition_url"
 TRANSPORT_TYPE = "transport_type"
 TRANSPORT_PARAMS = "transport_params"
+LOG_LEVEL = "log_level"
 
 
 def __load_config() -> dict[str, Any]:
@@ -109,30 +114,62 @@ def create(definition_url: str, transport_type: str) -> None:
 # pylint: disable = too-few-public-methods
 class Lrpcc:
     def __init__(self, config: dict[str, Any]) -> None:
-        input_file = config[DEFINITION_URL]
-        self.lrpc_def = load_lrpc_def_from_url(input_file, warnings_as_errors=True)
+        self.__set_log_level(config.get(LOG_LEVEL, "INFO"))
+
+        def_url = config[DEFINITION_URL]
+        self.lrpc_def = load_lrpc_def_from_url(def_url, warnings_as_errors=True)
 
         self.client = LrpcClient(self.lrpc_def)
-        self.transport_type: str = config[TRANSPORT_TYPE]
-        self.transport_params: dict[str, Any] = config[TRANSPORT_PARAMS]
 
-        if self.transport_type == "serial":
-            self.__communicate: Callable[[bytes], dict[str, Any]] = self.__communicate_serial
+        self.__set_transport(config[TRANSPORT_TYPE], config[TRANSPORT_PARAMS])
+
+
+    @classmethod
+    def __set_log_level(cls, log_level: str) -> None:
+        log_level_map = logging.getLevelNamesMapping()
+        if log_level not in log_level_map:
+            logging.info("Invalid log level: %s. Using log level INFO", log_level)
         else:
-            raise NotImplementedError(f"Unsupported transport type: {self.transport_type}")
+            logging.getLogger().setLevel(log_level_map[log_level])
 
-    def __communicate_serial(self, encoded: bytes) -> Union[dict[str, Any], LrpcClient.VoidResponse]:
-        with serial.Serial(**self.transport_params) as transport:
-            transport.write(encoded)
-            while True:
-                received = transport.read(1)
-                if len(received) == 0:
-                    return {"Error": "Timeout waiting for response"}
+    def __set_transport(self, transport_type: str, transport_params: dict[str, Any]) -> None:
+        transport_plugin = Path(os.getcwd() + f"/lrpcc_{transport_type}.py")
+        if transport_plugin.exists():
+            spec = importlib.util.spec_from_file_location(f".lrpcc_{transport_type}", os.getcwd() + f"/lrpcc_{transport_type}.py")
+            if spec is not None and spec.loader is not None:
+                logging.debug("Using transport plugin from: %s", transport_plugin)
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+            else:
+                raise ImportError(f"Unable to load transport plugin from {transport_plugin}")
+        else:
+            module = import_module(f"lrpc.plugins.lrpcc_{transport_type}")
+            logging.debug("Using built-in LRPCC transport %s", transport_type)
 
-                response = self.client.process(received)
+        if not hasattr(module, "Transport"):
+            raise ImportError(f"No class named 'Transport' in {module}")
 
-                if not isinstance(response, LrpcClient.IncompleteResponse):
-                    return response
+        transport_module = getattr(module, "Transport")
+        if not hasattr(transport_module, "read"):
+            raise ImportError(f"No method named 'read' in {transport_module}")
+
+        if not hasattr(transport_module, "write"):
+            raise ImportError(f"No method named 'write' in {transport_module}")
+
+        logging.debug("Constructing LRPCC transport with these params: %s", transport_params)
+        self.__transport = transport_module(**transport_params)
+
+    def __communicate(self, encoded: bytes) -> Union[dict[str, Any], LrpcClient.VoidResponse]:
+        self.__transport.write(encoded)
+        while True:
+            received = self.__transport.read(1)
+            if len(received) == 0:
+                return {"Error": "Timeout waiting for response"}
+
+            response = self.client.process(received)
+
+            if not isinstance(response, LrpcClient.IncompleteResponse):
+                return response
 
     def __command_handler(self, service_name: str, function_name: str, **kwargs: Any) -> None:
         encoded = self.client.encode(service_name, function_name, **kwargs)
@@ -141,8 +178,8 @@ class Lrpcc:
             return
 
         for name, value in response.items():
-            post_value = hex(value) if isinstance(value, int) else ""
-            print(f"{name}: {value} ({post_value})")
+            post_value = f" ({hex(value)})" if isinstance(value, int) else ""
+            print(f"{name}: {value}{post_value}")
 
     def run(self) -> None:
         cli = ClientCliVisitor(self.__command_handler)
@@ -170,6 +207,7 @@ def run_cli() -> None:
     except Exception as e:
         logging.error("Error running lrpcc for %s", config[DEFINITION_URL])
         logging.error(str(e))
+        print(traceback.format_exc())
 
 
 if __name__ == "__main__":

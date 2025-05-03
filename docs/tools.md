@@ -63,6 +63,11 @@ transport_params:
   port: 'COM30'
   baudrate: 16384
   timeout: 2
+log_level: INFO
 ```
 
-The fields `definition_url`, `transport_type` and `transport_params` are required. `definition_url` is the path of the LRPC definition file and can be relative to *lrpcc.config.yaml* or an absolute path. The subfields of `transport_params` are passed as keyword arguments to the transport class. `lrpcc` uses [pyserial](https://pythonhosted.org/pyserial/) for serial communication, so the `transport_params` can be any of the constructor parameters of the [serial.Serial](https://pythonhosted.org/pyserial/pyserial_api.html#serial.Serial) class. `lrpcc` currently only supports the serial transport type.
+The field `log_level` is optional. If used, it should contain a [standard Python log level](https://docs.python.org/3/howto/logging.html#logging-levels)
+
+The fields `definition_url`, `transport_type` and `transport_params` are required. `definition_url` is the path of the LRPC definition file and can be relative to *lrpcc.config.yaml* or an absolute path. The subfields of `transport_params` are passed as keyword arguments to the transport class. `lrpcc` uses [pyserial](https://pythonhosted.org/pyserial/) for serial communication, so the `transport_params` can be any of the constructor parameters of the [serial.Serial](https://pythonhosted.org/pyserial/pyserial_api.html#serial.Serial) class.
+
+`lrpcc` currently only supports the serial transport type, but it's easy to write your own transport. See [Extending LRPC](extending_lrpc.md).

@@ -24,8 +24,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: "Install LotusRPC"
         run: pip install .
-      - name: "Install PyTest"
-        run: pip install pytest
+      - name: "Install requirements"
+        run: pip install -r requirements/dev.txt
       - name: "Run unit tests"
         run: pytest
       - name: "Run LRPC generator"

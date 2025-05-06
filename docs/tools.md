@@ -71,3 +71,25 @@ The field `log_level` is optional. If used, it should contain a [standard Python
 The fields `definition_url`, `transport_type` and `transport_params` are required. `definition_url` is the path of the LRPC definition file and can be relative to *lrpcc.config.yaml* or an absolute path. The subfields of `transport_params` are passed as keyword arguments to the transport class. `lrpcc` uses [pyserial](https://pythonhosted.org/pyserial/) for serial communication, so the `transport_params` can be any of the constructor parameters of the [serial.Serial](https://pythonhosted.org/pyserial/pyserial_api.html#serial.Serial) class.
 
 `lrpcc` currently only supports the serial transport type, but it's easy to write your own transport. See [Extending LRPC](extending_lrpc.md).
+
+### Sending parameters with LRPCC
+Sending function parameters with LRPC is easy, just add every parameter on the command line. Here's a cheatsheet:
+
+```
+int:          lrpcc s f0 123
+float/double: lrpcc s f1 123.456
+signed int:   lrpcc s f2 -123
+string:       lrpcc s f3 my_string
+string        lrpcc s f3 "my string with spaces"
+bool:         lrpcc s f4 false
+bool:         lrpcc s f4 1
+bool:         lrpcc s f4 yes
+enum:         lrpcc s f5 MONDAY
+optional:     lrpcc s f6 _
+optional:     lrpcc s f6 my_string
+array of 4:   lrpcc s f7 1 2 3 4
+```
+
+Parameters that have an optional value can be entered the same as the underlying type. If the optional does not have a value use a single underscore
+
+Struct parameters are not supported.

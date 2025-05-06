@@ -1,0 +1,5 @@
+definition_url: ../testdata/TestServer1.lrpc.yaml
+transport_params:
+  file_url: server.yaml
+transport_type: file
+log_level: INFO

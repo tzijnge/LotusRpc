@@ -93,7 +93,7 @@ services:
           - name: s2
             type: string_4
         returns:
-          - name: r2
+          - name: r1
             type: string_4
           - name: r2
             type: string_4

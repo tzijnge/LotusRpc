@@ -25,6 +25,16 @@ TRANSPORT_TYPE = "transport_type"
 TRANSPORT_PARAMS = "transport_params"
 LOG_LEVEL = "log_level"
 
+log_level_map = {
+    "CRITICAL": logging.CRITICAL,
+    "FATAL": logging.FATAL,
+    "ERROR": logging.ERROR,
+    "WARN": logging.WARNING,
+    "WARNING": logging.WARNING,
+    "INFO": logging.INFO,
+    "DEBUG": logging.DEBUG,
+    "NOTSET": logging.NOTSET,
+}
 
 def __load_config() -> dict[str, Any]:
     configs = glob(f"**/{LRPCC_CONFIG_YAML}", recursive=True)
@@ -126,7 +136,6 @@ class Lrpcc:
 
     @classmethod
     def __set_log_level(cls, log_level: str) -> None:
-        log_level_map = logging.getLevelNamesMapping()
         if log_level not in log_level_map:
             logging.info("Invalid log level: %s. Using log level INFO", log_level)
         else:

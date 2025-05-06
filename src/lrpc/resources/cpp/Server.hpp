@@ -1,4 +1,3 @@
-// This file has been generated with LRPC version 0.9.4.dev0
 #pragma once
 #include "Service.hpp"
 #include <etl/array.h>

@@ -27,3 +27,14 @@ semantic analysis
 #   - At a later stage it may become possible to annotate a function to make it return something by reference
 # 5. The implication of returning things by value is that it is not possible to return an auto string
 # 6. The implication of passing structs by value is that it structs cannot have an auto string member
+
+
+- return auto string: possible, but returned string must not be a temporary
+- return optional auto string: possible, but returned string must not be a temporary
+- return array of auto string: possible but returned strings must not be temporaries
+- return struct with auto string member: possible, but string member must not be a temporary
+
+- auto string parameter: possible, but string must be consumed in called function, string_view must not be stored
+- optional auto string parameter: possible, but string must be consumed in called function, string_view must not be stored
+- array of auto string parameter: possible, but strings must be consumed in called function, string_view must not be stored
+- struct with auto string member: possible, but strings must be consumed in called function, string_view must not be stored

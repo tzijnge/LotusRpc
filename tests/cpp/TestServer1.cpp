@@ -2,7 +2,8 @@
 #include "TestServerBase.hpp"
 
 using ::testing::Return;
-
+namespace
+{
 class Mockservice : public ts1::s0ServiceShim
 {
 public:
@@ -34,6 +35,7 @@ public:
     MOCK_METHOD((etl::optional<etl::string_view>), f25, (), (override));
     MOCK_METHOD((etl::array<etl::string_view, 3>), f26, (), (override));
 };
+}
 
 using TestServer1 = TestServerBase<Mockservice>;
 

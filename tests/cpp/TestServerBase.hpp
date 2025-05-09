@@ -52,6 +52,8 @@ inline std::vector<uint8_t> hexToBytes(const etl::string_view hex)
     return bytes;
 }
 
+namespace
+{
 template <typename Service>
 class TestServerBase : public ::testing::Test
 {
@@ -63,7 +65,7 @@ public:
 
     etl::span<uint8_t> receive(const etl::string_view hex)
     {
-        return receive(hexToBytes(hex));
+        return receive(::hexToBytes(hex));
     }
 
 
@@ -90,3 +92,4 @@ public:
 
     Service service;
 };
+}

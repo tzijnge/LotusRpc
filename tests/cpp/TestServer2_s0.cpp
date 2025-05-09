@@ -1,5 +1,5 @@
 #include "generated/Server2/Server2.hpp"
-#include "TestServerBase.hpp"
+#include "TestUtils.hpp"
 
 using ::testing::Return;
 
@@ -11,7 +11,7 @@ public:
     MOCK_METHOD(void, f2, (const etl::string_view &p0, const etl::string_view &p1), (override));
 };
 
-using TestServer2 = TestServerBase<MockS00Service>;
+using TestServer2 = testutils::TestServerBase<MockS00Service>;
 
 static_assert(std::is_same<Server2, lrpc::Server<1, 100, 256>>::value, "RX and/or TX buffer size are unequal to the definition file");
 

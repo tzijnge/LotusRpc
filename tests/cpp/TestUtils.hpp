@@ -6,11 +6,13 @@
 #include <etl/array.h>
 #include <etl/span.h>
 
-#ifdef _MSC_VER
-# pragma warning(push)
-# pragma warning(disable:4100)
-#endif
+namespace testutils
+{
 
+    #ifdef _MSC_VER
+    # pragma warning(push)
+    # pragma warning(disable:4100)
+    #endif
 MATCHER_P(SPAN_EQ, e, "Equality matcher for etl::span")
 {
     if (e.size() != arg.size())
@@ -52,8 +54,6 @@ inline std::vector<uint8_t> hexToBytes(const etl::string_view hex)
     return bytes;
 }
 
-namespace
-{
 template <typename Service>
 class TestServerBase : public ::testing::Test
 {
@@ -65,7 +65,7 @@ public:
 
     etl::span<uint8_t> receive(const etl::string_view hex)
     {
-        return receive(::hexToBytes(hex));
+        return receive(testutils::hexToBytes(hex));
     }
 
 
@@ -85,7 +85,7 @@ public:
     void EXPECT_RESPONSE(const etl::string_view expected, const etl::span<uint8_t> actual) const
     {
         const std::vector<uint8_t> actualVec{actual.begin(), actual.end()};
-        EXPECT_EQ(::hexToBytes(expected), actualVec);
+        EXPECT_EQ(testutils::hexToBytes(expected), actualVec);
     }
 
     etl::array<uint8_t, 256> responseBuffer {};

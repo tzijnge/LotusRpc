@@ -1,6 +1,6 @@
 #include "generated/Server3/Server3.hpp"
 #include <sstream>
-#include "TestServerBase.hpp"
+#include "TestUtils.hpp"
 
 namespace
 {
@@ -33,7 +33,7 @@ public:
 
     void receive(const etl::string_view hex)
     {
-        lrpcReceive(::hexToBytes(hex));
+        lrpcReceive(testutils::hexToBytes(hex));
     }
 
     void lrpcTransmit(const etl::span<const uint8_t> bytes) override

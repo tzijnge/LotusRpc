@@ -1,5 +1,5 @@
 #include "generated/Server1/Server1.hpp"
-#include "TestServerBase.hpp"
+#include "TestUtils.hpp"
 
 using ::testing::Return;
 namespace
@@ -37,7 +37,7 @@ public:
 };
 }
 
-using TestServer1 = TestServerBase<Mockservice>;
+using TestServer1 = testutils::TestServerBase<Mockservice>;
 
 static_assert(std::is_same<ts1::Server1, lrpc::Server<0, 100, 200>>::value, "RX and/or TX buffer size are unequal to the definition file");
 
@@ -89,7 +89,7 @@ TEST_F(TestServer1, decodeF4)
 TEST_F(TestServer1, decodeF5)
 {
     std::vector<uint16_t> expected{0xBBAA, 0xDDCC};
-    EXPECT_CALL(service, f5(SPAN_EQ(expected)));
+    EXPECT_CALL(service, f5(testutils::SPAN_EQ(expected)));
     auto response = receive("05AABBCCDD");
     EXPECT_RESPONSE("0005", response);
 }
@@ -133,7 +133,7 @@ TEST_F(TestServer1, decodeF9)
     std::vector<ts1::CompositeData2> expected{
         ts1::CompositeData2{0xAA, 0xBB},
         ts1::CompositeData2{0xCC, 0xDD}};
-    EXPECT_CALL(service, f9(SPAN_EQ(expected)));
+    EXPECT_CALL(service, f9(testutils::SPAN_EQ(expected)));
     auto response = receive("09AABBCCDD");
     EXPECT_RESPONSE("0009", response);
 }

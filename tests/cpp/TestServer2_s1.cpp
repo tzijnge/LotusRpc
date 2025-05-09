@@ -1,5 +1,5 @@
 #include "generated/Server2/Server2.hpp"
-#include "TestServerBase.hpp"
+#include "TestUtils.hpp"
 
 using ::testing::Return;
 
@@ -19,14 +19,14 @@ public:
     MOCK_METHOD(StringStruct2, f10, (), (override));
 };
 
-using TestServer2_s1 = TestServerBase<MockS01Service>;
+using TestServer2_s1 = testutils::TestServerBase<MockS01Service>;
 
 // Decode void function with array of strings param
 TEST_F(TestServer2_s1, decodeF0)
 {
     using sv = etl::string_view;
     std::vector<sv> expected{sv("T1"), sv("T2")};
-    EXPECT_CALL(service, f0(SPAN_EQ(expected)));
+    EXPECT_CALL(service, f0(testutils::SPAN_EQ(expected)));
     auto response = receive("00543100543200");
     EXPECT_RESPONSE("0100", response);
 }
@@ -35,7 +35,7 @@ TEST_F(TestServer2_s1, decodeF0WithStringShorterThanMax)
 {
     using sv = etl::string_view;
     std::vector<sv> expected{sv("1"), sv("2")};
-    EXPECT_CALL(service, f0(SPAN_EQ(expected)));
+    EXPECT_CALL(service, f0(testutils::SPAN_EQ(expected)));
     auto response = receive("0031003200");
     EXPECT_RESPONSE("0100", response);
 }
@@ -119,7 +119,7 @@ TEST_F(TestServer2_s1, decodeF8)
 {
     using sv = etl::string_view;
     std::vector<sv> expected{sv("T1"), sv("T2")};
-    EXPECT_CALL(service, f8(SPAN_EQ(expected)));
+    EXPECT_CALL(service, f8(testutils::SPAN_EQ(expected)));
     auto response = receive("08543100543200");
     EXPECT_RESPONSE("0108", response);
 }

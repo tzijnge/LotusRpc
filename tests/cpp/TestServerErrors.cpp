@@ -4,19 +4,21 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-class s00Service : public srv3::s00ServiceShim
+namespace
+{
+class S00Service : public srv3::s00ServiceShim
 {
 public:
-    uint8_t f0(uint8_t p1) override
+    uint8_t f0(const uint8_t p1) override
     {
         return p1;
     }
 };
 
-class s01Service : public srv3::s01ServiceShim
+class S01Service : public srv3::s01ServiceShim
 {
 public:
-    uint16_t f0(uint16_t p1) override
+    uint16_t f0(const uint16_t p1) override
     {
         return p1;
     }
@@ -36,7 +38,7 @@ public:
         lrpcReceive(bytes);
     }
 
-    void lrpcTransmit(etl::span<const uint8_t> bytes) override
+    void lrpcTransmit(const etl::span<const uint8_t> bytes) override
     {
         transmitted.insert(transmitted.end(), bytes.begin(), bytes.end());
     }
@@ -47,10 +49,10 @@ public:
     }
 
     std::vector<uint8_t> transmitted;
-    s00Service service00;
-    s01Service service01;
+    S00Service service00;
+    S01Service service01;
 };
-
+}
 
 TEST_F(TestServerErrors, decodeUnknownServiceLessThanMaxServiceId)
 {
@@ -79,4 +81,3 @@ TEST_F(TestServerErrors, decodeUnknownFunction)
     receive({0x05, 0x05, 0xAB, 0xCC, 0xDD});
     EXPECT_VECTOR_EQ({0x14, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, transmitted);
 }
-

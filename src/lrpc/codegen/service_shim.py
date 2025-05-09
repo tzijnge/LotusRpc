@@ -24,7 +24,6 @@ class ServiceShimVisitor(LrpcVisitor):
         self.__function_name: str
         self.__service_name: str
         self.__service_id: int
-        self.__number_functions = 0
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
         self.__namespace = lrpc_def.namespace()
@@ -37,7 +36,6 @@ class ServiceShimVisitor(LrpcVisitor):
         self.__function_shims = []
         self.__service_name = service.name()
         self.__service_id = service.id()
-        self.__number_functions = len(service.functions())
 
         write_file_banner(self.__file)
         self.__write_include_guard()

@@ -17,7 +17,9 @@ MATCHER_P(SPAN_EQ, e, "Equality matcher for etl::span")
     {
         return false;
     }
-    for (size_t i = 0; i < e.size(); ++i)
+
+    const auto size = e.size();
+    for (size_t i = 0; i < size; ++i)
     {
         if (e[i] != arg[i])
         {
@@ -31,9 +33,9 @@ MATCHER_P(SPAN_EQ, e, "Equality matcher for etl::span")
 # pragma warning(pop)
 #endif
 
-inline std::vector<uint8_t> hexToBytes(etl::string_view hex)
+inline std::vector<uint8_t> hexToBytes(const etl::string_view hex)
 {
-    if (hex.size() % 2 != 0)
+    if ((hex.size() % 2) != 0)
     {
         return {};
     }
@@ -71,18 +73,20 @@ public:
 
         lrpc::Service::Reader reader(s.begin(), s.end(), etl::endian::little);
         lrpc::Service::Writer writer(responseBuffer.begin(), responseBuffer.end(), etl::endian::little);
-        service.invoke(reader, writer);
+        auto invokeOk = service.invoke(reader, writer);
+
+        EXPECT_TRUE(invokeOk);
 
         return {responseBuffer.begin(), writer.size_bytes()};
     }
 
-    void EXPECT_RESPONSE(const etl::string_view expected, const etl::span<uint8_t> actual)
+    void EXPECT_RESPONSE(const etl::string_view expected, const etl::span<uint8_t> actual) const
     {
-        std::vector<uint8_t> actualVec{actual.begin(), actual.end()};
-        EXPECT_EQ(hexToBytes(expected), actualVec);
+        const std::vector<uint8_t> actualVec{actual.begin(), actual.end()};
+        EXPECT_EQ(::hexToBytes(expected), actualVec);
     }
 
-    etl::array<uint8_t, 256> responseBuffer;
+    etl::array<uint8_t, 256> responseBuffer {};
 
     Service service;
 };

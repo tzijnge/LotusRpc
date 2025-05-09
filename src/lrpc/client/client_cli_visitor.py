@@ -148,9 +148,6 @@ class ClientCliVisitor(LrpcVisitor):
         if param.base_type_is_string():
             t = click.STRING
 
-        if param.base_type_is_enum():
-            t = click.Choice(self.enum_values[param.base_type()])
-
         if param.base_type_is_float():
             t = click.FLOAT
 
@@ -158,10 +155,14 @@ class ClientCliVisitor(LrpcVisitor):
             t = click.BOOL
 
         if param.base_type_is_custom():
-            t = YamlParamType()
+            if param.base_type_is_enum():
+                t = click.Choice(self.enum_values[param.base_type()])
+
+            if param.base_type_is_struct():
+                t = YamlParamType()
 
         if param.is_optional():
-            return OptionalParamType(t)
+            t = OptionalParamType(t)
 
         return t
 

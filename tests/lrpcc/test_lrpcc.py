@@ -22,4 +22,5 @@ def test_lrpcc(cli: str, response: str) -> None:
     result = subprocess.run(cli, shell=True, capture_output=True, check=False)
 
     assert result.returncode == 0
+    assert result.stderr.decode().strip() == ""
     assert result.stdout.decode().strip() == response.replace("\r\n", os.linesep)

@@ -7,8 +7,7 @@
 # TODO: LRPC-91 LRPCC fails on array parameter
 # - {cli: "lrpcc s0 f5 43981 52671", write: "070005CDABBFCD", read: "030005", response: ""}
 - {cli: 'lrpcc s0 f6 "lorem ipsum"', write: "1800066C6F72656D20697073756D00000000000000000000", read: "030006", response: ""}
-# TODO: LRPC-94 LRPCC fails on enum parameter
-# - {cli: "lrpcc s0 f8 V2", write: "04000802", read: "030008", response: ""}
+- {cli: "lrpcc s0 f8 V2", write: "04000802", read: "030008", response: ""}
 - {cli: "lrpcc s0 f11 171 205", write: "05000BABCD", read: "03000B", response: ""}
 - {cli: "lrpcc s0 f12", write: "03000C", read: "04000CAB", response: "a: 171 (0xab)"}
 - {cli: "lrpcc s0 f13", write: "03000D", read: "05000DCDAB", response: "a: 43981 (0xabcd)"}

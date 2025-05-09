@@ -9,10 +9,11 @@
 namespace testutils
 {
 
-    #ifdef _MSC_VER
-    # pragma warning(push)
-    # pragma warning(disable:4100)
-    #endif
+#ifdef _MSC_VER
+# pragma warning(push)
+# pragma warning(disable:4100)
+#endif
+
 MATCHER_P(SPAN_EQ, e, "Equality matcher for etl::span")
 {
     if (e.size() != arg.size())

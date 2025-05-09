@@ -2,7 +2,7 @@
 #include "generated/Server2/Server2.hpp"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <etl/to_arithmetic.h>
+#include "TestServerBase.hpp"
 
 using ::testing::Return;
 
@@ -14,60 +14,7 @@ public:
     MOCK_METHOD(void, f2, (const etl::string_view &p0, const etl::string_view &p1), (override));
 };
 
-class TestServer2 : public ::testing::Test
-{
-public:
-    MockS00Service service;
-
-    std::vector<uint8_t> hexToBytes(etl::string_view hex)
-    {
-        if (hex.size() % 2 != 0)
-        {
-            return {};
-        }
-
-        const auto numberBytes = hex.size() / 2;
-
-        std::vector<uint8_t> bytes;
-
-        for (auto i = 0U; i < numberBytes; i += 1)
-        {
-            bytes.emplace_back(etl::to_arithmetic<uint8_t>(hex.substr(i * 2, 2), etl::hex));
-        }
-
-        return bytes;
-    }
-
-    void SetUp() override
-    {
-        responseBuffer.fill(0xAA);
-    }
-
-    etl::span<uint8_t> receive(const etl::string_view hex)
-    {
-        return receive(hexToBytes(hex));
-    }
-
-    etl::span<uint8_t> receive(const std::vector<uint8_t> &bytes)
-    {
-        const etl::span<const uint8_t> s(bytes.begin(), bytes.end());
-
-        lrpc::Service::Reader reader(s.begin(), s.end(), etl::endian::little);
-        lrpc::Service::Writer writer(responseBuffer.begin(), responseBuffer.end(), etl::endian::little);
-        service.invoke(reader, writer);
-
-        return {responseBuffer.begin(), writer.size_bytes()};
-    }
-
-    void EXPECT_RESPONSE(const etl::string_view expected, const etl::span<uint8_t> actual)
-    {
-        std::vector<uint8_t> actualVec{actual.begin(), actual.end()};
-        EXPECT_EQ(hexToBytes(expected), actualVec);
-    }
-
-private:
-    etl::array<uint8_t, 256> responseBuffer;
-};
+using TestServer2 = TestServerBase<MockS00Service>;
 
 static_assert(std::is_same<Server2, lrpc::Server<1, 100, 256>>::value, "RX and/or TX buffer size are unequal to the definition file");
 

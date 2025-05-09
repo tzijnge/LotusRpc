@@ -1,38 +1,10 @@
 #include "generated/Server1/Server1.hpp"
 #include "generated/Server1/s0_ServiceShim.hpp"
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
-#include <tuple>
-#include <etl/to_arithmetic.h>
+#include "TestServerBase.hpp"
 
 using ::testing::Return;
 
-#ifdef _MSC_VER
-# pragma warning(push)
-# pragma warning(disable:4100)
-#endif
-
-MATCHER_P(SPAN_EQ, e, "Equality matcher for etl::span")
-{
-    if (e.size() != arg.size())
-    {
-        return false;
-    }
-    for (size_t i = 0; i < e.size(); ++i)
-    {
-        if (e[i] != arg[i])
-        {
-            return false;
-        }
-    }
-    return true;
-}
-
-#ifdef _MSC_VER
-# pragma warning(pop)
-#endif
-
-class MockS0Service : public ts1::s0ServiceShim
+class Mockservice : public ts1::s0ServiceShim
 {
 public:
     MOCK_METHOD(void, f0, (), (override));
@@ -64,68 +36,15 @@ public:
     MOCK_METHOD((etl::array<etl::string_view, 3>), f26, (), (override));
 };
 
-class TestServer1 : public ::testing::Test
-{
-public:
-    MockS0Service s0Service;
-
-    std::vector<uint8_t> hexToBytes(etl::string_view hex)
-    {
-        if (hex.size() % 2 != 0)
-        {
-            return {};
-        }
-
-        const auto numberBytes = hex.size() / 2;
-
-        std::vector<uint8_t> bytes;
-
-        for (auto i = 0U; i < numberBytes; i += 1)
-        {
-            bytes.emplace_back(etl::to_arithmetic<uint8_t>(hex.substr(i * 2, 2), etl::hex));
-        }
-
-        return bytes;
-    }
-
-    void SetUp() override
-    {
-        responseBuffer.fill(0xAA);
-    }
-
-    etl::span<uint8_t> receive(const etl::string_view hex)
-    {
-        return receive(hexToBytes(hex));
-    }
-
-    etl::span<uint8_t> receive(const std::vector<uint8_t> &bytes)
-    {
-        const etl::span<const uint8_t> s(bytes.begin(), bytes.end());
-
-        lrpc::Service::Reader reader(s.begin(), s.end(), etl::endian::little);
-        lrpc::Service::Writer writer(responseBuffer.begin(), responseBuffer.end(), etl::endian::little);
-        s0Service.invoke(reader, writer);
-
-        return {responseBuffer.begin(), writer.size_bytes()};
-    }
-
-    void EXPECT_RESPONSE(const etl::string_view expected, const etl::span<uint8_t> actual)
-    {
-        std::vector<uint8_t> actualVec{actual.begin(), actual.end()};
-        EXPECT_EQ(hexToBytes(expected), actualVec);
-    }
-
-private:
-    etl::array<uint8_t, 256> responseBuffer;
-};
+using TestServer1 = TestServerBase<Mockservice>;
 
 static_assert(std::is_same<ts1::Server1, lrpc::Server<0, 100, 200>>::value, "RX and/or TX buffer size are unequal to the definition file");
 
 // Decode void function f0. Make sure f1 is not called
 TEST_F(TestServer1, decodeF0)
 {
-    EXPECT_CALL(s0Service, f0()).Times(1);
-    EXPECT_CALL(s0Service, f1()).Times(0);
+    EXPECT_CALL(service, f0()).Times(1);
+    EXPECT_CALL(service, f1()).Times(0);
 
     auto response = receive("00");
     EXPECT_RESPONSE("0000", response);
@@ -134,8 +53,8 @@ TEST_F(TestServer1, decodeF0)
 // Decode void function f1. Make sure f0 is not called
 TEST_F(TestServer1, decodeF1)
 {
-    EXPECT_CALL(s0Service, f0()).Times(0);
-    EXPECT_CALL(s0Service, f1()).Times(1);
+    EXPECT_CALL(service, f0()).Times(0);
+    EXPECT_CALL(service, f1()).Times(1);
 
     auto response = receive("01");
     EXPECT_RESPONSE("0001", response);
@@ -144,7 +63,7 @@ TEST_F(TestServer1, decodeF1)
 // Decode function f2 with uint8_t arg
 TEST_F(TestServer1, decodeF2)
 {
-    EXPECT_CALL(s0Service, f2(0x7B));
+    EXPECT_CALL(service, f2(0x7B));
     auto response = receive("027B");
     EXPECT_RESPONSE("0002", response);
 }
@@ -152,7 +71,7 @@ TEST_F(TestServer1, decodeF2)
 // Decode function f3 with uint16_t arg
 TEST_F(TestServer1, decodeF3)
 {
-    EXPECT_CALL(s0Service, f3(0xCDAB));
+    EXPECT_CALL(service, f3(0xCDAB));
     auto response = receive("03ABCD");
     EXPECT_RESPONSE("0003", response);
 }
@@ -160,7 +79,7 @@ TEST_F(TestServer1, decodeF3)
 // Decode function f4 with float arg
 TEST_F(TestServer1, decodeF4)
 {
-    EXPECT_CALL(s0Service, f4(123.456F));
+    EXPECT_CALL(service, f4(123.456F));
     auto response = receive("0479E9F642");
     EXPECT_RESPONSE("0004", response);
 }
@@ -169,7 +88,7 @@ TEST_F(TestServer1, decodeF4)
 TEST_F(TestServer1, decodeF5)
 {
     std::vector<uint16_t> expected{0xBBAA, 0xDDCC};
-    EXPECT_CALL(s0Service, f5(SPAN_EQ(expected)));
+    EXPECT_CALL(service, f5(SPAN_EQ(expected)));
     auto response = receive("05AABBCCDD");
     EXPECT_RESPONSE("0005", response);
 }
@@ -177,7 +96,7 @@ TEST_F(TestServer1, decodeF5)
 // Decode function f6 with string arg
 TEST_F(TestServer1, decodeF6)
 {
-    EXPECT_CALL(s0Service, f6(etl::string_view("Test")));
+    EXPECT_CALL(service, f6(etl::string_view("Test")));
     auto response = receive("065465737400");
     EXPECT_RESPONSE("0006", response);
 }
@@ -185,7 +104,7 @@ TEST_F(TestServer1, decodeF6)
 // Decode function f6 with string arg and missing terminator
 TEST_F(TestServer1, decodeF6WithMissingStringTerminator)
 {
-    EXPECT_CALL(s0Service, f6(etl::string_view("Test")));
+    EXPECT_CALL(service, f6(etl::string_view("Test")));
     auto response = receive("0654657374");
     EXPECT_RESPONSE("0006", response);
 }
@@ -194,7 +113,7 @@ TEST_F(TestServer1, decodeF6WithMissingStringTerminator)
 TEST_F(TestServer1, decodeF7)
 {
     ts1::CompositeData expected{{0xBBAA, 0xDDCC}, 123, true};
-    EXPECT_CALL(s0Service, f7(expected));
+    EXPECT_CALL(service, f7(expected));
     auto response = receive("07AABBCCDD7B01");
     EXPECT_RESPONSE("0007", response);
 }
@@ -202,7 +121,7 @@ TEST_F(TestServer1, decodeF7)
 // Decode function f8 with custom enum
 TEST_F(TestServer1, decodeF8)
 {
-    EXPECT_CALL(s0Service, f8(ts1::MyEnum::V3));
+    EXPECT_CALL(service, f8(ts1::MyEnum::V3));
     auto response = receive("0803");
     EXPECT_RESPONSE("0008", response);
 }
@@ -213,7 +132,7 @@ TEST_F(TestServer1, decodeF9)
     std::vector<ts1::CompositeData2> expected{
         ts1::CompositeData2{0xAA, 0xBB},
         ts1::CompositeData2{0xCC, 0xDD}};
-    EXPECT_CALL(s0Service, f9(SPAN_EQ(expected)));
+    EXPECT_CALL(service, f9(SPAN_EQ(expected)));
     auto response = receive("09AABBCCDD");
     EXPECT_RESPONSE("0009", response);
 }
@@ -222,7 +141,7 @@ TEST_F(TestServer1, decodeF9)
 TEST_F(TestServer1, decodeF10)
 {
     ts1::CompositeData3 expected{{0xAA, 0xBB}, ts1::MyEnum::V1};
-    EXPECT_CALL(s0Service, f10(expected));
+    EXPECT_CALL(service, f10(expected));
     auto response = receive("0AAABB01");
     EXPECT_RESPONSE("000A", response);
 }
@@ -230,7 +149,7 @@ TEST_F(TestServer1, decodeF10)
 // Decode function f11 with two uint8_t args
 TEST_F(TestServer1, decodef11)
 {
-    EXPECT_CALL(s0Service, f11(0x7B, 0x6F));
+    EXPECT_CALL(service, f11(0x7B, 0x6F));
     auto response = receive("0B7B6F");
     EXPECT_RESPONSE("000B", response);
 }
@@ -238,7 +157,7 @@ TEST_F(TestServer1, decodef11)
 // Decode function f12 which returns uint8_t
 TEST_F(TestServer1, decodef12)
 {
-    EXPECT_CALL(s0Service, f12()).WillOnce(Return(0xAB));
+    EXPECT_CALL(service, f12()).WillOnce(Return(0xAB));
     auto response = receive("0C");
     EXPECT_RESPONSE("000CAB", response);
 }
@@ -246,7 +165,7 @@ TEST_F(TestServer1, decodef12)
 // Decode function f13 which returns uint16_t
 TEST_F(TestServer1, decodef13)
 {
-    EXPECT_CALL(s0Service, f13()).WillOnce(Return(0xABCD));
+    EXPECT_CALL(service, f13()).WillOnce(Return(0xABCD));
     auto response = receive("0D");
     EXPECT_RESPONSE("000DCDAB", response);
 }
@@ -254,7 +173,7 @@ TEST_F(TestServer1, decodef13)
 // Decode function f14 which returns float
 TEST_F(TestServer1, decodeF14)
 {
-    EXPECT_CALL(s0Service, f14()).WillOnce(Return(123.456));
+    EXPECT_CALL(service, f14()).WillOnce(Return(123.456));
     auto response = receive("0E");
     EXPECT_RESPONSE("000E79E9F642", response);
 }
@@ -263,7 +182,7 @@ TEST_F(TestServer1, decodeF14)
 TEST_F(TestServer1, decodeF15)
 {
     etl::array<uint16_t, 2> expected{0xBBAA, 0xDDCC};
-    EXPECT_CALL(s0Service, f15()).WillOnce(Return(expected));
+    EXPECT_CALL(service, f15()).WillOnce(Return(expected));
     auto response = receive("0F");
     EXPECT_RESPONSE("000FAABBCCDD", response);
 }
@@ -271,7 +190,7 @@ TEST_F(TestServer1, decodeF15)
 // Decode function f16 which returns a string
 TEST_F(TestServer1, decodeF16)
 {
-    EXPECT_CALL(s0Service, f16()).WillOnce(Return(etl::string<8>("Test")));
+    EXPECT_CALL(service, f16()).WillOnce(Return(etl::string<8>("Test")));
     auto response = receive("10");
     EXPECT_RESPONSE("0010546573740000000000", response);
 }
@@ -279,7 +198,7 @@ TEST_F(TestServer1, decodeF16)
 // Decode function f17 which returns custom type
 TEST_F(TestServer1, decodeF17)
 {
-    EXPECT_CALL(s0Service, f17()).WillOnce(Return(ts1::CompositeData{{0xBBAA, 0xDDCC}, 0x7B, true}));
+    EXPECT_CALL(service, f17()).WillOnce(Return(ts1::CompositeData{{0xBBAA, 0xDDCC}, 0x7B, true}));
     auto response = receive("11");
     EXPECT_RESPONSE("0011AABBCCDD7B01", response);
 }
@@ -287,7 +206,7 @@ TEST_F(TestServer1, decodeF17)
 // Decode function f18 which returns custom enum
 TEST_F(TestServer1, decodeF18)
 {
-    EXPECT_CALL(s0Service, f18()).WillOnce(Return(ts1::MyEnum::V3));
+    EXPECT_CALL(service, f18()).WillOnce(Return(ts1::MyEnum::V3));
     auto response = receive("12");
     EXPECT_RESPONSE("001203", response);
 }
@@ -298,7 +217,7 @@ TEST_F(TestServer1, decodeF19)
     etl::array<ts1::CompositeData2, 2> expected{
         ts1::CompositeData2{0xAA, 0xBB},
         ts1::CompositeData2{0xCC, 0xDD}};
-    EXPECT_CALL(s0Service, f19()).WillOnce(Return(expected));
+    EXPECT_CALL(service, f19()).WillOnce(Return(expected));
     auto response = receive("13");
     EXPECT_RESPONSE("0013AABBCCDD", response);
 }
@@ -306,7 +225,7 @@ TEST_F(TestServer1, decodeF19)
 // Decode function f20 which returns nested custom types
 TEST_F(TestServer1, decodeF20)
 {
-    EXPECT_CALL(s0Service, f20()).WillOnce(Return(ts1::CompositeData3{{0xAA, 0xBB}, ts1::MyEnum::V2}));
+    EXPECT_CALL(service, f20()).WillOnce(Return(ts1::CompositeData3{{0xAA, 0xBB}, ts1::MyEnum::V2}));
     auto response = receive("14");
     EXPECT_RESPONSE("0014AABB02", response);
 }
@@ -314,7 +233,7 @@ TEST_F(TestServer1, decodeF20)
 // Decode function f21 which return two uint8_t args
 TEST_F(TestServer1, decodef21)
 {
-    EXPECT_CALL(s0Service, f21()).WillOnce(Return(std::tuple<uint8_t, uint8_t>{0x7B, 0x6F}));
+    EXPECT_CALL(service, f21()).WillOnce(Return(std::tuple<uint8_t, uint8_t>{0x7B, 0x6F}));
     auto response = receive("15");
     EXPECT_RESPONSE("00157B6F", response);
 }
@@ -327,7 +246,7 @@ TEST_F(TestServer1, decodef22)
     etl::string<4> ret1{"ret1"};
     etl::string<4> ret2{"ret2"};
 
-    EXPECT_CALL(s0Service, f22(arg1, arg2)).WillOnce(Return(std::tuple<etl::string<4>, etl::string<4>>{ret1, ret2}));
+    EXPECT_CALL(service, f22(arg1, arg2)).WillOnce(Return(std::tuple<etl::string<4>, etl::string<4>>{ret1, ret2}));
     auto response = receive("1661726731006172673200");
     EXPECT_RESPONSE("001672657431007265743200", response);
 }
@@ -335,7 +254,7 @@ TEST_F(TestServer1, decodef22)
 // Decode function that returns auto string
 TEST_F(TestServer1, decodef23)
 {
-    EXPECT_CALL(s0Service, f23()).WillOnce(Return(etl::string_view("Test")));
+    EXPECT_CALL(service, f23()).WillOnce(Return(etl::string_view("Test")));
     auto response = receive("17");
     EXPECT_RESPONSE("00175465737400", response);
 }
@@ -343,7 +262,7 @@ TEST_F(TestServer1, decodef23)
 // Decode function that returns two auto strings
 TEST_F(TestServer1, decodef24)
 {
-    EXPECT_CALL(s0Service, f24()).WillOnce(Return(std::tuple<etl::string_view, etl::string_view>{"T1", "T2"}));
+    EXPECT_CALL(service, f24()).WillOnce(Return(std::tuple<etl::string_view, etl::string_view>{"T1", "T2"}));
     auto response = receive("18");
     EXPECT_RESPONSE("0018543100543200", response);
 }
@@ -351,11 +270,11 @@ TEST_F(TestServer1, decodef24)
 // Decode function that returns optional auto string
 TEST_F(TestServer1, decodef25)
 {
-    EXPECT_CALL(s0Service, f25()).WillOnce(Return(etl::optional<etl::string_view>{"T1"}));
+    EXPECT_CALL(service, f25()).WillOnce(Return(etl::optional<etl::string_view>{"T1"}));
     auto response = receive("19");
     EXPECT_RESPONSE("001901543100", response);
 
-    EXPECT_CALL(s0Service, f25()).WillOnce(Return(etl::optional<etl::string_view>{}));
+    EXPECT_CALL(service, f25()).WillOnce(Return(etl::optional<etl::string_view>{}));
     response = receive("19");
     EXPECT_RESPONSE("001900", response);
 }
@@ -363,7 +282,7 @@ TEST_F(TestServer1, decodef25)
 // Decode function that returns array of auto string
 TEST_F(TestServer1, decodef26)
 {
-    EXPECT_CALL(s0Service, f26()).WillOnce(Return(etl::array<etl::string_view, 3>{"Test1", "T2", "T3"}));
+    EXPECT_CALL(service, f26()).WillOnce(Return(etl::array<etl::string_view, 3>{"Test1", "T2", "T3"}));
     auto response = receive("1A");
     EXPECT_RESPONSE("001A546573743100543200543300", response);
 }

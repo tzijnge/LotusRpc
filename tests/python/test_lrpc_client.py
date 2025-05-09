@@ -66,3 +66,19 @@ def test_decode_invalid_function_id() -> None:
     with pytest.raises(ValueError):
         encoded = b"\x04\x01\xAA\x02"
         client.decode(encoded)
+
+def test_decode_message_too_short() -> None:
+    with pytest.raises(ValueError):
+        client.decode(b"")
+
+    with pytest.raises(ValueError):
+        client.decode(b"\x04")
+
+    with pytest.raises(ValueError):
+        client.decode(b"\x04\x01")
+
+def test_decode_error_response() -> None:
+    with pytest.raises(ValueError) as e:
+        client.decode(b"\x13\xFF\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
+
+    assert str(e.value) == "The LRPC server reported an error"

@@ -24,7 +24,6 @@ class ServiceShimVisitor(LrpcVisitor):
         self.__function_name: str
         self.__service_name: str
         self.__service_id: int
-        self.__number_functions = 0
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
         self.__namespace = lrpc_def.namespace()
@@ -37,7 +36,6 @@ class ServiceShimVisitor(LrpcVisitor):
         self.__function_shims = []
         self.__service_name = service.name()
         self.__service_id = service.id()
-        self.__number_functions = len(service.functions())
 
         write_file_banner(self.__file)
         self.__write_include_guard()
@@ -77,13 +75,17 @@ class ServiceShimVisitor(LrpcVisitor):
             self.__file.label("public")
             self.__file(f"virtual ~{self.__service_name}ServiceShim() = default;")
             self.__file.newline()
-            self.__file(f"uint32_t id() const override {{ return {self.__service_id}; }}")
+            self.__file(f"uint8_t id() const override {{ return {self.__service_id}; }}")
             self.__file.newline()
 
-            with self.__file.block("void invoke(Reader &reader, Writer &writer) override"):
+            with self.__file.block("bool invoke(Reader &reader, Writer &writer) override"):
                 self.__file("auto functionId = reader.read_unchecked<uint8_t>();")
+                with self.__file.block(f"if (shim(functionId) == &{self.__service_name}ServiceShim::null_shim)"):
+                    self.__file("return false;")
+                self.__file("writer.write_unchecked<uint8_t>(id());")
                 self.__file("writer.write_unchecked<uint8_t>(functionId);")
                 self.__file("((this)->*(shim(functionId)))(reader, writer);")
+                self.__file("return true;")
 
             self.__file.newline()
             self.__file.label("protected")
@@ -104,10 +106,9 @@ class ServiceShimVisitor(LrpcVisitor):
 
     def __write_shim_array(self) -> None:
         null_shim_name = "null"
-        self.__file.write(f"using ShimType =  void ({self.__service_name}ServiceShim::*)(Reader &, Writer &);")
-        if self.__max_function_id != (self.__number_functions - 1):
-            self.__file.write(f"constexpr void {null_shim_name}_shim(Reader&, Writer&) {{}}")
-            self.__file.newline()
+        self.__file.write(f"using ShimType = void ({self.__service_name}ServiceShim::*)(Reader &, Writer &);")
+        self.__file.write(f"constexpr void {null_shim_name}_shim(Reader&, Writer&) {{}}")
+        self.__file.newline()
 
         with self.__file.block("static ShimType shim(const size_t functionId)"):
             with self.__file.block(f"static constexpr etl::array<ShimType, {self.__max_function_id + 1}> shims", ";"):
@@ -117,7 +118,14 @@ class ServiceShimVisitor(LrpcVisitor):
                         self.__file(f"&{self.__service_name}ServiceShim::{name}_shim,")
 
             self.__file.newline()
+
+            with self.__file.block("if (functionId > shims.size())"):
+                self.__file.write(f"return &{self.__service_name}ServiceShim::null_shim;")
+
+            self.__file.newline()
+
             self.__file.write("return shims.at(functionId);")
+
 
     def __function_shim_body(self) -> list[str]:
         body = []

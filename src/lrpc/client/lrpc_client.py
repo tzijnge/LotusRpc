@@ -37,9 +37,15 @@ class LrpcClient:
         return LrpcClient.IncompleteResponse()
 
     def decode(self, encoded: bytes) -> Union[dict[str, Any], VoidResponse]:
+        if len(encoded) < 3:
+            raise ValueError(f"Unable to decode message from {encoded!r}: an LRPC message has at least 3 bytes")
+
         # skip packet length at index 0
         service_id = encoded[1]
         function_id = encoded[2]
+
+        if (service_id == 255) and (function_id == 0):
+            raise ValueError("The LRPC server reported an error")
 
         service = self.lrpc_def.service_by_id(service_id)
         if not service:

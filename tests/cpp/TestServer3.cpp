@@ -1,8 +1,6 @@
 #include "generated/Server3/Server3.hpp"
-#include "generated/Server3/s00_ServiceShim.hpp"
-#include "generated/Server3/s01_ServiceShim.hpp"
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#include <sstream>
+#include "TestServerBase.hpp"
 
 class s00Service : public srv3::s00ServiceShim
 {
@@ -31,22 +29,28 @@ public:
         registerService(service01);
     }
 
-    void receive(const std::vector<uint8_t> &bytes)
+    void receive(const etl::string_view hex)
     {
-        lrpcReceive(bytes);
+        lrpcReceive(hexToBytes(hex));
     }
 
     void lrpcTransmit(etl::span<const uint8_t> bytes) override
     {
-        transmitted.insert(transmitted.end(), bytes.begin(), bytes.end());
+        std::stringstream stream;
+        for (const auto b : bytes)
+        {
+            stream << std::hex << std::setw(2) << std::uppercase << std::setfill('0') << static_cast<int>(b);
+        }
+        transmitted += stream.str();
     }
 
-    void EXPECT_VECTOR_EQ(const std::vector<uint8_t> &v1, const std::vector<uint8_t> &v2)
+    void EXPECT_VECTOR_EQ(const std::string &v1, const std::string &v2)
     {
         EXPECT_EQ(v1, v2);
     }
 
-    std::vector<uint8_t> transmitted;
+    std::string transmitted;
+
     s00Service service00;
     s01Service service01;
 };
@@ -55,12 +59,12 @@ static_assert(std::is_same<srv3::Server3, lrpc::Server<6, 256, 256>>::value, "RX
 
 TEST_F(TestServer3, decodeI0)
 {
-    receive({0x04, 0x00, 0x00, 0xAA});
-    EXPECT_VECTOR_EQ({0x04, 0x00, 0x00, 0xAA}, transmitted);
+    receive("040000AA");
+    EXPECT_VECTOR_EQ("040000AA", transmitted);
 }
 
 TEST_F(TestServer3, decodeI0AndI5)
 {
-    receive({0x04, 0x00, 0x00, 0xBB, 0x05, 0x05, 0x08, 0xCC, 0xDD});
-    EXPECT_VECTOR_EQ({0x04, 0x00, 0x00, 0xBB, 0x05, 0x05, 0x08, 0xCC, 0xDD}, transmitted);
+    receive("040000BB050508CCDD");
+    EXPECT_VECTOR_EQ("040000BB050508CCDD", transmitted);
 }

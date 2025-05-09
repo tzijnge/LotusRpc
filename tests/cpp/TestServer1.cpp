@@ -1,5 +1,4 @@
 #include "generated/Server1/Server1.hpp"
-#include "generated/Server1/s0_ServiceShim.hpp"
 #include "TestServerBase.hpp"
 
 using ::testing::Return;

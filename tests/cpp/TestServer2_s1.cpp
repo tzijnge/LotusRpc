@@ -1,5 +1,5 @@
 #include "TestServerBase.hpp"
-#include "generated/Server2/s01_ServiceShim.hpp"
+#include "generated/Server2/Server2.hpp"
 
 using ::testing::Return;
 

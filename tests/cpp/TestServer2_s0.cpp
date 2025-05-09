@@ -1,7 +1,4 @@
-#include "generated/Server2/s00_ServiceShim.hpp"
 #include "generated/Server2/Server2.hpp"
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 #include "TestServerBase.hpp"
 
 using ::testing::Return;

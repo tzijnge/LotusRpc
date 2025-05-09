@@ -1,5 +1,5 @@
-#include "TestServerBase.hpp"
 #include "generated/Server2/Server2.hpp"
+#include "TestServerBase.hpp"
 
 using ::testing::Return;
 

@@ -1,8 +1,6 @@
 #include "generated/Server3/Server3.hpp"
-#include "generated/Server3/s00_ServiceShim.hpp"
-#include "generated/Server3/s01_ServiceShim.hpp"
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#include "TestServerBase.hpp"
+#include <sstream>
 
 namespace
 {
@@ -33,22 +31,22 @@ public:
         // service 5 is intentionally not registered
     }
 
-    void receive(const std::vector<uint8_t> &bytes)
+    void receive(const etl::string_view hex)
     {
-        lrpcReceive(bytes);
+        lrpcReceive(::hexToBytes(hex));
     }
 
     void lrpcTransmit(const etl::span<const uint8_t> bytes) override
     {
-        transmitted.insert(transmitted.end(), bytes.begin(), bytes.end());
+        std::stringstream stream;
+        for (const auto b : bytes)
+        {
+            stream << std::hex << std::setw(2) << std::uppercase << std::setfill('0') << static_cast<uint32_t>(b);
+        }
+        transmitted += stream.str();
     }
 
-    void EXPECT_VECTOR_EQ(const std::vector<uint8_t> &v1, const std::vector<uint8_t> &v2)
-    {
-        EXPECT_EQ(v1, v2);
-    }
-
-    std::vector<uint8_t> transmitted;
+    std::string transmitted;
     S00Service service00;
     S01Service service01;
 };
@@ -57,27 +55,27 @@ public:
 TEST_F(TestServerErrors, decodeUnknownServiceLessThanMaxServiceId)
 {
     // Non-existing service 0x02 (smaller than MAX_SERVICE_ID), function ID 0xAB and no additional bytes
-    receive({0x03, 0x02, 0xAB});
-    EXPECT_VECTOR_EQ({0x14, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, transmitted);
+    receive("0302AB");
+    EXPECT_EQ("14FF000000000000000000000000000000000000", transmitted);
 }
 
 TEST_F(TestServerErrors, decodeUnknownServiceGreaterThanMaxServiceId)
 {
     // Non-existing service 0x77 (greater than MAX_SERVICE_ID), function ID 0 and two additional bytes
-    receive({0x05, 0x77, 0x00, 0x00, 0x00});
-    EXPECT_VECTOR_EQ({0x14, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, transmitted);
+    receive("0577000000");
+    EXPECT_EQ("14FF000000000000000000000000000000000000", transmitted);
 }
 
 TEST_F(TestServerErrors, decodeUnregistereredService)
 {
-    receive({0x05, 0x05, 0x08, 0xCC, 0xDD});
-    EXPECT_VECTOR_EQ({0x14, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, transmitted);
+    receive("050508CCDD");
+    EXPECT_EQ("14FF000000000000000000000000000000000000", transmitted);
 }
 
 TEST_F(TestServerErrors, decodeUnknownFunction)
 {
     // register service s01 (ID 5) and call non-existing function with ID 0xAB and two additional bytes
     registerService(service01);
-    receive({0x05, 0x05, 0xAB, 0xCC, 0xDD});
-    EXPECT_VECTOR_EQ({0x14, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}, transmitted);
+    receive("0505ABCCDD");
+    EXPECT_EQ("14FF000000000000000000000000000000000000", transmitted);
 }

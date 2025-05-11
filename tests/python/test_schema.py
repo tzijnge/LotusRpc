@@ -370,6 +370,47 @@ services:
     assert_log_entries(["Duplicate name: c0", "Duplicate name: c1"], caplog.text)
 
 
+def test_duplicate_param_names(caplog: pytest.LogCaptureFixture) -> None:
+    rpc_def = """name: "test"
+services:
+  - name: s1
+    functions:
+      - name: f1
+        params:
+          - { name: p0, type: bool }
+          - { name: p0, type: int8_t }
+      - name: f2
+        params:
+          - { name: p0, type: bool }
+"""
+
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(ValueError):
+        load_def(rpc_def)
+
+    assert_log_entries(["Duplicate param name in s1.f1: p0"], caplog.text)
+
+def test_duplicate_return_names(caplog: pytest.LogCaptureFixture) -> None:
+    rpc_def = """name: "test"
+services:
+  - name: s1
+    functions:
+      - name: f1
+        returns:
+          - { name: r0, type: bool }
+          - { name: r0, type: int8_t }
+      - name: f2
+        returns:
+          - { name: r0, type: bool }
+"""
+
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(ValueError):
+        load_def(rpc_def)
+
+    assert_log_entries(["Duplicate return name in s1.f1: r0"], caplog.text)
+
+
 def test_undeclared_custom_type(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: "test"
 namespace: "a"

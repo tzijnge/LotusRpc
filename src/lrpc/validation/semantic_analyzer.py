@@ -15,7 +15,6 @@ class SemanticAnalyzer:
         self.__errors: list[str] = []
         self.__warnings: list[str] = []
         self.definition = definition
-        self.__services = definition.services()
         self.validators: list[LrpcValidator] = [
             ServiceValidator(),
             FunctionValidator(),

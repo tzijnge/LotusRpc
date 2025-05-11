@@ -294,5 +294,5 @@ class PlantUmlVisitor(LrpcVisitor):
         if self.__struct_indent > self.__struct_indent_max:
             self.__struct_indent = 2
 
-    def visit_lrpc_struct_field(self, field: "LrpcVar") -> None:
+    def visit_lrpc_struct_field(self, struct: "LrpcStruct", field: "LrpcVar") -> None:
         self.__struct_fields.append(field)

@@ -4,8 +4,7 @@
 - {cli: "lrpcc s0 f2 171", write: "040002AB", read: "030002", response: ""}
 - {cli: "lrpcc s0 f3 43981", write: "050003CDAB", read: "030003", response: ""}
 - {cli: "lrpcc s0 f4 123.456", write: "07000479E9F642", read: "030004", response: ""}
-# TODO: LRPC-91 LRPCC fails on array parameter
-# - {cli: "lrpcc s0 f5 43981 52671", write: "070005CDABBFCD", read: "030005", response: ""}
+- {cli: "lrpcc s0 f5 43981 52671", write: "070005CDABBFCD", read: "030005", response: ""}
 - {cli: 'lrpcc s0 f6 "lorem ipsum"', write: "1800066C6F72656D20697073756D00000000000000000000", read: "030006", response: ""}
 - {cli: "lrpcc s0 f8 V2", write: "04000802", read: "030008", response: ""}
 - {cli: "lrpcc s0 f11 171 205", write: "05000BABCD", read: "03000B", response: ""}

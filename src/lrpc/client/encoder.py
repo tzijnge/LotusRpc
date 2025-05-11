@@ -58,8 +58,8 @@ def __encode_struct(value: Any, var: LrpcVar, lrpc_def: LrpcDef) -> bytes:
 
 
 def __check_array(value: Any, var: LrpcVar) -> None:
-    if not isinstance(value, list):
-        raise TypeError(f"Type error for {var.name()}: expected array/list, but got {type(value)}")
+    if not isinstance(value, (list, tuple)):
+        raise TypeError(f"Type error for {var.name()}: expected list or tuple, but got {type(value)}")
 
     if len(value) != var.array_size():
         raise ValueError(f"Length error for {var.name()}: expected {var.array_size()}, but gor {len(value)}")

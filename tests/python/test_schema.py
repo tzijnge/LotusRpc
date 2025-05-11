@@ -193,7 +193,7 @@ structs:
     with pytest.raises(ValueError):
         load_def(rpc_def)
 
-    assert_log_entries(["Duplicate struct field name(s): [('s0', 'f'), ('s1', 'g')]"], caplog.text)
+    assert_log_entries(["Duplicate field name in struct s0: f", "Duplicate field name in struct s1: g"], caplog.text)
 
 
 def test_duplicate_service_names(caplog: pytest.LogCaptureFixture) -> None:

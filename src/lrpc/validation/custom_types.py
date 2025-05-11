@@ -39,7 +39,7 @@ class CustomTypesValidator(LrpcValidator):
     def visit_lrpc_function_param(self, param: LrpcVar) -> None:
         self.__handle_used_type(param)
 
-    def visit_lrpc_struct_field(self, field: LrpcVar) -> None:
+    def visit_lrpc_struct_field(self, struct: LrpcStruct, field: LrpcVar) -> None:
         self.__handle_used_type(field)
 
     def visit_lrpc_def_end(self) -> None:

@@ -25,6 +25,9 @@ class FunctionValidator(LrpcValidator):
         self.__function_ids.clear()
         self.__function_names.clear()
         self.__current_service = ""
+        self.__current_function = ""
+        self.__param_names.clear()
+        self.__return_names.clear()
 
     def visit_lrpc_function(self, function: LrpcFun) -> None:
         function_id = function.id()

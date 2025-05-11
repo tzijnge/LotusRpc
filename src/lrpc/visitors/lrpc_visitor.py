@@ -25,7 +25,7 @@ class LrpcVisitor(ABC):
     def visit_lrpc_struct_end(self) -> None:
         """Called after visiting each field of the current struct"""
 
-    def visit_lrpc_struct_field(self, field: "LrpcVar") -> None:
+    def visit_lrpc_struct_field(self, struct: "LrpcStruct", field: "LrpcVar") -> None:
         """Called for each field in the current struct"""
 
     def visit_lrpc_enum(self, enum: "LrpcEnum") -> None:

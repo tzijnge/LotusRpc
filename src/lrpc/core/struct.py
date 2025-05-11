@@ -26,7 +26,7 @@ class LrpcStruct:
         visitor.visit_lrpc_struct(self)
 
         for f in self.fields():
-            visitor.visit_lrpc_struct_field(f)
+            visitor.visit_lrpc_struct_field(self, f)
 
         visitor.visit_lrpc_struct_end()
 

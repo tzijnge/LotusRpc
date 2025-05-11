@@ -4,6 +4,7 @@ from .validator import LrpcValidator
 from .service import ServiceValidator
 from .function import FunctionValidator
 from .enum import EnumValidator
+from .struct import StructValidator
 from .names import NamesValidator
 from .custom_types import CustomTypesValidator
 from ..core import LrpcDef
@@ -19,40 +20,16 @@ class SemanticAnalyzer:
             ServiceValidator(),
             FunctionValidator(),
             EnumValidator(),
+            StructValidator(),
             NamesValidator(),
             CustomTypesValidator(),
         ]
-
-    @staticmethod
-    def __duplicates(input_list: list[tuple[str, str]]) -> list[tuple[str, str]]:
-        unique: list[tuple[str, str]] = []
-        duplicates: list[tuple[str, str]] = []
-
-        for n in input_list:
-            if n in unique:
-                duplicates.append(n)
-            else:
-                unique.append(n)
-
-        return duplicates
-
-    def __check_duplicate_struct_field_names(self) -> None:
-        duplicate_names = []
-        for s in self.definition.structs():
-            names = [(s.name(), field.name()) for field in s.fields()]
-            duplicate_names.extend(self.__duplicates(names))
-
-        if len(duplicate_names) > 0:
-            self.__errors.append(f"Duplicate struct field name(s): {duplicate_names}")
-
 
     def analyze(self, warnings_as_errors: bool) -> None:
         for validator in self.validators:
             self.definition.accept(validator)
             self.__errors.extend(validator.errors())
             self.__warnings.extend(validator.warnings())
-
-        self.__check_duplicate_struct_field_names()
 
         for w in self.__warnings:
             logging.warning(w)

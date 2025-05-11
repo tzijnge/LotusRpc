@@ -44,7 +44,7 @@ class StructFileVisitor(LrpcVisitor):
         if self.__descriptor.is_external():
             self.__write_external_struct_checks()
 
-    def visit_lrpc_struct_field(self, field: LrpcVar) -> None:
+    def visit_lrpc_struct_field(self, struct: LrpcStruct, field: LrpcVar) -> None:
         if self.__descriptor.is_external():
             return
 

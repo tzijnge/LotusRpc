@@ -10,7 +10,7 @@ def load_lrpc_def(def_str: str) -> LrpcDef:
 
 
 def test_optional_service_id() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
   - name: "a4"
     functions:
@@ -40,9 +40,9 @@ services:
 
 
 def test_optional_function_id() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
-  - name: "s1"
+  - name: s1
     functions:
       - name: "a4"
       - name: "a3"
@@ -63,7 +63,7 @@ services:
 
 
 def test_max_service_id() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
   - name: "a4"
     functions:
@@ -85,11 +85,11 @@ services:
 
 
 def test_no_constants_no_enums_no_structs() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
-  - name: "s1"
+  - name: s1
     functions:
-      - name: "f1"
+      - name: f1
 """
     lrpc_def = load_lrpc_def(def_str)
     assert len(lrpc_def.constants()) == 0
@@ -98,7 +98,7 @@ services:
 
 
 def test_constants() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 constants:
   - name: "c1"
     value: true
@@ -115,9 +115,9 @@ constants:
   - name: "c6"
     value: This is a string
 services:
-  - name: "s1"
+  - name: s1
     functions:
-      - name: "f1"
+      - name: f1
 """
     lrpc_def = load_lrpc_def(def_str)
     constants = lrpc_def.constants()
@@ -155,11 +155,11 @@ services:
 
 
 def test_enums() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
-  - name: "s1"
+  - name: s1
     functions:
-      - name: "f1"
+      - name: f1
 enums:
   - name: "MyEnum1"
     fields:
@@ -192,11 +192,11 @@ enums:
 
 
 def test_external_enum() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
-  - name: "s1"
+  - name: s1
     functions:
-      - name: "f1"
+      - name: f1
 enums:
   - name: "MyEnum1"
     fields: [f1, f2]
@@ -210,11 +210,11 @@ enums:
 
 
 def test_enum_with_omitted_ids() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
-  - name: "s1"
+  - name: s1
     functions:
-      - name: "f1"
+      - name: f1
 enums:
   - name: "MyEnum1"
     fields:
@@ -242,11 +242,11 @@ enums:
 
 
 def test_structs() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
-  - name: "s1"
+  - name: s1
     functions:
-      - name: "f1"
+      - name: f1
 structs:
   - name: "MyStruct1"
     fields:
@@ -279,11 +279,11 @@ structs:
 
 
 def test_external_struct() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
-  - name: "s1"
+  - name: s1
     functions:
-      - name: "f1"
+      - name: f1
 structs:
   - name: "MyStruct2"
     fields:
@@ -301,11 +301,11 @@ structs:
 
 
 def test_get_service_by_name() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
-  - name: "s1"
+  - name: s1
     functions:
-      - name: "f1"
+      - name: f1
 """
     lrpc_def = load_lrpc_def(def_str)
 
@@ -316,12 +316,12 @@ services:
 
 
 def test_get_service_by_id() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
-  - name: "s1"
+  - name: s1
     id: 21
     functions:
-      - name: "f1"
+      - name: f1
 """
     lrpc_def = load_lrpc_def(def_str)
 
@@ -332,11 +332,11 @@ services:
 
 
 def test_get_struct_by_name() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
-  - name: "s1"
+  - name: s1
     functions:
-      - name: "f1"
+      - name: f1
 structs:
   - name: "MyStruct1"
     fields:
@@ -353,11 +353,11 @@ structs:
 
 
 def test_get_enum_by_name() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
-  - name: "s1"
+  - name: s1
     functions:
-      - name: "f1"
+      - name: f1
 enums:
   - name: "MyEnum1"
     fields:
@@ -374,37 +374,37 @@ enums:
 
 
 def test_no_version() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
-  - name: "s1"
+  - name: s1
     functions:
-      - name: "f1"
+      - name: f1
 """
     lrpc_def = load_lrpc_def(def_str)
     assert lrpc_def.version() is None
 
 
 def test_version() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 version: 1.2.3
 services:
-  - name: "s1"
+  - name: s1
     functions:
-      - name: "f1"
+      - name: f1
 """
     lrpc_def = load_lrpc_def(def_str)
     assert lrpc_def.version() == "1.2.3"
 
 
 def test_top_level_properties() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 namespace: ns
 rx_buffer_size: 123
 tx_buffer_size: 456
 services:
-  - name: "s1"
+  - name: s1
     functions:
-      - name: "f1"
+      - name: f1
 """
     lrpc_def = load_lrpc_def(def_str)
     assert lrpc_def.namespace() == "ns"

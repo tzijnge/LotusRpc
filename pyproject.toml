@@ -78,6 +78,7 @@ disable = ["line-too-long"]
 allow-reexport-from-package = true
 
 [tool.mypy]
+files = ["src", "tests"]
 strict = true
 # Increase strictness of checks
 disallow_any_decorated = true

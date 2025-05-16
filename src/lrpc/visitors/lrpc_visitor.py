@@ -2,7 +2,7 @@ from abc import ABC
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..core import LrpcDef, LrpcService, LrpcStruct, LrpcVar, LrpcEnum, LrpcEnumField, LrpcFun, LrpcConstant
+    from ..core import LrpcDef, LrpcService, LrpcStruct, LrpcVar, LrpcEnum, LrpcEnumField, LrpcFun, LrpcConstant, LrpcStream
 
 
 class LrpcVisitor(ABC):
@@ -65,3 +65,15 @@ class LrpcVisitor(ABC):
 
     def visit_lrpc_function_param_end(self) -> None:
         """Called after visiting all parameters of the current function"""
+
+    def visit_lrpc_stream(self, stream: "LrpcStream", origin: "LrpcStream.Origin") -> None:
+        """Called for each stream in the current service"""
+
+    def visit_lrpc_stream_param(self, param: "LrpcVar") -> None:
+        """Called for each parameter of the current stream"""
+
+    def visit_lrpc_stream_param_end(self) -> None:
+        """Called after visiting all parameters of the current stream"""
+
+    def visit_lrpc_stream_end(self) -> None:
+        """Called after visiting all parameters and returns of the current stream"""

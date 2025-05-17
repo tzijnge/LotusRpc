@@ -1,5 +1,6 @@
 import pytest
-from lrpc.core import LrpcFun, LrpcFunDict
+from lrpc.core import LrpcFun, LrpcFunDict, LrpcVar
+from lrpc.visitors import LrpcVisitor
 
 
 def test_short_notation() -> None:
@@ -68,3 +69,43 @@ def test_get_return_by_name() -> None:
     r1 = fun.ret("r1")
     assert r1 is not None
     assert r1.name() == "r1"
+
+
+class TestVisitor(LrpcVisitor):
+    def __init__(self) -> None:
+        self.result: str = ""
+
+    def visit_lrpc_function(self, function: LrpcFun) -> None:
+        self.result += f"function[{function.name()}+{function.id()}]-"
+
+    def visit_lrpc_function_end(self) -> None:
+        self.result += "function_end"
+
+    def visit_lrpc_function_return(self, ret: LrpcVar) -> None:
+        self.result += f"return[{ret.name()}]-"
+
+    def visit_lrpc_function_return_end(self) -> None:
+        self.result += "return_end-"
+
+    def visit_lrpc_function_param(self, param: LrpcVar) -> None:
+        self.result += f"param[{param.name()}]-"
+
+    def visit_lrpc_function_param_end(self) -> None:
+        self.result += "param_end-"
+
+
+def test_visit_stream() -> None:
+    tv = TestVisitor()
+
+    s: LrpcFunDict = {
+        "name": "f1",
+        "id": 123,
+        "params": [{"name": "p1", "type": "uint8_t"}, {"name": "p2", "type": "bool"}],
+        "returns": [{"name": "r1", "type": "uint8_t"}, {"name": "r2", "type": "bool"}],
+    }
+
+    stream = LrpcFun(s)
+
+    stream.accept(tv)
+
+    assert tv.result == "function[f1+123]-return[r1]-return[r2]-return_end-param[p1]-param[p2]-param_end-function_end"

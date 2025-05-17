@@ -20,12 +20,7 @@ def test_client_stream_no_params() -> None:
 
 
 def test_client_stream_with_params() -> None:
-    s: LrpcStreamDict = {
-        "name": "s1",
-        "id": 123,
-        "origin": "client",
-        "params": [{"name": "p1", "type": "uint8_t"}]
-    }
+    s: LrpcStreamDict = {"name": "s1", "id": 123, "origin": "client", "params": [{"name": "p1", "type": "uint8_t"}]}
 
     stream = LrpcStream(s)
 
@@ -41,12 +36,7 @@ def test_client_stream_with_params() -> None:
 
 
 def test_server_stream_with_params() -> None:
-    s: LrpcStreamDict = {
-        "name": "s1",
-        "id": 123,
-        "origin": "server",
-        "params": [{"name": "p1", "type": "uint8_t"}]
-    }
+    s: LrpcStreamDict = {"name": "s1", "id": 123, "origin": "server", "params": [{"name": "p1", "type": "uint8_t"}]}
 
     stream = LrpcStream(s)
 
@@ -62,12 +52,7 @@ def test_server_stream_with_params() -> None:
 
 
 def test_stream_param() -> None:
-    s: LrpcStreamDict = {
-        "name": "s1",
-        "id": 123,
-        "origin": "server",
-        "params": [{"name": "p1", "type": "uint8_t"}]
-    }
+    s: LrpcStreamDict = {"name": "s1", "id": 123, "origin": "server", "params": [{"name": "p1", "type": "uint8_t"}]}
 
     stream = LrpcStream(s)
 
@@ -76,9 +61,10 @@ def test_stream_param() -> None:
     with pytest.raises(ValueError):
         stream.param("p2")
 
+
 class TestVisitor(LrpcVisitor):
     def __init__(self) -> None:
-        self.result:str = ""
+        self.result: str = ""
 
     def visit_lrpc_stream(self, stream: LrpcStream, origin: LrpcStream.Origin) -> None:
         self.result += f"stream[{stream.name()}+{stream.id()}+{origin.value}]-"
@@ -92,6 +78,7 @@ class TestVisitor(LrpcVisitor):
     def visit_lrpc_stream_end(self) -> None:
         self.result += "stream_end"
 
+
 def test_visit_stream() -> None:
     tv = TestVisitor()
 
@@ -99,7 +86,7 @@ def test_visit_stream() -> None:
         "name": "s1",
         "id": 123,
         "origin": "server",
-        "params": [{"name": "p1", "type": "uint8_t"}, {"name": "p2", "type": "bool"}]
+        "params": [{"name": "p1", "type": "uint8_t"}, {"name": "p2", "type": "bool"}],
     }
 
     stream = LrpcStream(s)

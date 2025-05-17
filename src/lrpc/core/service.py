@@ -1,26 +1,40 @@
 from typing import Optional, TypedDict
+from typing_extensions import NotRequired
 
 from ..visitors import LrpcVisitor
 from .function import LrpcFun, LrpcFunDict
+from .stream import LrpcStream, LrpcStreamDict
 
 
 class LrpcServiceDict(TypedDict):
     name: str
     id: int
-    functions: list[LrpcFunDict]
+    functions: NotRequired[list[LrpcFunDict]]
+    streams: NotRequired[list[LrpcStreamDict]]
 
 
 class LrpcService:
     def __init__(self, raw: LrpcServiceDict) -> None:
         assert "name" in raw and isinstance(raw["name"], str)
         assert "id" in raw and isinstance(raw["id"], int)
-        assert "functions" in raw and isinstance(raw["functions"], list)
 
-        self.__init_functions_ids(raw["functions"])
+        functions = raw.get("functions", [])
+        streams = raw.get("streams", [])
+
+        assert (len(functions) != 0) or (len(streams) != 0)
+
+        if "functions" in raw:
+            assert isinstance(raw["functions"], list)
+
+        if "streams" in raw:
+            assert isinstance(raw["streams"], list)
+
+        self.__init_functions_ids(functions)
 
         self.__name = raw["name"]
         self.__id = raw["id"]
-        self.__functions = [LrpcFun(f) for f in raw["functions"]]
+        self.__functions = [LrpcFun(f) for f in functions]
+        self.__streams = [LrpcStream(s) for s in streams]
 
     @staticmethod
     def __init_functions_ids(functions: list[LrpcFunDict]) -> None:
@@ -40,6 +54,8 @@ class LrpcService:
         visitor.visit_lrpc_service(self)
         for f in self.functions():
             f.accept(visitor)
+        for s in self.streams():
+            s.accept(visitor)
         visitor.visit_lrpc_service_end()
 
     def name(self) -> str:
@@ -64,3 +80,6 @@ class LrpcService:
                 return f
 
         return None
+
+    def streams(self) -> list[LrpcStream]:
+        return self.__streams

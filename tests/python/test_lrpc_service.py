@@ -1,6 +1,6 @@
 import pytest
-from lrpc.core import LrpcService, LrpcServiceDict, LrpcVar, LrpcFun, LrpcStream
-from lrpc.visitors import LrpcVisitor
+from lrpc.core import LrpcService, LrpcServiceDict
+from .utilities import TestVisitor
 
 
 def test_short_notation() -> None:
@@ -8,6 +8,7 @@ def test_short_notation() -> None:
         "name": "s0",
         "id": 123,
         "functions": [{"name": "f0"}, {"name": "f1", "id": 55}, {"name": "f2"}],
+        "functions_before_streams": True,
     }
 
     # One of the goals of this test is to verify the automatic
@@ -28,7 +29,12 @@ def test_short_notation() -> None:
 
 
 def test_function_by_name() -> None:
-    s: LrpcServiceDict = {"name": "s0", "id": 123, "functions": [{"name": "f0", "id": 40}, {"name": "f1", "id": 41}]}
+    s: LrpcServiceDict = {
+        "name": "s0",
+        "id": 123,
+        "functions": [{"name": "f0", "id": 40}, {"name": "f1", "id": 41}],
+        "functions_before_streams": True,
+    }
     service = LrpcService(s)
 
     assert service.function_by_name("") is None
@@ -38,7 +44,12 @@ def test_function_by_name() -> None:
 
 
 def test_function_by_id() -> None:
-    s: LrpcServiceDict = {"name": "s0", "id": 123, "functions": [{"name": "f0", "id": 36}, {"name": "f1", "id": 40}]}
+    s: LrpcServiceDict = {
+        "name": "s0",
+        "id": 123,
+        "functions": [{"name": "f0", "id": 36}, {"name": "f1", "id": 40}],
+        "functions_before_streams": True,
+    }
     service = LrpcService(s)
 
     assert service.function_by_id(55) is None
@@ -52,6 +63,7 @@ def test_only_streams() -> None:
         "name": "srv0",
         "id": 123,
         "streams": [{"name": "s0", "id": 36, "origin": "client"}, {"name": "s1", "id": 40, "origin": "server"}],
+        "functions_before_streams": False,
     }
     service = LrpcService(s)
 
@@ -67,6 +79,7 @@ def test_functions_and_streams() -> None:
         "id": 123,
         "functions": [{"name": "f0", "id": 36}, {"name": "f1", "id": 40}],
         "streams": [{"name": "s0", "id": 36, "origin": "client"}, {"name": "s1", "id": 40, "origin": "server"}],
+        "functions_before_streams": True,
     }
     service = LrpcService(s)
 
@@ -82,67 +95,10 @@ def test_functions_and_streams() -> None:
 
 
 def test_fail_when_neither_functions_not_streams() -> None:
-    s: LrpcServiceDict = {"name": "srv0", "id": 123}
+    s: LrpcServiceDict = {"name": "srv0", "id": 123, "functions_before_streams": True}
 
     with pytest.raises(AssertionError):
         LrpcService(s)
-
-
-class TestVisitor(LrpcVisitor):
-    def __init__(self) -> None:
-        self.result: str = ""
-
-    def _insert_separator(self) -> None:
-        if len(self.result) != 0:
-            self.result += "-"
-
-    def visit_lrpc_service(self, service: "LrpcService") -> None:
-        self._insert_separator()
-        self.result += f"service[{service.name()}]"
-
-    def visit_lrpc_service_end(self) -> None:
-        self._insert_separator()
-        self.result += "service_end"
-
-    def visit_lrpc_stream(self, stream: LrpcStream, origin: LrpcStream.Origin) -> None:
-        self._insert_separator()
-        self.result += f"stream[{stream.name()}+{stream.id()}+{origin.value}]"
-
-    def visit_lrpc_stream_param(self, param: LrpcVar) -> None:
-        self._insert_separator()
-        self.result += f"param[{param.name()}]"
-
-    def visit_lrpc_stream_param_end(self) -> None:
-        self._insert_separator()
-        self.result += "param_end"
-
-    def visit_lrpc_stream_end(self) -> None:
-        self._insert_separator()
-        self.result += "stream_end"
-
-    def visit_lrpc_function(self, function: LrpcFun) -> None:
-        self._insert_separator()
-        self.result += f"function[{function.name()}+{function.id()}]"
-
-    def visit_lrpc_function_end(self) -> None:
-        self._insert_separator()
-        self.result += "function_end"
-
-    def visit_lrpc_function_return(self, ret: LrpcVar) -> None:
-        self._insert_separator()
-        self.result += f"return[{ret.name()}]"
-
-    def visit_lrpc_function_return_end(self) -> None:
-        self._insert_separator()
-        self.result += "return_end"
-
-    def visit_lrpc_function_param(self, param: LrpcVar) -> None:
-        self._insert_separator()
-        self.result += f"param[{param.name()}]"
-
-    def visit_lrpc_function_param_end(self) -> None:
-        self._insert_separator()
-        self.result += "param_end"
 
 
 def test_visit_stream() -> None:
@@ -153,6 +109,7 @@ def test_visit_stream() -> None:
         "id": 123,
         "functions": [{"name": "f0", "id": 36}, {"name": "f1", "id": 40}],
         "streams": [{"name": "s0", "id": 36, "origin": "client"}, {"name": "s1", "id": 40, "origin": "server"}],
+        "functions_before_streams": True,
     }
     service = LrpcService(s)
 
@@ -162,3 +119,17 @@ def test_visit_stream() -> None:
     streams = "stream[s0+36+client]-param_end-stream_end-stream[s1+40+server]-param_end-stream_end"
 
     assert tv.result == f"service[srv0]-{functions}-{streams}-service_end"
+
+
+def test_stream_by_name() -> None:
+    s: LrpcServiceDict = {
+        "name": "srv0",
+        "id": 123,
+        "streams": [{"name": "s0", "id": 36, "origin": "client"}, {"name": "s1", "id": 40, "origin": "server"}],
+        "functions_before_streams": True,
+    }
+    service = LrpcService(s)
+
+    assert service.stream_by_name("s0").name() == "s0"
+    assert service.stream_by_name("s1").name() == "s1"
+    assert service.stream_by_name("s2") is None

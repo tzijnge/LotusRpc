@@ -71,6 +71,7 @@ disable = [
     "missing-function-docstring",
     "missing-module-docstring",
 ]
+max-attributes = 12
 
 [tool.pylint.format]
 # line length is handled by black. Any remaining long lines cannot be formatted properly
@@ -91,4 +92,4 @@ warn_unreachable = true
 # dump_inference_stats = true
 
 [tool.coverage.run]
-branch=true
+branch = true

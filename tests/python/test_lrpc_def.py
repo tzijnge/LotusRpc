@@ -410,3 +410,89 @@ services:
     assert lrpc_def.namespace() == "ns"
     assert lrpc_def.rx_buffer_size() == 123
     assert lrpc_def.tx_buffer_size() == 456
+
+
+def test_implicit_function_and_stream_id() -> None:
+    def_str = """name: test
+services:
+  - name: srv1
+    functions:
+      - name: f1
+      - name: f2
+    streams:
+      - name: s1
+        origin: server
+      - name: s2
+        origin: server
+"""
+    lrpc_def = load_lrpc_def(def_str)
+
+    assert lrpc_def.service_by_name("srv1").function_by_name("f1").id() == 0
+    assert lrpc_def.service_by_name("srv1").function_by_name("f2").id() == 1
+    assert lrpc_def.service_by_name("srv1").stream_by_name("s1").id() == 2
+    assert lrpc_def.service_by_name("srv1").stream_by_name("s2").id() == 4
+
+
+def test_implicit_stream_and_function_id() -> None:
+    def_str = """name: test
+services:
+  - name: srv1
+    streams:
+      - name: s1
+        origin: server
+      - name: s2
+        origin: server
+    functions:
+      - name: f1
+      - name: f2
+"""
+    lrpc_def = load_lrpc_def(def_str)
+
+    assert lrpc_def.service_by_name("srv1").stream_by_name("s1").id() == 0
+    assert lrpc_def.service_by_name("srv1").stream_by_name("s2").id() == 2
+    assert lrpc_def.service_by_name("srv1").function_by_name("f1").id() == 4
+    assert lrpc_def.service_by_name("srv1").function_by_name("f2").id() == 5
+
+
+def test_functions_before_streams() -> None:
+    def_str = """name: test
+services:
+  - name: srv1
+    streams:
+      - name: s1
+        origin: server
+      - name: s2
+        origin: server
+    functions:
+      - name: f1
+      - name: f2
+    functions_before_streams: true
+"""
+    lrpc_def = load_lrpc_def(def_str)
+
+    assert lrpc_def.service_by_name("srv1").function_by_name("f1").id() == 0
+    assert lrpc_def.service_by_name("srv1").function_by_name("f2").id() == 1
+    assert lrpc_def.service_by_name("srv1").stream_by_name("s1").id() == 2
+    assert lrpc_def.service_by_name("srv1").stream_by_name("s2").id() == 4
+
+
+def test_explicit_stream_and_function_id() -> None:
+    def_str = """name: test
+services:
+  - name: srv1
+    streams:
+      - name: s1
+        origin: server
+        id: 25
+      - name: s2
+        origin: server
+    functions:
+      - name: f1
+      - name: f2
+"""
+    lrpc_def = load_lrpc_def(def_str)
+
+    assert lrpc_def.service_by_name("srv1").stream_by_name("s1").id() == 25
+    assert lrpc_def.service_by_name("srv1").stream_by_name("s2").id() == 27
+    assert lrpc_def.service_by_name("srv1").function_by_name("f1").id() == 29
+    assert lrpc_def.service_by_name("srv1").function_by_name("f2").id() == 30

@@ -1,6 +1,6 @@
 import pytest
-from lrpc.core import LrpcStream, LrpcStreamDict, LrpcVar
-from lrpc.visitors import LrpcVisitor
+from lrpc.core import LrpcStream, LrpcStreamDict
+from .utilities import TestVisitor
 
 
 def test_client_stream_no_params() -> None:
@@ -60,23 +60,6 @@ def test_stream_param() -> None:
 
     with pytest.raises(ValueError):
         stream.param("p2")
-
-
-class TestVisitor(LrpcVisitor):
-    def __init__(self) -> None:
-        self.result: str = ""
-
-    def visit_lrpc_stream(self, stream: LrpcStream, origin: LrpcStream.Origin) -> None:
-        self.result += f"stream[{stream.name()}+{stream.id()}+{origin.value}]-"
-
-    def visit_lrpc_stream_param(self, param: LrpcVar) -> None:
-        self.result += f"param[{param.name()}]-"
-
-    def visit_lrpc_stream_param_end(self) -> None:
-        self.result += "param_end-"
-
-    def visit_lrpc_stream_end(self) -> None:
-        self.result += "stream_end"
 
 
 def test_visit_stream() -> None:

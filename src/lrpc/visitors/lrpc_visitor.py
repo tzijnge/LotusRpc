@@ -77,7 +77,7 @@ class LrpcVisitor(ABC):
     def visit_lrpc_function_param_end(self) -> None:
         """Called after visiting all parameters of the current function"""
 
-    def visit_lrpc_stream(self, stream: "LrpcStream", origin: "LrpcStream.Origin") -> None:
+    def visit_lrpc_stream(self, stream: "LrpcStream") -> None:
         """Called for each stream in the current service"""
 
     def visit_lrpc_stream_param(self, param: "LrpcVar") -> None:

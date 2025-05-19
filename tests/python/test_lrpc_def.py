@@ -496,3 +496,16 @@ services:
     assert lrpc_def.service_by_name("srv1").stream_by_name("s2").id() == 27
     assert lrpc_def.service_by_name("srv1").function_by_name("f1").id() == 29
     assert lrpc_def.service_by_name("srv1").function_by_name("f2").id() == 30
+
+
+def test_service_with_only_streams() -> None:
+    def_str = """name: test
+services:
+  - name: srv1
+    streams:
+      - name: s1
+        origin: server
+"""
+    lrpc_def = load_lrpc_def(def_str)
+
+    assert lrpc_def.service_by_name("srv1").stream_by_name("s1").id() == 0

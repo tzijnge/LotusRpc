@@ -18,9 +18,9 @@ class TestVisitor(LrpcVisitor):
         self._insert_separator()
         self.result += "service_end"
 
-    def visit_lrpc_stream(self, stream: LrpcStream, origin: LrpcStream.Origin) -> None:
+    def visit_lrpc_stream(self, stream: LrpcStream) -> None:
         self._insert_separator()
-        self.result += f"stream[{stream.name()}+{stream.id()}+{origin.value}]"
+        self.result += f"stream[{stream.name()}+{stream.id()}+{stream.origin().value}]"
 
     def visit_lrpc_stream_param(self, param: LrpcVar) -> None:
         self._insert_separator()

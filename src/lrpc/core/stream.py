@@ -13,11 +13,11 @@ class LrpcStreamDict(TypedDict):
     origin: str
     params: NotRequired[list[LrpcVarDict]]
 
+
 class LrpcStream:
     class Origin(str, Enum):
         CLIENT = "client"
         SERVER = "server"
-
 
     def __init__(self, raw: LrpcStreamDict) -> None:
         assert "name" in raw and isinstance(raw["name"], str)
@@ -32,9 +32,8 @@ class LrpcStream:
         if "params" in raw:
             self.__params.extend([LrpcVar(p) for p in raw["params"]])
 
-
     def accept(self, visitor: LrpcVisitor) -> None:
-        visitor.visit_lrpc_stream(self, self.origin())
+        visitor.visit_lrpc_stream(self)
 
         for p in self.params():
             visitor.visit_lrpc_stream_param(p)

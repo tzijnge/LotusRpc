@@ -59,8 +59,9 @@ class LrpcDef:
             self.__constants.extend([LrpcConstant(c) for c in raw["constants"]])
 
     def __init_base_types(self, raw: LrpcDefDict, struct_names: list[str], enum_names: list[str]) -> None:
+        # TODO: repeat for streams?
         for service in raw["services"]:
-            for function in service["functions"]:
+            for function in service.get("functions", []):
                 for p in function.get("params", []):
                     self.__update_type(p, struct_names, enum_names)
                 for r in function.get("returns", []):

@@ -267,7 +267,76 @@ services:
         load_def(rpc_def)
 
     assert_log_entries(
-        ["Duplicate function id in service i0: 111", "Duplicate function id in service i1: 111"], caplog.text
+        ["Duplicate function id in service i0: 111", "Duplicate function id in service i1: 111"],
+        caplog.text,
+    )
+
+
+def test_duplicate_function_and_stream_ids(caplog: pytest.LogCaptureFixture) -> None:
+    rpc_def = """name: "test"
+namespace: "a"
+services:
+  - name: "i0"
+    id: 0
+    functions:
+      - name: "f0"
+        id: 111
+    streams:
+      - name: "s0"
+        id: 111
+        origin: client
+  - name: "i1"
+    id: 1
+    functions:
+      - name: "f0"
+        id: 120
+    streams:
+      - name: "s1"
+        id: 119
+        origin: server
+"""
+
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(ValueError):
+        load_def(rpc_def)
+
+    assert_log_entries(
+        ["Duplicate stream id in service i0: 111", "Duplicate stream id in service i1: 120"],
+        caplog.text,
+    )
+
+
+def test_duplicate_stream_and_function_ids(caplog: pytest.LogCaptureFixture) -> None:
+    rpc_def = """name: "test"
+namespace: "a"
+services:
+  - name: "i0"
+    id: 0
+    streams:
+      - name: "s0"
+        id: 111
+        origin: client
+    functions:
+      - name: "f0"
+        id: 111
+  - name: "i1"
+    id: 1
+    streams:
+      - name: "s1"
+        id: 119
+        origin: server
+    functions:
+      - name: "f0"
+        id: 120
+"""
+
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(ValueError):
+        load_def(rpc_def)
+
+    assert_log_entries(
+        ["Duplicate stream id in service i0: 111", "Duplicate stream id in service i1: 120"],
+        caplog.text,
     )
 
 
@@ -370,7 +439,7 @@ services:
     assert_log_entries(["Duplicate name: c0", "Duplicate name: c1"], caplog.text)
 
 
-def test_duplicate_param_names(caplog: pytest.LogCaptureFixture) -> None:
+def test_duplicate_function_param_names(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: "test"
 services:
   - name: s1
@@ -390,7 +459,8 @@ services:
 
     assert_log_entries(["Duplicate param name in s1.f1: p0"], caplog.text)
 
-def test_duplicate_return_names(caplog: pytest.LogCaptureFixture) -> None:
+
+def test_duplicate_function_return_names(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: "test"
 services:
   - name: s1
@@ -409,6 +479,29 @@ services:
         load_def(rpc_def)
 
     assert_log_entries(["Duplicate return name in s1.f1: r0"], caplog.text)
+
+
+def test_duplicate_stream_param_names(caplog: pytest.LogCaptureFixture) -> None:
+    rpc_def = """name: "test"
+services:
+  - name: srv1
+    streams:
+      - name: s1
+        params:
+          - { name: p0, type: bool }
+          - { name: p0, type: int8_t }
+        origin: server
+      - name: s2
+        params:
+          - { name: p0, type: bool }
+        origin: client
+"""
+
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(ValueError):
+        load_def(rpc_def)
+
+    assert_log_entries(["Duplicate param name in srv1.s1: p0"], caplog.text)
 
 
 def test_undeclared_custom_type(caplog: pytest.LogCaptureFixture) -> None:

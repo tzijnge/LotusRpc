@@ -1,9 +1,9 @@
 from .service import ServiceValidator as ServiceValidator
-from .function import (
+from .function_and_stream import (
     FunctionAndStreamIdValidator as FunctionAndStreamIdValidator,
     FunctionAndStreamNameValidator as FunctionAndStreamNameValidator,
-    ParamAndReturnValidator as ParamAndReturnValidator,
 )
+from .param_and_return import ParamAndReturnValidator as ParamAndReturnValidator
 from .enum import EnumValidator as EnumValidator
 from .names import NamesValidator as NamesValidator
 from .custom_types import CustomTypesValidator as CustomTypesValidator

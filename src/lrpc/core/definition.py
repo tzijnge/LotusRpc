@@ -36,7 +36,7 @@ class LrpcDef:
         if "enums" in raw:
             enum_names.extend([e["name"] for e in raw["enums"]])
 
-        self.__init_base_types(raw, struct_names, enum_names)
+        self.__init_all_vars(raw, struct_names, enum_names)
         self.__init_service_ids(raw)
 
         self.__name = raw["name"]
@@ -58,18 +58,29 @@ class LrpcDef:
         if "constants" in raw:
             self.__constants.extend([LrpcConstant(c) for c in raw["constants"]])
 
-    def __init_base_types(self, raw: LrpcDefDict, struct_names: list[str], enum_names: list[str]) -> None:
-        # TODO: repeat for streams?
+    def __init_all_vars(self, raw: LrpcDefDict, struct_names: list[str], enum_names: list[str]) -> None:
         for service in raw["services"]:
             for function in service.get("functions", []):
-                for p in function.get("params", []):
-                    self.__update_type(p, struct_names, enum_names)
-                for r in function.get("returns", []):
-                    self.__update_type(r, struct_names, enum_names)
+                self.__init_vars(function.get("params", []), struct_names, enum_names)
+                self.__init_vars(function.get("returns", []), struct_names, enum_names)
+
+            for stream in service.get("streams", []):
+                self.__init_vars(stream.get("params", []), struct_names, enum_names)
 
         for struct in raw.get("structs", []):
-            for field in struct["fields"]:
-                self.__update_type(field, struct_names, enum_names)
+            self.__init_vars(struct.get("fields", []), struct_names, enum_names)
+
+    def __init_vars(self, lrpc_vars: list[LrpcVarDict], struct_names: list[str], enum_names: list[str]) -> None:
+        for var in lrpc_vars:
+            self.__init_structs_and_enums(var, struct_names, enum_names)
+
+    @classmethod
+    def __init_structs_and_enums(cls, var: LrpcVarDict, struct_names: list[str], enum_names: list[str]) -> None:
+        if var["type"].strip("@") in struct_names:
+            var["type"] = "struct" + var["type"]
+
+        if var["type"].strip("@") in enum_names:
+            var["type"] = "enum" + var["type"]
 
     @staticmethod
     def __init_service_ids(raw: LrpcDefDict) -> None:
@@ -163,11 +174,3 @@ class LrpcDef:
 
     def constants(self) -> list[LrpcConstant]:
         return self.__constants
-
-    @classmethod
-    def __update_type(cls, var: LrpcVarDict, struct_names: list[str], enum_names: list[str]) -> None:
-        if var["type"].strip("@") in struct_names:
-            var["type"] = "struct" + var["type"]
-
-        if var["type"].strip("@") in enum_names:
-            var["type"] = "enum" + var["type"]

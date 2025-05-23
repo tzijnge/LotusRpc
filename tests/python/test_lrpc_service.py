@@ -1,6 +1,6 @@
 import pytest
 from lrpc.core import LrpcService, LrpcServiceDict
-from .utilities import TestVisitor
+from .utilities import StringifyVisitor
 
 
 def test_short_notation() -> None:
@@ -102,7 +102,7 @@ def test_fail_when_neither_functions_not_streams() -> None:
 
 
 def test_visit_stream() -> None:
-    tv = TestVisitor()
+    v = StringifyVisitor()
 
     s: LrpcServiceDict = {
         "name": "srv0",
@@ -113,12 +113,12 @@ def test_visit_stream() -> None:
     }
     service = LrpcService(s)
 
-    service.accept(tv)
+    service.accept(v)
 
     functions = "function[f0+36]-return_end-param_end-function_end-function[f1+40]-return_end-param_end-function_end"
     streams = "stream[s0+36+client]-param_end-stream_end-stream[s1+40+server]-param_end-stream_end"
 
-    assert tv.result == f"service[srv0]-{functions}-{streams}-service_end"
+    assert v.result == f"service[srv0]-{functions}-{streams}-service_end"
 
 
 def test_stream_by_name() -> None:

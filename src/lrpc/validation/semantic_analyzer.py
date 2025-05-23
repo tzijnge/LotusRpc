@@ -2,7 +2,8 @@ import logging
 
 from .validator import LrpcValidator
 from .service import ServiceValidator
-from .function import ParamAndReturnValidator, FunctionAndStreamIdValidator, FunctionAndStreamNameValidator
+from .function_and_stream import FunctionAndStreamIdValidator, FunctionAndStreamNameValidator
+from .param_and_return import ParamAndReturnValidator
 from .enum import EnumValidator
 from .struct import StructValidator
 from .names import NamesValidator

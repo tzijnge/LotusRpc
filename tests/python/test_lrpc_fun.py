@@ -1,6 +1,6 @@
 import pytest
 from lrpc.core import LrpcFun, LrpcFunDict
-from .utilities import TestVisitor
+from .utilities import StringifyVisitor
 
 
 def test_short_notation() -> None:
@@ -72,7 +72,7 @@ def test_get_return_by_name() -> None:
 
 
 def test_visit_stream() -> None:
-    tv = TestVisitor()
+    v = StringifyVisitor()
 
     s: LrpcFunDict = {
         "name": "f1",
@@ -83,6 +83,6 @@ def test_visit_stream() -> None:
 
     stream = LrpcFun(s)
 
-    stream.accept(tv)
+    stream.accept(v)
 
-    assert tv.result == "function[f1+123]-return[r1]-return[r2]-return_end-param[p1]-param[p2]-param_end-function_end"
+    assert v.result == "function[f1+123]-return[r1]-return[r2]-return_end-param[p1]-param[p2]-param_end-function_end"

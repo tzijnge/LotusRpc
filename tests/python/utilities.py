@@ -2,7 +2,7 @@ from lrpc.visitors import LrpcVisitor
 from lrpc.core import LrpcService, LrpcVar, LrpcFun, LrpcStream
 
 
-class TestVisitor(LrpcVisitor):
+class StringifyVisitor(LrpcVisitor):
     def __init__(self) -> None:
         self.result: str = ""
 

@@ -509,3 +509,152 @@ services:
     lrpc_def = load_lrpc_def(def_str)
 
     assert lrpc_def.service_by_name("srv1").stream_by_name("s1").id() == 0
+
+
+def test_custom_types_in_function_params() -> None:
+    def_str = """name: test
+services:
+  - name: srv0
+    functions:
+      - name: f0
+        params:
+          - { name: p0, type: "@s0" }
+          - { name: p1, type: "@e0" }
+structs:
+  - name: s0
+    fields:
+      - { name: f0, type: bool }
+enums:
+  - name: e0
+    fields: [f0]
+"""
+
+    lrpc_def = load_lrpc_def(def_str)
+
+    f0_params = lrpc_def.service_by_name("srv0").function_by_name("f0").params()
+    assert len(f0_params) == 2
+
+    assert f0_params[0].name() == "p0"
+    assert f0_params[0].base_type_is_custom() is True
+    assert f0_params[0].base_type_is_enum() is False
+    assert f0_params[0].base_type_is_struct() is True
+
+    assert f0_params[1].name() == "p1"
+    assert f0_params[1].base_type_is_custom() is True
+    assert f0_params[1].base_type_is_enum() is True
+    assert f0_params[1].base_type_is_struct() is False
+
+
+def test_custom_types_in_function_returns() -> None:
+    def_str = """name: test
+services:
+  - name: srv0
+    functions:
+      - name: f0
+        returns:
+          - { name: r0, type: "@s0" }
+          - { name: r1, type: "@e0" }
+structs:
+  - name: s0
+    fields:
+      - { name: f0, type: bool }
+enums:
+  - name: e0
+    fields: [f0]
+"""
+
+    lrpc_def = load_lrpc_def(def_str)
+
+    f0_returns = lrpc_def.service_by_name("srv0").function_by_name("f0").returns()
+    assert len(f0_returns) == 2
+
+    assert f0_returns[0].name() == "r0"
+    assert f0_returns[0].base_type_is_custom() is True
+    assert f0_returns[0].base_type_is_enum() is False
+    assert f0_returns[0].base_type_is_struct() is True
+
+    assert f0_returns[1].name() == "r1"
+    assert f0_returns[1].base_type_is_custom() is True
+    assert f0_returns[1].base_type_is_enum() is True
+    assert f0_returns[1].base_type_is_struct() is False
+
+
+def test_custom_types_in_structs() -> None:
+    def_str = """name: test
+services:
+  - name: srv0
+    functions:
+      - name: f0
+        params:
+          - { name: p0, type: "@s0" }
+structs:
+  - name: s0
+    fields:
+      - { name: f0, type: "@s1" }
+      - { name: f1, type: "@e0" }
+  - name: s1
+    fields:
+      - { name: f0, type: float}
+enums:
+  - name: e0
+    fields: [f0]
+"""
+
+    lrpc_def = load_lrpc_def(def_str)
+
+    f0_params = lrpc_def.service_by_name("srv0").function_by_name("f0").params()
+    assert len(f0_params) == 1
+
+    p0_field = f0_params[0]
+    assert p0_field.name() == "p0"
+    assert p0_field.base_type_is_custom() is True
+    assert p0_field.base_type_is_enum() is False
+    assert p0_field.base_type_is_struct() is True
+
+    s0_fields = lrpc_def.struct("s0").fields()
+    assert len(s0_fields) == 2
+
+    assert s0_fields[0].name() == "f0"
+    assert s0_fields[0].base_type_is_custom() is True
+    assert s0_fields[0].base_type_is_enum() is False
+    assert s0_fields[0].base_type_is_struct() is True
+
+    assert s0_fields[1].name() == "f1"
+    assert s0_fields[1].base_type_is_custom() is True
+    assert s0_fields[1].base_type_is_enum() is True
+    assert s0_fields[1].base_type_is_struct() is False
+
+
+def test_custom_types_in_stream() -> None:
+    def_str = """name: test
+services:
+  - name: srv0
+    streams:
+      - name: s0
+        origin: client
+        params:
+          - { name: p0, type: "@s0" }
+          - { name: p1, type: "@e0" }
+structs:
+  - name: s0
+    fields:
+      - { name: f0, type: bool }
+enums:
+  - name: e0
+    fields: [f0]
+"""
+
+    lrpc_def = load_lrpc_def(def_str)
+
+    s0_params = lrpc_def.service_by_name("srv0").stream_by_name("s0").params()
+    assert len(s0_params) == 2
+
+    assert s0_params[0].name() == "p0"
+    assert s0_params[0].base_type_is_custom() is True
+    assert s0_params[0].base_type_is_enum() is False
+    assert s0_params[0].base_type_is_struct() is True
+
+    assert s0_params[1].name() == "p1"
+    assert s0_params[1].base_type_is_custom() is True
+    assert s0_params[1].base_type_is_enum() is True
+    assert s0_params[1].base_type_is_struct() is False

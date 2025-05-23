@@ -1,6 +1,6 @@
 import pytest
 from lrpc.core import LrpcStream, LrpcStreamDict
-from .utilities import TestVisitor
+from .utilities import StringifyVisitor
 
 
 def test_client_stream_no_params() -> None:
@@ -63,7 +63,7 @@ def test_stream_param() -> None:
 
 
 def test_visit_stream() -> None:
-    tv = TestVisitor()
+    v = StringifyVisitor()
 
     s: LrpcStreamDict = {
         "name": "s1",
@@ -74,6 +74,6 @@ def test_visit_stream() -> None:
 
     stream = LrpcStream(s)
 
-    stream.accept(tv)
+    stream.accept(v)
 
-    assert tv.result == "stream[s1+123+server]-param[p1]-param[p2]-param_end-stream_end"
+    assert v.result == "stream[s1+123+server]-param[p1]-param[p2]-param_end-stream_end"

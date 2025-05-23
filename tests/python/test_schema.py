@@ -266,8 +266,7 @@ services:
 def test_duplicate_function_and_stream_ids(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: test
 services:
-  - name: s0
-    id: 0
+  - name: srv0
     functions:
       - name: f0
         id: 111
@@ -275,15 +274,6 @@ services:
       - name: s0
         id: 111
         origin: client
-  - name: s1
-    id: 1
-    functions:
-      - name: f0
-        id: 120
-    streams:
-      - name: s1
-        id: 119
-        origin: server
 """
 
     caplog.set_level(logging.ERROR)
@@ -291,7 +281,7 @@ services:
         load_def(rpc_def)
 
     assert_log_entries(
-        ["Duplicate stream id in service s0: 111", "Duplicate stream id in service s1: 120"],
+        ["Duplicate stream id in service srv0: 111"],
         caplog.text,
     )
 
@@ -299,24 +289,14 @@ services:
 def test_duplicate_stream_and_function_ids(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: test
 services:
-  - name: s0
-    id: 0
+  - name: srv0
     streams:
-      - name: "s0"
+      - name: s0
         id: 111
         origin: client
     functions:
       - name: f0
         id: 111
-  - name: s1
-    id: 1
-    streams:
-      - name: s1
-        id: 119
-        origin: server
-    functions:
-      - name: f0
-        id: 120
 """
 
     caplog.set_level(logging.ERROR)
@@ -324,7 +304,7 @@ services:
         load_def(rpc_def)
 
     assert_log_entries(
-        ["Duplicate stream id in service s0: 111", "Duplicate stream id in service s1: 120"],
+        ["Duplicate stream id in service srv0: 111"],
         caplog.text,
     )
 

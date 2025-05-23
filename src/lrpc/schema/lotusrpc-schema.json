@@ -109,9 +109,9 @@
       "additionalProperties": false,
       "properties": {
         "name": { "$ref": "#/$defs/cppid" },
-        "id": { "$ref": "#/$defs/uint8", "maximum": 254 },
+        "id": { "$ref": "#/$defs/uint8" },
         "origin": { "enum": [ "server", "client" ]},
-        "params": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/var_decl" }, "description": "List of function parameters"},
+        "params": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/var_decl" }, "description": "List of stream parameters"},
       }
     },
     "service_decl": {
@@ -125,8 +125,8 @@
       "properties": {
         "name": { "$ref": "#/$defs/cppid" },
         "id": { "$ref": "#/$defs/service_id" },
-        "functions": { "type": "array", "minItems": 1, "maxItems": 256, "items": { "$ref": "#/$defs/function_decl" }, "description": "List of functions in the service (max 256 functions)" },
-        "streams": { "type": "array", "minItems": 1, "maxItems": 128, "items": { "$ref": "#/$defs/stream_decl"}, "description": "List of streams in the service (max 128 streams)"},
+        "functions": { "type": "array", "minItems": 1, "maxItems": 256, "items": { "$ref": "#/$defs/function_decl" }, "description": "List of functions in the service (max 256 functions and streams combined)" },
+        "streams": { "type": "array", "minItems": 1, "maxItems": 256, "items": { "$ref": "#/$defs/stream_decl"}, "description": "List of streams in the service (max 256 functions and streams combined)"},
         "functions_before_streams": { "type": "boolean", "description": "Indicate if LRPC should start automatic assignment if IDs with functions or streams. Default is the order of specification in the definition file"}
       }
     }

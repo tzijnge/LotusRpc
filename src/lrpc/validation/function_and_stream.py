@@ -35,11 +35,7 @@ class FunctionAndStreamIdValidator(LrpcValidator):
         if stream_id in self.__ids:
             self.__errors.append(f"Duplicate stream id in service {self.__current_service}: {stream_id}")
 
-        if stream_id + 1 in self.__ids:
-            self.__errors.append(f"Duplicate stream id in service {self.__current_service}: {stream_id + 1}")
-
         self.__ids.add(stream_id)
-        self.__ids.add(stream_id + 1)
 
     def visit_lrpc_service(self, service: LrpcService) -> None:
         self.__current_service = service.name()

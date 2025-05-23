@@ -65,9 +65,11 @@ A stream has the following properties:
 
 `name` is the name of the stream. It must be a valid C++ identifier. `origin` determines the direction of the stream. It can be either _client_ or _server_. `id` is the stream identifier, similar to the [service ID](#service-id). `params` is a list of parameters. Every item in `params` is a [LrpcType](#lrpctype).
 
-When a service contains both functions and streams, automatic ID assignment depends on which is specified first. for example
+When a service contains both functions and streams, automatic ID assignment depends on which is specified first. A few examples:
 
 > A definition first specifies two functions in a service and then two streams. No explicit IDs are given. The functions will receive IDs 0 and 1 and the streams will receive IDs 2 and 3.
+
+> A definition first specifies two streams in a service and then two function. The second stream has an explicit ID of 55. LRPC generates the other IDs and the result are: first stream has ID 0, second stream has ID 55. First function has ID 56, second function has ID 57
 
 ## Structs
 LRPC supports defining custom aggregate data types in the `structs` property. `structs` contains a list of custom struct definitions, where every item has the following properties:

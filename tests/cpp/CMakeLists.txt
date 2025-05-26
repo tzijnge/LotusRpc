@@ -45,6 +45,7 @@ generate_lrpc(Server1)
 generate_lrpc(Server2)
 generate_lrpc(Server3)
 generate_lrpc(Server4)
+generate_lrpc(Server5)
 
 set_directory_properties(PROPERTIES ADDITIONAL_CLEAN_FILES ${CMAKE_CURRENT_SOURCE_DIR}/generated)
 
@@ -55,10 +56,12 @@ add_executable(UnitTests
                 TestServer2_s1.cpp
                 TestServer3.cpp
                 TestServer4.cpp
+                TestServer5.cpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server1/Server1.hpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server2/Server2.hpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server3/Server3.hpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server4/Server4.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server5/Server5.hpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/lrpccore/EtlRwExtensions.hpp
                 TestServerErrors.cpp)
 

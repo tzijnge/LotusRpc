@@ -111,7 +111,7 @@
         "name": { "$ref": "#/$defs/cppid" },
         "id": { "$ref": "#/$defs/uint8" },
         "origin": { "enum": [ "server", "client" ]},
-        "params": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/var_decl" }, "description": "List of stream parameters"},
+        "params": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/var_decl" }, "description": "List of stream parameters"}
       }
     },
     "service_decl": {

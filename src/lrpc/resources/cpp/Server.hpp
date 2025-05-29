@@ -79,7 +79,6 @@ private:
         Service::Writer writer(sendBuffer.begin(), sendBuffer.end(), etl::endian::little);
 
         reader.skip<uint8_t>(1); // message size
-        writer.write_unchecked<uint8_t>(0); // placeholder for message size
 
         auto serviceId = reader.read_unchecked<uint8_t>();
 
@@ -93,8 +92,6 @@ private:
         {
             nullService.invoke(reader, writer);
         }
-
-        sendBuffer[0] = static_cast<uint8_t>(writer.size_bytes());
 
         const auto b = reinterpret_cast<const uint8_t *>(writer.cbegin());
         const auto e = reinterpret_cast<const uint8_t *>(writer.cend());

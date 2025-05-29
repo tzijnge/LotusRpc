@@ -96,12 +96,12 @@ class ServiceShimVisitor(LrpcVisitor):
             self.__file(f"uint8_t id() const override {{ return {self.__service_id}; }}")
             self.__file.newline()
 
-            with self.__file.block("bool invoke(Reader &reader, Writer &writer) override"):
-                self.__file("const auto functionOrStreamId = reader.free_data().front();")
+            with self.__file.block("bool invoke(Reader &r, Writer &w) override"):
+                self.__file("const auto functionOrStreamId = r.free_data().front();")
                 self.__file("const auto functionOrStreamShim = shim(functionOrStreamId);")
                 with self.__file.block(f"if (functionOrStreamShim == &{self.__service_name}ServiceShim::null_shim)"):
                     self.__file("return false;")
-                self.__file("((this)->*(functionOrStreamShim))(reader, writer);")
+                self.__file("((this)->*(functionOrStreamShim))(r, w);")
                 self.__file("return true;")
 
             self.__file.newline()
@@ -120,6 +120,17 @@ class ServiceShimVisitor(LrpcVisitor):
 
             self.__file.label("private")
             self.__write_shim_array()
+            self.__file.newline()
+            with self.__file.block("static void writeMessageHeader(Reader &r, Writer &w, uint8_t serviceId)"):
+                self.__file.write("w.write_unchecked<uint8_t>(0); // placeholder for message size")
+                self.__file.write("w.write_unchecked<uint8_t>(serviceId);")
+                self.__file.write("const auto functionId = r.read_unchecked<uint8_t>(); // message ID")
+                self.__file.write("w.write_unchecked<uint8_t>(functionId);")
+
+            self.__file.newline()
+
+            with self.__file.block("static void updateMessageSize(Writer &w)"):
+                self.__file.write("*w.begin() = static_cast<uint8_t>(w.size_bytes());")
 
     def __write_shim_array(self) -> None:
         null_shim_name = "null"
@@ -148,9 +159,7 @@ class ServiceShimVisitor(LrpcVisitor):
     def __function_shim_body(self) -> list[str]:
         body = []
 
-        body.append("w.write_unchecked<uint8_t>(id());")
-        body.append("const auto functionId = r.read_unchecked<uint8_t>();")
-        body.append("w.write_unchecked<uint8_t>(functionId);")
+        body.append("writeMessageHeader(r, w, id());")
 
         for p in self.__params:
             n = p.name()
@@ -170,6 +179,8 @@ class ServiceShimVisitor(LrpcVisitor):
             for i, r in enumerate(returns):
                 t = r.write_type()
                 body.append(f"lrpc::write_unchecked<{t}>(w, std::get<{i}>(response));")
+
+        body.append("updateMessageSize(w);")
 
         return body
 

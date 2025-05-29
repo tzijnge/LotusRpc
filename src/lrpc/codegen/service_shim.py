@@ -120,17 +120,6 @@ class ServiceShimVisitor(LrpcVisitor):
 
             self.__file.label("private")
             self.__write_shim_array()
-            self.__file.newline()
-            with self.__file.block("static void writeMessageHeader(Reader &r, Writer &w, uint8_t serviceId)"):
-                self.__file.write("w.write_unchecked<uint8_t>(0); // placeholder for message size")
-                self.__file.write("w.write_unchecked<uint8_t>(serviceId);")
-                self.__file.write("const auto functionId = r.read_unchecked<uint8_t>(); // message ID")
-                self.__file.write("w.write_unchecked<uint8_t>(functionId);")
-
-            self.__file.newline()
-
-            with self.__file.block("static void updateMessageSize(Writer &w)"):
-                self.__file.write("*w.begin() = static_cast<uint8_t>(w.size_bytes());")
 
     def __write_shim_array(self) -> None:
         null_shim_name = "null"

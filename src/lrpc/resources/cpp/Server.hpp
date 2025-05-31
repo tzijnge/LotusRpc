@@ -16,6 +16,7 @@ private:
         uint8_t id() const override { return 0; };
         bool invoke(Reader&, Writer& writer) override
         {
+            writer.write_unchecked<uint8_t>(0x14); // message size
             writer.write_unchecked<uint8_t>(0xFF); // service ID
             writer.write_unchecked<uint8_t>(0); // function ID
             writer.write_unchecked<uint8_t>(0); // error type

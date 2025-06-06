@@ -272,7 +272,7 @@ TEST_F(TestServer1, decodef24)
 TEST_F(TestServer1, decodef25)
 {
     EXPECT_CALL(service, f25()).WillOnce(Return(etl::optional<etl::string_view>{"T1"}));
-    const auto response = receive("030019");
+    auto response = receive("030019");
     EXPECT_EQ("07001901543100", response);
 
     EXPECT_CALL(service, f25()).WillOnce(Return(etl::optional<etl::string_view>{}));

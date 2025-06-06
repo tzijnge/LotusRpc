@@ -1,21 +1,35 @@
 #pragma once
 #include <etl/byte_stream.h>
-#include <stdint.h>
+#include <cstdint>
 
 namespace lrpc
 {
+class IServer
+{
+public:
+    using Reader = etl::byte_stream_reader;
+    using Writer = etl::byte_stream_writer;
+
+    virtual Writer getWriter() = 0;
+    virtual void transmit(const Writer& w) = 0;
+};
+
 class Service
 {
 public:
     virtual ~Service() = default;
 
-    using Reader = etl::byte_stream_reader;
-    using Writer = etl::byte_stream_writer;
+    using Reader = IServer::Reader;
+    using Writer = IServer::Writer;
 
     virtual uint8_t id() const = 0;
     virtual bool invoke(Reader &reader, Writer &writer) = 0;
 
+    void linkServer(IServer& s) { server = &s; }
+
 protected:
+    IServer* server {nullptr};
+
     static void writeMessageHeader(Reader &r, Writer &w, uint8_t serviceId)
     {
         w.write_unchecked<uint8_t>(0); // placeholder for message size

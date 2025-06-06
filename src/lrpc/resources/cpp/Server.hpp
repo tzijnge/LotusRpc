@@ -7,7 +7,7 @@ namespace lrpc
 {
 
 template <size_t MAX_SERVICE_ID, size_t RX_SIZE = 256, size_t TX_SIZE = RX_SIZE>
-class Server
+class Server : public IServer
 {
 private:
     class NullService : public Service
@@ -36,9 +36,23 @@ public:
         services.fill(&nullService);
     }
 
+    Writer getWriter() override
+    {
+        return Writer{sendBuffer.begin(), sendBuffer.end(), etl::endian::little};
+    }
+
+    void transmit(const Writer& w) override
+    {
+        const auto b = reinterpret_cast<const uint8_t *>(w.cbegin());
+        const auto e = reinterpret_cast<const uint8_t *>(w.cend());
+        lrpcTransmit({b, e});
+    }
+
     void registerService(Service &service)
     {
+        // TODO: check for out of bounds service
         services[service.id()] = &service;
+        service.linkServer(*this);
     }
 
     void lrpcReceive(etl::span<const uint8_t> bytes)
@@ -64,7 +78,7 @@ public:
 
 private:
     etl::vector<uint8_t, RX_SIZE> receiveBuffer;
-    etl::vector<uint8_t, TX_SIZE> sendBuffer;
+    etl::array<uint8_t, TX_SIZE> sendBuffer;
     etl::array<Service*, MAX_SERVICE_ID + 1> services;
 
     bool messageIsComplete() const
@@ -76,8 +90,8 @@ private:
     {
         static NullService nullService;
 
-        Service::Reader reader(receiveBuffer.begin(), receiveBuffer.end(), etl::endian::little);
-        Service::Writer writer(sendBuffer.begin(), sendBuffer.end(), etl::endian::little);
+        Reader reader{receiveBuffer.begin(), receiveBuffer.end(), etl::endian::little};
+        Writer writer{sendBuffer.begin(), sendBuffer.end(), etl::endian::little};
 
         reader.skip<uint8_t>(1); // message size
 
@@ -94,9 +108,7 @@ private:
             nullService.invoke(reader, writer);
         }
 
-        const auto b = reinterpret_cast<const uint8_t *>(writer.cbegin());
-        const auto e = reinterpret_cast<const uint8_t *>(writer.cend());
-        lrpcTransmit({b, e});
+        transmit(writer);
     }
 };
 

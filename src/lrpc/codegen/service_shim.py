@@ -105,6 +105,16 @@ class ServiceShimVisitor(LrpcVisitor):
                 self.__file("return true;")
 
             self.__file.newline()
+
+            with self.__file.block("void s0_requestStop()"):
+                with self.__file.block("if (server != nullptr)"):
+                    self.__file("auto w = server->getWriter();")
+                    self.__file("w.write_unchecked<uint8_t>(3); // message size")
+                    self.__file("w.write_unchecked<uint8_t>(id());")
+                    self.__file("w.write_unchecked<uint8_t>(0);")
+                    self.__file("server->transmit(w);")
+
+            self.__file.newline()
             self.__file.label("protected")
             for decl in self.__function_declarations:
                 self.__file.write(decl)

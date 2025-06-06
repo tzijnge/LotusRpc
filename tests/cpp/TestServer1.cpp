@@ -1,5 +1,5 @@
-#include "TestUtils.hpp"
 #include "generated/Server1/Server1.hpp"
+#include "TestUtils.hpp"
 
 using ::testing::Return;
 namespace

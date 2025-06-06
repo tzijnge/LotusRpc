@@ -74,7 +74,7 @@ class TestServerBase : public Server, public ::testing::Test
 public:
     void SetUp() final
     {
-        registerService(service);
+        Server::registerService(service);
     }
 
     void lrpcTransmit(etl::span<const uint8_t> bytes) override
@@ -84,7 +84,7 @@ public:
 
     std::string receive(const etl::string_view hex)
     {
-        lrpcReceive(testutils::hexToBytes(hex));
+        Server::lrpcReceive(testutils::hexToBytes(hex));
         return response();
     }
 

@@ -42,6 +42,19 @@ protected:
     {
         *w.begin() = static_cast<uint8_t>(w.size_bytes());
     }
+
+    void requestStop(const uint8_t streamId)
+	{
+		if (server != nullptr)
+		{
+            constexpr uint8_t messageSize {3};
+			auto w = server->getWriter();
+			w.write_unchecked<uint8_t>(messageSize);
+			w.write_unchecked<uint8_t>(id());
+			w.write_unchecked<uint8_t>(streamId);
+			server->transmit(w);
+		}
+	}
 };
 
 }

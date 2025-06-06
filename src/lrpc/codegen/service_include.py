@@ -30,3 +30,6 @@ class ServiceIncludeVisitor(LrpcVisitor):
 
     def visit_lrpc_function_param(self, param: LrpcVar) -> None:
         self.__includes.update(lrpc_var_includes(param))
+
+    def visit_lrpc_stream_param(self, param: LrpcVar) -> None:
+        self.__includes.update(lrpc_var_includes(param))

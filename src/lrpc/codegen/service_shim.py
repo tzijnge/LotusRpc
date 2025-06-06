@@ -15,9 +15,11 @@ class ServiceShimVisitor(LrpcVisitor):
         self.__file: CppFile
         self.__namespace: Optional[str]
         self.__output = output
-        self.__function__and_stream_info: dict[int, str]
+        self.__function_info: dict[int, str]
+        self.__stream_info: dict[int, str]
         self.__max_function_or_stream_id = 0
         self.__function_declarations: list[str]
+        self.__stream_declarations: list[str]
         self.__shims: list[list[str]]
         self.__params: list[LrpcVar]
         self.__returns: list[LrpcVar]
@@ -30,9 +32,11 @@ class ServiceShimVisitor(LrpcVisitor):
 
     def visit_lrpc_service(self, service: LrpcService) -> None:
         self.__file = CppFile(f"{self.__output}/{service.name()}_ServiceShim.hpp")
-        self.__function__and_stream_info = {}
+        self.__function_info = {}
+        self.__stream_info = {}
         self.__max_function_or_stream_id = 0
         self.__function_declarations = []
+        self.__stream_declarations = []
         self.__shims = []
         self.__service_name = service.name()
         self.__service_id = service.id()
@@ -49,7 +53,7 @@ class ServiceShimVisitor(LrpcVisitor):
         self.__returns = []
         self.__function_or_stream_name = function.name()
         self.__max_function_or_stream_id = max(self.__max_function_or_stream_id, function.id())
-        self.__function__and_stream_info.update({function.id(): function.name()})
+        self.__function_info.update({function.id(): function.name()})
 
     def visit_lrpc_function_end(self) -> None:
         name = self.__function_or_stream_name
@@ -73,12 +77,12 @@ class ServiceShimVisitor(LrpcVisitor):
         self.__returns = []
         self.__function_or_stream_name = stream.name()
         self.__max_function_or_stream_id = max(self.__max_function_or_stream_id, stream.id())
-        self.__function__and_stream_info.update({stream.id(): stream.name()})
+        self.__stream_info.update({stream.id(): stream.name()})
 
     def visit_lrpc_stream_end(self) -> None:
         name = self.__function_or_stream_name
         params = self.__params_string()
-        self.__function_declarations.append(f"virtual void {name}({params}) = 0;")
+        self.__stream_declarations.append(f"virtual void {name}({params}) = 0;")
 
         shim = []
         shim.append(f"void {name}_shim(Reader& r, Writer&)")
@@ -105,18 +109,10 @@ class ServiceShimVisitor(LrpcVisitor):
                 self.__file("return true;")
 
             self.__file.newline()
+            self.__write_stop_requests()
 
-            with self.__file.block("void s0_requestStop()"):
-                with self.__file.block("if (server != nullptr)"):
-                    self.__file("auto w = server->getWriter();")
-                    self.__file("w.write_unchecked<uint8_t>(3); // message size")
-                    self.__file("w.write_unchecked<uint8_t>(id());")
-                    self.__file("w.write_unchecked<uint8_t>(0);")
-                    self.__file("server->transmit(w);")
-
-            self.__file.newline()
             self.__file.label("protected")
-            for decl in self.__function_declarations:
+            for decl in self.__function_declarations + self.__stream_declarations:
                 self.__file.write(decl)
 
             self.__file.newline()
@@ -131,6 +127,13 @@ class ServiceShimVisitor(LrpcVisitor):
             self.__file.label("private")
             self.__write_shim_array()
 
+    def __write_stop_requests(self) -> None:
+        for stream_id, name in self.__stream_info.items():
+            with self.__file.block(f"void {name}_requestStop()"):
+                self.__file(f"requestStop({stream_id});")
+
+            self.__file.newline()
+
     def __write_shim_array(self) -> None:
         null_shim_name = "null"
         self.__file.write(f"using ShimType = void ({self.__service_name}ServiceShim::*)(Reader &, Writer &);")
@@ -143,7 +146,9 @@ class ServiceShimVisitor(LrpcVisitor):
             ):
                 with self.__file.block(""):
                     for fid in range(0, self.__max_function_or_stream_id + 1):
-                        name = self.__function__and_stream_info.get(fid, null_shim_name)
+                        name = null_shim_name
+                        name = self.__function_info.get(fid, name)
+                        name = self.__stream_info.get(fid, name)
                         self.__file(f"&{self.__service_name}ServiceShim::{name}_shim,")
 
             self.__file.newline()

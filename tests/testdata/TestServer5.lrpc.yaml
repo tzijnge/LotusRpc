@@ -7,3 +7,12 @@ services:
         params:
           - { name: p0, type: uint16_t }
           - { name: p1, type: uint8_t }
+      - name: s1
+        id: 55
+        origin: client
+        params:
+          - { name: p0, type: bool }
+          - { name: p1, type: "@DoorState" }
+enums:
+  - name: DoorState
+    fields: [Open, Closed]

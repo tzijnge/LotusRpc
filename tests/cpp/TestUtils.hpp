@@ -62,7 +62,7 @@ inline std::string bytesToHex(const etl::span<const uint8_t> bytes)
 
     for (const auto b : bytes)
     {
-        ss << std::setw(2) << static_cast<int>(b);
+        ss << std::setw(2) << static_cast<uint32_t>(b);
     }
 
     return ss.str();

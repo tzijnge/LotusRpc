@@ -430,7 +430,7 @@ services:
     assert lrpc_def.service_by_name("srv1").function_by_name("f1").id() == 0
     assert lrpc_def.service_by_name("srv1").function_by_name("f2").id() == 1
     assert lrpc_def.service_by_name("srv1").stream_by_name("s1").id() == 2
-    assert lrpc_def.service_by_name("srv1").stream_by_name("s2").id() == 4
+    assert lrpc_def.service_by_name("srv1").stream_by_name("s2").id() == 3
 
 
 def test_implicit_stream_and_function_id() -> None:
@@ -449,9 +449,9 @@ services:
     lrpc_def = load_lrpc_def(def_str)
 
     assert lrpc_def.service_by_name("srv1").stream_by_name("s1").id() == 0
-    assert lrpc_def.service_by_name("srv1").stream_by_name("s2").id() == 2
-    assert lrpc_def.service_by_name("srv1").function_by_name("f1").id() == 4
-    assert lrpc_def.service_by_name("srv1").function_by_name("f2").id() == 5
+    assert lrpc_def.service_by_name("srv1").stream_by_name("s2").id() == 1
+    assert lrpc_def.service_by_name("srv1").function_by_name("f1").id() == 2
+    assert lrpc_def.service_by_name("srv1").function_by_name("f2").id() == 3
 
 
 def test_functions_before_streams() -> None:
@@ -473,7 +473,7 @@ services:
     assert lrpc_def.service_by_name("srv1").function_by_name("f1").id() == 0
     assert lrpc_def.service_by_name("srv1").function_by_name("f2").id() == 1
     assert lrpc_def.service_by_name("srv1").stream_by_name("s1").id() == 2
-    assert lrpc_def.service_by_name("srv1").stream_by_name("s2").id() == 4
+    assert lrpc_def.service_by_name("srv1").stream_by_name("s2").id() == 3
 
 
 def test_explicit_stream_and_function_id() -> None:
@@ -493,9 +493,9 @@ services:
     lrpc_def = load_lrpc_def(def_str)
 
     assert lrpc_def.service_by_name("srv1").stream_by_name("s1").id() == 25
-    assert lrpc_def.service_by_name("srv1").stream_by_name("s2").id() == 27
-    assert lrpc_def.service_by_name("srv1").function_by_name("f1").id() == 29
-    assert lrpc_def.service_by_name("srv1").function_by_name("f2").id() == 30
+    assert lrpc_def.service_by_name("srv1").stream_by_name("s2").id() == 26
+    assert lrpc_def.service_by_name("srv1").function_by_name("f1").id() == 27
+    assert lrpc_def.service_by_name("srv1").function_by_name("f2").id() == 28
 
 
 def test_service_with_only_streams() -> None:

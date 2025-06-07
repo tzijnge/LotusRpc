@@ -56,19 +56,18 @@ class LrpcService:
         functions: list[LrpcFunDict],
         last_id: int,
     ) -> int:
-        return LrpcService.__assign_ids(functions, last_id, 1)
+        return LrpcService.__assign_ids(functions, last_id)
 
     @staticmethod
     def __assign_stream_ids(
         streams: list[LrpcStreamDict],
         last_id: int,
     ) -> int:
-        return LrpcService.__assign_ids(streams, last_id, 2)
+        return LrpcService.__assign_ids(streams, last_id)
 
     @staticmethod
     def __assign_ids(
-        items_needing_id: Union[list[LrpcFunDict], list[LrpcStreamDict]], last_id: int, id_step: int
-    ) -> int:
+        items_needing_id: Union[list[LrpcFunDict], list[LrpcStreamDict]], last_id: int) -> int:
         for item in items_needing_id:
             if "id" in item:
                 last_id = item["id"]
@@ -78,8 +77,6 @@ class LrpcService:
                 # makes sure that function IDs are initialized properly
                 last_id = last_id + 1  # type: ignore[unreachable]
                 item["id"] = last_id
-
-            last_id = last_id + id_step - 1
 
         return last_id
 

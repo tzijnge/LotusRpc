@@ -1,5 +1,6 @@
 name: Server5
 services:
+  # service with only streams
   - name: srv0
     streams:
       - name: s0
@@ -13,6 +14,14 @@ services:
         params:
           - { name: p0, type: bool }
           - { name: p1, type: "@DoorState" }
+  # service with a stream and a function
+  - name: srv1
+    id: 66
+    streams:
+      - name: s0
+        origin: client
+    functions:
+      - name: f0
 enums:
   - name: DoorState
     fields: [Open, Closed]

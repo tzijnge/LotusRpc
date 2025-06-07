@@ -70,7 +70,9 @@ def test_only_streams() -> None:
     streams = service.streams()
     assert len(streams) == 2
     assert streams[0].name() == "s0"
+    assert streams[0].id() == 36
     assert streams[1].name() == "s1"
+    assert streams[1].id() == 40
 
 
 def test_functions_and_streams() -> None:
@@ -86,15 +88,19 @@ def test_functions_and_streams() -> None:
     functions = service.functions()
     assert len(functions) == 2
     assert functions[0].name() == "f0"
+    assert functions[0].id() == 36
     assert functions[1].name() == "f1"
+    assert functions[1].id() == 40
 
     streams = service.streams()
     assert len(streams) == 2
     assert streams[0].name() == "s0"
+    assert streams[0].id() == 36
     assert streams[1].name() == "s1"
+    assert streams[1].id() == 40
 
 
-def test_fail_when_neither_functions_not_streams() -> None:
+def test_fail_when_neither_functions_nor_streams() -> None:
     s: LrpcServiceDict = {"name": "srv0", "id": 123, "functions_before_streams": True}
 
     with pytest.raises(AssertionError):

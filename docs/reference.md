@@ -103,11 +103,11 @@ Example:
 ...
 enums:
   # short notation
-  - { name: "MyEnum", fields: [V0, V1, V2, V3]}
+  - { name: MyEnum, fields: [V0, V1, V2, V3]}
   # short notation, external enum in namespace
-  - { name: "MyEnum2", fields: [V0, V1, V2, V3], external: ext_files/MyEnum2.hpp, external_namespace: "a::b::c"}
+  - { name: MyEnum2, fields: [V0, V1, V2, V3], external: ext_files/MyEnum2.hpp, external_namespace: "a::b::c"}
   # full notation, external enum in global namespace
-  - name: "MyEnum3"
+  - name: MyEnum3
     external: ext_files/MyEnum3.hpp
     fields:
       - {name: V0} # id omitted, defaults to 0

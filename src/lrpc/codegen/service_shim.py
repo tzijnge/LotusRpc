@@ -217,7 +217,7 @@ class ServiceShimVisitor(LrpcVisitor):
     def __function_shim_body(self) -> list[str]:
         body = []
 
-        body.append("writeMessageHeader(r, w, id());")
+        body.append("writeMessageHeader(r, w);")
 
         for p in self.__params:
             n = p.name()

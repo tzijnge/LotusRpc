@@ -4,57 +4,57 @@
 
 namespace lrpc
 {
-class IServer
-{
-public:
-    using Reader = etl::byte_stream_reader;
-    using Writer = etl::byte_stream_writer;
-
-    virtual Writer getWriter() = 0;
-    virtual void transmit(const Writer& w) = 0;
-};
-
-class Service
-{
-public:
-    virtual ~Service() = default;
-
-    using Reader = IServer::Reader;
-    using Writer = IServer::Writer;
-
-    virtual uint8_t id() const = 0;
-    virtual bool invoke(Reader &reader, Writer &writer) = 0;
-
-    void linkServer(IServer& s) { server = &s; }
-
-protected:
-    IServer* server {nullptr};
-
-    static void writeMessageHeader(Reader &r, Writer &w, uint8_t serviceId)
+    class IServer
     {
-        w.write_unchecked<uint8_t>(0); // placeholder for message size
-        w.write_unchecked<uint8_t>(serviceId);
-        const auto functionId = r.read_unchecked<uint8_t>(); // message ID
-        w.write_unchecked<uint8_t>(functionId);
-    }
+    public:
+        using Reader = etl::byte_stream_reader;
+        using Writer = etl::byte_stream_writer;
 
-    static void updateMessageSize(Writer &w)
+        virtual Writer getWriter() = 0;
+        virtual void transmit(const Writer &w) = 0;
+    };
+
+    class Service
     {
-        *w.begin() = static_cast<uint8_t>(w.size_bytes());
-    }
+    public:
+        virtual ~Service() = default;
 
-    void requestStop(const uint8_t streamId)
-	{
-		if (server != nullptr)
-		{
-            constexpr uint8_t messageSize {3};
-			auto w = server->getWriter();
-			w.write_unchecked<uint8_t>(messageSize);
-			w.write_unchecked<uint8_t>(id());
-			w.write_unchecked<uint8_t>(streamId);
-			server->transmit(w);
-		}
-	}
-};
+        using Reader = IServer::Reader;
+        using Writer = IServer::Writer;
+
+        virtual uint8_t id() const = 0;
+        virtual bool invoke(Reader &reader, Writer &writer) = 0;
+
+        void linkServer(IServer &s) { server = &s; }
+
+    protected:
+        IServer *server{nullptr};
+
+        void writeMessageHeader(Reader &r, Writer &w) const
+        {
+            w.write_unchecked<uint8_t>(0); // placeholder for message size
+            w.write_unchecked<uint8_t>(id());
+            const auto functionId = r.read_unchecked<uint8_t>(); // message ID
+            w.write_unchecked<uint8_t>(functionId);
+        }
+
+        static void updateMessageSize(Writer &w)
+        {
+            *w.begin() = static_cast<uint8_t>(w.size_bytes());
+        }
+
+        void requestStop(const uint8_t streamId)
+        {
+            if (server != nullptr)
+            {
+                constexpr uint8_t messageSize{3};
+                auto w = server->getWriter();
+                w.write_unchecked<uint8_t>(messageSize);
+                w.write_unchecked<uint8_t>(id());
+                w.write_unchecked<uint8_t>(streamId);
+                server->transmit(w);
+            }
+        }
+    };
 
 }

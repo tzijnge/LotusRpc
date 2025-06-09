@@ -32,8 +32,8 @@ namespace lrpc
 
         void writeMessageHeader(Reader &r, Writer &w) const
         {
-            w.write_unchecked<uint8_t>(0); // placeholder for message size
-            w.write_unchecked<uint8_t>(id());
+            w.write_unchecked<uint8_t>(0);                       // placeholder for message size
+            w.write_unchecked<uint8_t>(id());                    // service ID
             const auto functionId = r.read_unchecked<uint8_t>(); // message ID
             w.write_unchecked<uint8_t>(functionId);
         }

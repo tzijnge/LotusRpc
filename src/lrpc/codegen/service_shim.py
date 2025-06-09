@@ -17,7 +17,6 @@ class ServiceShimVisitor(LrpcVisitor):
         self.__output = output
         self.__functions: list[LrpcFun]
         self.__streams: list[LrpcStream]
-        self.__max_function_or_stream_id = 0
         self.__function_declarations: list[str]
         self.__stream_declarations: list[str]
         self.__shims: list[list[str]]
@@ -35,7 +34,6 @@ class ServiceShimVisitor(LrpcVisitor):
         self.__file = CppFile(f"{self.__output}/{service.name()}_ServiceShim.hpp")
         self.__functions = []
         self.__streams = []
-        self.__max_function_or_stream_id = 0
         self.__function_declarations = []
         self.__stream_declarations = []
         self.__shims = []
@@ -54,7 +52,6 @@ class ServiceShimVisitor(LrpcVisitor):
         self.__params = []
         self.__returns = []
         self.__function_or_stream_name = function.name()
-        self.__max_function_or_stream_id = max(self.__max_function_or_stream_id, function.id())
         self.__functions.append(function)
 
     def visit_lrpc_function_end(self) -> None:
@@ -78,7 +75,6 @@ class ServiceShimVisitor(LrpcVisitor):
         self.__params = []
         self.__returns = []
         self.__function_or_stream_name = stream.name()
-        self.__max_function_or_stream_id = max(self.__max_function_or_stream_id, stream.id())
 
         self.__streams.append(stream)
 
@@ -182,7 +178,7 @@ class ServiceShimVisitor(LrpcVisitor):
 
         with self.__file.block("static ShimType shim(const size_t functionId)"):
             with self.__file.block(
-                f"static constexpr etl::array<ShimType, {self.__max_function_or_stream_id + 1}> shims", ";"
+                f"static constexpr etl::array<ShimType, {self.__max_function_or_stream_id() + 1}> shims", ";"
             ):
                 function_info = {function.id(): function.name() for function in self.__functions}
 
@@ -198,7 +194,7 @@ class ServiceShimVisitor(LrpcVisitor):
                     if stream.origin() == LrpcStream.Origin.SERVER
                 }
 
-                for fid in range(0, self.__max_function_or_stream_id + 1):
+                for fid in range(0, self.__max_function_or_stream_id() + 1):
                     name = null_shim_name
                     name = function_info.get(fid, name)
                     name = client_stream_info.get(fid, name)
@@ -270,6 +266,11 @@ class ServiceShimVisitor(LrpcVisitor):
 
         types = ", ".join([r.return_type() for r in self.__returns])
         return f"std::tuple<{types}>"
+
+    def __max_function_or_stream_id(self) -> int:
+        stream_ids = [stream.id() for stream in self.__streams]
+        function_ids = [function.id() for function in self.__functions]
+        return max(stream_ids + function_ids)
 
     def __write_include_guard(self) -> None:
         self.__file("#pragma once")

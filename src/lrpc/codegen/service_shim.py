@@ -15,12 +15,13 @@ class ServiceShimVisitor(LrpcVisitor):
         self.__file: CppFile
         self.__namespace: Optional[str]
         self.__output = output
-        self.__function_info: dict[int, str]
-        self.__stream_info: dict[int, str]
+        self.__functions: list[LrpcFun]
+        self.__streams: list[LrpcStream]
         self.__max_function_or_stream_id = 0
         self.__function_declarations: list[str]
         self.__stream_declarations: list[str]
         self.__shims: list[list[str]]
+        self.__stream_server_to_client_messages: list[list[str]]
         self.__params: list[LrpcVar]
         self.__returns: list[LrpcVar]
         self.__function_or_stream_name: str
@@ -32,12 +33,13 @@ class ServiceShimVisitor(LrpcVisitor):
 
     def visit_lrpc_service(self, service: LrpcService) -> None:
         self.__file = CppFile(f"{self.__output}/{service.name()}_ServiceShim.hpp")
-        self.__function_info = {}
-        self.__stream_info = {}
+        self.__functions = []
+        self.__streams = []
         self.__max_function_or_stream_id = 0
         self.__function_declarations = []
         self.__stream_declarations = []
         self.__shims = []
+        self.__stream_server_to_client_messages = []
         self.__service_name = service.name()
         self.__service_id = service.id()
 
@@ -53,7 +55,7 @@ class ServiceShimVisitor(LrpcVisitor):
         self.__returns = []
         self.__function_or_stream_name = function.name()
         self.__max_function_or_stream_id = max(self.__max_function_or_stream_id, function.id())
-        self.__function_info.update({function.id(): function.name()})
+        self.__functions.append(function)
 
     def visit_lrpc_function_end(self) -> None:
         name = self.__function_or_stream_name
@@ -77,17 +79,47 @@ class ServiceShimVisitor(LrpcVisitor):
         self.__returns = []
         self.__function_or_stream_name = stream.name()
         self.__max_function_or_stream_id = max(self.__max_function_or_stream_id, stream.id())
-        self.__stream_info.update({stream.id(): stream.name()})
+
+        self.__streams.append(stream)
 
     def visit_lrpc_stream_end(self) -> None:
         name = self.__function_or_stream_name
         params = self.__params_string()
-        self.__stream_declarations.append(f"virtual void {name}({params}) = 0;")
 
-        shim = []
-        shim.append(f"void {name}_shim(Reader& r, Writer&)")
-        shim.extend(self.__stream_shim_body())
-        self.__shims.append(shim)
+        if self.__streams[-1].origin() == LrpcStream.Origin.CLIENT:
+            self.__stream_declarations.append(f"virtual void {name}({params}) = 0;")
+
+            shim = []
+            shim.append(f"void {name}_shim(Reader& r, Writer&)")
+            shim.extend(self.__stream_shim_body())
+            self.__shims.append(shim)
+        else:
+            self.__stream_declarations.append(f"virtual void {name}_requestStop() = 0;")
+
+            shim = []
+            shim.append(f"void {name}_requestStop_shim(Reader&, Writer&)")
+            shim.append(f"{name}_requestStop();")
+            self.__shims.append(shim)
+
+            message = [
+                f"void {name}({self.__params_string()})",
+                "if (server == nullptr) { return; }",
+                "",
+                "auto w = server->getWriter();",
+                "w.write_unchecked<uint8_t>(0);",
+                "w.write_unchecked<uint8_t>(id());",
+                f"w.write_unchecked<uint8_t>({self.__streams[-1].id()});",
+            ]
+
+            for p in self.__params:
+                message.append(
+                    f"w.write_unchecked<{p.write_type()}>({p.name()});",
+                )
+
+            message.append("updateMessageSize(w);")
+            message.append("server->transmit(w);")
+
+            self.__stream_server_to_client_messages.append(message)
 
     def visit_lrpc_stream_param(self, param: LrpcVar) -> None:
         self.__params.append(param)
@@ -109,7 +141,7 @@ class ServiceShimVisitor(LrpcVisitor):
                 self.__file("return true;")
 
             self.__file.newline()
-            self.__write_stop_requests()
+            self.__write_stream_server_to_client_calls()
 
             self.__file.label("protected")
             for decl in self.__function_declarations + self.__stream_declarations:
@@ -127,10 +159,18 @@ class ServiceShimVisitor(LrpcVisitor):
             self.__file.label("private")
             self.__write_shim_array()
 
-    def __write_stop_requests(self) -> None:
-        for stream_id, name in self.__stream_info.items():
-            with self.__file.block(f"void {name}_requestStop()"):
-                self.__file(f"requestStop({stream_id});")
+    def __write_stream_server_to_client_calls(self) -> None:
+        for stream in self.__streams:
+            if stream.origin() == LrpcStream.Origin.CLIENT:
+                with self.__file.block(f"void {stream.name()}_requestStop()"):
+                    self.__file(f"requestStop({stream.id()});")
+
+                self.__file.newline()
+
+        for message in self.__stream_server_to_client_messages:
+            with self.__file.block(message[0]):
+                for line in message[1:]:
+                    self.__file.write(line)
 
             self.__file.newline()
 
@@ -144,12 +184,26 @@ class ServiceShimVisitor(LrpcVisitor):
             with self.__file.block(
                 f"static constexpr etl::array<ShimType, {self.__max_function_or_stream_id + 1}> shims", ";"
             ):
-                with self.__file.block(""):
-                    for fid in range(0, self.__max_function_or_stream_id + 1):
-                        name = null_shim_name
-                        name = self.__function_info.get(fid, name)
-                        name = self.__stream_info.get(fid, name)
-                        self.__file(f"&{self.__service_name}ServiceShim::{name}_shim,")
+                function_info = {function.id(): function.name() for function in self.__functions}
+
+                client_stream_info = {
+                    stream.id(): stream.name()
+                    for stream in self.__streams
+                    if stream.origin() == LrpcStream.Origin.CLIENT
+                }
+
+                server_stream_info = {
+                    stream.id(): stream.name() + "_requestStop"
+                    for stream in self.__streams
+                    if stream.origin() == LrpcStream.Origin.SERVER
+                }
+
+                for fid in range(0, self.__max_function_or_stream_id + 1):
+                    name = null_shim_name
+                    name = function_info.get(fid, name)
+                    name = client_stream_info.get(fid, name)
+                    name = server_stream_info.get(fid, name)
+                    self.__file(f"&{self.__service_name}ServiceShim::{name}_shim,")
 
             self.__file.newline()
 

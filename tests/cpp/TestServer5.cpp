@@ -13,14 +13,16 @@ namespace ts5
     class MockService1 : public srv1ServiceShim
     {
     public:
-        MOCK_METHOD(void, s0, (), (override));
-        MOCK_METHOD(void, f0, (), (override));
+        MOCK_METHOD(void, s0_requestStop, (), (override));
+        MOCK_METHOD(void, s1_requestStop, (), (override));
     };
 
     class MockService2 : public srv2ServiceShim
     {
     public:
-        MOCK_METHOD(void, s0_requestStop, (), (override));
+        MOCK_METHOD(void, s0, (DoorState), (override));
+        MOCK_METHOD(void, s1_requestStop, (), (override));
+        MOCK_METHOD(void, f0, (DoorState), (override));
     };
 }
 
@@ -58,38 +60,66 @@ TEST_F(TestServer5Srv0, s1_requestStop)
     EXPECT_EQ("030037", response());
 }
 
-TEST_F(TestServer5Srv1, decodeS0)
+TEST_F(TestServer5Srv1, decodeS0_requestStop)
 {
-    EXPECT_CALL(service, s0());
+    EXPECT_CALL(service, s0_requestStop());
 
     const auto response = receive("034200");
     EXPECT_EQ("", response);
 }
 
-TEST_F(TestServer5Srv1, s0_requestStop)
+TEST_F(TestServer5Srv1, s0)
 {
-    service.s0_requestStop();
-    EXPECT_EQ("034200", response());
+    service.s0(0x1234, 0x56);
+    EXPECT_EQ("064200341256", response());
 }
 
-TEST_F(TestServer5Srv1, decodeF0)
+TEST_F(TestServer5Srv1, decodeS1_requestStop)
 {
-    EXPECT_CALL(service, f0());
+    EXPECT_CALL(service, s1_requestStop());
 
-    const auto response = receive("034201");
-    EXPECT_EQ("034201", response);
-}
-
-TEST_F(TestServer5Srv2, decodeS0_requestStop)
-{
-    EXPECT_CALL(service, s0_requestStop());
-
-    const auto response = receive("034300");
+    const auto response = receive("034221");
     EXPECT_EQ("", response);
 }
 
-TEST_F(TestServer5Srv2, s0)
+TEST_F(TestServer5Srv1, s1)
 {
-    service.s0(0x1234, 0x56);
-    EXPECT_EQ("064300341256", response());
+    service.s1(true, DoorState::Open);
+    EXPECT_EQ("0542210100", response());
+}
+
+TEST_F(TestServer5Srv2, decodeS0)
+{
+    EXPECT_CALL(service, s0(DoorState::Open));
+
+    const auto response = receive("04430000");
+    EXPECT_EQ("", response);
+}
+
+TEST_F(TestServer5Srv2, s0_requestStop)
+{
+    service.s0_requestStop();
+    EXPECT_EQ("034300", response());
+}
+
+TEST_F(TestServer5Srv2, decodeS1_requestStop)
+{
+    EXPECT_CALL(service, s1_requestStop());
+
+    const auto response = receive("034301");
+    EXPECT_EQ("", response);
+}
+
+TEST_F(TestServer5Srv2, s1)
+{
+    service.s1(DoorState::Closed);
+    EXPECT_EQ("04430101", response());
+}
+
+TEST_F(TestServer5Srv2, decodeF0)
+{
+    EXPECT_CALL(service, f0(DoorState::Closed));
+
+    const auto response = receive("04430201");
+    EXPECT_EQ("034302", response);
 }

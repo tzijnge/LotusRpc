@@ -106,14 +106,14 @@ class ServiceShimVisitor(LrpcVisitor):
                 "if (server == nullptr) { return; }",
                 "",
                 "auto w = server->getWriter();",
-                "w.write_unchecked<uint8_t>(0);",
-                "w.write_unchecked<uint8_t>(id());",
-                f"w.write_unchecked<uint8_t>({self.__streams[-1].id()});",
+                "lrpc::write_unchecked<uint8_t>(w, 0);",
+                "lrpc::write_unchecked<uint8_t>(w, id());",
+                f"lrpc::write_unchecked<uint8_t>(w, {self.__streams[-1].id()});",
             ]
 
             for p in self.__params:
                 message.append(
-                    f"w.write_unchecked<{p.write_type()}>({p.name()});",
+                    f"lrpc::write_unchecked<{p.write_type()}>(w, {p.name()});",
                 )
 
             message.append("updateMessageSize(w);")

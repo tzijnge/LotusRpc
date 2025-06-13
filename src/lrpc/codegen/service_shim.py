@@ -24,7 +24,7 @@ class ServiceShimVisitor(LrpcVisitor):
         self.__params: list[LrpcVar]
         self.__returns: list[LrpcVar]
         self.__function_or_stream_name: str
-        self.__service_name: str
+        self.__class_name: str
         self.__service_id: int
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
@@ -38,12 +38,12 @@ class ServiceShimVisitor(LrpcVisitor):
         self.__stream_declarations = []
         self.__shims = []
         self.__stream_server_to_client_messages = []
-        self.__service_name = service.name()
+        self.__class_name = service.name() + "ServiceShim"
         self.__service_id = service.id()
 
         write_file_banner(self.__file)
         self.__write_include_guard()
-        self.__write_includes()
+        self.__write_includes(service.name())
 
     def visit_lrpc_service_end(self) -> None:
         optionally_in_namespace(self.__file, self.__write_shim, self.__namespace)
@@ -61,7 +61,8 @@ class ServiceShimVisitor(LrpcVisitor):
         self.__function_declarations.append(f"virtual {returns} {name}({params}) = 0;")
 
         shim = []
-        shim.append(f"void {name}_shim(Reader& r, Writer& w)")
+        reader_param_name = " r" if len(params) != 0 else ""
+        shim.append(f"void {name}_shim(Reader&{reader_param_name}, Writer& w)")
         shim.extend(self.__function_shim_body())
         self.__shims.append(shim)
 
@@ -102,9 +103,7 @@ class ServiceShimVisitor(LrpcVisitor):
                 "if (server == nullptr) { return; }",
                 "",
                 "auto w = server->getWriter();",
-                "lrpc::write_unchecked<uint8_t>(w, 0);",
-                "lrpc::write_unchecked<uint8_t>(w, id());",
-                f"lrpc::write_unchecked<uint8_t>(w, {self.__streams[-1].id()});",
+                f"writeResponseHeader(w, {self.__streams[-1].id()});",
             ]
 
             for p in self.__params:
@@ -112,7 +111,7 @@ class ServiceShimVisitor(LrpcVisitor):
                     f"lrpc::write_unchecked<{p.write_type()}>(w, {p.name()});",
                 )
 
-            message.append("updateMessageSize(w);")
+            message.append("updateResponseHeader(w);")
             message.append("server->transmit(w);")
 
             self.__stream_server_to_client_messages.append(message)
@@ -121,20 +120,18 @@ class ServiceShimVisitor(LrpcVisitor):
         self.__params.append(param)
 
     def __write_shim(self) -> None:
-        with self.__file.block(f"class {self.__service_name}ServiceShim : public lrpc::Service", ";"):
+        with self.__file.block(f"class {self.__class_name} : public lrpc::Service", ";"):
             self.__file.label("public")
-            self.__file(f"virtual ~{self.__service_name}ServiceShim() = default;")
+            self.__file(f"virtual ~{self.__class_name}() = default;")
             self.__file.newline()
             self.__file(f"uint8_t id() const override {{ return {self.__service_id}; }}")
             self.__file.newline()
 
-            with self.__file.block("bool invoke(Reader &r, Writer &w) override"):
-                self.__file("const auto functionOrStreamId = r.free_data().front();")
+            with self.__file.block("void invoke(Reader &r, Writer &w) override"):
+                self.__file("const auto functionOrStreamId = r.read_unchecked<uint8_t>();")
                 self.__file("const auto functionOrStreamShim = shim(functionOrStreamId);")
-                with self.__file.block(f"if (functionOrStreamShim == &{self.__service_name}ServiceShim::null_shim)"):
-                    self.__file("return false;")
                 self.__file("((this)->*(functionOrStreamShim))(r, w);")
-                self.__file("return true;")
+                self.__file("updateResponseHeader(w);")
 
             self.__file.newline()
             self.__write_stream_server_to_client_calls()
@@ -171,9 +168,8 @@ class ServiceShimVisitor(LrpcVisitor):
             self.__file.newline()
 
     def __write_shim_array(self) -> None:
-        null_shim_name = "null"
-        self.__file.write(f"using ShimType = void ({self.__service_name}ServiceShim::*)(Reader &, Writer &);")
-        self.__file.write(f"constexpr void {null_shim_name}_shim(Reader&, Writer&) {{}}")
+        self.__file.write(f"using ShimType = void ({self.__class_name}::*)(Reader &, Writer &);")
+        self.__file.write("void missingFunction_shim(Reader& r, Writer& w) { lrpc::missingFunction(r, w); }")
         self.__file.newline()
 
         with self.__file.block("static ShimType shim(const size_t functionId)"):
@@ -195,16 +191,16 @@ class ServiceShimVisitor(LrpcVisitor):
                 }
 
                 for fid in range(0, self.__max_function_or_stream_id() + 1):
-                    name = null_shim_name
+                    name = "missingFunction"
                     name = function_info.get(fid, name)
                     name = client_stream_info.get(fid, name)
                     name = server_stream_info.get(fid, name)
-                    self.__file(f"&{self.__service_name}ServiceShim::{name}_shim,")
+                    self.__file(f"&{self.__class_name}::{name}_shim,")
 
             self.__file.newline()
 
             with self.__file.block("if (functionId > shims.size())"):
-                self.__file.write(f"return &{self.__service_name}ServiceShim::null_shim;")
+                self.__file.write(f"return &missingFunction_shim;")
 
             self.__file.newline()
 
@@ -213,7 +209,7 @@ class ServiceShimVisitor(LrpcVisitor):
     def __function_shim_body(self) -> list[str]:
         body = []
 
-        body.append("writeMessageHeader(r, w);")
+        body.append(f"writeResponseHeader(w, {self.__functions[-1].id()});")
 
         for p in self.__params:
             n = p.name()
@@ -234,14 +230,10 @@ class ServiceShimVisitor(LrpcVisitor):
                 t = r.write_type()
                 body.append(f"lrpc::write_unchecked<{t}>(w, std::get<{i}>(response));")
 
-        body.append("updateMessageSize(w);")
-
         return body
 
     def __stream_shim_body(self) -> list[str]:
         body = []
-
-        body.append("r.skip<uint8_t>(1); // stream ID")
 
         for p in self.__params:
             n = p.name()
@@ -275,9 +267,9 @@ class ServiceShimVisitor(LrpcVisitor):
     def __write_include_guard(self) -> None:
         self.__file("#pragma once")
 
-    def __write_includes(self) -> None:
+    def __write_includes(self, service_name: str) -> None:
         self.__file('#include "lrpccore/Service.hpp"')
         self.__file('#include "lrpccore/EtlRwExtensions.hpp"')
-        self.__file(f'#include "{self.__service_name}.hpp"')
+        self.__file(f'#include "{service_name}.hpp"')
 
         self.__file.newline()

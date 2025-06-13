@@ -5,34 +5,13 @@
 
 namespace lrpc
 {
-
     template <size_t MAX_SERVICE_ID, size_t RX_SIZE = 256, size_t TX_SIZE = RX_SIZE>
     class Server : public IServer
     {
     private:
-        class NullService : public Service
-        {
-        public:
-            uint8_t id() const override { return 0; };
-            bool invoke(Reader &, Writer &writer) override
-            {
-                writer.write_unchecked<uint8_t>(0x14); // message size
-                writer.write_unchecked<uint8_t>(0xFF); // service ID
-                writer.write_unchecked<uint8_t>(0);    // function ID
-                writer.write_unchecked<uint8_t>(0);    // error type
-                writer.write_unchecked<int32_t>(0);    // p0
-                writer.write_unchecked<int32_t>(0);    // p1
-                writer.write_unchecked<int32_t>(0);    // p2
-                writer.write_unchecked<int32_t>(0);    // p3
-
-                return true;
-            };
-        };
-
     public:
         Server()
         {
-            static NullService nullService;
             services.fill(&nullService);
         }
 
@@ -63,7 +42,7 @@ namespace lrpc
             }
         }
 
-        void lrpcReceive(uint8_t byte)
+        void lrpcReceive(const uint8_t byte)
         {
             receiveBuffer.push_back(byte);
 
@@ -80,15 +59,25 @@ namespace lrpc
         etl::vector<uint8_t, RX_SIZE> receiveBuffer;
         etl::array<uint8_t, TX_SIZE> sendBuffer;
         etl::array<Service *, MAX_SERVICE_ID + 1> services;
+        NullService nullService;
 
         bool messageIsComplete() const
         {
             return receiveBuffer.size() == receiveBuffer.at(0);
         }
 
+        Service *service(const uint8_t serviceId)
+        {
+            if (serviceId < services.size())
+            {
+                return services.at(serviceId);
+            }
+
+            return &nullService;
+        }
+
         void invokeService()
         {
-            static NullService nullService;
 
             Reader reader{receiveBuffer.begin(), receiveBuffer.end(), etl::endian::little};
             Writer writer{sendBuffer.begin(), sendBuffer.end(), etl::endian::little};
@@ -97,16 +86,7 @@ namespace lrpc
 
             auto serviceId = reader.read_unchecked<uint8_t>();
 
-            bool serviceOk = serviceId < services.size();
-            if (serviceOk)
-            {
-                serviceOk = services.at(serviceId)->invoke(reader, writer);
-            }
-
-            if (!serviceOk)
-            {
-                nullService.invoke(reader, writer);
-            }
+            service(serviceId)->invoke(reader, writer);
 
             transmit(writer);
         }

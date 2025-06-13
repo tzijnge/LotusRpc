@@ -103,7 +103,7 @@ class ServiceShimVisitor(LrpcVisitor):
                 "if (server == nullptr) { return; }",
                 "",
                 "auto w = server->getWriter();",
-                f"writeResponseHeader(w, {self.__streams[-1].id()});",
+                f"writeHeader(w, {self.__streams[-1].id()});",
             ]
 
             for p in self.__params:
@@ -111,7 +111,7 @@ class ServiceShimVisitor(LrpcVisitor):
                     f"lrpc::write_unchecked<{p.write_type()}>(w, {p.name()});",
                 )
 
-            message.append("updateResponseHeader(w);")
+            message.append("updateHeader(w);")
             message.append("server->transmit(w);")
 
             self.__stream_server_to_client_messages.append(message)
@@ -131,7 +131,7 @@ class ServiceShimVisitor(LrpcVisitor):
                 self.__file("const auto functionOrStreamId = r.read_unchecked<uint8_t>();")
                 self.__file("const auto functionOrStreamShim = shim(functionOrStreamId);")
                 self.__file("((this)->*(functionOrStreamShim))(r, w);")
-                self.__file("updateResponseHeader(w);")
+                self.__file("updateHeader(w);")
 
             self.__file.newline()
             self.__write_stream_server_to_client_calls()
@@ -209,7 +209,7 @@ class ServiceShimVisitor(LrpcVisitor):
     def __function_shim_body(self) -> list[str]:
         body = []
 
-        body.append(f"writeResponseHeader(w, {self.__functions[-1].id()});")
+        body.append(f"writeHeader(w, {self.__functions[-1].id()});")
 
         for p in self.__params:
             n = p.name()

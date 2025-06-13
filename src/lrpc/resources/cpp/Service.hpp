@@ -30,14 +30,14 @@ namespace lrpc
     protected:
         IServer *server{nullptr};
 
-        void writeResponseHeader(Writer &w, const uint8_t functionId) const
+        void writeHeader(Writer &w, const uint8_t functionId) const
         {
             w.write_unchecked<uint8_t>(0);    // placeholder for message size
             w.write_unchecked<uint8_t>(id()); // service ID
             w.write_unchecked<uint8_t>(functionId);
         }
 
-        static void updateResponseHeader(Writer &w)
+        static void updateHeader(Writer &w)
         {
             const auto s = w.size_bytes();
             if (s != 0)

@@ -68,9 +68,9 @@ TEST_F(TestServer5Srv1, decodeS0_requestStop)
     EXPECT_EQ("", response);
 }
 
-TEST_F(TestServer5Srv1, s0)
+TEST_F(TestServer5Srv1, s0_response)
 {
-    service.s0(0x1234, 0x56);
+    service.s0_response(0x1234, 0x56);
     EXPECT_EQ("064200341256", response());
 }
 
@@ -82,9 +82,9 @@ TEST_F(TestServer5Srv1, decodeS1_requestStop)
     EXPECT_EQ("", response);
 }
 
-TEST_F(TestServer5Srv1, s1)
+TEST_F(TestServer5Srv1, s1_response)
 {
-    service.s1(true, DoorState::Open);
+    service.s1_response(true, DoorState::Open);
     EXPECT_EQ("0542210100", response());
 }
 
@@ -110,9 +110,9 @@ TEST_F(TestServer5Srv2, decodeS1_requestStop)
     EXPECT_EQ("", response);
 }
 
-TEST_F(TestServer5Srv2, s1)
+TEST_F(TestServer5Srv2, s1_response)
 {
-    service.s1(DoorState::Closed);
+    service.s1_response(DoorState::Closed);
     EXPECT_EQ("04430101", response());
 }
 

@@ -9,6 +9,7 @@ from ..core import LrpcDef, LrpcService, LrpcFun, LrpcVar, LrpcStream
 
 
 class ServiceShimVisitor(LrpcVisitor):
+    __final_param = LrpcVar({"name": "final", "type": "bool"})
 
     def __init__(self, output: os.PathLike[str]) -> None:
         self.__file: CppFile
@@ -80,7 +81,7 @@ class ServiceShimVisitor(LrpcVisitor):
         for stream in client_streams:
             params = stream.params()
             if stream.is_finite():
-                params.append(LrpcVar({"name": "final", "type": "bool"}))
+                params.append(self.__final_param)
             param_string = self.__params_string(params)
             self.__file.write(f"virtual void {stream.name()}({param_string}) = 0;")
 
@@ -124,7 +125,7 @@ class ServiceShimVisitor(LrpcVisitor):
         for stream in server_streams:
             params = stream.params()
             if stream.is_finite():
-                params.append(LrpcVar({"name": "final", "type": "bool"}))
+                params.append(self.__final_param)
 
             with self.__file.block(f"void {stream.name()}_response({self.__params_string(params)})"):
                 self.__file.write("if (server == nullptr) { return; }")

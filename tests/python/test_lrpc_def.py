@@ -509,7 +509,21 @@ services:
     lrpc_def = load_lrpc_def(def_str)
 
     assert lrpc_def.service_by_name("srv1").stream_by_name("s1").id() == 0
+    assert not lrpc_def.service_by_name("srv1").stream_by_name("s1").is_finite()
 
+
+def test_finite_stream() -> None:
+    def_str = """name: test
+services:
+  - name: srv1
+    streams:
+      - name: s1
+        origin: server
+        finite: true
+"""
+    lrpc_def = load_lrpc_def(def_str)
+
+    assert lrpc_def.service_by_name("srv1").stream_by_name("s1").is_finite()
 
 def test_custom_types_in_function_params() -> None:
     def_str = """name: test

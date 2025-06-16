@@ -11,6 +11,7 @@ class LrpcStreamDict(TypedDict):
     name: str
     id: int
     origin: str
+    finite: NotRequired[bool]
     params: NotRequired[list[LrpcVarDict]]
 
 
@@ -27,6 +28,7 @@ class LrpcStream:
         self.__name = raw["name"]
         self.__id = raw["id"]
         self.__origin = LrpcStream.Origin(raw["origin"])
+        self.__is_finite = raw.get("finite", False)
         self.__params = []
 
         if "params" in raw:
@@ -65,3 +67,6 @@ class LrpcStream:
 
     def param_names(self) -> list[str]:
         return [p.name() for p in self.params()]
+
+    def is_finite(self) -> bool:
+        return self.__is_finite

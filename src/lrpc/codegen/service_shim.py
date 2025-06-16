@@ -78,8 +78,11 @@ class ServiceShimVisitor(LrpcVisitor):
             self.__file.write("// Client stream declarations")
 
         for stream in client_streams:
-            params = self.__params_string(stream.params())
-            self.__file.write(f"virtual void {stream.name()}({params}) = 0;")
+            params = stream.params()
+            if stream.is_finite():
+                params.append(LrpcVar({"name": "final", "type": "bool"}))
+            param_string = self.__params_string(params)
+            self.__file.write(f"virtual void {stream.name()}({param_string}) = 0;")
 
             self.__file.newline()
 
@@ -119,7 +122,11 @@ class ServiceShimVisitor(LrpcVisitor):
             self.__file.write("// Server stream responses")
 
         for stream in server_streams:
-            with self.__file.block(f"void {stream.name()}_response({self.__params_string(stream.params())})"):
+            params = stream.params()
+            if stream.is_finite():
+                params.append(LrpcVar({"name": "final", "type": "bool"}))
+
+            with self.__file.block(f"void {stream.name()}_response({self.__params_string(params)})"):
                 self.__file.write("if (server == nullptr) { return; }")
                 self.__file.newline()
                 self.__file.write("auto w = server->getWriter();")

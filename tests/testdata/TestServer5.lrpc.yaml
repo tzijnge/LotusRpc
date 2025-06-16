@@ -11,6 +11,7 @@ services:
       - name: s1
         id: 55
         origin: client
+        finite: true
         params:
           - { name: p0, type: bool }
           - { name: p1, type: "@DoorState" }
@@ -20,6 +21,7 @@ services:
     streams:
       - name: s0
         origin: server
+        finite: false
         params:
           - { name: p0, type: uint16_t }
           - { name: p1, type: uint8_t }
@@ -27,6 +29,7 @@ services:
       - name: s1
         id: 33
         origin: server
+        finite: true
         params:
           - { name: p0, type: bool }
           - { name: p1, type: "@DoorState" }

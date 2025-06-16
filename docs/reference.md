@@ -65,8 +65,11 @@ A stream has the following properties:
 | --------- |--------- |
 | name      | id       |
 | origin    | params   |
+|           | finite   |
 
 `name` is the name of the stream. It must be a valid C++ identifier. `origin` determines the direction of the stream. It can be either _client_ or _server_. `id` is the stream identifier, similar to the [service ID](#service-id). `params` is a list of parameters. Every item in `params` is a [LrpcType](#lrpctype).
+
+Sometimes a stream can produce an infinite amount of messages, for example a sensor data stream from server to client. In this case the client starts the stream and stops the stream when needed. In other cases a stream is limited by design, for example retrieving all log messages stored on a device. In this case it's useful for the receiving side to know when the last message has been received. LRPC can help in this situation if the `finite` property is set to true, but it does come at a small cost. Every message gets an implicit boolean parameter (one byte) that is only true for the final message. The [LRPC client CLI](tools.md#lrpcc) uses this information to gracefully terminate a streaming session
 
 When a service contains both functions and streams, automatic ID assignment depends on which is specified first. A few examples:
 

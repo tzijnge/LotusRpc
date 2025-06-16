@@ -7,7 +7,7 @@ namespace ts5
     {
     public:
         MOCK_METHOD(void, s0, (uint16_t, uint8_t), (override));
-        MOCK_METHOD(void, s1, (bool, DoorState), (override));
+        MOCK_METHOD(void, s1, (bool, DoorState, bool), (override));
     };
 
     class MockService1 : public srv1ServiceShim
@@ -48,9 +48,9 @@ TEST_F(TestServer5Srv0, s0_requestStop)
 
 TEST_F(TestServer5Srv0, decodeS1)
 {
-    EXPECT_CALL(service, s1(true, DoorState::Closed));
+    EXPECT_CALL(service, s1(true, DoorState::Closed, false));
 
-    const auto response = receive("0500370101");
+    const auto response = receive("07003701010000");
     EXPECT_EQ("", response);
 }
 
@@ -84,8 +84,8 @@ TEST_F(TestServer5Srv1, decodeS1_requestStop)
 
 TEST_F(TestServer5Srv1, s1_response)
 {
-    service.s1_response(true, DoorState::Open);
-    EXPECT_EQ("0542210100", response());
+    service.s1_response(true, DoorState::Open, true);
+    EXPECT_EQ("064221010001", response());
 }
 
 TEST_F(TestServer5Srv2, decodeS0)

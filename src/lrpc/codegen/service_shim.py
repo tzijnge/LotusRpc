@@ -188,7 +188,7 @@ class ServiceShimVisitor(LrpcVisitor):
             self.__file.newline()
 
             with self.__file.block("if (functionId > shims.size())"):
-                self.__file.write("return &missingFunction_shim;")
+                self.__file.write(f"return &{self.__class_name()}::missingFunction_shim;")
 
             self.__file.newline()
 

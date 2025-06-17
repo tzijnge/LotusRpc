@@ -13,15 +13,18 @@ namespace ts5
     class MockService1 : public srv1ServiceShim
     {
     public:
-        MOCK_METHOD(void, s0_requestStop, (), (override));
-        MOCK_METHOD(void, s1_requestStop, (), (override));
+        MOCK_METHOD(void, s0_start, (), (override));
+        MOCK_METHOD(void, s0_stop, (), (override));
+        MOCK_METHOD(void, s1_start, (), (override));
+        MOCK_METHOD(void, s1_stop, (), (override));
     };
 
     class MockService2 : public srv2ServiceShim
     {
     public:
         MOCK_METHOD(void, s0, (DoorState), (override));
-        MOCK_METHOD(void, s1_requestStop, (), (override));
+        MOCK_METHOD(void, s1_start, (), (override));
+        MOCK_METHOD(void, s1_stop, (), (override));
         MOCK_METHOD(void, f0, (DoorState), (override));
     };
 }
@@ -60,11 +63,19 @@ TEST_F(TestServer5Srv0, s1_requestStop)
     EXPECT_EQ("030037", response());
 }
 
-TEST_F(TestServer5Srv1, decodeS0_requestStop)
+TEST_F(TestServer5Srv1, decodeS0_stop)
 {
-    EXPECT_CALL(service, s0_requestStop());
+    EXPECT_CALL(service, s0_stop());
 
-    const auto response = receive("034200");
+    const auto response = receive("04420000");
+    EXPECT_EQ("", response);
+}
+
+TEST_F(TestServer5Srv1, decodeS0_start)
+{
+    EXPECT_CALL(service, s0_start());
+
+    const auto response = receive("04420001");
     EXPECT_EQ("", response);
 }
 
@@ -74,11 +85,19 @@ TEST_F(TestServer5Srv1, s0_response)
     EXPECT_EQ("064200341256", response());
 }
 
-TEST_F(TestServer5Srv1, decodeS1_requestStop)
+TEST_F(TestServer5Srv1, decodeS1_start)
 {
-    EXPECT_CALL(service, s1_requestStop());
+    EXPECT_CALL(service, s1_start());
 
-    const auto response = receive("034221");
+    const auto response = receive("04422101");
+    EXPECT_EQ("", response);
+}
+
+TEST_F(TestServer5Srv1, decodeS1_stop)
+{
+    EXPECT_CALL(service, s1_stop());
+
+    const auto response = receive("04422100");
     EXPECT_EQ("", response);
 }
 
@@ -102,11 +121,19 @@ TEST_F(TestServer5Srv2, s0_requestStop)
     EXPECT_EQ("034300", response());
 }
 
-TEST_F(TestServer5Srv2, decodeS1_requestStop)
+TEST_F(TestServer5Srv2, decodeS1_start)
 {
-    EXPECT_CALL(service, s1_requestStop());
+    EXPECT_CALL(service, s1_start());
 
-    const auto response = receive("034301");
+    const auto response = receive("04430101");
+    EXPECT_EQ("", response);
+}
+
+TEST_F(TestServer5Srv2, decodeS1_stop)
+{
+    EXPECT_CALL(service, s1_stop());
+
+    const auto response = receive("04430100");
     EXPECT_EQ("", response);
 }
 

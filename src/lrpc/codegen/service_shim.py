@@ -92,7 +92,8 @@ class ServiceShimVisitor(LrpcVisitor):
             self.__file.write("// Server stream declarations")
 
         for stream in server_streams:
-            self.__file.write(f"virtual void {stream.name()}_requestStop() = 0;")
+            self.__file.write(f"virtual void {stream.name()}_start() = 0;")
+            self.__file.write(f"virtual void {stream.name()}_stop() = 0;")
             self.__file.newline()
 
     def __write_function_shims(self, functions: list[LrpcFun]) -> None:
@@ -143,11 +144,15 @@ class ServiceShimVisitor(LrpcVisitor):
 
     def __write_server_stream_stop_request_shims(self, server_streams: list[LrpcStream]) -> None:
         if len(server_streams) != 0:
-            self.__file.write("// Server stream stop request shims")
+            self.__file.write("// Server stream start/stop shims")
 
         for stream in server_streams:
-            with self.__file.block(f"void {stream.name()}_requestStop_shim(Reader&, Writer&)"):
-                self.__file.write(f"{stream.name()}_requestStop();")
+            with self.__file.block(f"void {stream.name()}_start_stop_shim(Reader& r, Writer&)"):
+                self.__file.write("const auto start = r.read_unchecked<bool>();")
+                with self.__file.block("if (start)"):
+                    self.__file.write(f"{stream.name()}_start();")
+                with self.__file.block("else"):
+                    self.__file.write(f"{stream.name()}_stop();")
 
             self.__file.newline()
 
@@ -176,7 +181,7 @@ class ServiceShimVisitor(LrpcVisitor):
             ):
                 function_info = {function.id(): function.name() for function in functions}
                 client_stream_info = {stream.id(): stream.name() for stream in client_streams}
-                server_stream_info = {stream.id(): stream.name() + "_requestStop" for stream in server_streams}
+                server_stream_info = {stream.id(): stream.name() + "_start_stop" for stream in server_streams}
 
                 for fid in range(0, max_function_or_stream_id + 1):
                     name = "missingFunction"

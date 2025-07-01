@@ -7,5 +7,5 @@ types-jsonschema==4.24.0.20250528
 types-pyyaml==6.0.12.20241230
 types-pyserial==3.5.0.20250304
 types-setuptools==80.9.0.20250529
-typing_extensions==4.13.2
+typing_extensions==4.14.0
 coverage==7.8.0

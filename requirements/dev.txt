@@ -1,6 +1,6 @@
 pytest==8.3.5
 pytest-cov==6.2.1
-mypy==1.16.0
+mypy==1.17.1
 black==25.1.0
 pylint==3.3.4
 types-jsonschema==4.25.0.20250720

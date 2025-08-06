@@ -1,6 +1,6 @@
 code-generation==2.3.0
 pyyaml==6.0.2
-jsonschema==4.23.0
+jsonschema==4.25.0
 click==8.1.8
 pyserial==3.5
-typing-extensions==4.13.2
+typing-extensions==4.14.0

@@ -29,7 +29,7 @@ classifiers = [
 dependencies = [
     "code-generation==2.3.0",
     "pyyaml==6.0.2",
-    "jsonschema==4.23.0",
+    "jsonschema==4.25.0",
     "click==8.1.8",
 ]
 dynamic = ["version"]

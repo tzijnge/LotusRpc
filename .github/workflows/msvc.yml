@@ -61,6 +61,7 @@ jobs:
           ruleset: NativeRecommendedRules.ruleset
           ignoredIncludePaths: external
           ignoreSystemHeaders: true
+          buildConfiguration: ${{env.BUILD_TYPE}}
 
       # Upload SARIF file to GitHub Code Scanning Alerts
       - name: Upload SARIF to GitHub

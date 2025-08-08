@@ -67,6 +67,9 @@ static_assert(std::is_same<decltype(srv4::c19), const etl::string_view>::value, 
 static_assert(srv4::c20 == "333.444", "");
 static_assert(std::is_same<decltype(srv4::c20), const etl::string_view>::value, "");
 
+static_assert(srv4::c21 == "444.444", "");
+static_assert(std::is_same<decltype(srv4::c21), const etl::string_view>::value, "");
+
 static_assert(static_cast<int>(srv4::MyEnum::V0) == 0, "");
 static_assert(static_cast<int>(srv4::MyEnum::V1) == 1, "");
 static_assert(static_cast<int>(srv4::MyEnum::V2) == 2, "");

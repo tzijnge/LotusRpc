@@ -61,6 +61,9 @@ constants:
     cppType: string
   - name: c20
     value: !!str 333.444
+  - name: c21
+    value: 444.444
+    cppType: string
 services:
   - name: "s00"
     functions:

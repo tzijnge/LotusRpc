@@ -1,5 +1,6 @@
 import pytest
 from lrpc.core import LrpcFun, LrpcFunDict
+from .utilities import StringifyVisitor
 
 
 def test_short_notation() -> None:
@@ -68,3 +69,20 @@ def test_get_return_by_name() -> None:
     r1 = fun.ret("r1")
     assert r1 is not None
     assert r1.name() == "r1"
+
+
+def test_visit_stream() -> None:
+    v = StringifyVisitor()
+
+    s: LrpcFunDict = {
+        "name": "f1",
+        "id": 123,
+        "params": [{"name": "p1", "type": "uint8_t"}, {"name": "p2", "type": "bool"}],
+        "returns": [{"name": "r1", "type": "uint8_t"}, {"name": "r2", "type": "bool"}],
+    }
+
+    stream = LrpcFun(s)
+
+    stream.accept(v)
+
+    assert v.result == "function[f1+123]-return[r1]-return[r2]-return_end-param[p1]-param[p2]-param_end-function_end"

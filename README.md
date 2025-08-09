@@ -22,21 +22,21 @@ Your RPC interface is specified in a YAML file
 File name: _example.lrpc.yaml_
 ``` yaml
 services:
-  - name: "battery"
+  - name: battery
     functions:
-      - name: "get"
+      - name: get
         params:
-          - name: "option"
+          - name: option
             type: "@VoltageScales"
         returns:
-          - name: "voltage"
+          - name: voltage
             type: double
 enums:
-  - name: "VoltageScales"
+  - name: VoltageScales
     fields:
-        name: "microvolts"
-        name: "millivolts"
-        name: "volts"
+        name: microvolts
+        name: millivolts
+        name: volts
 ```
 
 Generate server side code by simply running this command

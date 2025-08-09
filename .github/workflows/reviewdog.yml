@@ -12,7 +12,7 @@ jobs:
       - name: Install requirements
         run: pip install -r requirements/dev.txt
       - name: Run MyPy
-        uses: tsuyoshicho/action-mypy@v4
+        uses: tsuyoshicho/action-mypy@v5
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review

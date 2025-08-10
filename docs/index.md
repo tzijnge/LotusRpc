@@ -54,19 +54,19 @@ LRPC uses Python to generate code and can therefore be used on all platforms tha
 # Example definition
 ``` yaml
 services:
-  - name: "battery"
+  - name: battery
     functions:
-      - name: "get"
+      - name: get
         params:
-          - name: "option"
+          - name: option
             type: "@VoltageScales"
         returns:
-          - name: "voltage"
+          - name: voltage
             type: double
 enums:
-  - name: "VoltageScales"
+  - name: VoltageScales
     fields:
-        name: "microvolts"
-        name: "millivolts"
-        name: "volts"
+        name: microvolts
+        name: millivolts
+        name: volts
 ```

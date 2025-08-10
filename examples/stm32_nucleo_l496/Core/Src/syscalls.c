@@ -30,15 +30,12 @@
 #include <sys/time.h>
 #include <sys/times.h>
 
-
 /* Variables */
 extern int __io_putchar(int ch) __attribute__((weak));
 extern int __io_getchar(void) __attribute__((weak));
 
-
-char *__env[1] = { 0 };
+char *__env[1] = {0};
 char **environ = __env;
-
 
 /* Functions */
 void initialise_monitor_handles()
@@ -58,23 +55,21 @@ int _kill(int pid, int sig)
   return -1;
 }
 
-void _exit (int status)
+void _exit(int status)
 {
   _kill(status, -1);
-  while (1) {}    /* Make sure we hang here */
+  while (1)
+  {
+  } /* Make sure we hang here */
 }
 
 __attribute__((weak)) int _read(int file, char *ptr, int len)
 {
   (void)file;
-  int DataIdx;
+  (void)ptr;
+  (void)len;
 
-  for (DataIdx = 0; DataIdx < len; DataIdx++)
-  {
-    *ptr++ = __io_getchar();
-  }
-
-  return len;
+  return 0;
 }
 
 __attribute__((weak)) int _write(int file, char *ptr, int len)
@@ -94,7 +89,6 @@ int _close(int file)
   (void)file;
   return -1;
 }
-
 
 int _fstat(int file, struct stat *st)
 {
@@ -142,7 +136,7 @@ int _unlink(char *name)
 clock_t _times(struct tms *buf)
 {
   (void)buf;
-  return -1;
+  return 0;
 }
 
 int _stat(const char *file, struct stat *st)
@@ -187,9 +181,9 @@ int _execve(char *name, char **argv, char **env)
  */
 static int starm_putc(char c, FILE *file)
 {
-	(void) file;
+  (void)file;
   __io_putchar(c);
-	return c;
+  return c;
 }
 
 /**
@@ -200,19 +194,19 @@ static int starm_putc(char c, FILE *file)
  */
 static int starm_getc(FILE *file)
 {
-	unsigned char c;
-	(void) file;
+  unsigned char c;
+  (void)file;
   c = __io_getchar();
-	return c;
+  return c;
 }
 
 // Define and initialize the standard I/O streams for Picolibc.
 // FDEV_SETUP_STREAM connects the starm_putc and starm_getc helper functions to a FILE structure.
 // _FDEV_SETUP_RW indicates the stream is for reading and writing.
 static FILE __stdio = FDEV_SETUP_STREAM(starm_putc,
-					starm_getc,
-					NULL,
-					_FDEV_SETUP_RW);
+                                        starm_getc,
+                                        NULL,
+                                        _FDEV_SETUP_RW);
 
 // Assign the standard stream pointers (stdin, stdout, stderr) to the initialized stream.
 // Picolibc uses these pointers for standard I/O operations (printf, scanf, etc.).

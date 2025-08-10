@@ -142,6 +142,8 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
+  (void)file;
+  (void)line;
   Error_Handler();
   /* USER CODE END 6 */
 }

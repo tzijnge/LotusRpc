@@ -27,16 +27,16 @@ Streams are LotusRpc's way of sending many messages in one direction with as lit
 
 LotusRpc has two main types of streams. A stream originating from the server and a stream originating from the client. In both cases the client is considered the master in the system; it determines when to start and stop a stream. LotusRpc also makes distinction between finite streams and infinite streams. All cases are covered below with a sequence diagram.
 
-In the case of a client to server stream, the client just starts sending messages and the server will have to handle them. The client can stop sending at any time. ALternatively, the server can send a `requestStop` message to the client to indicate that it does not want to receive any more data. This message is optional and it is left up to the client application what to do with this message. I.e., LotusRpc only provides the infrastructure, but does not enforce any particular behavior.
+In the case of a client to server stream, the client just starts sending messages and the server will have to handle them. The client can stop sending at any time. Alternatively, the server can send a `requestStop` message to the client to indicate that it does not want to receive any more data. This message is optional and it is left up to the client application what to do with this message. I.e., LotusRpc only provides the infrastructure, but does not enforce any particular behavior.
 
 ``` mermaid
 sequenceDiagram
     title: Basic client stream
 
-    Server ->> Client: message 1
-    Server ->> Client: message 2
-    Server ->> Client: message n
-    Client ->> Server: requestStop
+    Client ->> Server: message 1
+    Client ->> Server: message 2
+    Client ->> Server: message n
+    Server ->> Client: requestStop
 ```
 
 In case of a server to client stream, the client starts the stream by sending the `start` command. It can stop the stream at any time by sending the `stop` command. Again, LotusRpc provides the infrastructure for starting and stopping a stream, but is left up to the server and client applications how to handle these commands. LotusRpc does not enforce actual starting and stopping. In fact, the server could start sending stream data without even receiving a `start` command.
@@ -45,11 +45,11 @@ In case of a server to client stream, the client starts the stream by sending th
 sequenceDiagram
     title: Basic server stream
 
-    Server ->> Client: start
-    Client ->> Server: message 1
-    Note over Client, Server: ...
-    Client ->> Server: message n
-    Server ->> Client: stop
+    Client ->> Server: start
+    Server ->> Client: message 1
+    Note over Server, Client: ...
+    Server ->> Client: message n
+    Client ->> Server: stop
 ```
 Both stream variants can be finite or infinite (default). In case of a finite stream, the stream message gets an additional boolean parameter called `final` to indicate if a message is the last one in the stream (`final` is true) or not (`final` is false). This allows the receiving side to take appropriate action upon receiving the last message in the stream.
 
@@ -57,19 +57,19 @@ Both stream variants can be finite or infinite (default). In case of a finite st
 sequenceDiagram
     title: Finite client stream
 
-    Server ->> Client: message 1 [final=false]
-    Server ->> Client: message 2 [final=false]
-    Server ->> Client: message 3 [final=true]
+    Client ->> Server: message 1 [final=false]
+    Client ->> Server: message 2 [final=false]
+    Client ->> Server: message 3 [final=true]
 ```
 
 ``` mermaid
 sequenceDiagram
     title: Finite server stream
 
-    Server ->> Client: start
-    Client ->> Server: message 1 [final=false]
-    Note over Client, Server: ...
-    Client ->> Server: message n [final=true]
+    Client ->> Server: start
+    Server ->> Client: message 1 [final=false]
+    Note over Server, Client: ...
+    Server ->> Client: message n [final=true]
 ```
 
 ## Use RPC (client side)

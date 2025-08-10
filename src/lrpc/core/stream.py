@@ -34,6 +34,9 @@ class LrpcStream:
         if "params" in raw:
             self.__params.extend([LrpcVar(p) for p in raw["params"]])
 
+        if self.is_finite():
+            self.__params.append(LrpcVar({"name": "final", "type": "bool"}))
+
     def accept(self, visitor: LrpcVisitor) -> None:
         visitor.visit_lrpc_stream(self)
 

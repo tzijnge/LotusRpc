@@ -82,6 +82,8 @@ def test_visit_stream() -> None:
 
 
 def test_finite_stream() -> None:
+    v = StringifyVisitor()
+
     s: LrpcStreamDict = {
         "name": "s1",
         "id": 123,
@@ -90,7 +92,30 @@ def test_finite_stream() -> None:
         "params": [{"name": "p1", "type": "uint8_t"}, {"name": "p2", "type": "bool"}],
     }
 
-    assert LrpcStream(s).is_finite()
+    stream = LrpcStream(s)
+
+    assert stream.is_finite()
+    stream.accept(v)
+
+    assert v.result == "stream[s1+123+server]-param[p1]-param[p2]-param[final]-param_end-stream_end"
+
+
+def test_finite_stream_no_params() -> None:
+    v = StringifyVisitor()
+
+    s: LrpcStreamDict = {
+        "name": "s1",
+        "id": 123,
+        "origin": "server",
+        "finite": True,
+    }
+
+    stream = LrpcStream(s)
+
+    assert stream.is_finite()
+    stream.accept(v)
+
+    assert v.result == "stream[s1+123+server]-param[final]-param_end-stream_end"
 
 
 def test_infinite_stream() -> None:

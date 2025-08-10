@@ -39,3 +39,5 @@ lrpc.egg-info
 /VENV
 /.coverage
 /coverage.xml
+/examples/stm32_nucleo_l496/CMakeUserPresets.json
+/examples/stm32_nucleo_l496/.mxproject

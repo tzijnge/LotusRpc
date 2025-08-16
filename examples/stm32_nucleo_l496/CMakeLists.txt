@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.22)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -28,8 +28,21 @@ add_subdirectory(cmake/stm32cubemx)
 
 target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE)
 
+set(LRPC_DIR ${CMAKE_SOURCE_DIR}/App/lrpc)
+set(LRPC_OUT_DIR ${LRPC_DIR}/generated)
+set(LRPC_SERVER_HEADER ${LRPC_OUT_DIR}/example.hpp)
+set(LRPC_DEF ${LRPC_DIR}/example.lrpc.yaml)
+
+add_custom_command(OUTPUT ${LRPC_SERVER_HEADER}
+                COMMENT "Generate LRPC files"
+                DEPENDS ${LRPC_DEF}
+                COMMAND lrpcg cpp -d ${LRPC_DEF} -o ${LRPC_OUT_DIR} -w)
+
+set_directory_properties(PROPERTIES ADDITIONAL_CLEAN_FILES ${LRPC_OUT_DIR})
+
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_SOURCE_DIR}/App/main.cpp
+    ${LRPC_SERVER_HEADER}
 )
 
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE

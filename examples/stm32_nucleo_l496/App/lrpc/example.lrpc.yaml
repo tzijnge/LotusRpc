@@ -1,0 +1,11 @@
+name: example
+services:
+  - name: srv1
+    functions:
+      - name: f1
+        params:
+          - { name: p1, type: uint16_t }
+          - { name: p2, type: uint32_t }
+        returns:
+          - { name: r1, type: uint16_t }
+          - { name: r2, type: uint32_t }

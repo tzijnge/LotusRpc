@@ -41,3 +41,4 @@ lrpc.egg-info
 /coverage.xml
 /examples/stm32_nucleo_l496/CMakeUserPresets.json
 /examples/stm32_nucleo_l496/.mxproject
+/examples/stm32_nucleo_l496/App/lrpc/generated

@@ -58,6 +58,13 @@ jobs:
       - name: Install sonar-scanner and build-wrapper
         uses: SonarSource/sonarcloud-github-c-cpp@v3
 
+      - name: Install ARM GCC
+        working-directory: scripts
+        run: python install_arm_gcc.py --destination ${{env.TOOLS_DIR}}/arm-gcc
+
+      - name: Build examples
+        run: cmake -DTOOLCHAIN_PATH=$(TOOLS_DIR)/arm-gcc/bin/ -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=examples/stm32_nucleo_l496/build/Release/install -Sexamples/stm32_nucleo_l496 -Bexamples/stm32_nucleo_l496/build/Release -G Ninja
+
       - name: Install Python requirements
         run: pip install -r requirements/dev.txt
 
@@ -99,7 +106,3 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           sonar-scanner --define sonar.cfamily.compile-commands="${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json"
-
-      - name: Install ARM GCC
-        working-directory: scripts
-        run: python install_arm_gcc.py --destination ${{env.TOOLS_DIR}}/arm_gcc

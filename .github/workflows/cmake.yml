@@ -8,32 +8,42 @@ on:
 
 env:
   BUILD_TYPE: Release
+  TOOLS_DIR: ${{ runner.temp }}/lotusrpc-tools
 
 jobs:
   check_python_versions:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        exclude:
+          - os: windows-latest
+            python-version: ["3.9", "3.10", "3.11", "3.12"]
+          - os: macos-latest
+            python-version: ["3.9", "3.10", "3.11", "3.12"]
 
     steps:
       - uses: actions/checkout@v4.1.2
+        with:
+          submodules: false
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: "Install LotusRPC"
         run: pip install .
-      - name: "Install requirements"
-        run: pip install -r requirements/dev.txt
-      - name: "Run unit tests"
-        run: pytest
       - name: "Run LRPC generator"
         run: |
           lrpcg cpp -d tests\testdata\TestServer1.lrpc.yaml -o .
           lrpcg cpp -d tests\testdata\TestServer2.lrpc.yaml -o .
           lrpcg cpp -d tests\testdata\TestServer3.lrpc.yaml -o .
           lrpcg cpp -d tests\testdata\TestServer4.lrpc.yaml -o .
+
+      - name: Run LRPC client CLI
+        run: |
+          lrpcc --version
+          lrpcc --help
 
   build_and_test:
     runs-on: ubuntu-latest
@@ -48,28 +58,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4.1.2
         with:
-          submodules: "true"
+          submodules: true
 
       - name: Install sonar-scanner and build-wrapper
         uses: SonarSource/sonarcloud-github-c-cpp@v3
 
       - name: Install Python requirements
-        run: |
-          pip install -r requirements/package.txt
-          pip install -r requirements/dev.txt
+        run: pip install -r requirements/dev.txt
 
       - name: Install LRPC Python package
         run: pip install .
-
-      - name: Run lotusrpc generator
-        run: |
-          lrpcg --version
-          lrpcg --help
-
-      - name: Run LRPC client CLI
-        run: |
-          lrpcc --version
-          lrpcc --help
 
       - name: Configure CMake
         run: cmake -B ${{github.workspace}}/cmake_build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
@@ -98,7 +96,7 @@ jobs:
         if: ${{ github.triggering_actor != 'dependabot[bot]' }}
         uses: EnricoMi/publish-unit-test-result-action/linux@v2
         with:
-          junit_files: "testresults/*.xml"
+          files: "testresults/*.xml"
 
       - name: Run sonar-scanner
         env:
@@ -106,3 +104,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           sonar-scanner --define sonar.cfamily.compile-commands="${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json"
+
+      - name: Install ARM GCC
+        working-directory: scripts
+        run: python install_arm_gcc.py --destination ${{env.TOOLS_DIR}}/arm_gcc

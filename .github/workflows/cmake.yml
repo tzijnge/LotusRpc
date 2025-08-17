@@ -8,7 +8,7 @@ on:
 
 env:
   BUILD_TYPE: Release
-  TOOLS_DIR: ${{ runner.temp }}/lotusrpc-tools
+  TOOLS_DIR: $RUNNER_TEMP/lotusrpc-tools
 
 jobs:
   check_python_versions:

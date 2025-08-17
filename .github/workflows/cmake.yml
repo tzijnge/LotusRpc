@@ -58,15 +58,15 @@ jobs:
       - name: Install sonar-scanner and build-wrapper
         uses: SonarSource/sonarcloud-github-c-cpp@v3
 
-      - name: Install ARM GCC
-        working-directory: scripts
-        run: python install_arm_gcc.py --destination ${{env.TOOLS_DIR}}/arm-gcc
-
       - name: Install Python requirements
         run: pip install -r requirements/dev.txt
 
       - name: Install LRPC Python package
         run: pip install .
+
+      - name: Install ARM GCC
+        working-directory: scripts
+        run: python install_arm_gcc.py --destination ${{env.TOOLS_DIR}}/arm-gcc
 
       - name: Build examples
         run: |

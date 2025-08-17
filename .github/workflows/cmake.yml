@@ -62,27 +62,29 @@ jobs:
         working-directory: scripts
         run: python install_arm_gcc.py --destination ${{env.TOOLS_DIR}}/arm-gcc
 
-      - name: Build examples
-        run: cmake -DTOOLCHAIN_PATH=$(TOOLS_DIR)/arm-gcc/bin/ -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=examples/stm32_nucleo_l496/build/Release/install -Sexamples/stm32_nucleo_l496 -Bexamples/stm32_nucleo_l496/build/Release -G Ninja
-
       - name: Install Python requirements
         run: pip install -r requirements/dev.txt
 
       - name: Install LRPC Python package
         run: pip install .
 
-      - name: Configure CMake
+      - name: Build examples
+        run: |
+          cmake -DTOOLCHAIN_PATH=$(TOOLS_DIR)/arm-gcc/bin/ -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=examples/stm32_nucleo_l496/build/Release/install -Sexamples/stm32_nucleo_l496 -Bexamples/stm32_nucleo_l496/build/Release -G Ninja
+          cmake --build examples/stm32_nucleo_l496/build/Release --parallel 10
+
+      - name: Configure unit tests
         run: cmake -B ${{github.workspace}}/cmake_build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
-      - name: Run build-wrapper
+      - name: Build unit tests with SQ
         run: |
           build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build ${{github.workspace}}/cmake_build --config ${{env.BUILD_TYPE}}
 
-      - name: C++ tests
+      - name: C++ unit tests
         working-directory: ${{github.workspace}}/cmake_build
         run: ctest -C ${{env.BUILD_TYPE}} --output-junit ../testresults/cpptestresults.xml
 
-      - name: Python tests
+      - name: Python unit tests
         run: pytest -v --junitxml=testresults/pytestresults.xml
 
       - name: Python code coverage

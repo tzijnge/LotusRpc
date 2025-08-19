@@ -1,5 +1,4 @@
 #include "main.h"
-#include "gpio.h"
 #include "usart.h"
 #include "lrpc/generated/example.hpp"
 
@@ -39,7 +38,6 @@ int main(void)
     HAL_Init();
     SystemClock_Config();
 
-    MX_GPIO_Init();
     MX_LPUART1_UART_Init();
 
     SysTick->CTRL &= ~(SysTick_CTRL_ENABLE_Msk | SysTick_CTRL_TICKINT_Msk);

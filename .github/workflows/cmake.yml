@@ -56,7 +56,7 @@ jobs:
           submodules: true
 
       - name: ls
-        run: ls examples/stm32_nucleo_l496 -l
+        run: ls examples/stm32_nucleo_l496/cmake -l
 
       - name: Install sonar-scanner and build-wrapper
         uses: SonarSource/sonarcloud-github-c-cpp@v3

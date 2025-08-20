@@ -55,8 +55,8 @@ jobs:
         with:
           submodules: true
 
-      - name: ls
-        run: ls examples/stm32_nucleo_l496/cmake -l
+      - name: cat
+        run: cat ./examples/stm32_nucleo_l496/cmake/gcc-arm-none-eabi.cmake
 
       - name: Install sonar-scanner and build-wrapper
         uses: SonarSource/sonarcloud-github-c-cpp@v3

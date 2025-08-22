@@ -70,7 +70,7 @@ jobs:
 
       - name: Build examples
         run: |
-          ls ${{github.workspace}} -l
+          set -e
           cmake -DTOOLCHAIN_PATH=${{env.TOOLS_DIR}}/arm-gcc/bin/ -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/examples/stm32_nucleo_l496/cmake/gcc-arm-none-eabi.cmake -S ${{github.workspace}}/examples/stm32_nucleo_l496 -B ${{github.workspace}}/examples/stm32_nucleo_l496/build/Release -G Ninja
           cmake --build ${{github.workspace}}/examples/stm32_nucleo_l496/build/Release --parallel 10
 

@@ -10,9 +10,72 @@ extern "C" void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 class Srv1 : public srv1ServiceShim
 {
 public:
-    std::tuple<uint16_t, uint32_t> f1(uint16_t p1, uint32_t p2) override
+    uint8_t f1(uint8_t p1) override
     {
-        return {p1 + 10, p2 + 20};
+        return p1;
+    }
+
+    uint8_t f2(uint8_t p1) override
+    {
+        return p1;
+    }
+
+    uint16_t f3(uint16_t p1) override
+    {
+        return p1;
+    }
+
+    uint32_t f4(uint32_t p1) override
+    {
+        return p1;
+    }
+
+    uint64_t f5(uint64_t p1) override
+    {
+        return p1;
+    }
+
+    bool f6(bool p1) override
+    {
+        return p1;
+    }
+
+    float f7(float p1) override
+    {
+        return p1;
+    }
+
+    double f8(double p1) override
+    {
+        return p1;
+    }
+
+    std::tuple<uint8_t, uint8_t> f9() override
+    {
+        return {123, 456};
+    }
+
+    etl::array<uint8_t, 20> f10() override
+    {
+        return {};
+    }
+
+    void f11(const etl::span<const uint8_t> &) override
+    {
+    }
+
+    void f12(const etl::optional<uint8_t> &) override
+    {
+    }
+
+    uint32_t f13(const etl::string_view &p1) override
+    {
+        return p1.size();
+    }
+
+    etl::string<20> f14(const etl::string_view &p1) override
+    {
+        return {p1.begin(), p1.end()};
     }
 };
 
@@ -46,17 +109,14 @@ int main(void)
 
     uint8_t receiveBuffer{0};
 
-    HAL_UART_Receive_IT(&hlpuart1, &receiveBuffer, 1);
+    // HAL_UART_Receive_IT(&hlpuart1, &receiveBuffer, 1);
 
     while (true)
     {
-
+        HAL_UART_Receive_IT(&hlpuart1, &receiveBuffer, 1);
         __WFI();
 
         server.lrpcReceive(receiveBuffer);
-
-        HAL_UART_Receive_IT(&hlpuart1, &receiveBuffer, 1);
-
-        HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
+        // HAL_UART_Transmit(&hlpuart1, &receiveBuffer, 1, HAL_MAX_DELAY);
     }
 }

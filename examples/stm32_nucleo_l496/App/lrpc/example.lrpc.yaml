@@ -4,8 +4,64 @@ services:
     functions:
       - name: f1
         params:
+          - { name: p1, type: uint8_t }
+        returns:
+          - { name: r1, type: uint8_t }
+      - name: f2
+        params:
+          - { name: p1, type: uint8_t }
+        returns:
+          - { name: r1, type: uint8_t }
+      - name: f3
+        params:
           - { name: p1, type: uint16_t }
-          - { name: p2, type: uint32_t }
         returns:
           - { name: r1, type: uint16_t }
-          - { name: r2, type: uint32_t }
+      - name: f4
+        params:
+          - { name: p1, type: uint32_t }
+        returns:
+          - { name: r1, type: uint32_t }
+      - name: f5
+        params:
+          - { name: p1, type: uint64_t }
+        returns:
+          - { name: r1, type: uint64_t }
+      - name: f6
+        params:
+          - { name: p1, type: bool }
+        returns:
+          - { name: r1, type: bool }
+      - name: f7
+        params:
+          - { name: p1, type: float }
+        returns:
+          - { name: r1, type: float }
+      - name: f8
+        params:
+          - { name: p1, type: double }
+        returns:
+          - { name: r1, type: double }
+      - name: f9
+        returns:
+          - { name: r1, type: uint8_t }
+          - { name: r2, type: uint8_t }
+      - name: f10
+        returns:
+          - { name: r1, type: uint8_t, count: 20 }
+      - name: f11
+        params:
+          - { name: p1, type: uint8_t, count: 20 }
+      - name: f12
+        params:
+          - { name: p1, type: uint8_t, count: "?" }
+      - name: f13
+        params:
+          - { name: p1, type: string }
+        returns:
+          - { name: r1, type: uint32_t }
+      - name: f14
+        params:
+          - { name: p1, type: string }
+        returns:
+          - { name: r1, type: string_20 }

@@ -120,14 +120,11 @@ int main(void)
 
     uint8_t receiveBuffer{0};
 
-    // HAL_UART_Receive_IT(&hlpuart1, &receiveBuffer, 1);
-
     while (true)
     {
         HAL_UART_Receive_IT(&hlpuart1, &receiveBuffer, 1);
         __WFI();
 
         server.lrpcReceive(receiveBuffer);
-        // HAL_UART_Transmit(&hlpuart1, &receiveBuffer, 1, HAL_MAX_DELAY);
     }
 }

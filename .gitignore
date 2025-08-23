@@ -42,3 +42,6 @@ lrpc.egg-info
 /examples/stm32_nucleo_l496/CMakeUserPresets.json
 /examples/stm32_nucleo_l496/.mxproject
 /examples/stm32_nucleo_l496/App/lrpc/generated
+/examples/stm32_nucleo_l496/cmake/stm32cubemx/cmake_install.cmake
+/examples/stm32_nucleo_l496/cmake/stm32cubemx/STM32_Drivers.dir
+/examples/stm32_nucleo_l496/cmake/stm32cubemx/CMakeFiles

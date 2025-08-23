@@ -4,6 +4,8 @@
 * Using ARM GCC toolchain version 14.3
 * To get started in VS code
   * Install Ninja and add to path
+  * Install the CMake extension for VS code
+  * Install the Cortex-debug extension for VS code
   * Add a CMake user presets file (*CmakeUserPresets.json*) to specify the ARM GCC installation directory as follows:
 
 ``` JSON
@@ -27,6 +29,11 @@
     ]
 }
 ```
+* Connect the board to PC with USB on CN1.
+* Build the code and upload the resulting bin file to the target
+* Find the COM port of the Nucleo board. It is called "STMicroelectronics STLink Virtual COM Port". Use that COM port name in _lrpcc.config.yaml_
+* Open a terminal in the example root directory and communicate with the Nucleo by typing `lrpcc`
+
 
 ## Size comparison
 The following table gives an impression of Flash memory usage of LotusRPC. The base line is a simple echo application that receives a byte on UART and echoes it back to the sender. Subsequent entries in the table add more and more LotusRPC features.

@@ -7,3 +7,5 @@ main:
     url: /extending_lrpc
   - title: "Reference"
     url: /reference
+  - title: "Examples"
+    url: /examples

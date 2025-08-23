@@ -49,3 +49,4 @@ The following table gives an impression of Flash memory usage of LotusRPC. The b
 | void f12(uint8_t?)  | 14560 | Introduces `etl::optional` |
 | uint32_t f13(string)  | 14680 | Introduces `etl::string_view` |
 | string_20 f14(string)  | 14968 | Introduces `etl::string` |
+| second service  | 15184 | |

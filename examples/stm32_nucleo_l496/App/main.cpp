@@ -79,12 +79,22 @@ public:
     }
 };
 
+class Srv2 : public srv2ServiceShim
+{
+public:
+    int32_t f1(int32_t p1) override
+    {
+        return p1;
+    }
+};
+
 class ExampleServer : public example
 {
 public:
     ExampleServer()
     {
         registerService(srv1);
+        registerService(srv2);
     }
 
     void lrpcTransmit(etl::span<const uint8_t> bytes) override
@@ -94,6 +104,7 @@ public:
 
 private:
     Srv1 srv1;
+    Srv2 srv2;
 };
 
 int main(void)

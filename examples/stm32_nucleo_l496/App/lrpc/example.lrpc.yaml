@@ -65,3 +65,10 @@ services:
           - { name: p1, type: string }
         returns:
           - { name: r1, type: string_20 }
+  - name: srv2
+    functions:
+      - name: f1
+        params:
+          - { name: p1, type: int32_t }
+        returns:
+          - { name: r1, type: int32_t }

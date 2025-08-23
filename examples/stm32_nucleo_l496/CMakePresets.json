@@ -1,0 +1,41 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "default",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "toolchainFile": "${sourceDir}/cmake/gcc-arm-none-eabi.cmake",
+            "cacheVariables": {}
+        },
+        {
+            // Inherit from this configuration in CMakeUserPresets.json
+            // and add TOOLCHAIN_PATH to cacheVariables
+            "name": "Debug_no_toolchain",
+            "inherits": "default",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            // Inherit from this configuration in CMakeUserPresets.json
+            // and add TOOLCHAIN_PATH to cacheVariables
+            "name": "Release_no_toolchain",
+            "inherits": "default",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "Debug",
+            "configurePreset": "Debug"
+        },
+        {
+            "name": "Release",
+            "configurePreset": "Release"
+        }
+    ]
+}

@@ -36,7 +36,7 @@ class ParamAndReturnValidator(LrpcValidator):
     def visit_lrpc_function_param(self, param: LrpcVar) -> None:
         name = param.name()
         if name in self.__param_names:
-            self.__errors.append(f"Duplicate param name in {self.__current_service}.{self.__current_function}: {name}")
+            self.__errors.append(f"Duplicate name in {self.__current_service}.{self.__current_function}: {name}")
 
         self.__param_names.add(name)
 
@@ -46,7 +46,7 @@ class ParamAndReturnValidator(LrpcValidator):
     def visit_lrpc_function_return(self, ret: LrpcVar) -> None:
         name = ret.name()
         if name in self.__param_names:
-            self.__errors.append(f"Duplicate return name in {self.__current_service}.{self.__current_function}: {name}")
+            self.__errors.append(f"Duplicate name in {self.__current_service}.{self.__current_function}: {name}")
 
         self.__param_names.add(name)
 
@@ -59,9 +59,19 @@ class ParamAndReturnValidator(LrpcValidator):
     def visit_lrpc_stream_param(self, param: LrpcVar) -> None:
         name = param.name()
         if name in self.__param_names:
-            self.__errors.append(f"Duplicate param name in {self.__current_service}.{self.__current_stream}: {name}")
+            self.__errors.append(f"Duplicate name in {self.__current_service}.{self.__current_stream}: {name}")
 
         self.__param_names.add(name)
 
     def visit_lrpc_stream_param_end(self) -> None:
         self.__param_names.clear()
+
+    def visit_lrpc_stream_return(self, ret: LrpcVar) -> None:
+        name = ret.name()
+        if name in self.__return_names:
+            self.__errors.append(f"Duplicate name in {self.__current_service}.{self.__current_stream}: {name}")
+
+        self.__return_names.add(name)
+
+    def visit_lrpc_stream_return_end(self) -> None:
+        self.__return_names.clear()

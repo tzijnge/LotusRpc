@@ -167,14 +167,14 @@ class ClientCliVisitor(LrpcVisitor):
             current_stream_stop = click.Command(
                 name=stream_stop_name,
                 callback=partial(self.__handle_command, self.current_service.name, stream_stop_name),
-                help=f"Call LRPC stream {self.current_service.name}.{stream_stop_name}",
+                help=f"Stop LRPC stream {self.current_service.name}.{stream.name()}",
             )
 
             self.current_service.add_command(current_stream_stop)
 
     def visit_lrpc_stream_param(self, param: LrpcVar) -> None:
         if self.current_stream_origin == LrpcStream.Origin.SERVER:
-            pass
+            return
 
         attributes = {"type": self.__click_type(param), "nargs": param.array_size() if param.is_array() else 1}
 

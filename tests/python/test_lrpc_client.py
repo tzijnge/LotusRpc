@@ -10,12 +10,8 @@ lrpc_def = load_lrpc_def_from_url(def_url, warnings_as_errors=False)
 client = LrpcClient(lrpc_def)
 
 
-def test_encode_nested_struct() -> None:
-    assert client.encode("s0", "f1", p1={"a": {"a": 4567, "b": 123, "c": True}}) == b"\x07\x00\x01\xD7\x11\x7B\x01"
-
-
 def test_call() -> None:
-    encoded = client.encode("s1", "add5", **{"p0": 123})
+    encoded = client.encode("srv1", "add5", **{"p0": 123})
     # client: send encoded to server
 
     # server: copy service ID and function ID and append return value
@@ -29,57 +25,111 @@ def test_call() -> None:
     assert received["r0"] == 128
 
 
-def test_encode_invalid_service() -> None:
+def test_encode_function_nested_struct() -> None:
+    assert client.encode("srv0", "f1", p1={"a": {"a": 4567, "b": 123, "c": True}}) == b"\x07\x00\x01\xd7\x11\x7b\x01"
+
+
+def test_encode_function_invalid_service() -> None:
     with pytest.raises(ValueError):
         client.encode("invalid_service", "f2")
 
 
-def test_encode_invalid_function() -> None:
-    with pytest.raises(ValueError):
-        client.encode("s1", "invalid_function")
+def test_encode_function_invalid_function() -> None:
+    with pytest.raises(ValueError) as e:
+        client.encode("srv1", "invalid_function")
+
+    assert str(e.value) == "Function or stream invalid_function not found in service srv1"
 
 
-def test_encode_too_many_parameters() -> None:
-    with pytest.raises(ValueError):
+def test_encode_function_too_many_parameters() -> None:
+    with pytest.raises(ValueError) as e:
         # function takes no parameters
-        client.encode("s1", "f2", invalid=123)
+        client.encode("srv1", "f2", invalid=123)
+
+    assert str(e.value) == "No such parameter(s): {'invalid'}"
 
 
-def test_encode_missing_parameter() -> None:
-    with pytest.raises(ValueError):
+def test_encode_function_missing_parameter() -> None:
+    with pytest.raises(ValueError) as e:
         # function takes one parameter, but none given
-        client.encode("s1", "add5")
+        client.encode("srv1", "add5")
+
+    assert str(e.value) == "Required parameter(s) {'p0'} not given"
 
 
-def test_encode_invalid_parameter_name() -> None:
-    with pytest.raises(ValueError):
+def test_encode_function_invalid_parameter_name() -> None:
+    with pytest.raises(ValueError) as e:
         # function takes one parameter, but none given
-        client.encode("s1", "add5", invalid=5)
+        client.encode("srv1", "add5", invalid=5)
+
+    assert str(e.value) == "No such parameter(s): {'invalid'}"
+
+
+def test_encode_stream_client_infinite() -> None:
+    encoded = client.encode("srv2", "client_infinite", p0=0xAB, p1=0xCDEF)
+    assert encoded == b"\x06\x02\x00\xab\xef\xcd"
+
+
+def test_encode_stream_client_finite() -> None:
+    encoded = client.encode("srv2", "client_finite", p0=0xAB, p1=0xCDEF, final=True)
+    assert encoded == b"\x07\x02\x01\xab\xef\xcd\x01"
+
+
+def test_encode_stream_server_infinite_start() -> None:
+    encoded = client.encode("srv2", "server_infinite", start=True)
+    assert encoded == b"\x04\x02\x02\x01"
+
+
+def test_encode_stream_server_infinite_stop() -> None:
+    encoded = client.encode("srv2", "server_infinite", start=False)
+    assert encoded == b"\x04\x02\x02\x00"
+
+
+def test_encode_stream_server_finite_start() -> None:
+    encoded = client.encode("srv2", "server_finite", start=True)
+    assert encoded == b"\x04\x02\x03\x01"
+
+
+def test_encode_stream_server_finite_stop() -> None:
+    encoded = client.encode("srv2", "server_finite", start=False)
+    assert encoded == b"\x04\x02\x03\x00"
 
 
 def test_decode_invalid_service_id() -> None:
-    with pytest.raises(ValueError):
-        encoded = b"\x04\xAA\x00\x02"
+    with pytest.raises(ValueError) as e:
+        encoded = b"\x04\xaa\x00\x02"
         client.decode(encoded)
+
+    assert str(e.value) == "Service with ID 170 not found in the LRPC definition file"
 
 
 def test_decode_invalid_function_id() -> None:
-    with pytest.raises(ValueError):
-        encoded = b"\x04\x01\xAA\x02"
+    with pytest.raises(ValueError) as e:
+        encoded = b"\x04\x01\xaa\x02"
         client.decode(encoded)
 
+    assert str(e.value) == "Function with ID 170 not found in service srv1"
+
+
 def test_decode_message_too_short() -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as e:
         client.decode(b"")
 
-    with pytest.raises(ValueError):
+    assert str(e.value) == "Unable to decode message from b'': an LRPC message has at least 3 bytes"
+
+    with pytest.raises(ValueError) as e:
         client.decode(b"\x04")
 
-    with pytest.raises(ValueError):
+    assert str(e.value) == "Unable to decode message from b'\\x04': an LRPC message has at least 3 bytes"
+
+    with pytest.raises(ValueError) as e:
         client.decode(b"\x04\x01")
+
+    assert str(e.value) == "Unable to decode message from b'\\x04\\x01': an LRPC message has at least 3 bytes"
+
 
 def test_decode_error_response() -> None:
     with pytest.raises(ValueError) as e:
-        client.decode(b"\x13\xFF\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
+        client.decode(b"\x13\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
 
     assert str(e.value) == "The LRPC server reported an error"

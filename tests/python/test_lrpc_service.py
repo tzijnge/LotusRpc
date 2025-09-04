@@ -122,7 +122,7 @@ def test_visit_stream() -> None:
     service.accept(v)
 
     functions = "function[f0+36]-return_end-param_end-function_end-function[f1+40]-return_end-param_end-function_end"
-    streams = "stream[s0+36+client]-param_end-stream_end-stream[s1+40+server]-param_end-stream_end"
+    streams = "stream[s0+36+client]-param_end-return_end-stream_end-stream[s1+40+server]-param[start]-param_end-return_end-stream_end"
 
     assert v.result == f"service[srv0]-{functions}-{streams}-service_end"
 

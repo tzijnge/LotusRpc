@@ -6,25 +6,25 @@ namespace ts5
     class MockService0 : public srv0ServiceShim
     {
     public:
-        MOCK_METHOD(void, s0, (uint16_t, uint8_t), (override));
-        MOCK_METHOD(void, s1, (bool, DoorState, bool), (override));
+        MOCK_METHOD(void, client_infinite, (uint16_t, uint8_t), (override));
+        MOCK_METHOD(void, client_finite, (bool, DoorState, bool), (override));
     };
 
     class MockService1 : public srv1ServiceShim
     {
     public:
-        MOCK_METHOD(void, s0_start, (), (override));
-        MOCK_METHOD(void, s0_stop, (), (override));
-        MOCK_METHOD(void, s1_start, (), (override));
-        MOCK_METHOD(void, s1_stop, (), (override));
+        MOCK_METHOD(void, server_infinite_start, (), (override));
+        MOCK_METHOD(void, server_infinite_stop, (), (override));
+        MOCK_METHOD(void, server_finite_start, (), (override));
+        MOCK_METHOD(void, server_finite_stop, (), (override));
     };
 
     class MockService2 : public srv2ServiceShim
     {
     public:
-        MOCK_METHOD(void, s0, (DoorState), (override));
-        MOCK_METHOD(void, s1_start, (), (override));
-        MOCK_METHOD(void, s1_stop, (), (override));
+        MOCK_METHOD(void, client_infinite, (DoorState), (override));
+        MOCK_METHOD(void, server_infinite_start, (), (override));
+        MOCK_METHOD(void, server_infinite_stop, (), (override));
         MOCK_METHOD(void, f0, (DoorState), (override));
     };
 }
@@ -35,111 +35,111 @@ using TestServer5Srv2 = testutils::TestServerBase<Server5, ts5::MockService2>;
 
 static_assert(std::is_same<Server5, lrpc::Server<67>>::value, "RX and/or TX buffer size are unequal to the definition file");
 
-TEST_F(TestServer5Srv0, decodeS0)
+TEST_F(TestServer5Srv0, client_infinite)
 {
-    EXPECT_CALL(service, s0(0x1234, 0x56));
+    EXPECT_CALL(service, client_infinite(0x1234, 0x56));
 
     const auto response = receive("060000341256");
     EXPECT_EQ("", response);
 }
 
-TEST_F(TestServer5Srv0, s0_requestStop)
+TEST_F(TestServer5Srv0, client_infinite_requestStop)
 {
-    service.s0_requestStop();
+    service.client_infinite_requestStop();
     EXPECT_EQ("030000", response());
 }
 
-TEST_F(TestServer5Srv0, decodeS1)
+TEST_F(TestServer5Srv0, client_finite)
 {
-    EXPECT_CALL(service, s1(true, DoorState::Closed, false));
+    EXPECT_CALL(service, client_finite(true, DoorState::Closed, false));
 
     const auto response = receive("07003701010000");
     EXPECT_EQ("", response);
 }
 
-TEST_F(TestServer5Srv0, s1_requestStop)
+TEST_F(TestServer5Srv0, client_finite_requestStop)
 {
-    service.s1_requestStop();
+    service.client_finite_requestStop();
     EXPECT_EQ("030037", response());
 }
 
-TEST_F(TestServer5Srv1, decodeS0_stop)
+TEST_F(TestServer5Srv1, server_infinite_stop)
 {
-    EXPECT_CALL(service, s0_stop());
+    EXPECT_CALL(service, server_infinite_stop());
 
     const auto response = receive("04420000");
     EXPECT_EQ("", response);
 }
 
-TEST_F(TestServer5Srv1, decodeS0_start)
+TEST_F(TestServer5Srv1, server_infinite_start)
 {
-    EXPECT_CALL(service, s0_start());
+    EXPECT_CALL(service, server_infinite_start());
 
     const auto response = receive("04420001");
     EXPECT_EQ("", response);
 }
 
-TEST_F(TestServer5Srv1, s0_response)
+TEST_F(TestServer5Srv1, server_infinite_response)
 {
-    service.s0_response(0x1234, 0x56);
+    service.server_infinite_response(0x1234, 0x56);
     EXPECT_EQ("064200341256", response());
 }
 
-TEST_F(TestServer5Srv1, decodeS1_start)
+TEST_F(TestServer5Srv1, server_finite_start)
 {
-    EXPECT_CALL(service, s1_start());
+    EXPECT_CALL(service, server_finite_start());
 
     const auto response = receive("04422101");
     EXPECT_EQ("", response);
 }
 
-TEST_F(TestServer5Srv1, decodeS1_stop)
+TEST_F(TestServer5Srv1, server_finite_stop)
 {
-    EXPECT_CALL(service, s1_stop());
+    EXPECT_CALL(service, server_finite_stop());
 
     const auto response = receive("04422100");
     EXPECT_EQ("", response);
 }
 
-TEST_F(TestServer5Srv1, s1_response)
+TEST_F(TestServer5Srv1, server_finite_response)
 {
-    service.s1_response(true, DoorState::Open, true);
+    service.server_finite_response(true, DoorState::Open, true);
     EXPECT_EQ("064221010001", response());
 }
 
-TEST_F(TestServer5Srv2, decodeS0)
+TEST_F(TestServer5Srv2, client_infinite)
 {
-    EXPECT_CALL(service, s0(DoorState::Open));
+    EXPECT_CALL(service, client_infinite(DoorState::Open));
 
     const auto response = receive("04430000");
     EXPECT_EQ("", response);
 }
 
-TEST_F(TestServer5Srv2, s0_requestStop)
+TEST_F(TestServer5Srv2, client_infinite_requestStop)
 {
-    service.s0_requestStop();
+    service.client_infinite_requestStop();
     EXPECT_EQ("034300", response());
 }
 
-TEST_F(TestServer5Srv2, decodeS1_start)
+TEST_F(TestServer5Srv2, server_infinite_start)
 {
-    EXPECT_CALL(service, s1_start());
+    EXPECT_CALL(service, server_infinite_start());
 
     const auto response = receive("04430101");
     EXPECT_EQ("", response);
 }
 
-TEST_F(TestServer5Srv2, decodeS1_stop)
+TEST_F(TestServer5Srv2, server_infinite_stop)
 {
-    EXPECT_CALL(service, s1_stop());
+    EXPECT_CALL(service, server_infinite_stop());
 
     const auto response = receive("04430100");
     EXPECT_EQ("", response);
 }
 
-TEST_F(TestServer5Srv2, s1_response)
+TEST_F(TestServer5Srv2, server_infinite_response)
 {
-    service.s1_response(DoorState::Closed);
+    service.server_infinite_response(DoorState::Closed);
     EXPECT_EQ("04430101", response());
 }
 

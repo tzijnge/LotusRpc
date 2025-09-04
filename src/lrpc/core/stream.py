@@ -30,12 +30,20 @@ class LrpcStream:
         self.__origin = LrpcStream.Origin(raw["origin"])
         self.__is_finite = raw.get("finite", False)
         self.__params = []
+        self.__returns = []
 
+        params = []
         if "params" in raw:
-            self.__params.extend([LrpcVar(p) for p in raw["params"]])
+            params.extend([LrpcVar(p) for p in raw["params"]])
 
         if self.is_finite():
-            self.__params.append(LrpcVar({"name": "final", "type": "bool"}))
+            params.append(LrpcVar({"name": "final", "type": "bool"}))
+
+        if self.origin() == LrpcStream.Origin.CLIENT:
+            self.__params = params
+        else:
+            self.__params.append(LrpcVar({"name": "start", "type": "bool"}))
+            self.__returns = params
 
     def accept(self, visitor: LrpcVisitor) -> None:
         visitor.visit_lrpc_stream(self)
@@ -44,10 +52,17 @@ class LrpcStream:
             visitor.visit_lrpc_stream_param(p)
         visitor.visit_lrpc_stream_param_end()
 
+        for r in self.returns():
+            visitor.visit_lrpc_stream_return(r)
+        visitor.visit_lrpc_stream_return_end()
+
         visitor.visit_lrpc_stream_end()
 
     def params(self) -> list[LrpcVar]:
         return self.__params
+
+    def returns(self) -> list[LrpcVar]:
+        return self.__returns
 
     def param(self, name: str) -> LrpcVar:
         for p in self.params():
@@ -67,6 +82,9 @@ class LrpcStream:
 
     def number_params(self) -> int:
         return len(self.params())
+
+    def number_returns(self) -> int:
+        return len(self.returns())
 
     def param_names(self) -> list[str]:
         return [p.name() for p in self.params()]

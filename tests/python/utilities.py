@@ -30,6 +30,14 @@ class StringifyVisitor(LrpcVisitor):
         self._insert_separator()
         self.result += "param_end"
 
+    def visit_lrpc_stream_return(self, ret: "LrpcVar") -> None:
+        self._insert_separator()
+        self.result += f"return[{ret.name()}]"
+
+    def visit_lrpc_stream_return_end(self) -> None:
+        self._insert_separator()
+        self.result += "return_end"
+
     def visit_lrpc_stream_end(self) -> None:
         self._insert_separator()
         self.result += "stream_end"

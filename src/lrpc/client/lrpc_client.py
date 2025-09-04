@@ -2,6 +2,7 @@ import struct
 from typing import Any, Union
 
 from ..core.definition import LrpcDef
+from ..core import LrpcService, LrpcFun, LrpcStream
 from .decoder import LrpcDecoder
 from .encoder import lrpc_encode
 
@@ -53,7 +54,7 @@ class LrpcClient:
 
         fun = service.function_by_id(function_id)
         if not fun:
-            raise ValueError(f"Function with ID {function_id} not found in the service {service.name()}")
+            raise ValueError(f"Function with ID {function_id} not found in service {service.name()}")
 
         decoder = LrpcDecoder(encoded[3:], self.lrpc_def)
 
@@ -66,31 +67,59 @@ class LrpcClient:
 
         return ret
 
-    def encode(self, service_name: str, function_name: str, **kwargs: Any) -> bytes:
+    def encode(self, service_name: str, function_or_stream_name: str, **kwargs: Any) -> bytes:
         service = self.lrpc_def.service_by_name(service_name)
         if not service:
             raise ValueError(f"Service {service_name} not found in the LRPC definition file")
 
-        fun = service.function_by_name(function_name)
-        if not fun:
-            raise ValueError(f"Function {function_name} not found in the service {service_name}")
+        fun = service.function_by_name(function_or_stream_name)
+        if fun:
+            return self._encode_function(service, fun, **kwargs)
 
-        given_params = kwargs.keys()
-        required_params = fun.param_names()
+        stream = service.stream_by_name(function_or_stream_name)
+        if stream:
+            return self._encode_stream(service, stream, **kwargs)
 
-        too_many = given_params - required_params
+        raise ValueError(f"Function or stream {function_or_stream_name} not found in service {service_name}")
+
+    def _encode_function(self, service: LrpcService, function: LrpcFun, **kwargs: Any) -> bytes:
+        self._check_parameters(function.param_names(), list(kwargs.keys()))
+        encoded = self._encode_parameters(service, function, **kwargs)
+        return self._add_message_length(encoded)
+
+    def _encode_stream(self, service: LrpcService, stream: LrpcStream, **kwargs: Any) -> bytes:
+        self._check_parameters(stream.param_names(), list(kwargs.keys()))
+        encoded = self._encode_parameters(service, stream, **kwargs)
+        return self._add_message_length(encoded)
+
+    def _check_parameters(
+        self,
+        required_params: list[str],
+        given_params: list[str],
+    ) -> None:
+        too_many = set(given_params) - set(required_params)
         if len(too_many) != 0:
-            raise ValueError(f"Given parameter(s) {too_many} not found in function {function_name}")
+            raise ValueError(f"No such parameter(s): {too_many}")
 
-        not_enough = required_params - given_params
+        not_enough = set(required_params) - set(given_params)
         if len(not_enough) != 0:
             raise ValueError(f"Required parameter(s) {not_enough} not given")
 
+    def _encode_parameters(
+        self,
+        service: LrpcService,
+        function_or_stream: Union[LrpcFun, LrpcStream],
+        **kwargs: Any,
+    ) -> bytes:
         encoded = struct.pack("<B", service.id())
-        encoded += struct.pack("<B", fun.id())
+        encoded += struct.pack("<B", function_or_stream.id())
 
         for param_name, param_value in kwargs.items():
-            param = fun.param(param_name)
+            param = function_or_stream.param(param_name)
             encoded += lrpc_encode(param_value, param, self.lrpc_def)
 
+        return encoded
+
+    @staticmethod
+    def _add_message_length(encoded: bytes) -> bytes:
         return struct.pack("<B", len(encoded) + 1) + encoded

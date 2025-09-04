@@ -120,16 +120,16 @@ class ServiceShimVisitor(LrpcVisitor):
             self.__file.write("// Server stream responses")
 
         for stream in server_streams:
-            params = stream.params()
+            returns = stream.returns()
 
-            with self.__file.block(f"void {stream.name()}_response({self.__params_string(params)})"):
+            with self.__file.block(f"void {stream.name()}_response({self.__params_string(returns)})"):
                 self.__file.write("if (server == nullptr) { return; }")
                 self.__file.newline()
                 self.__file.write("auto w = server->getWriter();")
                 self.__file.write(f"writeHeader(w, {stream.id()});")
 
-                for p in stream.params():
-                    self.__file.write(f"lrpc::write_unchecked<{p.write_type()}>(w, {p.name()});")
+                for r in stream.returns():
+                    self.__file.write(f"lrpc::write_unchecked<{r.write_type()}>(w, {r.name()});")
 
                 self.__file.write("updateHeader(w);")
                 self.__file.write("server->transmit(w);")

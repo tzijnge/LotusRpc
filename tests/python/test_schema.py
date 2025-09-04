@@ -425,7 +425,7 @@ services:
     with pytest.raises(ValueError):
         load_def(rpc_def)
 
-    assert_log_entries(["Duplicate param name in s1.f1: p0"], caplog.text)
+    assert_log_entries(["Duplicate name in s1.f1: p0"], caplog.text)
 
 
 def test_duplicate_function_return_names(caplog: pytest.LogCaptureFixture) -> None:
@@ -446,7 +446,7 @@ services:
     with pytest.raises(ValueError):
         load_def(rpc_def)
 
-    assert_log_entries(["Duplicate return name in s1.f1: r0"], caplog.text)
+    assert_log_entries(["Duplicate name in s1.f1: r0"], caplog.text)
 
 
 def test_duplicate_stream_param_names(caplog: pytest.LogCaptureFixture) -> None:
@@ -462,14 +462,26 @@ services:
       - name: s2
         params:
           - { name: p0, type: bool }
-        origin: client
+          - { name: final, type: int64_t }
+        origin: server
+        finite: true
+      - name: s3
+        params:
+          - { name: p0, type: bool }
+        origin: server
 """
 
     caplog.set_level(logging.ERROR)
     with pytest.raises(ValueError):
         load_def(rpc_def)
 
-    assert_log_entries(["Duplicate param name in srv1.s1: p0"], caplog.text)
+    assert_log_entries(
+        [
+            "Duplicate name in srv1.s1: p0",
+            "Duplicate name in srv1.s2: final",
+        ],
+        caplog.text,
+    )
 
 
 def test_undeclared_custom_type(caplog: pytest.LogCaptureFixture) -> None:
@@ -545,13 +557,37 @@ enums:
     assert_log_entries(["Unused custom type: s0", "Unused custom type: e0"], caplog.text)
 
 
-def test_custom_type_is_not_unused(caplog: pytest.LogCaptureFixture) -> None:
+def test_custom_type_is_not_unused_in_server_stream(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: test
 services:
   - name: srv0
     streams:
       - name: s0
         origin: server
+        params:
+          - { name: p0, type: "@s0" }
+          - { name: p1, type: "@e0" }
+structs:
+  - name: s0
+    fields:
+      - { name: f0, type: bool }
+enums:
+  - name: e0
+    fields: [f0]
+"""
+
+    caplog.set_level(logging.WARNING)
+    load_def(rpc_def)
+    assert_log_entries([], caplog.text)
+
+
+def test_custom_type_is_not_unused_in_client_stream(caplog: pytest.LogCaptureFixture) -> None:
+    rpc_def = """name: test
+services:
+  - name: srv0
+    streams:
+      - name: s0
+        origin: client
         params:
           - { name: p0, type: "@s0" }
           - { name: p1, type: "@e0" }

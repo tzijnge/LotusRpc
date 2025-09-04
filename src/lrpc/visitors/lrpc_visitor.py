@@ -86,5 +86,11 @@ class LrpcVisitor(ABC):
     def visit_lrpc_stream_param_end(self) -> None:
         """Called after visiting all parameters of the current stream"""
 
+    def visit_lrpc_stream_return(self, ret: "LrpcVar") -> None:
+        """Called for each return of the current stream"""
+
+    def visit_lrpc_stream_return_end(self) -> None:
+        """Called after visiting all returns of the current stream"""
+
     def visit_lrpc_stream_end(self) -> None:
         """Called after visiting all parameters of the current stream"""

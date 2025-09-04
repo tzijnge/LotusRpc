@@ -1,6 +1,6 @@
 name: test_LrpcVar
 services:
-  - name: s0
+  - name: srv0
     functions:
       - name: f0
         params:
@@ -16,16 +16,42 @@ services:
             type: "@MyEnum1"
           - name: p2
             type: "@MyStruct3"
-  - name: s1
+  - name: srv1
     functions:
       - name: add5
-        params: 
+        params:
           - name: p0
             type: uint8_t
         returns:
           - name: r0
             type: uint8_t
       - name: f2
+  - name: srv2
+    streams:
+      - name: client_infinite
+        origin: client
+        finite: false
+        params:
+          - { name: p0, type: uint8_t }
+          - { name: p1, type: uint16_t }
+      - name: client_finite
+        origin: client
+        finite: true
+        params:
+          - { name: p0, type: uint8_t }
+          - { name: p1, type: uint16_t }
+      - name: server_infinite
+        origin: server
+        finite: false
+        params:
+          - { name: p0, type: uint8_t }
+          - { name: p1, type: uint16_t }
+      - name: server_finite
+        origin: server
+        finite: true
+        params:
+          - { name: p0, type: uint8_t }
+          - { name: p1, type: uint16_t }
 structs:
   - name: MyStruct1
     fields:
@@ -37,9 +63,9 @@ structs:
       - { name: a, type: "@MyStruct1" }
   - name: MyStruct3
     fields:
-      - { name: "a", type: string_2, count: 2}
-      - { name: "b", type: "@MyStruct2", count: "?"}
-      - { name: "c", type: "@MyEnum1", }
+      - { name: "a", type: string_2, count: 2 }
+      - { name: "b", type: "@MyStruct2", count: "?" }
+      - { name: "c", type: "@MyEnum1" }
 enums:
   - name: MyEnum1
     fields:

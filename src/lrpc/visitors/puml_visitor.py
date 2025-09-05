@@ -1,19 +1,28 @@
 import os
 from contextlib import contextmanager
-from typing import Iterator, Optional, Union
+from typing import TYPE_CHECKING, Iterator, Optional, Union
 
 from .lrpc_visitor import LrpcVisitor
 
-from ..core import LrpcConstant, LrpcDef, LrpcEnum, LrpcEnumField, LrpcFun, LrpcService, LrpcStruct, LrpcVar, LrpcStream
+if TYPE_CHECKING:
+    from ..core import (
+        LrpcConstant,
+        LrpcDef,
+        LrpcEnum,
+        LrpcEnumField,
+        LrpcFun,
+        LrpcService,
+        LrpcStream,
+        LrpcStruct,
+        LrpcVar,
+    )
 
 
 def in_color(t: Union[str, int], c: str) -> str:
     return f"<color:{c}>{t}</color>"
 
 
-
-
-def var_string(p: LrpcVar) -> str:
+def var_string(p: "LrpcVar") -> str:
     t = in_color(p.base_type(), "DarkCyan")
     if p.base_type_is_string():
         if p.is_auto_string():
@@ -30,13 +39,13 @@ def var_string(p: LrpcVar) -> str:
     return t + " " + in_color(p.name(), "CornflowerBlue")
 
 
-def enum_field_string(e: LrpcEnumField) -> str:
+def enum_field_string(e: "LrpcEnumField") -> str:
     name = in_color(e.name(), "CornflowerBlue")
     enum_id = in_color(e.id(), "ForestGreen")
     return f"{name} = {enum_id}"
 
 
-def const_string(p: LrpcConstant) -> str:
+def const_string(p: "LrpcConstant") -> str:
     t = in_color(p.cpp_type(), "DarkCyan")
     n = in_color(p.name(), "CornflowerBlue")
     return t + " " + n
@@ -132,7 +141,7 @@ class PumlFile:
         with open(self.filename, mode="w", encoding="utf-8") as file:
             file.write(self.text)
 
-    def function_string(self, fun: LrpcFun, max_function_or_stream_id: int) -> None:
+    def function_string(self, fun: "LrpcFun", max_function_or_stream_id: int) -> None:
         with self.font("monospaced"):
             with self.enclosed_in("[", "]"):
                 with self.color("Orange"):
@@ -154,7 +163,7 @@ class PumlFile:
             with self.color("Magenta"):
                 self.write(")")
 
-    def stream_string(self, stream: LrpcStream, max_function_or_stream_id: int) -> None:
+    def stream_string(self, stream: "LrpcStream", max_function_or_stream_id: int) -> None:
         with self.font("monospaced"):
             with self.enclosed_in("[", "]"):
                 with self.color("Green"):
@@ -199,7 +208,7 @@ class PlantUmlVisitor(LrpcVisitor):
         self.__constants: list[LrpcConstant] = []
         self.__const_items_max = 10
 
-    def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
+    def visit_lrpc_def(self, lrpc_def: "LrpcDef") -> None:
         self.__puml = PumlFile(f"{self.__output}/{lrpc_def.name()}.puml")
 
         self.__puml.block(lrpc_def.name(), "Yellow", level=1)
@@ -230,7 +239,7 @@ class PlantUmlVisitor(LrpcVisitor):
         self.__puml.block("Constants", "Pink", 2)
         self.__constants = []
 
-    def visit_lrpc_constant(self, constant: LrpcConstant) -> None:
+    def visit_lrpc_constant(self, constant: "LrpcConstant") -> None:
         self.__constants.append(constant)
 
     def visit_lrpc_constants_end(self) -> None:
@@ -243,11 +252,11 @@ class PlantUmlVisitor(LrpcVisitor):
 
         self.__puml.list_end()
 
-    def visit_lrpc_enum(self, enum: LrpcEnum) -> None:
+    def visit_lrpc_enum(self, enum: "LrpcEnum") -> None:
         icon = "external-link" if enum.is_external() else None
         self.__puml.block(enum.name(), "PaleGreen", self.__enum_indent, icon)
 
-    def visit_lrpc_enum_end(self, _: LrpcEnum) -> None:
+    def visit_lrpc_enum_end(self, _: "LrpcEnum") -> None:
         enum_field_strings = [enum_field_string(ef) for ef in self.__enum_fields[0 : self.__enum_fields_max]]
         if len(self.__enum_fields) > self.__enum_fields_max:
             enum_field_strings.append("...")
@@ -261,20 +270,20 @@ class PlantUmlVisitor(LrpcVisitor):
         if self.__enum_indent > self.__enum_indent_max:
             self.__enum_indent = 2
 
-    def visit_lrpc_enum_field(self, _: LrpcEnum, field: LrpcEnumField) -> None:
+    def visit_lrpc_enum_field(self, _: "LrpcEnum", field: "LrpcEnumField") -> None:
         self.__enum_fields.append(field)
 
-    def visit_lrpc_function(self, function: LrpcFun) -> None:
+    def visit_lrpc_function(self, function: "LrpcFun") -> None:
         self.__puml.write("***_ ")
         self.__puml.function_string(function, self.__max_function_or_stream_id)
         self.__puml.write("\n")
 
-    def visit_lrpc_stream(self, stream: LrpcStream) -> None:
+    def visit_lrpc_stream(self, stream: "LrpcStream") -> None:
         self.__puml.write("***_ ")
         self.__puml.stream_string(stream, self.__max_function_or_stream_id)
         self.__puml.write("\n")
 
-    def visit_lrpc_service(self, service: LrpcService) -> None:
+    def visit_lrpc_service(self, service: "LrpcService") -> None:
         self.__puml.block(service.name(), "PeachPuff", 2)
         self.__puml.list_item(f"ID: {service.id()}", level=0)
         self.__puml.list_end()
@@ -283,7 +292,7 @@ class PlantUmlVisitor(LrpcVisitor):
         stream_ids = [s.id() for s in service.streams()]
         self.__max_function_or_stream_id = max(function_ids + stream_ids)
 
-    def visit_lrpc_struct(self, struct: LrpcStruct) -> None:
+    def visit_lrpc_struct(self, struct: "LrpcStruct") -> None:
         self.__struct_fields = []
         icon = "external-link" if struct.is_external() else None
         self.__puml.block(struct.name(), "lightblue", self.__struct_indent, icon)
@@ -302,5 +311,5 @@ class PlantUmlVisitor(LrpcVisitor):
         if self.__struct_indent > self.__struct_indent_max:
             self.__struct_indent = 2
 
-    def visit_lrpc_struct_field(self, _: LrpcStruct, field: LrpcVar) -> None:
+    def visit_lrpc_struct_field(self, _: "LrpcStruct", field: "LrpcVar") -> None:
         self.__struct_fields.append(field)

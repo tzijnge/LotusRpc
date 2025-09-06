@@ -20,7 +20,6 @@ def test_call() -> None:
     # client: receive bytes and decode
     received = client.decode(response)
 
-    assert not isinstance(received, LrpcClient.VoidResponse)
     assert "r0" in received
     assert received["r0"] == 128
 

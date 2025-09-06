@@ -8,11 +8,7 @@ from .encoder import lrpc_encode
 
 
 class LrpcClient:
-    # These classes are just tags to signal a kind of result from the process function
-    # pylint: disable=too-few-public-methods
-    class VoidResponse:
-        pass
-
+    # This class is just a tag to signal a kind of result from the process function
     # pylint: disable=too-few-public-methods
     class IncompleteResponse:
         pass
@@ -21,7 +17,7 @@ class LrpcClient:
         self.lrpc_def = lrpc_def
         self.receive_buffer = b""
 
-    def process(self, encoded: bytes) -> Union[dict[str, Any], VoidResponse, IncompleteResponse]:
+    def process(self, encoded: bytes) -> Union[dict[str, Any], IncompleteResponse]:
         self.receive_buffer += encoded
         received = len(self.receive_buffer)
 
@@ -37,7 +33,7 @@ class LrpcClient:
 
         return LrpcClient.IncompleteResponse()
 
-    def decode(self, encoded: bytes) -> Union[dict[str, Any], VoidResponse]:
+    def decode(self, encoded: bytes) -> dict[str, Any]:
         if len(encoded) < 3:
             raise ValueError(f"Unable to decode message from {encoded!r}: an LRPC message has at least 3 bytes")
 
@@ -83,11 +79,9 @@ class LrpcClient:
 
         raise ValueError(f"Function or stream {function_or_stream_name} not found in service {service_name}")
 
-    def _decode_function(
-        self, function: LrpcFun, decoder: LrpcDecoder, service_name: str
-    ) -> Union[dict[str, Any], VoidResponse]:
+    def _decode_function(self, function: LrpcFun, decoder: LrpcDecoder, service_name: str) -> dict[str, Any]:
         if function.number_returns() == 0:
-            return LrpcClient.VoidResponse()
+            return {}
 
         ret = {}
         for r in function.returns():
@@ -100,9 +94,7 @@ class LrpcClient:
 
         return ret
 
-    def _decode_stream(
-        self, stream: LrpcStream, decoder: LrpcDecoder, service_name: str
-    ) -> Union[dict[str, Any], VoidResponse]:
+    def _decode_stream(self, stream: LrpcStream, decoder: LrpcDecoder, service_name: str) -> dict[str, Any]:
         ret = {}
         for r in stream.returns():
             ret[r.name()] = decoder.lrpc_decode(r)

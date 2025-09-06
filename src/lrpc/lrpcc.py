@@ -170,8 +170,7 @@ class Lrpcc:
         logging.debug("Constructing LRPCC transport with these params: %s", transport_params)
         self.__transport = transport_module(**transport_params)
 
-    def __communicate(self, encoded: bytes) -> dict[str, Any]:
-        self.__transport.write(encoded)
+    def __receive_response(self) -> dict[str, Any]:
         while True:
             received = self.__transport.read(1)
             if len(received) == 0:
@@ -182,13 +181,35 @@ class Lrpcc:
             if not isinstance(response, LrpcClient.IncompleteResponse):
                 return response
 
-    def __command_handler(self, service_name: str, function_name: str, **kwargs: Any) -> None:
-        encoded = self.client.encode(service_name, function_name, **kwargs)
-        response = self.__communicate(encoded)
+    def __is_function(self, service_name: str, function_or_stream_name: str) -> bool:
+        service = self.lrpc_def.service_by_name(service_name)
+        if service is not None:
+            function = service.function_by_name(function_or_stream_name)
+            return function is not None
 
-        for name, value in response.items():
-            post_value = f" ({hex(value)})" if isinstance(value, int) else ""
-            print(f"{name}: {value}{post_value}")
+        return False
+
+    def __command_handler(self, service_name: str, function_or_stream_name: str, **kwargs: Any) -> None:
+        encoded = self.client.encode(service_name, function_or_stream_name, **kwargs)
+        self.__transport.write(encoded)
+
+        # client stream: don't receive anything
+        # server finite: receive until "final" is True
+        # server infinite: receive forever
+
+        receive_more = True
+        while receive_more:
+            response = self.__receive_response()
+
+            for name, value in response.items():
+                post_value = f" ({hex(value)})" if isinstance(value, int) else ""
+                print(f"{name}: {value}{post_value}")
+
+            if self.__is_function(service_name, function_or_stream_name):
+                receive_more = False
+            else:
+                # TODO: this only works for server finite stream
+                receive_more = response["final"] is False
 
     def run(self) -> None:
         cli = ClientCliVisitor(self.__command_handler)

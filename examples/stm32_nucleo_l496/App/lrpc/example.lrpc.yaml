@@ -72,3 +72,10 @@ services:
           - { name: p1, type: int32_t }
         returns:
           - { name: r1, type: int32_t }
+    streams:
+      - name: s0
+        origin: server
+        finite: true
+        params:
+          - { name: p0, type: uint16_t }
+          - { name: p1, type: uint8_t }

@@ -86,6 +86,17 @@ public:
     {
         return p1;
     }
+
+    void s0_start() override
+    {
+        s0_response(0, 0, false);
+        s0_response(1, 10, false);
+        s0_response(2, 20, true);
+    }
+
+    void s0_stop() override
+    {
+    }
 };
 
 class ExampleServer : public example

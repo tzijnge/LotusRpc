@@ -66,8 +66,7 @@ class LrpcService:
         return LrpcService.__assign_ids(streams, last_id)
 
     @staticmethod
-    def __assign_ids(
-        items_needing_id: Union[list[LrpcFunDict], list[LrpcStreamDict]], last_id: int) -> int:
+    def __assign_ids(items_needing_id: Union[list[LrpcFunDict], list[LrpcStreamDict]], last_id: int) -> int:
         for item in items_needing_id:
             if "id" in item:
                 last_id = item["id"]
@@ -117,6 +116,13 @@ class LrpcService:
     def stream_by_name(self, name: str) -> Optional[LrpcStream]:
         for s in self.streams():
             if s.name() == name:
+                return s
+
+        return None
+
+    def stream_by_id(self, stream_id: int) -> Optional[LrpcStream]:
+        for s in self.streams():
+            if s.id() == stream_id:
                 return s
 
         return None

@@ -41,31 +41,32 @@ class LrpcClient:
         if len(encoded) < 3:
             raise ValueError(f"Unable to decode message from {encoded!r}: an LRPC message has at least 3 bytes")
 
-        # skip packet length at index 0
+        message_size = encoded[0]
         service_id = encoded[1]
-        function_id = encoded[2]
+        function_or_stream_id = encoded[2]
 
-        if (service_id == 255) and (function_id == 0):
+        if message_size != len(encoded):
+            raise ValueError(f"Incorrect message size. Expected {message_size} but got {len(encoded)}")
+
+        if (service_id == 255) and (function_or_stream_id == 0):
             raise ValueError("The LRPC server reported an error")
 
         service = self.lrpc_def.service_by_id(service_id)
         if not service:
             raise ValueError(f"Service with ID {service_id} not found in the LRPC definition file")
 
-        fun = service.function_by_id(function_id)
-        if not fun:
-            raise ValueError(f"Function with ID {function_id} not found in service {service.name()}")
+        function = service.function_by_id(function_or_stream_id)
+        stream = service.stream_by_id(function_or_stream_id)
 
         decoder = LrpcDecoder(encoded[3:], self.lrpc_def)
 
-        if fun.number_returns() == 0:
-            return LrpcClient.VoidResponse()
+        if function:
+            return self._decode_function(function, decoder, service.name())
 
-        ret = {}
-        for r in fun.returns():
-            ret[r.name()] = decoder.lrpc_decode(r)
+        if stream:
+            return self._decode_stream(stream, decoder, service.name())
 
-        return ret
+        raise ValueError(f"No function or stream with ID {function_or_stream_id} found in service {service.name()}")
 
     def encode(self, service_name: str, function_or_stream_name: str, **kwargs: Any) -> bytes:
         service = self.lrpc_def.service_by_name(service_name)
@@ -81,6 +82,37 @@ class LrpcClient:
             return self._encode_stream(service, stream, **kwargs)
 
         raise ValueError(f"Function or stream {function_or_stream_name} not found in service {service_name}")
+
+    def _decode_function(
+        self, function: LrpcFun, decoder: LrpcDecoder, service_name: str
+    ) -> Union[dict[str, Any], VoidResponse]:
+        if function.number_returns() == 0:
+            return LrpcClient.VoidResponse()
+
+        ret = {}
+        for r in function.returns():
+            ret[r.name()] = decoder.lrpc_decode(r)
+
+        if decoder.remaining() != 0:
+            raise ValueError(
+                f"{decoder.remaining()} remaining bytes after decoding function {service_name}.{function.name()}"
+            )
+
+        return ret
+
+    def _decode_stream(
+        self, stream: LrpcStream, decoder: LrpcDecoder, service_name: str
+    ) -> Union[dict[str, Any], VoidResponse]:
+        ret = {}
+        for r in stream.returns():
+            ret[r.name()] = decoder.lrpc_decode(r)
+
+        if decoder.remaining() != 0:
+            raise ValueError(
+                f"{decoder.remaining()} remaining bytes after decoding stream {service_name}.{stream.name()}"
+            )
+
+        return ret
 
     def _encode_function(self, service: LrpcService, function: LrpcFun, **kwargs: Any) -> bytes:
         self._check_parameters(function.param_names(), list(kwargs.keys()))

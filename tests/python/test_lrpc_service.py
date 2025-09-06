@@ -57,6 +57,32 @@ def test_function_by_id() -> None:
     assert f0 is not None
     assert f0.name() == "f0"
 
+    f1 = service.function_by_id(40)
+    assert f1 is not None
+    assert f1.name() == "f1"
+
+
+def test_stream_by_id() -> None:
+    s: LrpcServiceDict = {
+        "name": "s0",
+        "id": 123,
+        "streams": [
+            {"name": "s0", "id": 36, "origin": "server"},
+            {"name": "s1", "id": 40, "origin": "client"},
+        ],
+        "functions_before_streams": True,
+    }
+    service = LrpcService(s)
+
+    assert service.stream_by_id(55) is None
+    s0 = service.stream_by_id(36)
+    assert s0 is not None
+    assert s0.name() == "s0"
+
+    s1 = service.stream_by_id(40)
+    assert s1 is not None
+    assert s1.name() == "s1"
+
 
 def test_only_streams() -> None:
     s: LrpcServiceDict = {

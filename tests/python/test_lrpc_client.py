@@ -95,6 +95,58 @@ def test_encode_stream_server_finite_stop() -> None:
     assert encoded == b"\x04\x02\x03\x00"
 
 
+def test_decode_stream_client_infinite_request_stop() -> None:
+    decoded = client.decode(b"\x03\x02\x00")
+    assert isinstance(decoded, dict)
+    assert len(decoded.items()) == 0
+
+
+def test_decode_stream_client_infinite_invalid() -> None:
+    # In a client stream, the server can only send a stop request
+    # that is a message with no fields other than message size, service ID and stream ID
+    with pytest.raises(ValueError) as e:
+        client.decode(b"\x04\x02\x00\x00")
+
+    assert str(e.value) == "1 remaining bytes after decoding stream srv2.client_infinite"
+
+
+def test_decode_stream_client_finite_request_stop() -> None:
+    decoded = client.decode(b"\x03\x02\x01")
+    assert isinstance(decoded, dict)
+    assert len(decoded.items()) == 0
+
+
+def test_decode_stream_client_finite_invalid() -> None:
+    # In a client stream, the server can only send a stop request
+    # that is a message with no fields other than message size, service ID and stream ID
+    with pytest.raises(ValueError) as e:
+        client.decode(b"\x05\x02\x01\xff\x66")
+
+    assert str(e.value) == "2 remaining bytes after decoding stream srv2.client_finite"
+
+
+def test_decode_stream_server_infinite() -> None:
+    decoded = client.decode(b"\x06\x02\x02\x45\x67\x89")
+    assert isinstance(decoded, dict)
+    assert len(decoded.items()) == 2
+    assert "p0" in decoded
+    assert decoded.get("p0") == 0x45
+    assert "p1" in decoded
+    assert decoded.get("p1") == 0x8967
+
+
+def test_decode_stream_server_finite() -> None:
+    decoded = client.decode(b"\x07\x02\x03\x45\x67\x89\x00")
+    assert isinstance(decoded, dict)
+    assert len(decoded.items()) == 3
+    assert "p0" in decoded
+    assert decoded.get("p0") == 0x45
+    assert "p1" in decoded
+    assert decoded.get("p1") == 0x8967
+    assert "final" in decoded
+    assert decoded.get("final") == False
+
+
 def test_decode_invalid_service_id() -> None:
     with pytest.raises(ValueError) as e:
         encoded = b"\x04\xaa\x00\x02"
@@ -108,7 +160,7 @@ def test_decode_invalid_function_id() -> None:
         encoded = b"\x04\x01\xaa\x02"
         client.decode(encoded)
 
-    assert str(e.value) == "Function with ID 170 not found in service srv1"
+    assert str(e.value) == "No function or stream with ID 170 found in service srv1"
 
 
 def test_decode_message_too_short() -> None:
@@ -128,8 +180,15 @@ def test_decode_message_too_short() -> None:
     assert str(e.value) == "Unable to decode message from b'\\x04\\x01': an LRPC message has at least 3 bytes"
 
 
+def test_decode_incorrect_size() -> None:
+    with pytest.raises(ValueError) as e:
+        client.decode(b"\x04\x00\x00")
+
+    assert str(e.value) == "Incorrect message size. Expected 4 but got 3"
+
+
 def test_decode_error_response() -> None:
     with pytest.raises(ValueError) as e:
-        client.decode(b"\x13\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
+        client.decode(b"\x13\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
 
     assert str(e.value) == "The LRPC server reported an error"

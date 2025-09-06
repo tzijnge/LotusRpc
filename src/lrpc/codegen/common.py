@@ -1,11 +1,10 @@
-from typing import Set
 from importlib.metadata import version
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 
 from ..core import LrpcVar
 
 
-def lrpc_var_includes(var: LrpcVar) -> Set[str]:
+def lrpc_var_includes(var: LrpcVar) -> set[str]:
     includes = set()
     if var.base_type_is_integral():
         includes.add("<stdint.h>")

@@ -45,6 +45,7 @@ services:
         origin: server
         params:
           - { name: p1, type: "@DoorState" }
+          - { name: p2, type: "@Color" }
     functions:
       - name: f0
         params:
@@ -53,4 +54,6 @@ services:
 enums:
   - name: DoorState
     fields: [Open, Closed]
-# TODO: each service in its own test file
+  # should only be used as server stream param to make sure that the correct header is included
+  - name: Color
+    fields: [Green, Red, Magenta]

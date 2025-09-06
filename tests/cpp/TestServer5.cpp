@@ -139,8 +139,8 @@ TEST_F(TestServer5Srv2, server_infinite_stop)
 
 TEST_F(TestServer5Srv2, server_infinite_response)
 {
-    service.server_infinite_response(DoorState::Closed);
-    EXPECT_EQ("04430101", response());
+    service.server_infinite_response(DoorState::Closed, Color::Magenta);
+    EXPECT_EQ("0543010102", response());
 }
 
 TEST_F(TestServer5Srv2, decodeF0)

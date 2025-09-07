@@ -59,6 +59,7 @@ class OptionalParamType(click.ParamType):
 
         return self.contained_type.convert(value, param, ctx)
 
+
 class VersionOption(click.Option):
     """``--version`` option which immediately prints the version
     and exits the program.

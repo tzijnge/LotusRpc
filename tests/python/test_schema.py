@@ -390,6 +390,7 @@ services:
 
     assert_log_entries(["Duplicate param name in s1.f1: p0"], caplog.text)
 
+
 def test_duplicate_return_names(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: "test"
 services:

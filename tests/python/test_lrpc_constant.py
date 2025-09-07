@@ -95,7 +95,7 @@ def test_invalid_type() -> None:
 
 def test_invalid_implicit_type() -> None:
     # Ignite type error because that's what this test is about
-    c: LrpcConstantDict = {"name": "t", "value": {"invalid_type": 1}}# type: ignore
+    c: LrpcConstantDict = {"name": "t", "value": {"invalid_type": 1}}  # type: ignore
 
     with pytest.raises(ValueError) as e:
         LrpcConstant(c)

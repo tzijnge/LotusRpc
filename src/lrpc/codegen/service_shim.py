@@ -126,7 +126,6 @@ class ServiceShimVisitor(LrpcVisitor):
 
             self.__file.write("return shims.at(functionId);")
 
-
     def __function_shim_body(self) -> list[str]:
         body = []
 

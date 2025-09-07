@@ -11,7 +11,7 @@ client = LrpcClient(lrpc_def)
 
 
 def test_encode_nested_struct() -> None:
-    assert client.encode("s0", "f1", p1={"a": {"a": 4567, "b": 123, "c": True}}) == b"\x07\x00\x01\xD7\x11\x7B\x01"
+    assert client.encode("s0", "f1", p1={"a": {"a": 4567, "b": 123, "c": True}}) == b"\x07\x00\x01\xd7\x11\x7b\x01"
 
 
 def test_call() -> None:
@@ -58,14 +58,15 @@ def test_encode_invalid_parameter_name() -> None:
 
 def test_decode_invalid_service_id() -> None:
     with pytest.raises(ValueError):
-        encoded = b"\x04\xAA\x00\x02"
+        encoded = b"\x04\xaa\x00\x02"
         client.decode(encoded)
 
 
 def test_decode_invalid_function_id() -> None:
     with pytest.raises(ValueError):
-        encoded = b"\x04\x01\xAA\x02"
+        encoded = b"\x04\x01\xaa\x02"
         client.decode(encoded)
+
 
 def test_decode_message_too_short() -> None:
     with pytest.raises(ValueError):
@@ -77,8 +78,9 @@ def test_decode_message_too_short() -> None:
     with pytest.raises(ValueError):
         client.decode(b"\x04\x01")
 
+
 def test_decode_error_response() -> None:
     with pytest.raises(ValueError) as e:
-        client.decode(b"\x13\xFF\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
+        client.decode(b"\x13\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
 
     assert str(e.value) == "The LRPC server reported an error"

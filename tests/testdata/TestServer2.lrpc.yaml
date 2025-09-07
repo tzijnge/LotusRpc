@@ -34,7 +34,7 @@ services:
           - { name: r0, type: string_2, count: "?" }
       - name: f5
         params:
-          - { name: a, type: "@StringStruct"}
+          - { name: a, type: "@StringStruct" }
       - name: f6
         returns:
           - { name: a, type: "@StringStruct" }
@@ -63,6 +63,5 @@ structs:
       - { name: aa, type: string }
       - { name: b, type: string, count: 2 }
       - { name: c, type: string, count: "?" }
-
 # TODO: test for function that returns multiple arrays
 # + test for function that returns multiple arrays of strings

@@ -11,12 +11,12 @@ The LRPC definition file has the following properties:
 
 | Required  | Optional |
 | --------- |--------- |
-| [name](#name)          | structs        |
-| [services](#services)  | enums          |
-|                        | constants      |
-|                        | rx_buffer_size |
-|                        | tx_buffer_size |
-|                        | namespace      |
+| [name](#name)          | [structs](#structs)     |
+| [services](#services)  | [enums](#enums)         |
+|                        | [constants](#constants) |
+|                        | rx_buffer_size          |
+|                        | tx_buffer_size          |
+|                        | namespace               |
 
 At the top level it is also allowed to use additional properties. These properties are ignored by the LRPC tool, but may be useful creating anchors or for any other purpose that you may have. Remember that it's very easy to parse the definition file, so everyone is free to extend the functionality of LRPC.
 
@@ -30,8 +30,8 @@ A service has the following properties
 
 | Required  | Optional |
 | --------- |--------- |
-| name      | id       |
-| functions |          |
+| name      | [id](#service-id) |
+| functions |                   |
 
 `name` is the name of the service. It must be a valid C++ identifier.
 
@@ -43,6 +43,7 @@ Every LRPC service has an identifier that is needed for proper transfer of infor
 A single LRPC service can contain up to 256 functions (but at least 1). A function can have any number of arguments and return values.
 
 A function has the following properties:
+
 | Required  | Optional |
 | --------- |--------- |
 | name      | id       |
@@ -53,6 +54,7 @@ A function has the following properties:
 
 ## Structs
 LRPC supports defining custom aggregate data types in the `structs` property. `structs` contains a list of custom struct definitions, where every item has the following properties:
+
 | Required  | Optional |
 | --------- |--------- |
 | name      |          |
@@ -62,6 +64,7 @@ LRPC supports defining custom aggregate data types in the `structs` property. `s
 
 ## Enums
 LRPC supports defining custom enum types in the `enums` property. `enums` contains a list of custom enum definitions, where every item has the following properties:
+
 | Required  | Optional |
 | --------- |--------- |
 | name      | external           |
@@ -76,11 +79,11 @@ Example:
 ...
 enums:
   # short notation
-  - { name: "MyEnum", fields: [V0, V1, V2, V3]}
+  - { name: MyEnum, fields: [V0, V1, V2, V3]}
   # short notation, external enum in namespace
-  - { name: "MyEnum2", fields: [V0, V1, V2, V3], external: ext_files/MyEnum2.hpp, external_namespace: "a::b::c"}
+  - { name: MyEnum2, fields: [V0, V1, V2, V3], external: ext_files/MyEnum2.hpp, external_namespace: "a::b::c"}
   # full notation, external enum in global namespace
-  - name: "MyEnum3"
+  - name: MyEnum3
     external: ext_files/MyEnum3.hpp
     fields:
       - {name: V0} # id omitted, defaults to 0
@@ -149,8 +152,8 @@ The LRPC definition file uses LrpcType to describe function arguments, function 
 A LrpcType has the following properties:
 | Required  | Optional |
 | --------- |--------- |
-| name      | count    |
-| type      |          |
+| name                   | [count](#lrpctypecount) |
+| [type](#lrpctypetype) |                          |
 
 `name` is the name of the LrpcType.
 

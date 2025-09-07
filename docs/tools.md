@@ -58,9 +58,9 @@ If the file *lrpcc.config.yaml* is not found, `lrpcc` uses the file specified in
 Here is an example *lrpcc.config.yaml* file
 ``` yaml
 definition_url: '../example.lrpc.yaml'
-transport_type: 'serial'
+transport_type: serial
 transport_params:
-  port: 'COM30'
+  port: COM30
   baudrate: 16384
   timeout: 2
 log_level: INFO

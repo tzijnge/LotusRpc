@@ -72,6 +72,7 @@ disable = [
     "missing-function-docstring",
     "missing-module-docstring",
 ]
+max-attributes = 12
 
 [tool.pylint.format]
 # line length is handled by black. Any remaining long lines cannot be formatted properly
@@ -79,6 +80,7 @@ disable = ["line-too-long"]
 allow-reexport-from-package = true
 
 [tool.mypy]
+files = ["src", "tests"]
 strict = true
 # Increase strictness of checks
 disallow_any_decorated = true

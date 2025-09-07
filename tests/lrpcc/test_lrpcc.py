@@ -10,8 +10,8 @@ with open("tests/lrpcc/server.yaml", mode="rt", encoding="utf-8") as server:
 
 
 @pytest.fixture(autouse=True)
-def change_test_dir(request: pytest.FixtureRequest):  # type: ignore
-    os.chdir(request.fspath.dirname)  # type: ignore
+def change_test_dir(request: pytest.FixtureRequest):  # type: ignore[no-untyped-def]
+    os.chdir(request.fspath.dirname)  # type: ignore[attr-defined]
     yield
     os.chdir(request.config.invocation_params.dir)
 

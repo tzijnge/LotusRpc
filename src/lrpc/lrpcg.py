@@ -6,10 +6,15 @@ from typing import TextIO
 
 import click
 
-from lrpc.codegen import (ConstantsFileVisitor, EnumFileVisitor,
-                          MetaFileVisitor, ServerIncludeVisitor,
-                          ServiceIncludeVisitor, ServiceShimVisitor,
-                          StructFileVisitor)
+from lrpc.codegen import (
+    ConstantsFileVisitor,
+    EnumFileVisitor,
+    MetaFileVisitor,
+    ServerIncludeVisitor,
+    ServiceIncludeVisitor,
+    ServiceShimVisitor,
+    StructFileVisitor,
+)
 from lrpc.core import LrpcDef
 from lrpc.resources.cpp import export_to
 from lrpc.utils import load_lrpc_def_from_file
@@ -23,8 +28,10 @@ def create_dir_if_not_exists(target_dir: os.PathLike[str]) -> None:
     if not path.exists(target_dir):
         os.makedirs(target_dir, 511, True)
 
+
 def copy_resources(output: os.PathLike[str]) -> None:
     export_to(output)
+
 
 def generate_rpc(lrpc_def: LrpcDef, generate_core: bool, output: os.PathLike[str]) -> None:
     create_dir_if_not_exists(output)
@@ -40,6 +47,7 @@ def generate_rpc(lrpc_def: LrpcDef, generate_core: bool, output: os.PathLike[str
     if generate_core:
         copy_resources(output)
 
+
 def generate_puml(lrpc_def: LrpcDef, output: os.PathLike[str]) -> None:
     create_dir_if_not_exists(output)
     lrpc_def.accept(PlantUmlVisitor(output))
@@ -51,12 +59,19 @@ def run_cli() -> None:
     # All functionality provided by Click decorators
     pass
 
+
 @run_cli.command()
-@click.option("-d", "--definition_file", help="LRPC definition file", required = True, type=click.File("r"))
+@click.option("-d", "--definition_file", help="LRPC definition file", required=True, type=click.File("r"))
 @click.option("-o", "--output", help="Path to put the generated files", required=False, default=".", type=click.Path())
 @click.option("--core/--no-core", help="Generate LRPC core files", required=False, default=True, type=bool)
 @click.option(
-    "-w", "--warnings_as_errors", help="Treat LRPC definition warnings as errors", required=False, default=False, is_flag=True, type=bool
+    "-w",
+    "--warnings_as_errors",
+    help="Treat LRPC definition warnings as errors",
+    required=False,
+    default=False,
+    is_flag=True,
+    type=bool,
 )
 def cpp(definition_file: TextIO, output: os.PathLike[str], core: bool, warnings_as_errors: bool) -> None:
     """Generate C++ server code for the specified lrpc definition file"""
@@ -75,6 +90,7 @@ def cpp(definition_file: TextIO, output: os.PathLike[str], core: bool, warnings_
 
         traceback.print_exc()
 
+
 @run_cli.command()
 @click.option("-o", "--output", help="Path to put the generated files", required=False, default=".", type=click.Path())
 def cppcore(output: os.PathLike[str]) -> None:
@@ -84,6 +100,7 @@ def cppcore(output: os.PathLike[str]) -> None:
     copy_resources(output)
     logging.info("Generated LRPC core code in %s", output)
 
+
 @run_cli.command()
 @click.option("-o", "--output", help="Path to put the generated files", required=False, default=".", type=click.Path())
 def schema(output: os.PathLike[str]) -> None:
@@ -92,10 +109,17 @@ def schema(output: os.PathLike[str]) -> None:
     export_lrpc_schema(output)
     logging.info("Exported LRPC schema to %s", output)
 
+
 @run_cli.command()
-@click.option("-d", "--definition_file", help="LRPC definition file", required = True, type=click.File("r"))
+@click.option("-d", "--definition_file", help="LRPC definition file", required=True, type=click.File("r"))
 @click.option(
-    "-w", "--warnings_as_errors", help="Treat LRPC definition warnings as errors", required=False, default=False, is_flag=True, type=bool
+    "-w",
+    "--warnings_as_errors",
+    help="Treat LRPC definition warnings as errors",
+    required=False,
+    default=False,
+    is_flag=True,
+    type=bool,
 )
 @click.option("-o", "--output", help="Path to put the generated files", required=False, default=".", type=click.Path())
 def puml(definition_file: TextIO, warnings_as_errors: bool, output: os.PathLike[str]) -> None:
@@ -104,6 +128,7 @@ def puml(definition_file: TextIO, warnings_as_errors: bool, output: os.PathLike[
     lrpc_def = load_lrpc_def_from_file(definition_file, warnings_as_errors)
     generate_puml(lrpc_def, output)
     logging.info("Generated PlantUML diagram for %s in %s", definition_file.name, output)
+
 
 if __name__ == "__main__":
     run_cli()

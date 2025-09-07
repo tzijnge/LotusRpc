@@ -11,13 +11,13 @@ The LRPC definition file has the following properties:
 
 | Required  | Optional |
 | --------- |--------- |
-| [name](#name)          | [structs](#structs)    |
-| [services](#services)  | [enums](#enums)        |
-|                        | [constants](constants) |
-|                        | rx_buffer_size         |
-|                        | tx_buffer_size         |
-|                        | namespace              |
-|                        | version                |
+| [name](#name)          | [structs](#structs)     |
+| [services](#services)  | [enums](#enums)         |
+|                        | [constants](#constants) |
+|                        | rx_buffer_size          |
+|                        | tx_buffer_size          |
+|                        | namespace               |
+|                        | version                 |
 
 At the top level it is also allowed to use additional properties. These properties are ignored by the LRPC tool, but may be useful creating anchors or for any other purpose that you may have. Remember that it's very easy to parse the definition file, so everyone is free to extend the functionality of LRPC.
 
@@ -179,8 +179,8 @@ The LRPC definition file uses LrpcType to describe function arguments, function 
 A LrpcType has the following properties:
 | Required  | Optional |
 | --------- |--------- |
-| name                   | [count](#lrpctype.count) |
-| [type](#lrpctype.type) |                          |
+| name                  | [count](#lrpctypecount) |
+| [type](#lrpctypetype) |                         |
 
 `name` is the name of the LrpcType.
 

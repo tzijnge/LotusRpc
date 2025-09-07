@@ -1,7 +1,8 @@
 import yaml
 
+
 class Transport:
-    def __init__(self, file_url:str) -> None:
+    def __init__(self, file_url: str) -> None:
         self.current_message = bytes()
 
         with open(file_url, mode="rt", encoding="UTF-8") as f:

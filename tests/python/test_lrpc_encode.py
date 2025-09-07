@@ -19,7 +19,7 @@ def test_encode_uint8_t() -> None:
     var = LrpcVar({"name": "v1", "type": "uint8_t"})
 
     assert encode_var(0, var) == b"\x00"
-    assert encode_var(255, var) == b"\xFF"
+    assert encode_var(255, var) == b"\xff"
 
     with pytest.raises(struct.error):
         encode_var(-1, var)
@@ -35,8 +35,8 @@ def test_encode_int8_t() -> None:
     var = LrpcVar({"name": "v1", "type": "int8_t"})
 
     assert encode_var(0, var) == b"\x00"
-    assert encode_var(127, var) == b"\x7F"
-    assert encode_var(-1, var) == b"\xFF"
+    assert encode_var(127, var) == b"\x7f"
+    assert encode_var(-1, var) == b"\xff"
     assert encode_var(-128, var) == b"\x80"
 
     with pytest.raises(struct.error):
@@ -53,7 +53,7 @@ def test_encode_uint16_t() -> None:
     var = LrpcVar({"name": "v1", "type": "uint16_t"})
 
     assert encode_var(0, var) == b"\x00\x00"
-    assert encode_var(65535, var) == b"\xFF\xFF"
+    assert encode_var(65535, var) == b"\xff\xff"
 
     with pytest.raises(struct.error):
         encode_var(-1, var)
@@ -69,8 +69,8 @@ def test_encode_int16_t() -> None:
     var = LrpcVar({"name": "v1", "type": "int16_t"})
 
     assert encode_var(0, var) == b"\x00\x00"
-    assert encode_var(32767, var) == b"\xFF\x7F"
-    assert encode_var(-1, var) == b"\xFF\xFF"
+    assert encode_var(32767, var) == b"\xff\x7f"
+    assert encode_var(-1, var) == b"\xff\xff"
     assert encode_var(-32768, var) == b"\x00\x80"
 
     with pytest.raises(struct.error):
@@ -87,7 +87,7 @@ def test_encode_uint32_t() -> None:
     var = LrpcVar({"name": "v1", "type": "uint32_t"})
 
     assert encode_var(0, var) == b"\x00\x00\x00\x00"
-    assert encode_var((2**32) - 1, var) == b"\xFF\xFF\xFF\xFF"
+    assert encode_var((2**32) - 1, var) == b"\xff\xff\xff\xff"
 
     with pytest.raises(struct.error):
         encode_var(-1, var)
@@ -103,8 +103,8 @@ def test_encode_int32_t() -> None:
     var = LrpcVar({"name": "v1", "type": "int32_t"})
 
     assert encode_var(0, var) == b"\x00\x00\x00\x00"
-    assert encode_var((2**31) - 1, var) == b"\xFF\xFF\xFF\x7F"
-    assert encode_var(-1, var) == b"\xFF\xFF\xFF\xFF"
+    assert encode_var((2**31) - 1, var) == b"\xff\xff\xff\x7f"
+    assert encode_var(-1, var) == b"\xff\xff\xff\xff"
     assert encode_var(-(2**31), var) == b"\x00\x00\x00\x80"
 
     with pytest.raises(struct.error):
@@ -118,7 +118,7 @@ def test_encode_uint64_t() -> None:
     var = LrpcVar({"name": "v1", "type": "uint64_t"})
 
     assert encode_var(0, var) == b"\x00\x00\x00\x00\x00\x00\x00\x00"
-    assert encode_var((2**64) - 1, var) == b"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF"
+    assert encode_var((2**64) - 1, var) == b"\xff\xff\xff\xff\xff\xff\xff\xff"
 
     with pytest.raises(struct.error):
         encode_var(-1, var)
@@ -131,8 +131,8 @@ def test_encode_int64_t() -> None:
     var = LrpcVar({"name": "v1", "type": "int64_t"})
 
     assert encode_var(0, var) == b"\x00\x00\x00\x00\x00\x00\x00\x00"
-    assert encode_var((2**63) - 1, var) == b"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x7F"
-    assert encode_var(-1, var) == b"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF"
+    assert encode_var((2**63) - 1, var) == b"\xff\xff\xff\xff\xff\xff\xff\x7f"
+    assert encode_var(-1, var) == b"\xff\xff\xff\xff\xff\xff\xff\xff"
     assert encode_var(-(2**63), var) == b"\x00\x00\x00\x00\x00\x00\x00\x80"
 
     with pytest.raises(struct.error):
@@ -146,7 +146,7 @@ def test_encode_float() -> None:
     var = LrpcVar({"name": "v1", "type": "float"})
 
     assert encode_var(0, var) == b"\x00\x00\x00\x00"
-    assert encode_var(123.456, var) == b"\x79\xE9\xF6\x42"
+    assert encode_var(123.456, var) == b"\x79\xe9\xf6\x42"
 
     with pytest.raises(OverflowError):
         encode_var(3.5e38, var)
@@ -159,7 +159,7 @@ def test_encode_double() -> None:
     var = LrpcVar({"name": "v1", "type": "double"})
 
     assert encode_var(0, var) == b"\x00\x00\x00\x00\x00\x00\x00\x00"
-    assert encode_var(123.456, var) == b"\x77\xBE\x9F\x1A\x2F\xDD\x5E\x40"
+    assert encode_var(123.456, var) == b"\x77\xbe\x9f\x1a\x2f\xdd\x5e\x40"
 
     # no overflows here. Python converts too large value to 'inf'
 
@@ -208,7 +208,7 @@ def test_encode_optional() -> None:
     var = LrpcVar({"name": "v1", "type": "uint8_t", "count": "?"})
 
     assert encode_var(None, var) == b"\x00"
-    assert encode_var(0xAB, var) == b"\x01\xAB"
+    assert encode_var(0xAB, var) == b"\x01\xab"
 
 
 def test_encode_optional_fixed_size_string() -> None:
@@ -229,7 +229,7 @@ def test_encode_struct() -> None:
     var = LrpcVar({"name": "v1", "type": "struct@MyStruct1"})
 
     encoded = encode_var({"b": 123, "a": 4567, "c": True}, var)
-    assert encoded == b"\xD7\x11\x7B\x01"
+    assert encoded == b"\xd7\x11\x7b\x01"
 
     with pytest.raises(TypeError):
         encode_var((123, 4567, True), var)
@@ -250,14 +250,14 @@ def test_encode_optional_struct() -> None:
     encoded = encode_var(None, var)
     assert encoded == b"\x00"
     encoded = encode_var({"b": 123, "a": 4567, "c": True}, var)
-    assert encoded == b"\x01\xD7\x11\x7B\x01"
+    assert encoded == b"\x01\xd7\x11\x7b\x01"
 
 
 def test_encode_nested_struct() -> None:
     var = LrpcVar({"name": "v1", "type": "struct@MyStruct2"})
 
     encoded = encode_var({"a": {"b": 123, "a": 4567, "c": True}}, var)
-    assert encoded == b"\xD7\x11\x7B\x01"
+    assert encoded == b"\xd7\x11\x7b\x01"
 
 
 def test_encode_enum() -> None:
@@ -287,7 +287,7 @@ def test_encode_array_of_struct() -> None:
     array_of_structs = [{"a": {"b": 123, "a": 4567, "c": True}}, {"a": {"b": 51, "a": 8721, "c": False}}]
     encoded = encode_var(array_of_structs, var)
 
-    assert encoded == b"\xD7\x11\x7B\x01\x11\x22\x33\x00"
+    assert encoded == b"\xd7\x11\x7b\x01\x11\x22\x33\x00"
 
 
 def test_encode_array_of_fixed_size_string() -> None:

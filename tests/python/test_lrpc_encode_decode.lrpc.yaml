@@ -19,7 +19,7 @@ services:
   - name: s1
     functions:
       - name: add5
-        params: 
+        params:
           - name: p0
             type: uint8_t
         returns:
@@ -37,9 +37,9 @@ structs:
       - { name: a, type: "@MyStruct1" }
   - name: MyStruct3
     fields:
-      - { name: "a", type: string_2, count: 2}
-      - { name: "b", type: "@MyStruct2", count: "?"}
-      - { name: "c", type: "@MyEnum1", }
+      - { name: "a", type: string_2, count: 2 }
+      - { name: "b", type: "@MyStruct2", count: "?" }
+      - { name: "c", type: "@MyEnum1" }
 enums:
   - name: MyEnum1
     fields:

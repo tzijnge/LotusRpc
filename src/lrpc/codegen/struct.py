@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Set
+from typing import Optional
 
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 from ..visitors import LrpcVisitor
@@ -16,7 +16,7 @@ class StructFileVisitor(LrpcVisitor):
         self.__file: CppFile
         self.__descriptor: LrpcStruct
         self.__alias: str = ""
-        self.__includes: Set[str] = set()
+        self.__includes: set[str] = set()
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
         self.__namespace = lrpc_def.namespace()

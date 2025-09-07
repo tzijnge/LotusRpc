@@ -36,6 +36,7 @@ log_level_map = {
     "NOTSET": logging.NOTSET,
 }
 
+
 def __load_config() -> dict[str, Any]:
     configs = glob(f"**/{LRPCC_CONFIG_YAML}", recursive=True)
     if len(configs) == 0:
@@ -133,7 +134,6 @@ class Lrpcc:
 
         self.__set_transport(config[TRANSPORT_TYPE], config[TRANSPORT_PARAMS])
 
-
     @classmethod
     def __set_log_level(cls, log_level: str) -> None:
         if log_level not in log_level_map:
@@ -144,7 +144,9 @@ class Lrpcc:
     def __set_transport(self, transport_type: str, transport_params: dict[str, Any]) -> None:
         transport_plugin = Path(os.getcwd() + f"/lrpcc_{transport_type}.py")
         if transport_plugin.exists():
-            spec = importlib.util.spec_from_file_location(f".lrpcc_{transport_type}", os.getcwd() + f"/lrpcc_{transport_type}.py")
+            spec = importlib.util.spec_from_file_location(
+                f".lrpcc_{transport_type}", os.getcwd() + f"/lrpcc_{transport_type}.py"
+            )
             if spec is not None and spec.loader is not None:
                 logging.debug("Using transport plugin from: %s", transport_plugin)
                 module = importlib.util.module_from_spec(spec)

@@ -15,8 +15,9 @@ CPP_TYPES: list[str] = [
     "float",
     "double",
     "bool",
-    "string"
+    "string",
 ]
+
 
 class LrpcConstantDict(TypedDict):
     name: str

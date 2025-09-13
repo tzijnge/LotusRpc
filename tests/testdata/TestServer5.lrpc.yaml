@@ -1,0 +1,59 @@
+name: Server5
+services:
+  # service with only client streams
+  - name: srv0
+    streams:
+      - name: client_infinite
+        origin: client
+        finite: false
+        params:
+          - { name: p0, type: uint16_t }
+          - { name: p1, type: uint8_t }
+      - name: client_finite
+        id: 55
+        origin: client
+        finite: true
+        params:
+          - { name: p0, type: bool }
+          - { name: p1, type: "@DoorState" }
+  # service with only server streams
+  - name: srv1
+    id: 66
+    streams:
+      - name: server_infinite
+        origin: server
+        finite: false
+        params:
+          - { name: p0, type: uint16_t }
+          - { name: p1, type: uint8_t }
+
+      - name: server_finite
+        id: 33
+        origin: server
+        finite: true
+        params:
+          - { name: p0, type: bool }
+          - { name: p1, type: "@DoorState" }
+  # service with a client stream a server stream and a function
+  - name: srv2
+    streams:
+      - name: client_infinite
+        origin: client
+        params:
+          - { name: p1, type: "@DoorState" }
+      - name: server_infinite
+        origin: server
+        params:
+          - { name: p1, type: "@DoorState" }
+          - { name: p2, type: "@Color" }
+    functions:
+      - name: f0
+        params:
+          - { name: p1, type: "@DoorState" }
+
+enums:
+  - name: DoorState
+    fields: [Open, Closed]
+  # should only be used as server stream param to make sure that the correct header is included
+  - name: Color
+    fields: [Green, Red, Magenta]

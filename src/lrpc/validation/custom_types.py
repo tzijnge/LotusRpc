@@ -42,6 +42,12 @@ class CustomTypesValidator(LrpcValidator):
     def visit_lrpc_struct_field(self, struct: LrpcStruct, field: LrpcVar) -> None:
         self.__handle_used_type(field)
 
+    def visit_lrpc_stream_param(self, param: LrpcVar) -> None:
+        self.__handle_used_type(param)
+
+    def visit_lrpc_stream_return(self, ret: LrpcVar) -> None:
+        self.__handle_used_type(ret)
+
     def visit_lrpc_def_end(self) -> None:
         for undeclared_custom_type in self.__used_custom_types - self.__declared_custom_types:
             self.__errors.add(f"Undeclared custom type: {undeclared_custom_type}")

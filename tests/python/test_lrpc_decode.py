@@ -3,12 +3,23 @@ import struct
 from os import path
 
 import pytest
-from lrpc.client import lrpc_decode
+from lrpc.client import lrpc_decode, LrpcDecoder
 from lrpc.core import LrpcVar
 from lrpc.utils import load_lrpc_def_from_url
 
 definition_file = path.join(path.dirname(path.abspath(__file__)), "test_lrpc_encode_decode.lrpc.yaml")
 lrpc_def = load_lrpc_def_from_url(definition_file, warnings_as_errors=False)
+
+
+def test_lrpc_decoder_remaining() -> None:
+    var = LrpcVar({"name": "v1", "type": "uint8_t"})
+
+    encoded = b"\xff\x00"
+    decoder = LrpcDecoder(encoded, lrpc_def)
+    assert decoder.remaining() == 2
+    decoder.lrpc_decode(var)
+    assert decoder.remaining() == 1
+    assert encoded == b"\xff\x00"
 
 
 def test_decode_uint8_t() -> None:

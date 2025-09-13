@@ -119,6 +119,14 @@ public:
         s1StopCalled = true;
     }
 
+    void s2(uint16_t, const etl::string_view &, bool)
+    {
+    }
+
+    void s3(const etl::string_view &, int16_t)
+    {
+    }
+
 private:
     bool s0StopCalled{false};
     bool s1StopCalled{false};

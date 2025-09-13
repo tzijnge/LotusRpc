@@ -85,3 +85,16 @@ services:
         params:
           - { name: p0, type: string }
           - { name: p1, type: int16_t }
+
+      - name: s2
+        origin: client
+        finite: true
+        params:
+          - { name: p0, type: uint16_t }
+          - { name: p1, type: string }
+      - name: s3
+        origin: client
+        finite: false
+        params:
+          - { name: p0, type: string }
+          - { name: p1, type: int16_t }

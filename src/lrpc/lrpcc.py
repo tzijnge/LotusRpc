@@ -204,6 +204,9 @@ class Lrpcc:
         encoded = self.client.encode(service_name, function_or_stream_name, **kwargs)
         self.__transport.write(encoded)
 
+        if not self.client.has_response(service_name, function_or_stream_name, **kwargs):
+            return
+
         # client stream: don't receive anything
         # server finite: receive until "final" is True
         # server infinite: receive forever

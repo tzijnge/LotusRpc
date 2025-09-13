@@ -64,34 +64,60 @@ def test_encode_function_invalid_parameter_name() -> None:
     assert str(e.value) == "No such parameter(s): {'invalid'}"
 
 
+def test_encode_function() -> None:
+    encoded = client.encode("srv1", "add5", p0=0xAB)
+    assert encoded == b"\x04\x01\x00\xab"
+
+    has_response = client.has_response("srv1", "add5", start=True)
+    assert has_response is True
+
+
 def test_encode_stream_client_infinite() -> None:
     encoded = client.encode("srv2", "client_infinite", p0=0xAB, p1=0xCDEF)
     assert encoded == b"\x06\x02\x00\xab\xef\xcd"
+
+    has_response = client.has_response("srv2", "client_infinite", p0=0xAB, p1=0xCDEF)
+    assert has_response is False
 
 
 def test_encode_stream_client_finite() -> None:
     encoded = client.encode("srv2", "client_finite", p0=0xAB, p1=0xCDEF, final=True)
     assert encoded == b"\x07\x02\x01\xab\xef\xcd\x01"
 
+    has_response = client.has_response("srv2", "client_finite", p0=0xAB, p1=0xCDEF)
+    assert has_response is False
+
 
 def test_encode_stream_server_infinite_start() -> None:
     encoded = client.encode("srv2", "server_infinite", start=True)
     assert encoded == b"\x04\x02\x02\x01"
+
+    has_response = client.has_response("srv2", "server_infinite", start=True)
+    assert has_response is True
 
 
 def test_encode_stream_server_infinite_stop() -> None:
     encoded = client.encode("srv2", "server_infinite", start=False)
     assert encoded == b"\x04\x02\x02\x00"
 
+    has_response = client.has_response("srv2", "server_infinite", start=False)
+    assert has_response is False
+
 
 def test_encode_stream_server_finite_start() -> None:
     encoded = client.encode("srv2", "server_finite", start=True)
     assert encoded == b"\x04\x02\x03\x01"
 
+    has_response = client.has_response("srv2", "server_finite", start=True)
+    assert has_response is True
+
 
 def test_encode_stream_server_finite_stop() -> None:
     encoded = client.encode("srv2", "server_finite", start=False)
     assert encoded == b"\x04\x02\x03\x00"
+
+    has_response = client.has_response("srv2", "server_infinite", start=False)
+    assert has_response is False
 
 
 def test_decode_stream_client_infinite_request_stop() -> None:
@@ -143,7 +169,7 @@ def test_decode_stream_server_finite() -> None:
     assert "p1" in decoded
     assert decoded.get("p1") == 0x8967
     assert "final" in decoded
-    assert decoded.get("final") == False
+    assert decoded.get("final") is False
 
 
 def test_decode_invalid_service_id() -> None:

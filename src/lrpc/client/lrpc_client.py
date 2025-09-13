@@ -79,6 +79,27 @@ class LrpcClient:
 
         raise ValueError(f"Function or stream {function_or_stream_name} not found in service {service_name}")
 
+    def has_response(self, service_name: str, function_or_stream_name: str, **kwargs: Any) -> bool:
+        service = self.lrpc_def.service_by_name(service_name)
+        if not service:
+            raise ValueError(f"Service {service_name} not found in the LRPC definition file")
+
+        fun = service.function_by_name(function_or_stream_name)
+        if fun:
+            return True
+
+        stream = service.stream_by_name(function_or_stream_name)
+        if stream:
+            if stream.origin() == LrpcStream.Origin.CLIENT:
+                return False
+
+            if ("start" in kwargs) and (kwargs["start"] is False):
+                return False
+
+            return True
+
+        raise ValueError(f"Function or stream {function_or_stream_name} not found in service {service_name}")
+
     def _decode_function(self, function: LrpcFun, decoder: LrpcDecoder, service_name: str) -> dict[str, Any]:
         if function.number_returns() == 0:
             return {}

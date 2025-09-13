@@ -13,9 +13,9 @@ namespace ts5
     class MockService1 : public srv1ServiceShim
     {
     public:
-        MOCK_METHOD(void, server_infinite_start, (), (override));
+        MOCK_METHOD(void, server_infinite, (), (override));
         MOCK_METHOD(void, server_infinite_stop, (), (override));
-        MOCK_METHOD(void, server_finite_start, (), (override));
+        MOCK_METHOD(void, server_finite, (), (override));
         MOCK_METHOD(void, server_finite_stop, (), (override));
     };
 
@@ -23,7 +23,7 @@ namespace ts5
     {
     public:
         MOCK_METHOD(void, client_infinite, (DoorState), (override));
-        MOCK_METHOD(void, server_infinite_start, (), (override));
+        MOCK_METHOD(void, server_infinite, (), (override));
         MOCK_METHOD(void, server_infinite_stop, (), (override));
         MOCK_METHOD(void, f0, (DoorState), (override));
     };
@@ -71,9 +71,9 @@ TEST_F(TestServer5Srv1, server_infinite_stop)
     EXPECT_EQ("", response);
 }
 
-TEST_F(TestServer5Srv1, server_infinite_start)
+TEST_F(TestServer5Srv1, server_infinite)
 {
-    EXPECT_CALL(service, server_infinite_start());
+    EXPECT_CALL(service, server_infinite());
 
     const auto response = receive("04420001");
     EXPECT_EQ("", response);
@@ -85,9 +85,9 @@ TEST_F(TestServer5Srv1, server_infinite_response)
     EXPECT_EQ("064200341256", response());
 }
 
-TEST_F(TestServer5Srv1, server_finite_start)
+TEST_F(TestServer5Srv1, server_finite)
 {
-    EXPECT_CALL(service, server_finite_start());
+    EXPECT_CALL(service, server_finite());
 
     const auto response = receive("04422101");
     EXPECT_EQ("", response);
@@ -121,9 +121,9 @@ TEST_F(TestServer5Srv2, client_infinite_requestStop)
     EXPECT_EQ("034300", response());
 }
 
-TEST_F(TestServer5Srv2, server_infinite_start)
+TEST_F(TestServer5Srv2, server_infinite)
 {
-    EXPECT_CALL(service, server_infinite_start());
+    EXPECT_CALL(service, server_infinite());
 
     const auto response = receive("04430101");
     EXPECT_EQ("", response);

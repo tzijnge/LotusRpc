@@ -88,7 +88,7 @@ class ServiceShimVisitor(LrpcVisitor):
             self.__file.write("// Server stream declarations")
 
         for stream in server_streams:
-            self.__file.write(f"virtual void {stream.name()}_start() = 0;")
+            self.__file.write(f"virtual void {stream.name()}() = 0;")
             self.__file.write(f"virtual void {stream.name()}_stop() = 0;")
             self.__file.newline()
 
@@ -144,7 +144,7 @@ class ServiceShimVisitor(LrpcVisitor):
             with self.__file.block(f"void {stream.name()}_start_stop_shim(Reader& r, Writer&)"):
                 self.__file.write("const auto start = r.read_unchecked<bool>();")
                 with self.__file.block("if (start)"):
-                    self.__file.write(f"{stream.name()}_start();")
+                    self.__file.write(f"{stream.name()}();")
                 with self.__file.block("else"):
                     self.__file.write(f"{stream.name()}_stop();")
 

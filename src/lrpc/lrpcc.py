@@ -177,7 +177,7 @@ class Lrpcc:
         while True:
             received = self.__transport.read(1)
             if len(received) == 0:
-                return {"Error": "Timeout waiting for response"}
+                raise click.ClickException("Timeout waiting for response")
 
             response = self.client.process(received)
 
@@ -206,10 +206,6 @@ class Lrpcc:
 
         if not self.client.has_response(service_name, function_or_stream_name, **kwargs):
             return
-
-        # client stream: don't receive anything
-        # server finite: receive until "final" is True
-        # server infinite: receive forever
 
         receive_more = True
         response_index = 0

@@ -216,7 +216,7 @@ class Lrpcc:
         while receive_more:
             response = self.__receive_response()
 
-            if not self.__is_stream(service_name, function_or_stream_name):
+            if self.__is_stream(service_name, function_or_stream_name):
                 print(colorama.Fore.CYAN + f"[#{response_index}]")
 
             max_response_name_width = max(len(k) for k in response.keys())
@@ -233,8 +233,11 @@ class Lrpcc:
             if self.__is_function(service_name, function_or_stream_name):
                 receive_more = False
             else:
-                # TODO: this only works for server finite stream
-                receive_more = response["final"] is False
+                service = self.lrpc_def.service_by_name(service_name)
+                if service is not None:
+                    stream = service.stream_by_name(function_or_stream_name)
+                    if stream is not None and stream.is_finite():
+                        receive_more = response["final"] is False
 
             response_index += 1
 

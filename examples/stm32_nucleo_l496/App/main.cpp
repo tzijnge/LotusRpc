@@ -87,16 +87,41 @@ public:
         return p1;
     }
 
-    void s0_start() override
+    void s0() override
     {
         s0_response(0, 0, false);
         s0_response(1, 10, false);
-        s0_response(2, 20, true);
+        s0_response(2, 20, s0StopCalled);
+        if (!s0StopCalled)
+        {
+            s0_response(3, 30, true);
+        }
     }
 
     void s0_stop() override
     {
+        s0StopCalled = true;
     }
+
+    void s1() override
+    {
+        if (s1StopCalled)
+        {
+            s1_response("stop called", -9912);
+        }
+        s1_response("123", -10);
+        s1_response("456", -20);
+        s1_response("789", -30);
+    }
+
+    void s1_stop() override
+    {
+        s1StopCalled = true;
+    }
+
+private:
+    bool s0StopCalled{false};
+    bool s1StopCalled{false};
 };
 
 class ExampleServer : public example

@@ -79,3 +79,9 @@ services:
         params:
           - { name: p0, type: uint16_t }
           - { name: p1, type: uint8_t }
+      - name: s1
+        origin: server
+        finite: false
+        params:
+          - { name: p0, type: string }
+          - { name: p1, type: int16_t }

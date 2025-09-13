@@ -8,7 +8,10 @@ from glob import glob
 from importlib import import_module
 from os import path
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
+import colorama
+
+colorama.init(autoreset=True)
 
 import click
 import yaml
@@ -189,6 +192,14 @@ class Lrpcc:
 
         return False
 
+    def __is_stream(self, service_name: str, function_or_stream_name: str) -> bool:
+        service = self.lrpc_def.service_by_name(service_name)
+        if service is not None:
+            stream = service.stream_by_name(function_or_stream_name)
+            return stream is not None
+
+        return False
+
     def __command_handler(self, service_name: str, function_or_stream_name: str, **kwargs: Any) -> None:
         encoded = self.client.encode(service_name, function_or_stream_name, **kwargs)
         self.__transport.write(encoded)
@@ -198,18 +209,31 @@ class Lrpcc:
         # server infinite: receive forever
 
         receive_more = True
+        response_index = 0
         while receive_more:
             response = self.__receive_response()
 
+            if not self.__is_stream(service_name, function_or_stream_name):
+                print(colorama.Fore.CYAN + f"[#{response_index}]")
+
+            max_response_name_width = max(len(k) for k in response.keys())
+
             for name, value in response.items():
-                post_value = f" ({hex(value)})" if isinstance(value, int) else ""
-                print(f"{name}: {value}{post_value}")
+                name_text = colorama.Fore.GREEN + name.ljust(max_response_name_width) + colorama.Style.RESET_ALL
+                hex_repr = (
+                    colorama.Style.BRIGHT + colorama.Fore.LIGHTBLACK_EX + f" ({hex(value)})"
+                    if (isinstance(value, int) and not isinstance(value, bool))
+                    else ""
+                )
+                print(f"{name_text}: {value}{hex_repr}")
 
             if self.__is_function(service_name, function_or_stream_name):
                 receive_more = False
             else:
                 # TODO: this only works for server finite stream
                 receive_more = response["final"] is False
+
+            response_index += 1
 
     def run(self) -> None:
         cli = ClientCliVisitor(self.__command_handler)

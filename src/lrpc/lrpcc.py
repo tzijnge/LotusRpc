@@ -215,7 +215,9 @@ class Lrpcc:
             if self.__is_stream(service_name, function_or_stream_name):
                 print(colorama.Fore.CYAN + f"[#{response_index}]")
 
-            max_response_name_width = max(len(k) for k in response.keys())
+            max_response_name_width = 0
+            if len(response) != 0:
+                max_response_name_width = max(len(k) for k in response.keys())
 
             for name, value in response.items():
                 name_text = colorama.Fore.GREEN + name.ljust(max_response_name_width) + colorama.Style.RESET_ALL

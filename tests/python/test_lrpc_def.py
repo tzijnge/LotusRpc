@@ -1,12 +1,28 @@
 import math
 import pytest
 from lrpc.utils import load_lrpc_def_from_str
-from lrpc.core.definition import LrpcDef
+from lrpc.core import LrpcDef, LrpcFun, LrpcStream
 
 
 def load_lrpc_def(def_str: str) -> LrpcDef:
     lrpc_def = load_lrpc_def_from_str(def_str, warnings_as_errors=False)
     return lrpc_def
+
+
+def get_function(lrpc_def: LrpcDef, service: str, fun: str) -> LrpcFun:
+    srv = lrpc_def.service_by_name(service)
+    assert srv is not None
+    f = srv.function_by_name(fun)
+    assert f is not None
+    return f
+
+
+def get_stream(lrpc_def: LrpcDef, service: str, stream: str) -> LrpcStream:
+    srv = lrpc_def.service_by_name(service)
+    assert srv is not None
+    s = srv.stream_by_name(stream)
+    assert s is not None
+    return s
 
 
 def test_optional_service_id() -> None:
@@ -427,10 +443,10 @@ services:
 """
     lrpc_def = load_lrpc_def(def_str)
 
-    assert lrpc_def.service_by_name("srv1").function_by_name("f1").id() == 0
-    assert lrpc_def.service_by_name("srv1").function_by_name("f2").id() == 1
-    assert lrpc_def.service_by_name("srv1").stream_by_name("s1").id() == 2
-    assert lrpc_def.service_by_name("srv1").stream_by_name("s2").id() == 3
+    assert get_function(lrpc_def, "srv1", "f1").id() == 0
+    assert get_function(lrpc_def, "srv1", "f2").id() == 1
+    assert get_stream(lrpc_def, "srv1", "s1").id() == 2
+    assert get_stream(lrpc_def, "srv1", "s2").id() == 3
 
 
 def test_implicit_stream_and_function_id() -> None:
@@ -448,10 +464,10 @@ services:
 """
     lrpc_def = load_lrpc_def(def_str)
 
-    assert lrpc_def.service_by_name("srv1").stream_by_name("s1").id() == 0
-    assert lrpc_def.service_by_name("srv1").stream_by_name("s2").id() == 1
-    assert lrpc_def.service_by_name("srv1").function_by_name("f1").id() == 2
-    assert lrpc_def.service_by_name("srv1").function_by_name("f2").id() == 3
+    assert get_stream(lrpc_def, "srv1", "s1").id() == 0
+    assert get_stream(lrpc_def, "srv1", "s2").id() == 1
+    assert get_function(lrpc_def, "srv1", "f1").id() == 2
+    assert get_function(lrpc_def, "srv1", "f2").id() == 3
 
 
 def test_functions_before_streams() -> None:
@@ -470,10 +486,10 @@ services:
 """
     lrpc_def = load_lrpc_def(def_str)
 
-    assert lrpc_def.service_by_name("srv1").function_by_name("f1").id() == 0
-    assert lrpc_def.service_by_name("srv1").function_by_name("f2").id() == 1
-    assert lrpc_def.service_by_name("srv1").stream_by_name("s1").id() == 2
-    assert lrpc_def.service_by_name("srv1").stream_by_name("s2").id() == 3
+    assert get_function(lrpc_def, "srv1", "f1").id() == 0
+    assert get_function(lrpc_def, "srv1", "f2").id() == 1
+    assert get_stream(lrpc_def, "srv1", "s1").id() == 2
+    assert get_stream(lrpc_def, "srv1", "s2").id() == 3
 
 
 def test_explicit_stream_and_function_id() -> None:
@@ -492,10 +508,10 @@ services:
 """
     lrpc_def = load_lrpc_def(def_str)
 
-    assert lrpc_def.service_by_name("srv1").stream_by_name("s1").id() == 25
-    assert lrpc_def.service_by_name("srv1").stream_by_name("s2").id() == 26
-    assert lrpc_def.service_by_name("srv1").function_by_name("f1").id() == 27
-    assert lrpc_def.service_by_name("srv1").function_by_name("f2").id() == 28
+    assert get_stream(lrpc_def, "srv1", "s1").id() == 25
+    assert get_stream(lrpc_def, "srv1", "s2").id() == 26
+    assert get_function(lrpc_def, "srv1", "f1").id() == 27
+    assert get_function(lrpc_def, "srv1", "f2").id() == 28
 
 
 def test_service_with_only_streams() -> None:
@@ -508,8 +524,8 @@ services:
 """
     lrpc_def = load_lrpc_def(def_str)
 
-    assert lrpc_def.service_by_name("srv1").stream_by_name("s1").id() == 0
-    assert not lrpc_def.service_by_name("srv1").stream_by_name("s1").is_finite()
+    assert get_stream(lrpc_def, "srv1", "s1").id() == 0
+    assert not get_stream(lrpc_def, "srv1", "s1").is_finite()
 
 
 def test_finite_stream() -> None:
@@ -523,7 +539,8 @@ services:
 """
     lrpc_def = load_lrpc_def(def_str)
 
-    assert lrpc_def.service_by_name("srv1").stream_by_name("s1").is_finite()
+    assert get_stream(lrpc_def, "srv1", "s1").is_finite()
+
 
 def test_custom_types_in_function_params() -> None:
     def_str = """name: test
@@ -545,7 +562,7 @@ enums:
 
     lrpc_def = load_lrpc_def(def_str)
 
-    f0_params = lrpc_def.service_by_name("srv0").function_by_name("f0").params()
+    f0_params = get_function(lrpc_def, "srv0", "f0").params()
     assert len(f0_params) == 2
 
     assert f0_params[0].name() == "p0"
@@ -579,7 +596,7 @@ enums:
 
     lrpc_def = load_lrpc_def(def_str)
 
-    f0_returns = lrpc_def.service_by_name("srv0").function_by_name("f0").returns()
+    f0_returns = get_function(lrpc_def, "srv0", "f0").returns()
     assert len(f0_returns) == 2
 
     assert f0_returns[0].name() == "r0"
@@ -616,7 +633,7 @@ enums:
 
     lrpc_def = load_lrpc_def(def_str)
 
-    f0_params = lrpc_def.service_by_name("srv0").function_by_name("f0").params()
+    f0_params = get_function(lrpc_def, "srv0", "f0").params()
     assert len(f0_params) == 1
 
     p0_field = f0_params[0]
@@ -660,7 +677,7 @@ enums:
 
     lrpc_def = load_lrpc_def(def_str)
 
-    s0_params = lrpc_def.service_by_name("srv0").stream_by_name("s0").params()
+    s0_params = get_stream(lrpc_def, "srv0", "s0").params()
     assert len(s0_params) == 2
 
     assert s0_params[0].name() == "p0"

@@ -162,6 +162,8 @@ def test_stream_by_name() -> None:
     }
     service = LrpcService(s)
 
-    assert service.stream_by_name("s0").name() == "s0"
-    assert service.stream_by_name("s1").name() == "s1"
+    s0 = service.stream_by_name("s0")
+    assert s0 is not None and s0.name() == "s0"
+    s1 = service.stream_by_name("s1")
+    assert s1 is not None and s1.name() == "s1"
     assert service.stream_by_name("s2") is None

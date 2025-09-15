@@ -166,7 +166,7 @@ class ClientCliVisitor(LrpcVisitor):
         click_param: click.Parameter
 
         if self.current_stream_origin == LrpcStream.Origin.SERVER:
-            assert param.name() == "start"  # TODO: better error handling
+            assert param.name() == "start", "Server stream takes a single parameter named 'start'"
             click_param = click.Option(
                 ["--start/--stop"],
                 is_flag=True,

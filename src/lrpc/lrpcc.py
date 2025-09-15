@@ -81,6 +81,15 @@ def __load_config() -> dict[str, Any]:
 @click.version_option(package_name="lotusrpc", message="%(version)s")
 def run_lrpcc_config_creator() -> None:
     """
+    \b
+        __          __             ____  ____  ______
+       / /   ____  / /___  _______/ __ \/ __ \/ ____/
+      / /   / __ \/ __/ / / / ___/ /_/ / /_/ / /
+     / /___/ /_/ / /_/ /_/ (__  ) _, _/ ____/ /___
+    /_____/\____/\__/\__,_/____/_/ |_/_/    \____/
+
+    lrpcc is the LotusRPC client CLI tool.
+
     lrpcc needs a configuration file named lrpcc.config.yaml.
     See https://github.com/tzijnge/LotusRpc for more information
     about the contents of the configuration file. By default,
@@ -217,7 +226,7 @@ class Lrpcc:
 
             max_response_name_width = 0
             if len(response) != 0:
-                max_response_name_width = max(len(k) for k in response.keys())
+                max_response_name_width = max(len(k) for k in response)
 
             for name, value in response.items():
                 name_text = colorama.Fore.GREEN + name.ljust(max_response_name_width) + colorama.Style.RESET_ALL

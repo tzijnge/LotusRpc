@@ -1,4 +1,5 @@
-from typing import TextIO, Union, Any, Hashable
+from typing import TextIO, Union, Any
+from collections.abc import Hashable
 import jsonschema
 import yaml
 

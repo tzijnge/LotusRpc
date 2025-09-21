@@ -80,7 +80,7 @@ def __load_config() -> dict[str, Any]:
 @click.group()
 @click.version_option(package_name="lotusrpc", message="%(version)s")
 def run_lrpcc_config_creator() -> None:
-    """
+    r"""
     \b
         __          __             ____  ____  ______
        / /   ____  / /___  _______/ __ \/ __ \/ ____/
@@ -180,11 +180,11 @@ class Lrpcc:
             raise ImportError(f"No method named 'write' in {transport_module}")
 
         logging.debug("Constructing LRPCC transport with these params: %s", transport_params)
-        self.__transport = transport_module(**transport_params)
+        self._transport = transport_module(**transport_params)
 
     def __receive_response(self) -> dict[str, Any]:
         while True:
-            received = self.__transport.read(1)
+            received = self._transport.read(1)
             if len(received) == 0:
                 raise click.ClickException("Timeout waiting for response")
 
@@ -209,20 +209,27 @@ class Lrpcc:
 
         return False
 
-    def __command_handler(self, service_name: str, function_or_stream_name: str, **kwargs: Any) -> None:
+    def _command_handler(self, service_name: str, function_or_stream_name: str, **kwargs: Any) -> None:
         encoded = self.client.encode(service_name, function_or_stream_name, **kwargs)
-        self.__transport.write(encoded)
+        self._transport.write(encoded)
 
-        if not self.client.has_response(service_name, function_or_stream_name, **kwargs):
-            return
-
-        receive_more = True
+        receive_more = self.client.has_response(service_name, function_or_stream_name, **kwargs)
         response_index = 0
         while receive_more:
             response = self.__receive_response()
 
             if self.__is_stream(service_name, function_or_stream_name):
                 print(colorama.Fore.CYAN + f"[#{response_index}]")
+
+            if self.__is_function(service_name, function_or_stream_name):
+                receive_more = False
+            else:
+                service = self.lrpc_def.service_by_name(service_name)
+                if service is not None:
+                    stream = service.stream_by_name(function_or_stream_name)
+                    if stream is not None and stream.is_finite():
+                        receive_more = response["final"] is False
+                        response.pop("final")
 
             max_response_name_width = 0
             if len(response) != 0:
@@ -237,19 +244,10 @@ class Lrpcc:
                 )
                 print(f"{name_text}: {value}{hex_repr}")
 
-            if self.__is_function(service_name, function_or_stream_name):
-                receive_more = False
-            else:
-                service = self.lrpc_def.service_by_name(service_name)
-                if service is not None:
-                    stream = service.stream_by_name(function_or_stream_name)
-                    if stream is not None and stream.is_finite():
-                        receive_more = response["final"] is False
-
             response_index += 1
 
     def run(self) -> None:
-        cli = ClientCliVisitor(self.__command_handler)
+        cli = ClientCliVisitor(self._command_handler)
         self.lrpc_def.accept(cli)
         cli.root()
 

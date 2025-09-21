@@ -8,16 +8,17 @@ from glob import glob
 from importlib import import_module
 from os import path
 from pathlib import Path
-from typing import Any
-import colorama
-
-colorama.init(autoreset=True)
+from typing import Any, Optional
 
 import click
+import colorama
 import yaml
 
 from lrpc.client import ClientCliVisitor, LrpcClient
+from lrpc.core import LrpcStream
 from lrpc.utils import load_lrpc_def_from_url
+
+colorama.init(autoreset=True)
 
 logging.basicConfig(format="[LRPCC] %(levelname)-8s: %(message)s", level=logging.INFO)
 
@@ -201,13 +202,16 @@ class Lrpcc:
 
         return False
 
-    def __is_stream(self, service_name: str, function_or_stream_name: str) -> bool:
+    def __get_stream(self, service_name: str, stream_name: str) -> Optional[LrpcStream]:
         service = self.lrpc_def.service_by_name(service_name)
         if service is not None:
-            stream = service.stream_by_name(function_or_stream_name)
-            return stream is not None
+            return service.stream_by_name(stream_name)
 
-        return False
+        return None
+
+    def __is_stream(self, service_name: str, function_or_stream_name: str) -> bool:
+        stream = self.__get_stream(service_name, function_or_stream_name)
+        return stream is not None
 
     def _command_handler(self, service_name: str, function_or_stream_name: str, **kwargs: Any) -> None:
         encoded = self.client.encode(service_name, function_or_stream_name, **kwargs)
@@ -224,27 +228,30 @@ class Lrpcc:
             if self.__is_function(service_name, function_or_stream_name):
                 receive_more = False
             else:
-                service = self.lrpc_def.service_by_name(service_name)
-                if service is not None:
-                    stream = service.stream_by_name(function_or_stream_name)
-                    if stream is not None and stream.is_finite():
-                        receive_more = response["final"] is False
-                        response.pop("final")
+                stream = self.__get_stream(service_name, function_or_stream_name)
+                assert stream is not None
+                if stream.is_finite():
+                    receive_more = response["final"] is False
+                    response.pop("final")
 
-            max_response_name_width = 0
-            if len(response) != 0:
-                max_response_name_width = max(len(k) for k in response)
-
-            for name, value in response.items():
-                name_text = colorama.Fore.GREEN + name.ljust(max_response_name_width) + colorama.Style.RESET_ALL
-                hex_repr = (
-                    colorama.Style.BRIGHT + colorama.Fore.LIGHTBLACK_EX + f" ({hex(value)})"
-                    if (isinstance(value, int) and not isinstance(value, bool))
-                    else ""
-                )
-                print(f"{name_text}: {value}{hex_repr}")
+            self._print_response(response)
 
             response_index += 1
+
+    @staticmethod
+    def _print_response(response: dict[str, Any]) -> None:
+        max_response_name_width = 0
+        if len(response) != 0:
+            max_response_name_width = max(len(k) for k in response)
+
+        for name, value in response.items():
+            name_text = colorama.Fore.GREEN + name.ljust(max_response_name_width) + colorama.Style.RESET_ALL
+            hex_repr = (
+                colorama.Style.BRIGHT + colorama.Fore.LIGHTBLACK_EX + f" ({hex(value)})"
+                if (isinstance(value, int) and not isinstance(value, bool))
+                else ""
+            )
+            print(f"{name_text}: {value}{hex_repr}")
 
     def run(self) -> None:
         cli = ClientCliVisitor(self._command_handler)

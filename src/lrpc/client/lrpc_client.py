@@ -100,7 +100,8 @@ class LrpcClient:
 
         raise ValueError(f"Function or stream {function_or_stream_name} not found in service {service_name}")
 
-    def _decode_function(self, function: LrpcFun, decoder: LrpcDecoder, service_name: str) -> dict[str, Any]:
+    @staticmethod
+    def _decode_function(function: LrpcFun, decoder: LrpcDecoder, service_name: str) -> dict[str, Any]:
         if function.number_returns() == 0:
             return {}
 
@@ -115,7 +116,8 @@ class LrpcClient:
 
         return ret
 
-    def _decode_stream(self, stream: LrpcStream, decoder: LrpcDecoder, service_name: str) -> dict[str, Any]:
+    @staticmethod
+    def _decode_stream(stream: LrpcStream, decoder: LrpcDecoder, service_name: str) -> dict[str, Any]:
         ret = {}
         for r in stream.returns():
             ret[r.name()] = decoder.lrpc_decode(r)
@@ -137,8 +139,8 @@ class LrpcClient:
         encoded = self._encode_parameters(service, stream, **kwargs)
         return self._add_message_length(encoded)
 
+    @staticmethod
     def _check_parameters(
-        self,
         required_params: list[str],
         given_params: list[str],
     ) -> None:

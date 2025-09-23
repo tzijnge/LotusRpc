@@ -56,7 +56,7 @@ def generate_puml(lrpc_def: LrpcDef, output: os.PathLike[str]) -> None:
 @click.group()
 @click.version_option(package_name="lotusrpc", message="%(version)s")
 def run_cli() -> None:
-    """
+    r"""
     \b
         __          __             ____  ____  ______
        / /   ____  / /___  _______/ __ \/ __ \/ ____/

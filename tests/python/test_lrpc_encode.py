@@ -1,9 +1,8 @@
 import struct
 from os import path
-from typing import Any
 
 import pytest
-from lrpc.client import lrpc_encode
+from lrpc.client import lrpc_encode, LrpcType
 from lrpc.core import LrpcVar
 from lrpc.utils import load_lrpc_def_from_url
 
@@ -11,7 +10,7 @@ definition_file = path.join(path.dirname(path.abspath(__file__)), "test_lrpc_enc
 lrpc_def = load_lrpc_def_from_url(definition_file, warnings_as_errors=False)
 
 
-def encode_var(value: Any, var: LrpcVar) -> bytes:
+def encode_var(value: LrpcType, var: LrpcVar) -> bytes:
     return lrpc_encode(value, var, lrpc_def)
 
 
@@ -27,7 +26,7 @@ def test_encode_uint8_t() -> None:
     with pytest.raises(struct.error):
         encode_var(256, var)
 
-    with pytest.raises(struct.error):
+    with pytest.raises(TypeError):
         encode_var({123}, var)
 
 
@@ -45,7 +44,7 @@ def test_encode_int8_t() -> None:
     with pytest.raises(struct.error):
         encode_var(-129, var)
 
-    with pytest.raises(struct.error):
+    with pytest.raises(TypeError):
         encode_var((123, 124), var)
 
 
@@ -61,7 +60,7 @@ def test_encode_uint16_t() -> None:
     with pytest.raises(struct.error):
         encode_var(65536, var)
 
-    with pytest.raises(struct.error):
+    with pytest.raises(TypeError):
         encode_var([123], var)
 
 
@@ -79,7 +78,7 @@ def test_encode_int16_t() -> None:
     with pytest.raises(struct.error):
         encode_var(-32769, var)
 
-    with pytest.raises(struct.error):
+    with pytest.raises(TypeError):
         encode_var(None, var)
 
 

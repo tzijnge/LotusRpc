@@ -14,7 +14,7 @@ import click
 import colorama
 import yaml
 
-from lrpc.client import ClientCliVisitor, LrpcClient
+from lrpc.client import ClientCliVisitor, LrpcClient, LrpcType
 from lrpc.core import LrpcStream
 from lrpc.utils import load_lrpc_def_from_url
 
@@ -213,7 +213,7 @@ class Lrpcc:
         stream = self.__get_stream(service_name, function_or_stream_name)
         return stream is not None
 
-    def _command_handler(self, service_name: str, function_or_stream_name: str, **kwargs: Any) -> None:
+    def _command_handler(self, service_name: str, function_or_stream_name: str, **kwargs: LrpcType) -> None:
         encoded = self.client.encode(service_name, function_or_stream_name, **kwargs)
         self._transport.write(encoded)
 

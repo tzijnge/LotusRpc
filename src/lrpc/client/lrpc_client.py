@@ -4,7 +4,7 @@ from typing import Any, Union
 from ..core.definition import LrpcDef
 from ..core import LrpcService, LrpcFun, LrpcStream
 from .decoder import LrpcDecoder
-from .encoder import lrpc_encode
+from .encoder import lrpc_encode, LrpcType
 
 
 class LrpcClient:
@@ -64,7 +64,7 @@ class LrpcClient:
 
         raise ValueError(f"No function or stream with ID {function_or_stream_id} found in service {service.name()}")
 
-    def encode(self, service_name: str, function_or_stream_name: str, **kwargs: Any) -> bytes:
+    def encode(self, service_name: str, function_or_stream_name: str, **kwargs: LrpcType) -> bytes:
         service = self.lrpc_def.service_by_name(service_name)
         if not service:
             raise ValueError(f"Service {service_name} not found in the LRPC definition file")
@@ -79,7 +79,7 @@ class LrpcClient:
 
         raise ValueError(f"Function or stream {function_or_stream_name} not found in service {service_name}")
 
-    def has_response(self, service_name: str, function_or_stream_name: str, **kwargs: Any) -> bool:
+    def has_response(self, service_name: str, function_or_stream_name: str, **kwargs: LrpcType) -> bool:
         service = self.lrpc_def.service_by_name(service_name)
         if not service:
             raise ValueError(f"Service {service_name} not found in the LRPC definition file")
@@ -129,12 +129,12 @@ class LrpcClient:
 
         return ret
 
-    def _encode_function(self, service: LrpcService, function: LrpcFun, **kwargs: Any) -> bytes:
+    def _encode_function(self, service: LrpcService, function: LrpcFun, **kwargs: LrpcType) -> bytes:
         self._check_parameters(function.param_names(), list(kwargs.keys()))
         encoded = self._encode_parameters(service, function, **kwargs)
         return self._add_message_length(encoded)
 
-    def _encode_stream(self, service: LrpcService, stream: LrpcStream, **kwargs: Any) -> bytes:
+    def _encode_stream(self, service: LrpcService, stream: LrpcStream, **kwargs: LrpcType) -> bytes:
         self._check_parameters(stream.param_names(), list(kwargs.keys()))
         encoded = self._encode_parameters(service, stream, **kwargs)
         return self._add_message_length(encoded)
@@ -156,7 +156,7 @@ class LrpcClient:
         self,
         service: LrpcService,
         function_or_stream: Union[LrpcFun, LrpcStream],
-        **kwargs: Any,
+        **kwargs: LrpcType,
     ) -> bytes:
         encoded = struct.pack("<B", service.id())
         encoded += struct.pack("<B", function_or_stream.id())

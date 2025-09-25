@@ -36,7 +36,7 @@ def __check_struct(value: LrpcType, var: LrpcVar, lrpc_def: LrpcDef) -> dict[str
     required_fields = [f.name() for f in s.fields()]
     given_fields = list(value.keys())
 
-    missing_fields = set(required_fields) - set(given_fields)  # type: ignore
+    missing_fields = set(required_fields) - set(given_fields)
     unknown_fields = set(given_fields) - set(required_fields)
 
     if len(missing_fields) != 0:
@@ -45,7 +45,7 @@ def __check_struct(value: LrpcType, var: LrpcVar, lrpc_def: LrpcDef) -> dict[str
     if len(unknown_fields) != 0:
         raise ValueError(f"Unknown fields for {var.name()}: {unknown_fields}")
 
-    return value  # type: ignore
+    return value
 
 
 def __encode_struct(value: dict[str, LrpcType], var: LrpcVar, lrpc_def: LrpcDef) -> bytes:

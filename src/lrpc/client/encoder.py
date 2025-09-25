@@ -1,10 +1,8 @@
 import struct
-from typing import Union, Iterable, Optional
+from typing import Optional
 
 from ..core import LrpcDef, LrpcVar
-
-LrpcBasicType = Union[bool, int, float, str]
-LrpcType = Union[LrpcBasicType, Iterable["LrpcType"], dict[str, "LrpcType"], None]
+from ..types import LrpcType, LrpcBasicType
 
 
 def __check_string(value: LrpcType, var: LrpcVar) -> str:
@@ -95,7 +93,7 @@ def __check_enum_field_id(value: LrpcType, var: LrpcVar, lrpc_def: LrpcDef) -> s
     return value
 
 
-def __encode_basic_type(pack_type: LrpcBasicType, value: LrpcBasicType) -> bytes:
+def __encode_basic_type(pack_type: str, value: LrpcBasicType) -> bytes:
     return struct.pack(f"<{pack_type}", value)
 
 

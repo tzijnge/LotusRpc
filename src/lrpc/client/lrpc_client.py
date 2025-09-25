@@ -3,8 +3,9 @@ from typing import Any, Union
 
 from ..core.definition import LrpcDef
 from ..core import LrpcService, LrpcFun, LrpcStream
+from ..types import LrpcType
 from .decoder import LrpcDecoder
-from .encoder import lrpc_encode, LrpcType
+from .encoder import lrpc_encode
 
 
 class LrpcClient:

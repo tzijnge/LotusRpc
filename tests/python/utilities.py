@@ -6,10 +6,6 @@ class StringifyVisitor(LrpcVisitor):
     def __init__(self) -> None:
         self.result: str = ""
 
-    def _insert_separator(self) -> None:
-        if len(self.result) != 0:
-            self.result += "-"
-
     def visit_lrpc_service(self, service: LrpcService) -> None:
         self._insert_separator()
         self.result += f"service[{service.name()}]"
@@ -23,20 +19,16 @@ class StringifyVisitor(LrpcVisitor):
         self.result += f"stream[{stream.name()}+{stream.id()}+{stream.origin().value}]"
 
     def visit_lrpc_stream_param(self, param: LrpcVar) -> None:
-        self._insert_separator()
-        self.result += f"param[{param.name()}]"
+        self._add_param(param)
 
     def visit_lrpc_stream_param_end(self) -> None:
-        self._insert_separator()
-        self.result += "param_end"
+        self._add_param_end()
 
     def visit_lrpc_stream_return(self, ret: "LrpcVar") -> None:
-        self._insert_separator()
-        self.result += f"return[{ret.name()}]"
+        self._add_return(ret)
 
     def visit_lrpc_stream_return_end(self) -> None:
-        self._insert_separator()
-        self.result += "return_end"
+        self._add_return_end()
 
     def visit_lrpc_stream_end(self) -> None:
         self._insert_separator()
@@ -51,17 +43,33 @@ class StringifyVisitor(LrpcVisitor):
         self.result += "function_end"
 
     def visit_lrpc_function_return(self, ret: LrpcVar) -> None:
+        self._add_return(ret)
+
+    def visit_lrpc_function_return_end(self) -> None:
+        self._add_return_end()
+
+    def visit_lrpc_function_param(self, param: LrpcVar) -> None:
+        self._add_param(param)
+
+    def visit_lrpc_function_param_end(self) -> None:
+        self._add_param_end()
+
+    def _insert_separator(self) -> None:
+        if len(self.result) != 0:
+            self.result += "-"
+
+    def _add_return(self, ret: LrpcVar) -> None:
         self._insert_separator()
         self.result += f"return[{ret.name()}]"
 
-    def visit_lrpc_function_return_end(self) -> None:
+    def _add_return_end(self) -> None:
         self._insert_separator()
         self.result += "return_end"
 
-    def visit_lrpc_function_param(self, param: LrpcVar) -> None:
+    def _add_param(self, param: LrpcVar) -> None:
         self._insert_separator()
         self.result += f"param[{param.name()}]"
 
-    def visit_lrpc_function_param_end(self) -> None:
+    def _add_param_end(self) -> None:
         self._insert_separator()
         self.result += "param_end"

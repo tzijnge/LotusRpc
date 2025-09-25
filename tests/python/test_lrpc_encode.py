@@ -2,9 +2,10 @@ import struct
 from os import path
 
 import pytest
-from lrpc.client import lrpc_encode, LrpcType
+from lrpc.client import lrpc_encode
 from lrpc.core import LrpcVar
 from lrpc.utils import load_lrpc_def_from_url
+from lrpc.types import LrpcType
 
 definition_file = path.join(path.dirname(path.abspath(__file__)), "test_lrpc_encode_decode.lrpc.yaml")
 lrpc_def = load_lrpc_def_from_url(definition_file, warnings_as_errors=False)

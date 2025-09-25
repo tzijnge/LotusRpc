@@ -14,7 +14,8 @@ import click
 import colorama
 import yaml
 
-from lrpc.client import ClientCliVisitor, LrpcClient, LrpcType
+from lrpc.client import ClientCliVisitor, LrpcClient
+from lrpc.types import LrpcType
 from lrpc.core import LrpcStream
 from lrpc.utils import load_lrpc_def_from_url
 

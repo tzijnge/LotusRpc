@@ -89,7 +89,8 @@ class PumlFile:
         yield
         self.write(close_str)
 
-    def icon(self, i: str) -> str:
+    @staticmethod
+    def icon(i: str) -> str:
         return f"<&{i}>"
 
     def insert_icon(self, i: str) -> None:

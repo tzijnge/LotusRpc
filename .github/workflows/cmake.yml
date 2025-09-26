@@ -30,7 +30,6 @@ jobs:
         run: pip install .
       - name: "Run LRPC generator"
         run: |
-          set -ex
           lrpcg cpp -d tests/testdata/TestServer1.lrpc.yaml -o .
           lrpcg cpp -d tests/testdata/TestServer2.lrpc.yaml -o .
           lrpcg cpp -d tests/testdata/TestServer3.lrpc.yaml -o .

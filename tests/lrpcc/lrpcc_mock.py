@@ -1,10 +1,10 @@
 class Transport:
     def __init__(self) -> None:
-        self.reponse = bytes()
+        self.response = bytes()
 
     def read(self, size: int = 1) -> bytes:
-        data = self.reponse[0:size]
-        self.reponse = self.reponse[size:]
+        data = self.response[0:size]
+        self.response = self.response[size:]
 
         return data
 

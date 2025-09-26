@@ -28,7 +28,7 @@ def make_lrpcc(definition_url: str, response: bytes = b"") -> Lrpcc:
     }
     lrpcc = Lrpcc(lrpcc_config)
     t: MockTransport = lrpcc._transport
-    t.reponse = response
+    t.response = response
 
     return lrpcc
 

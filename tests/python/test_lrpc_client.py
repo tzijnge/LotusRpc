@@ -221,14 +221,14 @@ def test_decode_error_response() -> None:
 
 def test_has_response_invalid_service() -> None:
     with pytest.raises(ValueError) as e:
-        client.encode("invalid_service", "server_finite", start=False)
+        client.has_response("invalid_service", "server_finite", start=False)
 
     assert str(e.value) == "Service invalid_service not found in the LRPC definition file"
 
 
 def test_has_response_invalid_function_or_stream() -> None:
     with pytest.raises(ValueError) as e:
-        client.encode("srv2", "invalid_function_or_stream", start=False)
+        client.has_response("srv2", "invalid_function_or_stream", start=False)
 
     assert str(e.value) == "Function or stream invalid_function_or_stream not found in service srv2"
 
@@ -245,3 +245,22 @@ def test_remaining_bytes_after_decode() -> None:
         client.decode(b"\x05\x00\x00\xab\xcd")
 
     assert str(e.value) == "2 remaining bytes after decoding srv0.f0"
+
+
+def test_process_empty() -> None:
+    response = client.process(b"")
+    assert isinstance(response, LrpcClient.IncompleteResponse)
+
+
+def test_process_complete_response() -> None:
+    response = client.process(b"\x03\x02\x00")
+    assert response == {}
+
+
+def test_process_byte_by_byte() -> None:
+    response = client.process(b"\x03")
+    assert isinstance(response, LrpcClient.IncompleteResponse)
+    response = client.process(b"\x02")
+    assert isinstance(response, LrpcClient.IncompleteResponse)
+    response = client.process(b"\x00")
+    assert response == {}

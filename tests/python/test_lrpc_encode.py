@@ -1,17 +1,17 @@
 import struct
 from os import path
-from typing import Any
 
 import pytest
 from lrpc.client import lrpc_encode
 from lrpc.core import LrpcVar
 from lrpc.utils import load_lrpc_def_from_url
+from lrpc.types import LrpcType
 
 definition_file = path.join(path.dirname(path.abspath(__file__)), "test_lrpc_encode_decode.lrpc.yaml")
 lrpc_def = load_lrpc_def_from_url(definition_file, warnings_as_errors=False)
 
 
-def encode_var(value: Any, var: LrpcVar) -> bytes:
+def encode_var(value: LrpcType, var: LrpcVar) -> bytes:
     return lrpc_encode(value, var, lrpc_def)
 
 
@@ -27,7 +27,7 @@ def test_encode_uint8_t() -> None:
     with pytest.raises(struct.error):
         encode_var(256, var)
 
-    with pytest.raises(struct.error):
+    with pytest.raises(TypeError):
         encode_var({123}, var)
 
 
@@ -45,7 +45,7 @@ def test_encode_int8_t() -> None:
     with pytest.raises(struct.error):
         encode_var(-129, var)
 
-    with pytest.raises(struct.error):
+    with pytest.raises(TypeError):
         encode_var((123, 124), var)
 
 
@@ -61,7 +61,7 @@ def test_encode_uint16_t() -> None:
     with pytest.raises(struct.error):
         encode_var(65536, var)
 
-    with pytest.raises(struct.error):
+    with pytest.raises(TypeError):
         encode_var([123], var)
 
 
@@ -79,7 +79,7 @@ def test_encode_int16_t() -> None:
     with pytest.raises(struct.error):
         encode_var(-32769, var)
 
-    with pytest.raises(struct.error):
+    with pytest.raises(TypeError):
         encode_var(None, var)
 
 
@@ -260,6 +260,13 @@ def test_encode_nested_struct() -> None:
     assert encoded == b"\xd7\x11\x7b\x01"
 
 
+def test_encode_unknown_struct() -> None:
+    var = LrpcVar({"name": "v1", "type": "struct@UnknownStruct"})
+
+    with pytest.raises(ValueError):
+        encode_var({"b": 123, "a": 4567}, var)
+
+
 def test_encode_enum() -> None:
     var = LrpcVar({"name": "v1", "type": "enum@MyEnum1"})
 
@@ -279,6 +286,18 @@ def test_encode_optional_enum() -> None:
     assert encoded == b"\x00"
     encoded = encode_var("test2", var)
     assert encoded == b"\x01\x37"
+
+
+def test_encode_enum_invalid_input() -> None:
+    var = LrpcVar({"name": "v1", "type": "enum@MyEnum1"})
+
+    encoded = encode_var("test1", var)
+    assert encoded == b"\x00"
+    encoded = encode_var("test2", var)
+    assert encoded == b"\x37"
+
+    with pytest.raises(TypeError):
+        encode_var(123, var)
 
 
 def test_encode_array_of_struct() -> None:

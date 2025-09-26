@@ -159,7 +159,7 @@ namespace lrpc
     read_unchecked(etl::byte_stream_reader &stream)
     {
         size_t stringSize{0};
-        size_t skipSize = {0};
+        size_t skipSize{0};
 
         const auto fd = stream.free_data();
         const auto found = etl::find(fd.begin(), fd.end(), '\0');

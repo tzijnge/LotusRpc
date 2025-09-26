@@ -2,9 +2,20 @@ from abc import ABC
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..core import LrpcDef, LrpcService, LrpcStruct, LrpcVar, LrpcEnum, LrpcEnumField, LrpcFun, LrpcConstant
+    from ..core import (
+        LrpcDef,
+        LrpcService,
+        LrpcStruct,
+        LrpcVar,
+        LrpcEnum,
+        LrpcEnumField,
+        LrpcFun,
+        LrpcConstant,
+        LrpcStream,
+    )
 
 
+# pylint: disable = too-many-public-methods
 class LrpcVisitor(ABC):
     def visit_lrpc_def(self, lrpc_def: "LrpcDef") -> None:
         """Called before visiting the LRPC definition"""
@@ -65,3 +76,21 @@ class LrpcVisitor(ABC):
 
     def visit_lrpc_function_param_end(self) -> None:
         """Called after visiting all parameters of the current function"""
+
+    def visit_lrpc_stream(self, stream: "LrpcStream") -> None:
+        """Called for each stream in the current service"""
+
+    def visit_lrpc_stream_param(self, param: "LrpcVar") -> None:
+        """Called for each parameter of the current stream"""
+
+    def visit_lrpc_stream_param_end(self) -> None:
+        """Called after visiting all parameters of the current stream"""
+
+    def visit_lrpc_stream_return(self, ret: "LrpcVar") -> None:
+        """Called for each return of the current stream"""
+
+    def visit_lrpc_stream_return_end(self) -> None:
+        """Called after visiting all returns of the current stream"""
+
+    def visit_lrpc_stream_end(self) -> None:
+        """Called after visiting all parameters of the current stream"""

@@ -21,6 +21,8 @@ from lrpc.utils import load_lrpc_def_from_file
 from lrpc.visitors import PlantUmlVisitor
 from lrpc.schema import export_lrpc_schema
 
+# pylint: disable=anomalous-backslash-in-string
+
 logging.basicConfig(format="[LRPCG] %(levelname)-8s: %(message)s", level=logging.INFO)
 
 
@@ -56,8 +58,16 @@ def generate_puml(lrpc_def: LrpcDef, output: os.PathLike[str]) -> None:
 @click.group()
 @click.version_option(package_name="lotusrpc", message="%(version)s")
 def run_cli() -> None:
+    """\b
+        __          __             ____  ____  ______
+       / /   ____  / /___  _______/ __ \/ __ \/ ____/
+      / /   / __ \/ __/ / / / ___/ /_/ / /_/ / /
+     / /___/ /_/ / /_/ /_/ (__  ) _, _/ ____/ /___
+    /_____/\____/\__/\__,_/____/_/ |_/_/    \____/
+
+    lrpcg is the LotusRPC generator tool.
+    """
     # All functionality provided by Click decorators
-    pass
 
 
 @run_cli.command()

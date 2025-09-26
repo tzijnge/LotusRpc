@@ -123,6 +123,9 @@ class LrpcDecoder:
 
         return self.__unpack(var.pack_type())
 
+    def remaining(self) -> int:
+        return len(self.encoded) - self.start
+
 
 def lrpc_decode(encoded: bytes, var: LrpcVar, lrpc_def: LrpcDef) -> Any:
     return LrpcDecoder(encoded, lrpc_def).lrpc_decode(var)

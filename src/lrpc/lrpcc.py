@@ -8,13 +8,20 @@ from glob import glob
 from importlib import import_module
 from os import path
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, Optional
 
 import click
+import colorama
 import yaml
 
 from lrpc.client import ClientCliVisitor, LrpcClient
+from lrpc.types import LrpcType
+from lrpc.core import LrpcStream
 from lrpc.utils import load_lrpc_def_from_url
+
+# pylint: disable=anomalous-backslash-in-string
+
+colorama.init(autoreset=True)
 
 logging.basicConfig(format="[LRPCC] %(levelname)-8s: %(message)s", level=logging.INFO)
 
@@ -77,7 +84,15 @@ def __load_config() -> dict[str, Any]:
 @click.group()
 @click.version_option(package_name="lotusrpc", message="%(version)s")
 def run_lrpcc_config_creator() -> None:
-    """
+    """\b
+        __          __             ____  ____  ______
+       / /   ____  / /___  _______/ __ \/ __ \/ ____/
+      / /   / __ \/ __/ / / / ___/ /_/ / /_/ / /
+     / /___/ /_/ / /_/ /_/ (__  ) _, _/ ____/ /___
+    /_____/\____/\__/\__,_/____/_/ |_/_/    \____/
+
+    lrpcc is the LotusRPC client CLI tool.
+
     lrpcc needs a configuration file named lrpcc.config.yaml.
     See https://github.com/tzijnge/LotusRpc for more information
     about the contents of the configuration file. By default,
@@ -168,32 +183,80 @@ class Lrpcc:
             raise ImportError(f"No method named 'write' in {transport_module}")
 
         logging.debug("Constructing LRPCC transport with these params: %s", transport_params)
-        self.__transport = transport_module(**transport_params)
+        self._transport = transport_module(**transport_params)
 
-    def __communicate(self, encoded: bytes) -> Union[dict[str, Any], LrpcClient.VoidResponse]:
-        self.__transport.write(encoded)
+    def __receive_response(self) -> dict[str, Any]:
         while True:
-            received = self.__transport.read(1)
+            received = self._transport.read(1)
             if len(received) == 0:
-                return {"Error": "Timeout waiting for response"}
+                raise click.ClickException("Timeout waiting for response")
 
             response = self.client.process(received)
 
             if not isinstance(response, LrpcClient.IncompleteResponse):
                 return response
 
-    def __command_handler(self, service_name: str, function_name: str, **kwargs: Any) -> None:
-        encoded = self.client.encode(service_name, function_name, **kwargs)
-        response = self.__communicate(encoded)
-        if isinstance(response, LrpcClient.VoidResponse):
-            return
+    def __is_function(self, service_name: str, function_or_stream_name: str) -> bool:
+        service = self.lrpc_def.service_by_name(service_name)
+        if service is not None:
+            function = service.function_by_name(function_or_stream_name)
+            return function is not None
+
+        return False
+
+    def __get_stream(self, service_name: str, stream_name: str) -> Optional[LrpcStream]:
+        service = self.lrpc_def.service_by_name(service_name)
+        if service is not None:
+            return service.stream_by_name(stream_name)
+
+        return None
+
+    def __is_stream(self, service_name: str, function_or_stream_name: str) -> bool:
+        stream = self.__get_stream(service_name, function_or_stream_name)
+        return stream is not None
+
+    def _command_handler(self, service_name: str, function_or_stream_name: str, **kwargs: LrpcType) -> None:
+        encoded = self.client.encode(service_name, function_or_stream_name, **kwargs)
+        self._transport.write(encoded)
+
+        receive_more = self.client.has_response(service_name, function_or_stream_name, **kwargs)
+        response_index = 0
+        while receive_more:
+            response = self.__receive_response()
+
+            if self.__is_stream(service_name, function_or_stream_name):
+                print(colorama.Fore.CYAN + f"[#{response_index}]")
+
+            if self.__is_function(service_name, function_or_stream_name):
+                receive_more = False
+            else:
+                stream = self.__get_stream(service_name, function_or_stream_name)
+                assert stream is not None
+                if stream.is_finite():
+                    receive_more = response["final"] is False
+                    response.pop("final")
+
+            self._print_response(response)
+
+            response_index += 1
+
+    @staticmethod
+    def _print_response(response: dict[str, Any]) -> None:
+        max_response_name_width = 0
+        if len(response) != 0:
+            max_response_name_width = max(len(k) for k in response)
 
         for name, value in response.items():
-            post_value = f" ({hex(value)})" if isinstance(value, int) else ""
-            print(f"{name}: {value}{post_value}")
+            name_text = colorama.Fore.GREEN + name.ljust(max_response_name_width) + colorama.Style.RESET_ALL
+            hex_repr = (
+                colorama.Style.BRIGHT + colorama.Fore.LIGHTBLACK_EX + f" ({hex(value)})"
+                if (isinstance(value, int) and not isinstance(value, bool))
+                else ""
+            )
+            print(f"{name_text}: {value}{hex_repr}")
 
     def run(self) -> None:
-        cli = ClientCliVisitor(self.__command_handler)
+        cli = ClientCliVisitor(self._command_handler)
         self.lrpc_def.accept(cli)
         cli.root()
 

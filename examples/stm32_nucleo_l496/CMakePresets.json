@@ -1,4 +1,5 @@
 {
+    "$comment": "Inherit from configuration Debug_no_toolchain in CMakeUserPresets.json and add TOOLCHAIN_PATH to cacheVariables there",
     "version": 3,
     "configurePresets": [
         {
@@ -10,8 +11,6 @@
             "cacheVariables": {}
         },
         {
-            // Inherit from this configuration in CMakeUserPresets.json
-            // and add TOOLCHAIN_PATH to cacheVariables
             "name": "Debug_no_toolchain",
             "inherits": "default",
             "cacheVariables": {
@@ -19,8 +18,6 @@
             }
         },
         {
-            // Inherit from this configuration in CMakeUserPresets.json
-            // and add TOOLCHAIN_PATH to cacheVariables
             "name": "Release_no_toolchain",
             "inherits": "default",
             "cacheVariables": {

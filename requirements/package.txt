@@ -4,3 +4,4 @@ jsonschema==4.25.0
 click==8.1.8
 pyserial==3.5
 typing-extensions==4.14.0
+colorama==0.4.6

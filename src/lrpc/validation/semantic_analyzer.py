@@ -2,7 +2,8 @@ import logging
 
 from .validator import LrpcValidator
 from .service import ServiceValidator
-from .function import FunctionValidator
+from .function_and_stream import FunctionAndStreamIdValidator, FunctionAndStreamNameValidator
+from .param_and_return import ParamAndReturnValidator
 from .enum import EnumValidator
 from .struct import StructValidator
 from .names import NamesValidator
@@ -18,7 +19,9 @@ class SemanticAnalyzer:
         self.definition = definition
         self.validators: list[LrpcValidator] = [
             ServiceValidator(),
-            FunctionValidator(),
+            ParamAndReturnValidator(),
+            FunctionAndStreamIdValidator(),
+            FunctionAndStreamNameValidator(),
             EnumValidator(),
             StructValidator(),
             NamesValidator(),

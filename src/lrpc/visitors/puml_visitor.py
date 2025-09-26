@@ -5,30 +5,21 @@ from typing import TYPE_CHECKING, Iterator, Optional, Union
 from .lrpc_visitor import LrpcVisitor
 
 if TYPE_CHECKING:
-    from ..core import LrpcConstant, LrpcDef, LrpcEnum, LrpcEnumField, LrpcFun, LrpcService, LrpcStruct, LrpcVar
+    from ..core import (
+        LrpcConstant,
+        LrpcDef,
+        LrpcEnum,
+        LrpcEnumField,
+        LrpcFun,
+        LrpcService,
+        LrpcStream,
+        LrpcStruct,
+        LrpcVar,
+    )
 
 
 def in_color(t: Union[str, int], c: str) -> str:
     return f"<color:{c}>{t}</color>"
-
-
-class FunctionStringBuilder:
-    def __init__(self, max_function_id: int) -> None:
-        self.param_strings: list[str] = []
-        self.return_strings: list[str] = []
-        self.function_name: str = ""
-        self.function_id: str = ""
-        self.id_width: int = len(str(max_function_id))
-
-    def add_function(self, function: "LrpcFun") -> None:
-        self.function_name = function.name()
-        self.function_id = f"{function.id()}".rjust(self.id_width)
-
-    def add_param(self, param: "LrpcVar") -> None:
-        self.param_strings.append(var_string(param))
-
-    def add_return(self, ret: "LrpcVar") -> None:
-        self.return_strings.append(var_string(ret))
 
 
 def var_string(p: "LrpcVar") -> str:
@@ -98,16 +89,22 @@ class PumlFile:
         yield
         self.write(close_str)
 
-    def icon(self, i: str) -> None:
-        self.write(f"<&{i}>")
+    @staticmethod
+    def icon(i: str) -> str:
+        return f"<&{i}>"
 
-    def legend(self, items: list[tuple[str, str, str]], size: int) -> None:
+    def insert_icon(self, i: str) -> None:
+        self.write(self.icon(i))
+
+    def legend(self, items: list[tuple[str, str, str, str]], size: int) -> None:
         self.write("legend left\n")
 
-        for color, icon, text in items:
+        for color, pre_icon, icon, text in items:
             with self.size(size):
                 with self.color(color):
-                    self.icon(icon)
+                    self.write(pre_icon)
+                    if len(icon) != 0:
+                        self.insert_icon(icon)
                 self.write(" " + text)
 
             self.write("\n")
@@ -118,7 +115,7 @@ class PumlFile:
         indent = "*" * level
         self.write(f"{indent}[#{background}]: ")
         if icon:
-            self.icon(icon)
+            self.insert_icon(icon)
             self.write(" ")
 
         with self.bold():
@@ -145,25 +142,48 @@ class PumlFile:
         with open(self.filename, mode="w", encoding="utf-8") as file:
             file.write(self.text)
 
-    def function_string(self, fsb: FunctionStringBuilder) -> None:
+    def function_string(self, fun: "LrpcFun", max_function_or_stream_id: int) -> None:
         with self.font("monospaced"):
             with self.enclosed_in("[", "]"):
                 with self.color("Orange"):
-                    self.write(f"{fsb.function_id}")
-                    self.write(" ")
-                    self.icon("transfer")
+                    id_width = len(str(max_function_or_stream_id))
+                    id_str = f"{fun.id()}".rjust(id_width)
+                    self.write(f"F  {id_str}")
             with self.bold():
-                self.write(fsb.function_name)
+                self.write(fun.name())
             with self.color("Magenta"):
                 self.write("(")
-            self.write(", ".join(fsb.param_strings))
+            self.write(", ".join([var_string(p) for p in fun.params()]))
             with self.color("Magenta"):
                 self.write(")")
             with self.color("Orange"):
-                self.icon("arrow-right")
+                self.insert_icon("arrow-right")
             with self.color("Magenta"):
                 self.write(" (")
-            self.write(", ".join(fsb.return_strings))
+            self.write(", ".join([var_string(r) for r in fun.returns()]))
+            with self.color("Magenta"):
+                self.write(")")
+
+    def stream_string(self, stream: "LrpcStream", max_function_or_stream_id: int) -> None:
+        with self.font("monospaced"):
+            with self.enclosed_in("[", "]"):
+                with self.color("Green"):
+                    id_width = len(str(max_function_or_stream_id))
+                    infinite = " " if stream.is_finite() else self.icon("infinity")
+                    id_str = f"{stream.id()}".rjust(id_width)
+                    self.write(f"S{infinite} {id_str}")
+            with self.bold():
+                self.write(stream.name())
+            with self.color("Magenta"):
+                self.write("(")
+            self.write(", ".join([var_string(p) for p in stream.params()]))
+            with self.color("Magenta"):
+                self.write(")")
+            with self.color("Orange"):
+                self.insert_icon("arrow-right")
+            with self.color("Magenta"):
+                self.write(" (")
+            self.write(", ".join([var_string(r) for r in stream.returns()]))
             with self.color("Magenta"):
                 self.write(")")
 
@@ -173,9 +193,8 @@ class PlantUmlVisitor(LrpcVisitor):
 
     def __init__(self, output: os.PathLike[str]) -> None:
         self.__output = output
-        self.__fsb: FunctionStringBuilder
         self.__puml: PumlFile
-        self.__max_function_id = 0
+        self.__max_function_or_stream_id = 0
 
         self.__enum_fields: list[LrpcEnumField] = []
         self.__enum_indent = 2
@@ -203,13 +222,15 @@ class PlantUmlVisitor(LrpcVisitor):
         self.__puml.write("\n")
 
         legend_items = [
-            ("Yellow", "medical-cross", "Server"),
-            ("PeachPuff", "medical-cross", "Services"),
-            ("Blue", "medical-cross", "Structs"),
-            ("PaleGreen", "medical-cross", "Enums"),
-            ("Pink", "medical-cross", "Constants"),
-            ("Black", "external-link", "External"),
-            ("Black", "transfer", "Two-way function"),
+            ("Yellow", "", "medical-cross", "Server"),
+            ("PeachPuff", "", "medical-cross", "Services"),
+            ("Orange", "F", "", "Function"),
+            ("Green", "S", "infinity", "Infinite stream"),
+            ("Green", "S", "", "Finite stream"),
+            ("Blue", "", "medical-cross", "Structs"),
+            ("PaleGreen", "", "medical-cross", "Enums"),
+            ("Pink", "", "medical-cross", "Constants"),
+            ("Black", "", "external-link", "External"),
         ]
         self.__puml.legend(legend_items, 20)
 
@@ -236,7 +257,7 @@ class PlantUmlVisitor(LrpcVisitor):
         icon = "external-link" if enum.is_external() else None
         self.__puml.block(enum.name(), "PaleGreen", self.__enum_indent, icon)
 
-    def visit_lrpc_enum_end(self, enum: "LrpcEnum") -> None:
+    def visit_lrpc_enum_end(self, _: "LrpcEnum") -> None:
         enum_field_strings = [enum_field_string(ef) for ef in self.__enum_fields[0 : self.__enum_fields_max]]
         if len(self.__enum_fields) > self.__enum_fields_max:
             enum_field_strings.append("...")
@@ -250,30 +271,27 @@ class PlantUmlVisitor(LrpcVisitor):
         if self.__enum_indent > self.__enum_indent_max:
             self.__enum_indent = 2
 
-    def visit_lrpc_enum_field(self, enum: "LrpcEnum", field: "LrpcEnumField") -> None:
+    def visit_lrpc_enum_field(self, _: "LrpcEnum", field: "LrpcEnumField") -> None:
         self.__enum_fields.append(field)
 
     def visit_lrpc_function(self, function: "LrpcFun") -> None:
-        self.__fsb = FunctionStringBuilder(self.__max_function_id)
-        self.__fsb.add_function(function)
-
-    def visit_lrpc_function_end(self) -> None:
         self.__puml.write("***_ ")
-        self.__puml.function_string(self.__fsb)
+        self.__puml.function_string(function, self.__max_function_or_stream_id)
         self.__puml.write("\n")
 
-    def visit_lrpc_function_param(self, param: "LrpcVar") -> None:
-        self.__fsb.add_param(param)
-
-    def visit_lrpc_function_return(self, ret: "LrpcVar") -> None:
-        self.__fsb.add_return(ret)
+    def visit_lrpc_stream(self, stream: "LrpcStream") -> None:
+        self.__puml.write("***_ ")
+        self.__puml.stream_string(stream, self.__max_function_or_stream_id)
+        self.__puml.write("\n")
 
     def visit_lrpc_service(self, service: "LrpcService") -> None:
         self.__puml.block(service.name(), "PeachPuff", 2)
         self.__puml.list_item(f"ID: {service.id()}", level=0)
         self.__puml.list_end()
 
-        self.__max_function_id = max(f.id() for f in service.functions())
+        function_ids = [f.id() for f in service.functions()]
+        stream_ids = [s.id() for s in service.streams()]
+        self.__max_function_or_stream_id = max(function_ids + stream_ids)
 
     def visit_lrpc_struct(self, struct: "LrpcStruct") -> None:
         self.__struct_fields = []
@@ -294,5 +312,5 @@ class PlantUmlVisitor(LrpcVisitor):
         if self.__struct_indent > self.__struct_indent_max:
             self.__struct_indent = 2
 
-    def visit_lrpc_struct_field(self, struct: "LrpcStruct", field: "LrpcVar") -> None:
+    def visit_lrpc_struct_field(self, _: "LrpcStruct", field: "LrpcVar") -> None:
         self.__struct_fields.append(field)

@@ -1,6 +1,6 @@
 name: test_LrpcVar
 services:
-  - name: s0
+  - name: srv0
     functions:
       - name: f0
         params:
@@ -16,7 +16,7 @@ services:
             type: "@MyEnum1"
           - name: p2
             type: "@MyStruct3"
-  - name: s1
+  - name: srv1
     functions:
       - name: add5
         params:
@@ -26,6 +26,32 @@ services:
           - name: r0
             type: uint8_t
       - name: f2
+  - name: srv2
+    streams:
+      - name: client_infinite
+        origin: client
+        finite: false
+        params:
+          - { name: p0, type: uint8_t }
+          - { name: p1, type: uint16_t }
+      - name: client_finite
+        origin: client
+        finite: true
+        params:
+          - { name: p0, type: uint8_t }
+          - { name: p1, type: uint16_t }
+      - name: server_infinite
+        origin: server
+        finite: false
+        params:
+          - { name: p0, type: uint8_t }
+          - { name: p1, type: uint16_t }
+      - name: server_finite
+        origin: server
+        finite: true
+        params:
+          - { name: p0, type: uint8_t }
+          - { name: p1, type: uint16_t }
 structs:
   - name: MyStruct1
     fields:

@@ -55,41 +55,45 @@ inline std::vector<uint8_t> hexToBytes(const etl::string_view hex)
     return bytes;
 }
 
-template <typename Service>
-class TestServerBase : public ::testing::Test
+inline std::string bytesToHex(const etl::span<const uint8_t> bytes)
+{
+    std::stringstream ss;
+    ss << std::hex << std::setfill('0') << std::uppercase;
+
+    for (const auto b : bytes)
+    {
+        ss << std::setw(2) << static_cast<uint32_t>(b);
+    }
+
+    return ss.str();
+}
+
+template <typename Server, typename Service>
+class TestServerBase : public Server, public ::testing::Test
 {
 public:
     void SetUp() final
     {
-        responseBuffer.fill(0xAA);
+        Server::registerService(service);
     }
 
-    etl::span<uint8_t> receive(const etl::string_view hex)
+    void lrpcTransmit(etl::span<const uint8_t> bytes) override
     {
-        return receive(testutils::hexToBytes(hex));
+        responseBuffer = bytes;
     }
 
-
-    etl::span<uint8_t> receive(const std::vector<uint8_t> &bytes)
+    std::string receive(const etl::string_view hex)
     {
-        const etl::span<const uint8_t> s(bytes.begin(), bytes.end());
-
-        lrpc::Service::Reader reader(s.begin(), s.end(), etl::endian::little);
-        lrpc::Service::Writer writer(responseBuffer.begin(), responseBuffer.end(), etl::endian::little);
-        auto invokeOk = service.invoke(reader, writer);
-
-        EXPECT_TRUE(invokeOk);
-
-        return {responseBuffer.begin(), writer.size_bytes()};
+        Server::lrpcReceive(testutils::hexToBytes(hex));
+        return response();
     }
 
-    void EXPECT_RESPONSE(const etl::string_view expected, const etl::span<uint8_t> actual) const
+    std::string response() const
     {
-        const std::vector<uint8_t> actualVec{actual.begin(), actual.end()};
-        EXPECT_EQ(testutils::hexToBytes(expected), actualVec);
+        return testutils::bytesToHex(responseBuffer);
     }
 
-    etl::array<uint8_t, 256> responseBuffer {};
+    etl::span<const uint8_t> responseBuffer;
 
     Service service;
 };

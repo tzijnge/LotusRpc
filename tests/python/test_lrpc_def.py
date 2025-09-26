@@ -1,7 +1,7 @@
 import math
 import pytest
 from lrpc.utils import load_lrpc_def_from_str
-from lrpc.core.definition import LrpcDef
+from lrpc.core import LrpcDef, LrpcFun, LrpcStream
 
 
 def load_lrpc_def(def_str: str) -> LrpcDef:
@@ -9,8 +9,24 @@ def load_lrpc_def(def_str: str) -> LrpcDef:
     return lrpc_def
 
 
+def get_function(lrpc_def: LrpcDef, service: str, fun: str) -> LrpcFun:
+    srv = lrpc_def.service_by_name(service)
+    assert srv is not None
+    f = srv.function_by_name(fun)
+    assert f is not None
+    return f
+
+
+def get_stream(lrpc_def: LrpcDef, service: str, stream: str) -> LrpcStream:
+    srv = lrpc_def.service_by_name(service)
+    assert srv is not None
+    s = srv.stream_by_name(stream)
+    assert s is not None
+    return s
+
+
 def test_optional_service_id() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
   - name: "a4"
     functions:
@@ -40,9 +56,9 @@ services:
 
 
 def test_optional_function_id() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
-  - name: "s1"
+  - name: s1
     functions:
       - name: "a4"
       - name: "a3"
@@ -63,7 +79,7 @@ services:
 
 
 def test_max_service_id() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
   - name: "a4"
     functions:
@@ -85,11 +101,11 @@ services:
 
 
 def test_no_constants_no_enums_no_structs() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
-  - name: "s1"
+  - name: s1
     functions:
-      - name: "f1"
+      - name: f1
 """
     lrpc_def = load_lrpc_def(def_str)
     assert len(lrpc_def.constants()) == 0
@@ -98,7 +114,7 @@ services:
 
 
 def test_constants() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 constants:
   - name: "c1"
     value: true
@@ -115,9 +131,9 @@ constants:
   - name: "c6"
     value: This is a string
 services:
-  - name: "s1"
+  - name: s1
     functions:
-      - name: "f1"
+      - name: f1
 """
     lrpc_def = load_lrpc_def(def_str)
     constants = lrpc_def.constants()
@@ -155,11 +171,11 @@ services:
 
 
 def test_enums() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
-  - name: "s1"
+  - name: s1
     functions:
-      - name: "f1"
+      - name: f1
 enums:
   - name: "MyEnum1"
     fields:
@@ -192,11 +208,11 @@ enums:
 
 
 def test_external_enum() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
-  - name: "s1"
+  - name: s1
     functions:
-      - name: "f1"
+      - name: f1
 enums:
   - name: "MyEnum1"
     fields: [f1, f2]
@@ -210,11 +226,11 @@ enums:
 
 
 def test_enum_with_omitted_ids() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
-  - name: "s1"
+  - name: s1
     functions:
-      - name: "f1"
+      - name: f1
 enums:
   - name: "MyEnum1"
     fields:
@@ -242,11 +258,11 @@ enums:
 
 
 def test_structs() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
-  - name: "s1"
+  - name: s1
     functions:
-      - name: "f1"
+      - name: f1
 structs:
   - name: "MyStruct1"
     fields:
@@ -279,11 +295,11 @@ structs:
 
 
 def test_external_struct() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
-  - name: "s1"
+  - name: s1
     functions:
-      - name: "f1"
+      - name: f1
 structs:
   - name: "MyStruct2"
     fields:
@@ -301,11 +317,11 @@ structs:
 
 
 def test_get_service_by_name() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
-  - name: "s1"
+  - name: s1
     functions:
-      - name: "f1"
+      - name: f1
 """
     lrpc_def = load_lrpc_def(def_str)
 
@@ -316,12 +332,12 @@ services:
 
 
 def test_get_service_by_id() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
-  - name: "s1"
+  - name: s1
     id: 21
     functions:
-      - name: "f1"
+      - name: f1
 """
     lrpc_def = load_lrpc_def(def_str)
 
@@ -332,11 +348,11 @@ services:
 
 
 def test_get_struct_by_name() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
-  - name: "s1"
+  - name: s1
     functions:
-      - name: "f1"
+      - name: f1
 structs:
   - name: "MyStruct1"
     fields:
@@ -353,11 +369,11 @@ structs:
 
 
 def test_get_enum_by_name() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
-  - name: "s1"
+  - name: s1
     functions:
-      - name: "f1"
+      - name: f1
 enums:
   - name: "MyEnum1"
     fields:
@@ -374,39 +390,302 @@ enums:
 
 
 def test_no_version() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 services:
-  - name: "s1"
+  - name: s1
     functions:
-      - name: "f1"
+      - name: f1
 """
     lrpc_def = load_lrpc_def(def_str)
     assert lrpc_def.version() is None
 
 
 def test_version() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 version: 1.2.3
 services:
-  - name: "s1"
+  - name: s1
     functions:
-      - name: "f1"
+      - name: f1
 """
     lrpc_def = load_lrpc_def(def_str)
     assert lrpc_def.version() == "1.2.3"
 
 
 def test_top_level_properties() -> None:
-    def_str = """name: "test"
+    def_str = """name: test
 namespace: ns
 rx_buffer_size: 123
 tx_buffer_size: 456
 services:
-  - name: "s1"
+  - name: s1
     functions:
-      - name: "f1"
+      - name: f1
 """
     lrpc_def = load_lrpc_def(def_str)
     assert lrpc_def.namespace() == "ns"
     assert lrpc_def.rx_buffer_size() == 123
     assert lrpc_def.tx_buffer_size() == 456
+
+
+def test_implicit_function_and_stream_id() -> None:
+    def_str = """name: test
+services:
+  - name: srv1
+    functions:
+      - name: f1
+      - name: f2
+    streams:
+      - name: s1
+        origin: server
+      - name: s2
+        origin: server
+"""
+    lrpc_def = load_lrpc_def(def_str)
+
+    assert get_function(lrpc_def, "srv1", "f1").id() == 0
+    assert get_function(lrpc_def, "srv1", "f2").id() == 1
+    assert get_stream(lrpc_def, "srv1", "s1").id() == 2
+    assert get_stream(lrpc_def, "srv1", "s2").id() == 3
+
+
+def test_implicit_stream_and_function_id() -> None:
+    def_str = """name: test
+services:
+  - name: srv1
+    streams:
+      - name: s1
+        origin: server
+      - name: s2
+        origin: server
+    functions:
+      - name: f1
+      - name: f2
+"""
+    lrpc_def = load_lrpc_def(def_str)
+
+    assert get_stream(lrpc_def, "srv1", "s1").id() == 0
+    assert get_stream(lrpc_def, "srv1", "s2").id() == 1
+    assert get_function(lrpc_def, "srv1", "f1").id() == 2
+    assert get_function(lrpc_def, "srv1", "f2").id() == 3
+
+
+def test_functions_before_streams() -> None:
+    def_str = """name: test
+services:
+  - name: srv1
+    streams:
+      - name: s1
+        origin: server
+      - name: s2
+        origin: server
+    functions:
+      - name: f1
+      - name: f2
+    functions_before_streams: true
+"""
+    lrpc_def = load_lrpc_def(def_str)
+
+    assert get_function(lrpc_def, "srv1", "f1").id() == 0
+    assert get_function(lrpc_def, "srv1", "f2").id() == 1
+    assert get_stream(lrpc_def, "srv1", "s1").id() == 2
+    assert get_stream(lrpc_def, "srv1", "s2").id() == 3
+
+
+def test_explicit_stream_and_function_id() -> None:
+    def_str = """name: test
+services:
+  - name: srv1
+    streams:
+      - name: s1
+        origin: server
+        id: 25
+      - name: s2
+        origin: server
+    functions:
+      - name: f1
+      - name: f2
+"""
+    lrpc_def = load_lrpc_def(def_str)
+
+    assert get_stream(lrpc_def, "srv1", "s1").id() == 25
+    assert get_stream(lrpc_def, "srv1", "s2").id() == 26
+    assert get_function(lrpc_def, "srv1", "f1").id() == 27
+    assert get_function(lrpc_def, "srv1", "f2").id() == 28
+
+
+def test_service_with_only_streams() -> None:
+    def_str = """name: test
+services:
+  - name: srv1
+    streams:
+      - name: s1
+        origin: server
+"""
+    lrpc_def = load_lrpc_def(def_str)
+
+    assert get_stream(lrpc_def, "srv1", "s1").id() == 0
+    assert not get_stream(lrpc_def, "srv1", "s1").is_finite()
+
+
+def test_finite_stream() -> None:
+    def_str = """name: test
+services:
+  - name: srv1
+    streams:
+      - name: s1
+        origin: server
+        finite: true
+"""
+    lrpc_def = load_lrpc_def(def_str)
+
+    assert get_stream(lrpc_def, "srv1", "s1").is_finite()
+
+
+def test_custom_types_in_function_params() -> None:
+    def_str = """name: test
+services:
+  - name: srv0
+    functions:
+      - name: f0
+        params:
+          - { name: p0, type: "@s0" }
+          - { name: p1, type: "@e0" }
+structs:
+  - name: s0
+    fields:
+      - { name: f0, type: bool }
+enums:
+  - name: e0
+    fields: [f0]
+"""
+
+    lrpc_def = load_lrpc_def(def_str)
+
+    f0_params = get_function(lrpc_def, "srv0", "f0").params()
+    assert len(f0_params) == 2
+
+    assert f0_params[0].name() == "p0"
+    assert f0_params[0].base_type_is_custom() is True
+    assert f0_params[0].base_type_is_enum() is False
+    assert f0_params[0].base_type_is_struct() is True
+
+    assert f0_params[1].name() == "p1"
+    assert f0_params[1].base_type_is_custom() is True
+    assert f0_params[1].base_type_is_enum() is True
+    assert f0_params[1].base_type_is_struct() is False
+
+
+def test_custom_types_in_function_returns() -> None:
+    def_str = """name: test
+services:
+  - name: srv0
+    functions:
+      - name: f0
+        returns:
+          - { name: r0, type: "@s0" }
+          - { name: r1, type: "@e0" }
+structs:
+  - name: s0
+    fields:
+      - { name: f0, type: bool }
+enums:
+  - name: e0
+    fields: [f0]
+"""
+
+    lrpc_def = load_lrpc_def(def_str)
+
+    f0_returns = get_function(lrpc_def, "srv0", "f0").returns()
+    assert len(f0_returns) == 2
+
+    assert f0_returns[0].name() == "r0"
+    assert f0_returns[0].base_type_is_custom() is True
+    assert f0_returns[0].base_type_is_enum() is False
+    assert f0_returns[0].base_type_is_struct() is True
+
+    assert f0_returns[1].name() == "r1"
+    assert f0_returns[1].base_type_is_custom() is True
+    assert f0_returns[1].base_type_is_enum() is True
+    assert f0_returns[1].base_type_is_struct() is False
+
+
+def test_custom_types_in_structs() -> None:
+    def_str = """name: test
+services:
+  - name: srv0
+    functions:
+      - name: f0
+        params:
+          - { name: p0, type: "@s0" }
+structs:
+  - name: s0
+    fields:
+      - { name: f0, type: "@s1" }
+      - { name: f1, type: "@e0" }
+  - name: s1
+    fields:
+      - { name: f0, type: float}
+enums:
+  - name: e0
+    fields: [f0]
+"""
+
+    lrpc_def = load_lrpc_def(def_str)
+
+    f0_params = get_function(lrpc_def, "srv0", "f0").params()
+    assert len(f0_params) == 1
+
+    p0_field = f0_params[0]
+    assert p0_field.name() == "p0"
+    assert p0_field.base_type_is_custom() is True
+    assert p0_field.base_type_is_enum() is False
+    assert p0_field.base_type_is_struct() is True
+
+    s0_fields = lrpc_def.struct("s0").fields()
+    assert len(s0_fields) == 2
+
+    assert s0_fields[0].name() == "f0"
+    assert s0_fields[0].base_type_is_custom() is True
+    assert s0_fields[0].base_type_is_enum() is False
+    assert s0_fields[0].base_type_is_struct() is True
+
+    assert s0_fields[1].name() == "f1"
+    assert s0_fields[1].base_type_is_custom() is True
+    assert s0_fields[1].base_type_is_enum() is True
+    assert s0_fields[1].base_type_is_struct() is False
+
+
+def test_custom_types_in_stream() -> None:
+    def_str = """name: test
+services:
+  - name: srv0
+    streams:
+      - name: s0
+        origin: client
+        params:
+          - { name: p0, type: "@s0" }
+          - { name: p1, type: "@e0" }
+structs:
+  - name: s0
+    fields:
+      - { name: f0, type: bool }
+enums:
+  - name: e0
+    fields: [f0]
+"""
+
+    lrpc_def = load_lrpc_def(def_str)
+
+    s0_params = get_stream(lrpc_def, "srv0", "s0").params()
+    assert len(s0_params) == 2
+
+    assert s0_params[0].name() == "p0"
+    assert s0_params[0].base_type_is_custom() is True
+    assert s0_params[0].base_type_is_enum() is False
+    assert s0_params[0].base_type_is_struct() is True
+
+    assert s0_params[1].name() == "p1"
+    assert s0_params[1].base_type_is_custom() is True
+    assert s0_params[1].base_type_is_enum() is True
+    assert s0_params[1].base_type_is_struct() is False

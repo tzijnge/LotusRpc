@@ -7,7 +7,7 @@ import click
 import yaml
 import yaml.parser
 from ..visitors import LrpcVisitor
-from ..core import LrpcDef, LrpcEnum, LrpcEnumField, LrpcFun, LrpcService, LrpcVar
+from ..core import LrpcDef, LrpcEnum, LrpcEnumField, LrpcFun, LrpcService, LrpcVar, LrpcStream
 
 NONE_ARG = "7bc9ddaa-b6c9-4afb-93c1-5240ec91ab9c"
 
@@ -102,6 +102,9 @@ class ClientCliVisitor(LrpcVisitor):
         self.root: click.Group
         self.current_service: click.Group
         self.current_function: click.Command
+        self.current_stream: click.Command
+        self.current_stream_origin: LrpcStream.Origin
+        self.current_stream_is_finite: bool
         self.enum_values: dict[str, list[str]] = {}
 
         self.callback = callback
@@ -139,6 +142,58 @@ class ClientCliVisitor(LrpcVisitor):
 
         arg = click.Argument([param.name()], required, **attributes)
         self.current_function.params.append(arg)
+
+    def visit_lrpc_stream(self, stream: LrpcStream) -> None:
+        assert self.current_service.name is not None
+
+        self.current_stream_origin = stream.origin()
+        self.current_stream_is_finite = stream.is_finite()
+
+        if stream.origin() == LrpcStream.Origin.SERVER:
+            command_help = f"Start or stop stream from server: {self.current_service.name}.{stream.name()}"
+        else:
+            command_help = f"Send stream message to server: {self.current_service.name}.{stream.name()}"
+
+        self.current_stream = click.Command(
+            name=stream.name(),
+            callback=partial(self.__handle_command, self.current_service.name, stream.name()),
+            help=command_help,
+        )
+
+        self.current_service.add_command(self.current_stream)
+
+    def visit_lrpc_stream_param(self, param: LrpcVar) -> None:
+        click_param: click.Parameter
+
+        if self.current_stream_origin == LrpcStream.Origin.SERVER:
+            assert param.name() == "start", "Server stream takes a single parameter named 'start'"
+            click_param = click.Option(
+                ["--start/--stop"],
+                is_flag=True,
+                default=True,
+                show_default=True,
+                required=False,
+                help="Start or stop the stream",
+            )
+        else:
+            if self.current_stream_is_finite and (param.name() == "final"):
+                click_param = click.Option(
+                    ["--final"],
+                    is_flag=True,
+                    default=False,
+                    show_default=True,
+                    required=False,
+                    help="Indicate the final message in the stream",
+                )
+            else:
+                attributes = {"type": self.__click_type(param), "nargs": param.array_size() if param.is_array() else 1}
+                click_param = click.Argument([param.name()], required=True, **attributes)
+
+        self.current_stream.params.append(click_param)
+
+    def visit_lrpc_stream_end(self) -> None:
+        if self.current_stream_origin == LrpcStream.Origin.CLIENT:
+            self.current_service.add_command(self.current_stream)
 
     def __click_type(self, param: LrpcVar) -> click.ParamType:
         t: click.ParamType = click.UNPROCESSED

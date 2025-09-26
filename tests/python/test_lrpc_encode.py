@@ -260,6 +260,13 @@ def test_encode_nested_struct() -> None:
     assert encoded == b"\xd7\x11\x7b\x01"
 
 
+def test_encode_unknown_struct() -> None:
+    var = LrpcVar({"name": "v1", "type": "struct@UnknownStruct"})
+
+    with pytest.raises(ValueError):
+        encode_var({"b": 123, "a": 4567}, var)
+
+
 def test_encode_enum() -> None:
     var = LrpcVar({"name": "v1", "type": "enum@MyEnum1"})
 
@@ -279,6 +286,18 @@ def test_encode_optional_enum() -> None:
     assert encoded == b"\x00"
     encoded = encode_var("test2", var)
     assert encoded == b"\x01\x37"
+
+
+def test_encode_enum_invalid_input() -> None:
+    var = LrpcVar({"name": "v1", "type": "enum@MyEnum1"})
+
+    encoded = encode_var("test1", var)
+    assert encoded == b"\x00"
+    encoded = encode_var("test2", var)
+    assert encoded == b"\x37"
+
+    with pytest.raises(TypeError):
+        encode_var(123, var)
 
 
 def test_encode_array_of_struct() -> None:

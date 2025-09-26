@@ -52,9 +52,6 @@ def __encode_struct(value: dict[str, LrpcType], var: LrpcVar, lrpc_def: LrpcDef)
     encoded = b""
     s = lrpc_def.struct(var.base_type())
 
-    if not s:
-        raise ValueError(f"Type {var.base_type()} not found in LRPC definition")
-
     for field in s.fields():
         v = value[field.name()]
         encoded += lrpc_encode(v, field, lrpc_def)

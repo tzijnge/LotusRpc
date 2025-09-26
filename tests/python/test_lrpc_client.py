@@ -132,7 +132,7 @@ def test_decode_stream_client_infinite_invalid() -> None:
     with pytest.raises(ValueError) as e:
         client.decode(b"\x04\x02\x00\x00")
 
-    assert str(e.value) == "1 remaining bytes after decoding stream srv2.client_infinite"
+    assert str(e.value) == "1 remaining bytes after decoding srv2.client_infinite"
 
 
 def test_decode_stream_client_finite_request_stop() -> None:
@@ -147,7 +147,7 @@ def test_decode_stream_client_finite_invalid() -> None:
     with pytest.raises(ValueError) as e:
         client.decode(b"\x05\x02\x01\xff\x66")
 
-    assert str(e.value) == "2 remaining bytes after decoding stream srv2.client_finite"
+    assert str(e.value) == "2 remaining bytes after decoding srv2.client_finite"
 
 
 def test_decode_stream_server_infinite() -> None:
@@ -217,3 +217,31 @@ def test_decode_error_response() -> None:
         client.decode(b"\x13\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
 
     assert str(e.value) == "The LRPC server reported an error"
+
+
+def test_has_response_invalid_service() -> None:
+    with pytest.raises(ValueError) as e:
+        client.encode("invalid_service", "server_finite", start=False)
+
+    assert str(e.value) == "Service invalid_service not found in the LRPC definition file"
+
+
+def test_has_response_invalid_function_or_stream() -> None:
+    with pytest.raises(ValueError) as e:
+        client.encode("srv2", "invalid_function_or_stream", start=False)
+
+    assert str(e.value) == "Function or stream invalid_function_or_stream not found in service srv2"
+
+
+def test_decode_void_function() -> None:
+    # srv0.f0
+    decoded = client.decode(b"\x03\x00\x00")
+    assert isinstance(decoded, dict)
+    assert len(decoded.items()) == 0
+
+
+def test_remaining_bytes_after_decode() -> None:
+    with pytest.raises(ValueError) as e:
+        client.decode(b"\x05\x00\x00\xab\xcd")
+
+    assert str(e.value) == "2 remaining bytes after decoding srv0.f0"

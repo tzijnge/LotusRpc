@@ -2,7 +2,7 @@ import struct
 from typing import Any, Union
 
 from ..core.definition import LrpcDef
-from ..core import LrpcService, LrpcFun, LrpcStream
+from ..core import LrpcService, LrpcFun, LrpcStream, LrpcVar
 from ..types import LrpcType
 from .decoder import LrpcDecoder
 from .encoder import lrpc_encode
@@ -58,10 +58,10 @@ class LrpcClient:
         decoder = LrpcDecoder(encoded[3:], self.lrpc_def)
 
         if function:
-            return self._decode_function(function, decoder, service.name())
+            return self._decode_variables(function.returns(), decoder, f"{service.name()}.{function.name()}")
 
         if stream:
-            return self._decode_stream(stream, decoder, service.name())
+            return self._decode_variables(stream.returns(), decoder, f"{service.name()}.{stream.name()}")
 
         raise ValueError(f"No function or stream with ID {function_or_stream_id} found in service {service.name()}")
 
@@ -102,31 +102,14 @@ class LrpcClient:
         raise ValueError(f"Function or stream {function_or_stream_name} not found in service {service_name}")
 
     @staticmethod
-    def _decode_function(function: LrpcFun, decoder: LrpcDecoder, service_name: str) -> dict[str, Any]:
-        if function.number_returns() == 0:
-            return {}
-
+    def _decode_variables(variables: list[LrpcVar], decoder: LrpcDecoder, name: str) -> dict[str, LrpcType]:
         ret = {}
-        for r in function.returns():
+
+        for r in variables:
             ret[r.name()] = decoder.lrpc_decode(r)
 
         if decoder.remaining() != 0:
-            raise ValueError(
-                f"{decoder.remaining()} remaining bytes after decoding function {service_name}.{function.name()}"
-            )
-
-        return ret
-
-    @staticmethod
-    def _decode_stream(stream: LrpcStream, decoder: LrpcDecoder, service_name: str) -> dict[str, Any]:
-        ret = {}
-        for r in stream.returns():
-            ret[r.name()] = decoder.lrpc_decode(r)
-
-        if decoder.remaining() != 0:
-            raise ValueError(
-                f"{decoder.remaining()} remaining bytes after decoding stream {service_name}.{stream.name()}"
-            )
+            raise ValueError(f"{decoder.remaining()} remaining bytes after decoding {name}")
 
         return ret
 

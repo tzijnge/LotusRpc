@@ -449,7 +449,7 @@ services:
     assert_log_entries(["Duplicate name in s1.f1: r0"], caplog.text)
 
 
-def test_duplicate_stream_param_names(caplog: pytest.LogCaptureFixture) -> None:
+def test_duplicate_server_stream_param_names(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: test
 services:
   - name: srv1
@@ -469,6 +469,41 @@ services:
         params:
           - { name: p0, type: bool }
         origin: server
+"""
+
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(ValueError):
+        load_def(rpc_def)
+
+    assert_log_entries(
+        [
+            "Duplicate name in srv1.s1: p0",
+            "Duplicate name in srv1.s2: final",
+        ],
+        caplog.text,
+    )
+
+
+def test_duplicate_client_stream_param_names(caplog: pytest.LogCaptureFixture) -> None:
+    rpc_def = """name: test
+services:
+  - name: srv1
+    streams:
+      - name: s1
+        params:
+          - { name: p0, type: bool }
+          - { name: p0, type: int8_t }
+        origin: client
+      - name: s2
+        params:
+          - { name: p0, type: bool }
+          - { name: final, type: int64_t }
+        origin: client
+        finite: true
+      - name: s3
+        params:
+          - { name: p0, type: bool }
+        origin: client
 """
 
     caplog.set_level(logging.ERROR)

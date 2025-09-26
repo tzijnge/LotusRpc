@@ -30,10 +30,12 @@ jobs:
         run: pip install .
       - name: "Run LRPC generator"
         run: |
+          set -ex
           lrpcg cpp -d tests/testdata/TestServer1.lrpc.yaml -o .
           lrpcg cpp -d tests/testdata/TestServer2.lrpc.yaml -o .
           lrpcg cpp -d tests/testdata/TestServer3.lrpc.yaml -o .
           lrpcg cpp -d tests/testdata/TestServer4.lrpc.yaml -o .
+          lrpcg cpp -d tests/testdata/TestServer5.lrpc.yaml -o .
 
       - name: Run LRPC client CLI
         run: |
@@ -48,7 +50,7 @@ jobs:
     steps:
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
+          python-version: "3.9"
 
       - name: Checkout
         uses: actions/checkout@v4.1.2
@@ -88,14 +90,22 @@ jobs:
       - name: Python unit tests
         run: pytest -v --junitxml=testresults/pytestresults.xml
 
-      - name: Python code coverage
+      - name: Code coverage on tools
+        env:
+          COVERAGE_RCFILE: ${{github.workspace}}/pyproject.toml
+        working-directory: src
+        run: |
+          set -ex
+          coverage run -a -m lrpc.lrpcg cpp -w -d ../tests/testdata/TestServer1.lrpc.yaml -o cov_out
+          coverage run -a -m lrpc.lrpcg cpp -w -d ../tests/testdata/TestServer2.lrpc.yaml -o cov_out
+          coverage run -a -m lrpc.lrpcg cpp -w -d ../tests/testdata/TestServer3.lrpc.yaml -o cov_out
+          coverage run -a -m lrpc.lrpcg cpp -w -d ../tests/testdata/TestServer4.lrpc.yaml -o cov_out
+          coverage run -a -m lrpc.lrpcg cpp -w -d ../tests/testdata/TestServer5.lrpc.yaml -o cov_out
+
+      - name: Code coverage on unit tests
         run: |
           coverage run -a -m pytest
-          coverage run -a -m lrpc.lrpcg cpp -w -d tests/testdata/TestServer1.lrpc.yaml -o cov_out
-          coverage run -a -m lrpc.lrpcg cpp -w -d tests/testdata/TestServer2.lrpc.yaml -o cov_out
-          coverage run -a -m lrpc.lrpcg cpp -w -d tests/testdata/TestServer3.lrpc.yaml -o cov_out
-          coverage run -a -m lrpc.lrpcg cpp -w -d tests/testdata/TestServer4.lrpc.yaml -o cov_out
-          coverage run -a -m lrpc.lrpcg cpp -w -d tests/testdata/TestServer5.lrpc.yaml -o cov_out
+          coverage combine -a src/.coverage
           coverage xml
 
       - name: Publish Test Results

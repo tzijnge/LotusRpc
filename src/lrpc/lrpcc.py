@@ -19,6 +19,8 @@ from lrpc.types import LrpcType
 from lrpc.core import LrpcStream
 from lrpc.utils import load_lrpc_def_from_url
 
+# pylint: disable=anomalous-backslash-in-string
+
 colorama.init(autoreset=True)
 
 logging.basicConfig(format="[LRPCC] %(levelname)-8s: %(message)s", level=logging.INFO)
@@ -82,8 +84,7 @@ def __load_config() -> dict[str, Any]:
 @click.group()
 @click.version_option(package_name="lotusrpc", message="%(version)s")
 def run_lrpcc_config_creator() -> None:
-    r"""
-    \b
+    """\b
         __          __             ____  ____  ______
        / /   ____  / /___  _______/ __ \/ __ \/ ____/
       / /   / __ \/ __/ / / / ___/ /_/ / /_/ / /

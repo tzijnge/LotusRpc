@@ -19,7 +19,7 @@ jobs:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
 
     steps:
-      - uses: actions/checkout@v4.1.2
+      - uses: actions/checkout@v5
         with:
           submodules: false
       - name: Set up Python ${{ matrix.python-version }}
@@ -52,7 +52,7 @@ jobs:
           python-version: "3.9"
 
       - name: Checkout
-        uses: actions/checkout@v4.1.2
+        uses: actions/checkout@v5
         with:
           submodules: true
 

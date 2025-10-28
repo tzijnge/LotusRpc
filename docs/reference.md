@@ -177,6 +177,7 @@ services:
 The LRPC definition file uses LrpcType to describe function arguments, function return values and struct fields.
 
 A LrpcType has the following properties:
+
 | Required  | Optional |
 | --------- |--------- |
 | name                  | [count](#lrpctypecount) |

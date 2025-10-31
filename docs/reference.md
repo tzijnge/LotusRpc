@@ -137,7 +137,7 @@ LRPC supports defining constants in the `constants` property. A constant can hav
 
 `name` is the name of the constant. `value` is the value of the constant. The type of the constant is deduced from its value, but it's possible to explicitly specify the type that the constant should have in the generated C++ code. E.g. the value 111 will by default be given the type *int32_t*, but when the `cppType` is *uint8_t*, it will get that type. As another example, the value 3.14 will by default be given the type *float*, but it can also be a string constant when the `cppType` is *string*. The latter could alternatively be achieved by prefixing the value with *!!str*. This forces the YAML parser to treat the value as a string and is unrelated to LRPC.
 
-There is currently no other use case for constants than to provide a single source of truth for constans that are needed on both the client side and the server side. Notably, it is not (yet) possible to reference a constant in other parts of the definition, e.g. as the size of an array. To achieve this kind of behavior, the *anchor* and *alias* features of yaml may be used.
+There is currently no other use case for constants than to provide a single source of truth for constants that are needed on both the client side and the server side. Notably, it is not (yet) possible to reference a constant in other parts of the definition, e.g. as the size of an array. To achieve this kind of behavior, the *anchor* and *alias* features of yaml may be used.
 
 Example:
 ``` yaml
@@ -177,6 +177,7 @@ services:
 The LRPC definition file uses LrpcType to describe function arguments, function return values and struct fields.
 
 A LrpcType has the following properties:
+
 | Required  | Optional |
 | --------- |--------- |
 | name                  | [count](#lrpctypecount) |

@@ -8,6 +8,20 @@ RPC framework for embedded systems based on [ETL](https://github.com/ETLCPP/etl)
 
 > **_WARNING:_**  This project is work in progress
 
+# Goal and philosophy
+The goal of LotusRPC is to create a lightweight, easy to use RPC for small embeddeded systems (microcontrollers) using C++. Lightweight does not mean that it's the smallest, fastest or most efficient library around. In fact, no comparisons are done with other similar frameworks, but is should be fairly small, fast and efficient. LotusRPC does not do any dynamic memory allocation and does not throw exceptions, but it does use inheritance and virtual funtion calls are made. It has a dependency on ETL, but if you're serious about programming an embedded device in C++, you already have that dependency, right? ;-)
+
+LotusRPC does **not** support C and there are no plans to do so.
+
+LotusRPC aims to be easy to use:
+* Easy to install as a Python package with pip
+* Interface definition in YAML, leveraging existing tools for validation, formatting, viewing, parsing for custom purposes, etc.
+* Clear error messages
+* CLI tool for code generation. Easy to use from the command line, easy to use in any build system
+* CLI tool for client access to the embedded device. Easy to use and install, even for the non-techies in your team
+
+LotusRPC aims to be extensible, although it is not yet as extensible as it could be. It is already possible to extend the Python client code with new transport layers. Serial is supported out of the box, but e.g. Bluetooth and TCP are not. It would be nice to also have the code generation part extensible to allow users to support other languages, but this is not in place yet.
+
 # Features
 ## Supported data types
 - basic types: `(u)intx_t`, `float`, `double`, `bool`

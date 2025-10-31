@@ -94,12 +94,13 @@ def run_lrpcc_config_creator() -> None:
     lrpcc is the LotusRPC client CLI tool.
 
     lrpcc needs a configuration file named lrpcc.config.yaml.
-    See https://github.com/tzijnge/LotusRpc for more information
-    about the contents of the configuration file. By default,
-    lrpcc looks for the configuration file in the current working
-    directory and all subdirectories recursively. If no configuration
-    file is found, lrpcc tries to use the configuration file specified by
-    the LRPCC_CONFIG environment variable.
+    See https://tzijnge.github.io/LotusRpc/tools/#lrpcc for more
+    information about the contents of the configuration file and
+    usage in general. By default, lrpcc looks for the
+    configuration file in the current working directory and all
+    subdirectories recursively. If no configuration file is
+    found, lrpcc tries to use the configuration file specified
+    by the LRPCC_CONFIG environment variable.
     """
 
 

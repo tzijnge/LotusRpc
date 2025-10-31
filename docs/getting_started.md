@@ -9,8 +9,9 @@ Being an [RPC](https://en.wikipedia.org/wiki/Remote_procedure_call), the communi
 A device may be capable of doing several logically or functionally unrelated tasks. In LotusRPC, a group of related tasks is called a _service_. A LotusRPC _interface_ consists of at least one service and each service consists of at least one function.
 LotusRPC provides a number of basic data types that are very similar (or map very wel to) types in languages such as C++, Python and many other languages. Additionally it is possible to define custom enumerations and compose new types from other types.
 Apart from function calls, LotusRPC also supports data streams from client to server or from server to client. A data stream is modelled as a sequence of function calls without a return value (not even void). In other words, it is a fire and forget function call in which the data is transferred from one side to the other as function arguments.
-LotusRPC does not include a transport layer to deliver data over a certain communication channel. It is outside the scope of LotusRPC because it is too diverse and would be to complex to maintain any relevant form of support. Instead LotusRPC is a generic and platform independent way of transforming function calls into a set of bytes and vice versa. Therefore any platform that can send and receive bytes over any communication channel can use LotusRPC.
 A LotusRPC interface is described in an interface definition file. LotusRPC itself is a Python package that generates server and client side code from the definition file.
+LotusRPC does not include a transport layer to deliver data over a certain communication channel. It is outside the scope of LotusRPC because it is too diverse and would be to complex to maintain any relevant form of support. Instead LotusRPC is a generic and platform independent way of transforming function calls into a set of bytes and vice versa. Therefore any platform that can send and receive bytes over any communication channel can use LotusRPC.
+With a similar reasoning, LotusRPC does not support threading or async behavior. If desired, it is left to the user to integrate LotusRPC in a threaded environment
 
 ## Installation
 Install LotusRPC from [PyPI](https://pypi.org/project/lotusrpc/) with ```pip install lotusrpc```. This makes **lrpcg**, the LotusRPC generator tool available in your Python installation. If Python is added to the path, you can use the generator tool by simply typing `lrpcg` in a terminal. Command line help is provided to get started.
@@ -26,6 +27,28 @@ LotusRPC uses the YAML file format to describe an interface. This may not be the
 ## Generate code
 To generate server side C++ code from an interface definition file, run `lrpcg` with the _cpp_ command and provide the path to the definition file. LotusRPC will make sure there are no syntactic and semantic errors in the definition and generate the code. It can be as simple as:
 ```lrpcg cpp -f my_definition.yaml```
+Since code generation is just a command on the terminal, it should be easy to integrate in any existing build system.
+
+### CMake
+To generate code in CMake as a pre-build step you can use the following snippet
+
+``` cmake
+set(LRPC_OUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/generated)
+set(LRPC_DEF ${CMAKE_CURRENT_SOURCE_DIR}/my_interface.lrpc.yaml)
+
+add_custom_command(OUTPUT my_interface.hpp
+                COMMENT "Generate LRPC files"
+                DEPENDS ${LRPC_DEF}
+                COMMAND lrpcg cpp -d ${LRPC_DEF} -o ${LRPC_OUT_DIR} -w)
+
+set_directory_properties(PROPERTIES ADDITIONAL_CLEAN_FILES ${LRCP_OUT_DIR})
+
+add_executable(MyApp main.cpp ${LRCP_OUT_DIR}/my_interface.hpp)
+
+target_include_directories(MyApp PRIVATE ${LRPC_OUT_DIR})
+```
+In this example, _my_interface_ is added as a source file to the application. Since this file is generated with **lrpcg** and does not exist initially, we need a custom command to tell CMake how to create it. Since the custom command depends on the interface definition file, the code will be regenerated automatically if a modification to the interface is made.
+Not that **lrpcg** generates many more files than just _my_interface.hpp_, but since they are all header files, they don't have to be added explicitly to the executable.
 
 ## Use RPC (server side)
 Include the file `<out-dir>/example/battery_ServiceShim.hpp` in your project. Derive you own service class from `ex::batteryServiceShim` and implement all pure virtual functions. These are the remote procedures that are called when issuing a function call on the client. Implement these functions as desired.

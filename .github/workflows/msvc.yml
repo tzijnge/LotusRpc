@@ -10,15 +10,15 @@ name: Microsoft C++ Code Analysis
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   schedule:
-    - cron: '32 21 * * 0'
+    - cron: "32 21 * * 0"
 
 env:
   # Path to the CMake build directory.
-  build: '${{ github.workspace }}/build'
+  build: "${{ github.workspace }}/build"
   BUILD_TYPE: Release
 
 permissions:
@@ -34,6 +34,10 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+
       - name: Checkout repository
         uses: actions/checkout@v5
         with:

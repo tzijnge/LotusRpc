@@ -65,7 +65,9 @@ def run_cli() -> None:
      / /___/ /_/ / /_/ /_/ (__  ) _, _/ ____/ /___
     /_____/\____/\__/\__,_/____/_/ |_/_/    \____/
 
-    lrpcg is the LotusRPC generator tool.
+    lrpcg is the LotusRPC generator tool. See
+    https://tzijnge.github.io/LotusRpc/tools/#lrpcg for
+    more information.
     """
     # All functionality provided by Click decorators
 

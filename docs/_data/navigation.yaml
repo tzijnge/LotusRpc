@@ -3,9 +3,11 @@ main:
     url: /getting_started
   - title: "Tools"
     url: /tools
-  - title: "Extending LotusRPC"
-    url: /extending_lrpc
   - title: "Reference"
     url: /reference
   - title: "Examples"
     url: /examples
+  - title: "Extending LotusRPC"
+    url: /extending_lrpc
+  - title: "Binary"
+    url: /binary

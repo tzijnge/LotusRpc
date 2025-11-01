@@ -28,6 +28,9 @@ class ServerIncludeVisitor(LrpcVisitor):
         write_file_banner(self.__file)
         self.__file.write("#pragma once")
         self.__file.write('#include "lrpccore/Server.hpp"')
+        if len(lrpc_def.constants()) != 0:
+            self.__file.write(f'#include "{lrpc_def.name()}_Constants.hpp"')
+        self.__file.write(f'#include "{lrpc_def.name()}_Meta.hpp"')
 
     def visit_lrpc_service(self, service: LrpcService) -> None:
         self.__file.write(f'#include "{service.name()}.hpp"')

@@ -1,6 +1,4 @@
-#include "generated/Server4/Server4_Constants.hpp"
-#include "generated/Server4/Server4_Meta.hpp"
-#include "generated/Server4/s00_ServiceShim.hpp"
+#include "generated/Server4/Server4.hpp"
 #include <gtest/gtest.h>
 #include <type_traits>
 

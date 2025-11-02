@@ -2,7 +2,7 @@ pytest==8.4.1
 pytest-cov==7.0.0
 mypy==1.18.2
 black==25.9.0
-pylint==3.3.4
+pylint==4.0.2
 types-jsonschema==4.25.0.20250720
 types-pyyaml==6.0.12.20241230
 types-pyserial==3.5.0.20250304

@@ -1,6 +1,6 @@
 name: Publish LotusRPC 🌼 to PyPI and TestPyPI
 
-on: push
+on: push # yamllint disable-line rule:truthy
 
 jobs:
   build:

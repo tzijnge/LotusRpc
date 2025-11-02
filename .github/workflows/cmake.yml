@@ -70,17 +70,26 @@ jobs:
         run: python install_arm_gcc.py --destination ${{env.TOOLS_DIR}}/arm-gcc
 
       - name: Build examples
-        run: |
-          set -e
-          cmake -DTOOLCHAIN_PATH=${{env.TOOLS_DIR}}/arm-gcc/bin/ -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/examples/stm32_nucleo_l496/cmake/gcc-arm-none-eabi.cmake -S ${{github.workspace}}/examples/stm32_nucleo_l496 -B ${{github.workspace}}/examples/stm32_nucleo_l496/build/Release -G Ninja
-          cmake --build ${{github.workspace}}/examples/stm32_nucleo_l496/build/Release --parallel 10
+        run: >
+          set -e\n
+          cmake
+          -DTOOLCHAIN_PATH=${{env.TOOLS_DIR}}/arm-gcc/bin/
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/examples/stm32_nucleo_l496/cmake/gcc-arm-none-eabi.cmake
+          -S ${{github.workspace}}/examples/stm32_nucleo_l496
+          -B ${{github.workspace}}/examples/stm32_nucleo_l496/build/Release
+          -G Ninja\n
+          cmake
+          --build ${{github.workspace}}/examples/stm32_nucleo_l496/build/Release
+          --parallel 10
 
       - name: Configure unit tests
         run: cmake -B ${{github.workspace}}/cmake_build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
       - name: Build unit tests with SQ
-        run: |
-          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build ${{github.workspace}}/cmake_build --config ${{env.BUILD_TYPE}}
+        run: >
+          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }}
+          cmake --build ${{github.workspace}}/cmake_build --config ${{env.BUILD_TYPE}}
 
       - name: C++ unit tests
         working-directory: ${{github.workspace}}/cmake_build

@@ -1,0 +1,20 @@
+extends: default
+
+rules:
+  new-lines:
+    type: dos
+  braces:
+    max-spaces-inside: -1
+    min-spaces-inside-empty: 1
+    max-spaces-inside-empty: 1
+  line-length:
+    max: 120
+  document-start: disable
+  truthy:
+    # This file is meant for testing non-standard true/false values
+    ignore: tests/testdata/TestServer4.lrpc.yaml
+  comments:
+    min-spaces-from-content: 1
+
+ignore:
+  - external

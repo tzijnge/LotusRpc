@@ -7,19 +7,23 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 # LotusRPC 🌼
+
 > **_WARNING:_**  This project is work in progress
 
 LotusRPC is an RPC framework for embedded systems based on [ETL](https://github.com/ETLCPP/etl). It generates C++ code with no dynamic memory allocations, no exceptions, no RTTI, etc. Code generator and client side CLI application in a simple Python package.
 
 ## Installation
+
 Install from [PyPI](https://pypi.org/project/lotusrpc/) with ```pip install lotusrpc```
 
 ## Basic usage
+
 Installing the Python package installs the `lrpcg` tool on your system. This is the LotusRPC generator. It also installs the `lrpcc` tool on your system. This is the LotusRpc CLI client.
 
 Your RPC interface is specified in a YAML file
 
 File name: _example.lrpc.yaml_
+
 ``` yaml
 services:
   - name: battery
@@ -48,4 +52,5 @@ Give the generated code a meaningful implementation and hook it up to a transpor
 ```lrpcc battery get microvolts```
 
 ## Documentation
-Please find more detailed information [here](https://tzijnge.github.io/LotusRpc/)
+
+Please find more detailed information on the [LotusRPC documentation pages](https://tzijnge.github.io/LotusRpc/)

@@ -6,6 +6,8 @@ on: # yamllint disable-line rule:truthy
   pull_request:
     branches: ["main"]
 
+permissions:
+  contents: read
 env:
   BUILD_TYPE: Release
   TOOLS_DIR: $RUNNER_TEMP/lotusrpc-tools

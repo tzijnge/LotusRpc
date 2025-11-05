@@ -46,6 +46,10 @@ jobs:
     env:
       BUILD_WRAPPER_OUT_DIR: bw_out
 
+    permissions:
+      checks: write
+      pull-requests: write
+
     steps:
       - uses: actions/setup-python@v6
         with:

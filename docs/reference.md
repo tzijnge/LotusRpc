@@ -4,9 +4,11 @@ toc: true
 ---
 
 ## Introduction
+
 The LRPC definition is written in YAML and therefore benefits from all the features and tooling that are available for YAML. Think about editor support, easy parsing in various programming languages. The fact that there is a schema available, makes it possible to have code completion and documentation in supporting editors.
 
 ## Top level
+
 The LRPC definition file has the following properties:
 
 | Required  | Optional |
@@ -22,9 +24,11 @@ The LRPC definition file has the following properties:
 At the top level it is also allowed to use additional properties. These properties are ignored by the LRPC tool, but may be useful creating anchors or for any other purpose that you may have. Remember that it's very easy to parse the definition file, so everyone is free to extend the functionality of LRPC.
 
 ## Name
+
 This is the name of the RPC engine. It is used in generated files and directories, as well as generated code. Therefore, the name must be a [valid C++ identifier](https://en.cppreference.com/w/cpp/language/identifiers)
 
 ## Services
+
 A single RPC engine can contain up to 256 different services. A service can be considered a group of related functions. In the generated code a service with functions corresponds to a class with methods. A RPC engine must have at least one service.
 
 A service has the following properties
@@ -40,10 +44,12 @@ A service has the following properties
 Although [`functions`](#functions) and [`streams`](#streams) are both optional, at least one of them must be present.
 
 ### Service ID
+
 Every LRPC service has an identifier that is needed for proper transfer of information between two endpoints. If the service identifier is not specified, LRPC will generate one. When starting out with a fresh RPC, it's usually not necessary to specify service IDs. Later on it may be useful to explicitly specify a service ID for backwards compatibility.
 > **_NOTE:_**  The most efficient code is generated when service IDs are contiguous and start at 0. This is the default when no IDs are specified
 
 ### Functions
+
 A single LRPC service must contain at least one function or stream and up to 256 (combined). A function can have any number of arguments and return values.
 
 A function has the following properties:
@@ -57,6 +63,7 @@ A function has the following properties:
 `name` is the name of the function. It must be a valid C++ identifier. `id` is the function identifier, similar to the [service ID](#service-id). `params` is a list of parameters and `returns` is a list of return values. Every item in `params` and `returns` is a [LrpcType](#lrpctype).
 
 ### Streams
+
 Streams are similar to functions, but they don't have any return values. In fact, there is no response to stream data at all. Stream data can consist of any number of items. Data can be streamed from client to server of vice versa (determined by `origin`), but a data stream is always initiated by the client. A stream while `params` in a function are always from client to server, in a stream the direction of `params` depends on the direction of the stream.
 
 A stream has the following properties:
@@ -71,15 +78,22 @@ A stream has the following properties:
 
 Sometimes a stream can produce an infinite amount of messages, for example a sensor data stream from server to client. In this case the client starts the stream and stops the stream when needed. In other cases a stream is limited by design, for example retrieving all log messages stored on a device. In this case it's useful for the receiving side to know when the last message has been received. LRPC can help in this situation if the `finite` property is set to true, but it does come at a small cost. Every message gets an implicit boolean parameter (one byte) that is only true for the final message. The [LRPC client CLI](tools.md#lrpcc) uses this information to gracefully terminate a streaming session
 
-When a service contains both functions and streams, automatic ID assignment depends on which is specified first. A few examples:
+When a service contains both functions and streams, automatic ID assignment depends on which is specified first.
+
+Example 1.
 
 > A definition first specifies two functions in a service and then two streams. No explicit IDs are given. The functions will receive IDs 0 and 1 and the streams will receive IDs 2 and 3.
 
+Example 2.
+
 > A definition first specifies two streams in a service and then two function. The second stream has an explicit ID of 55. LRPC generates the other IDs and the result are: first stream has ID 0, second stream has ID 55. First function has ID 56, second function has ID 57.
+
+Example 3.
 
 > A definition specifies a service with three functions. The first function has an explicit ID of 20, the second function has an explicit ID of 19, the third function does not have an explicit ID. LRPC generates an error because the generated ID for the third function is 20, resulting in duplicate function IDs.
 
 ## Structs
+
 LRPC supports defining custom aggregate data types in the `structs` property. `structs` contains a list of custom struct definitions, where every item has the following properties:
 
 | Required  | Optional |
@@ -90,6 +104,7 @@ LRPC supports defining custom aggregate data types in the `structs` property. `s
 `name` is the name of the struct. It must be a valid C++ identifier. `fields` is a list of data members, every member being a [LrpcType](#lrpctype). Custom structs can be referenced inside the LRPC definition file by prepending the name with the `@` sign.
 
 ## Enums
+
 LRPC supports defining custom enum types in the `enums` property. `enums` contains a list of custom enum definitions, where every item has the following properties:
 
 | Required  | Optional |
@@ -102,6 +117,7 @@ LRPC supports defining custom enum types in the `enums` property. `enums` contai
 It is possible to use an enum in LRPC that already exists in your codebase. In this case, the `external` property must be used to specify the file that contains the definition of the enum. If the external enum lives inside a namespace, that namespace must be specified with the `external_namespace` property. LRPC does not generate any functional code for external enums, but it does generate some checks to verify that the external enum corresponds to the LRPC definition file. LRPC also creates an alias for the external type (unless code is generated in the global namespace and the external enum lives in the global namespace). The alias is used internally in code generated by LRPC
 
 Example:
+
 ``` yaml
 ...
 enums:
@@ -122,7 +138,9 @@ enums:
 ```
 
 ## Constants
+
 LRPC supports defining constants in the `constants` property. A constant can have the following types:
+
 * (u)int**x**_t, with **x** being 8, 16, 32 or 64
 * float, double
 * bool
@@ -135,11 +153,12 @@ LRPC supports defining constants in the `constants` property. A constant can hav
 | name      |          |
 | value     | cppType  |
 
-`name` is the name of the constant. `value` is the value of the constant. The type of the constant is deduced from its value, but it's possible to explicitly specify the type that the constant should have in the generated C++ code. E.g. the value 111 will by default be given the type *int32_t*, but when the `cppType` is *uint8_t*, it will get that type. As another example, the value 3.14 will by default be given the type *float*, but it can also be a string constant when the `cppType` is *string*. The latter could alternatively be achieved by prefixing the value with *!!str*. This forces the YAML parser to treat the value as a string and is unrelated to LRPC.
+`name` is the name of the constant. `value` is the value of the constant. The type of the constant is deduced from its value, but it's possible to explicitly specify the type that the constant should have in the generated C++ code. E.g. the value 111 will by default be given the type _int32_t_, but when the `cppType` is _uint8_t_, it will get that type. As another example, the value 3.14 will by default be given the type _float_, but it can also be a string constant when the `cppType` is _string_. The latter could alternatively be achieved by prefixing the value with _!!str_. This forces the YAML parser to treat the value as a string and is unrelated to LRPC.
 
-There is currently no other use case for constants than to provide a single source of truth for constants that are needed on both the client side and the server side. Notably, it is not (yet) possible to reference a constant in other parts of the definition, e.g. as the size of an array. To achieve this kind of behavior, the *anchor* and *alias* features of yaml may be used.
+There is currently no other use case for constants than to provide a single source of truth for constants that are needed on both the client side and the server side. Notably, it is not (yet) possible to reference a constant in other parts of the definition, e.g. as the size of an array. To achieve this kind of behavior, the _anchor_ and _alias_ features of yaml may be used.
 
 Example:
+
 ``` yaml
 ...
 # an additional property called my_prop
@@ -174,6 +193,7 @@ services:
 ```
 
 ## LrpcType
+
 The LRPC definition file uses LrpcType to describe function arguments, function return values and struct fields.
 
 A LrpcType has the following properties:
@@ -186,7 +206,9 @@ A LrpcType has the following properties:
 `name` is the name of the LrpcType.
 
 ### LrpcType.type
-See section [data types](#supported-data-types)
+
+See section [data types](index.md#supported-data-types)
 
 ### LrpcType.count
+
 Specifying `count` as a number (at least 2) turns the LRPC type into an array of that size. Specifying `count` as `?` turns the LRPC type into an optional. If `count` is omitted, the type specified by `type` is used without any modifications

@@ -1,0 +1,7 @@
+# Default state for all rules
+default: true
+extends: null
+
+# Disable line length check as it would require many
+# artificial line breaks in source documents
+MD013: false

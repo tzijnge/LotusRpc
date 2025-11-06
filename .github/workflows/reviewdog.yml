@@ -1,5 +1,5 @@
 name: Reviewdog
-on: [pull_request]
+on: [pull_request] # yamllint disable-line rule:truthy
 jobs:
   Reviewdog:
     name: Reviewdog
@@ -9,8 +9,8 @@ jobs:
         uses: actions/checkout@v5
       - name: Install requirements
         run: |
-         pip install -r requirements/dev.txt
-         pip install -r requirements/package.txt
+          pip install -r requirements/dev.txt
+          pip install -r requirements/package.txt
       - name: Run MyPy
         uses: tsuyoshicho/action-mypy@v5
         with:
@@ -26,3 +26,16 @@ jobs:
           level: error
           glob_pattern: src
           fail_on_error: false
+      - name: yamllint
+        uses: reviewdog/action-yamllint@v1.21.0
+        with:
+          github_token: ${{ secrets.github_token }}
+          reporter: github-pr-review
+          fail_level: any
+      - name: markdownlint
+        uses: reviewdog/action-markdownlint@v0.26.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_level: any
+          markdownlint_flags: ". -i external -i examples/stm32_nucleo_l496/**/License.md"

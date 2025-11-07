@@ -1,9 +1,7 @@
 import re
 import os
 import pytest
-from click.exceptions import ClickException
 from lrpc.lrpcc import Lrpcc
-from .lrpcc_mock import Transport as MockTransport
 
 # pylint: disable=protected-access
 
@@ -24,13 +22,9 @@ def make_lrpcc(definition_url: str, response: bytes = b"") -> Lrpcc:
     lrpcc_config = {
         "definition_url": definition_url,
         "transport_type": "mock",
-        "transport_params": {},
+        "transport_params": {"response": response},
     }
-    lrpcc = Lrpcc(lrpcc_config)
-    t: MockTransport = lrpcc._transport
-    t.response = response
-
-    return lrpcc
+    return Lrpcc(lrpcc_config)
 
 
 def test_server1_f13(capsys: pytest.CaptureFixture[str]) -> None:
@@ -67,7 +61,7 @@ def test_server_infinite_start(capsys: pytest.CaptureFixture[str]) -> None:
     response += b"\x06\x42\x00\xe8\xfd\x03"
 
     lrpcc = make_lrpcc("../testdata/TestServer5.lrpc.yaml", response)
-    with pytest.raises(ClickException) as e:
+    with pytest.raises(TimeoutError) as e:
         lrpcc._command_handler("srv1", "server_infinite", start=True)
 
     assert str(e.value) == "Timeout waiting for response"
@@ -123,7 +117,7 @@ def test_server_finite_start_no_final_response(capsys: pytest.CaptureFixture[str
 
     lrpcc = make_lrpcc("../testdata/TestServer5.lrpc.yaml", response)
 
-    with pytest.raises(ClickException) as e:
+    with pytest.raises(TimeoutError) as e:
         lrpcc._command_handler("srv1", "server_finite", start=True)
 
     assert str(e.value) == "Timeout waiting for response"

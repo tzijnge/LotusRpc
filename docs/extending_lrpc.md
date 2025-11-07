@@ -9,7 +9,7 @@ toc: true
 
 1. Create a Python file called lrpcc_my_transport.py in the working directory of **lrpcc**
 2. This file should contain at least a class called `Transport`
-3. The `Transport` class should have these methods
+3. The `Transport` class should adhere to the `lrpc.client.LrpcTransport` protocol. I.e. it should have these methods
     * `read(count:int = 1) -> bytes`. In case of timeout, read should return an empty `bytes` object
     * `write(data: bytes) -> None`
 4. Use your transport layer by updating the _lrpcc.config.yaml_ file with

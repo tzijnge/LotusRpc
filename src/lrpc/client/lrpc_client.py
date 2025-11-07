@@ -1,11 +1,14 @@
 import struct
-from typing import Any, Union
+from typing import Union, Optional, Generator
 
 from ..core.definition import LrpcDef
 from ..core import LrpcService, LrpcFun, LrpcStream, LrpcVar
 from ..types import LrpcType
 from .decoder import LrpcDecoder
 from .encoder import lrpc_encode
+from .transport import LrpcTransport
+
+LrpcResponse = dict[str, LrpcType]
 
 
 class LrpcClient:
@@ -14,11 +17,12 @@ class LrpcClient:
     class IncompleteResponse:
         pass
 
-    def __init__(self, lrpc_def: LrpcDef) -> None:
+    def __init__(self, lrpc_def: LrpcDef, transport: LrpcTransport) -> None:
+        self._transport = transport
         self.lrpc_def = lrpc_def
         self.receive_buffer = b""
 
-    def process(self, encoded: bytes) -> Union[dict[str, Any], IncompleteResponse]:
+    def process(self, encoded: bytes) -> Union[LrpcResponse, IncompleteResponse]:
         self.receive_buffer += encoded
         received = len(self.receive_buffer)
 
@@ -34,7 +38,7 @@ class LrpcClient:
 
         return LrpcClient.IncompleteResponse()
 
-    def decode(self, encoded: bytes) -> dict[str, Any]:
+    def decode(self, encoded: bytes) -> LrpcResponse:
         if len(encoded) < 3:
             raise ValueError(f"Unable to decode message from {encoded!r}: an LRPC message has at least 3 bytes")
 
@@ -80,6 +84,27 @@ class LrpcClient:
 
         raise ValueError(f"Function or stream {function_or_stream_name} not found in service {service_name}")
 
+    def communicate(
+        self, service_name: str, function_or_stream_name: str, **kwargs: LrpcType
+    ) -> Generator[LrpcResponse, None, None]:
+        encoded = self.encode(service_name, function_or_stream_name, **kwargs)
+        self._transport.write(encoded)
+
+        receive_more = self.has_response(service_name, function_or_stream_name, **kwargs)
+        while receive_more:
+            response = self._receive_response()
+
+            if self.is_function(service_name, function_or_stream_name):
+                receive_more = False
+            else:
+                stream = self._get_stream(service_name, function_or_stream_name)
+                assert stream is not None
+                if stream.is_finite():
+                    receive_more = response["final"] is False
+                    response.pop("final")
+
+            yield response
+
     def has_response(self, service_name: str, function_or_stream_name: str, **kwargs: LrpcType) -> bool:
         service = self.lrpc_def.service_by_name(service_name)
         if not service:
@@ -102,7 +127,7 @@ class LrpcClient:
         raise ValueError(f"Function or stream {function_or_stream_name} not found in service {service_name}")
 
     @staticmethod
-    def _decode_variables(variables: list[LrpcVar], decoder: LrpcDecoder, name: str) -> dict[str, LrpcType]:
+    def _decode_variables(variables: list[LrpcVar], decoder: LrpcDecoder, name: str) -> LrpcResponse:
         ret = {}
 
         for r in variables:
@@ -122,6 +147,36 @@ class LrpcClient:
         self._check_parameters(stream.param_names(), list(kwargs.keys()))
         encoded = self._encode_parameters(service, stream, **kwargs)
         return self._add_message_length(encoded)
+
+    def _get_stream(self, service_name: str, stream_name: str) -> Optional[LrpcStream]:
+        service = self.lrpc_def.service_by_name(service_name)
+        if service is not None:
+            return service.stream_by_name(stream_name)
+
+        return None
+
+    def is_stream(self, service_name: str, function_or_stream_name: str) -> bool:
+        stream = self._get_stream(service_name, function_or_stream_name)
+        return stream is not None
+
+    def is_function(self, service_name: str, function_or_stream_name: str) -> bool:
+        service = self.lrpc_def.service_by_name(service_name)
+        if service is not None:
+            function = service.function_by_name(function_or_stream_name)
+            return function is not None
+
+        return False
+
+    def _receive_response(self) -> LrpcResponse:
+        while True:
+            received = self._transport.read(1)
+            if len(received) == 0:
+                raise TimeoutError("Timeout waiting for response")
+
+            response = self.process(received)
+
+            if not isinstance(response, LrpcClient.IncompleteResponse):
+                return response
 
     @staticmethod
     def _check_parameters(

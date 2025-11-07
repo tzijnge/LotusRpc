@@ -5,9 +5,20 @@ import pytest
 from lrpc.client import LrpcClient
 from lrpc.utils import load_lrpc_def_from_url
 
+
+class TestTransport:
+    def read(self, count: int) -> bytes:
+        return b""
+
+    def write(self, data: bytes) -> None:
+        pass
+
+# TODO: use transport in tests
+
+
 def_url = path.join(path.dirname(path.abspath(__file__)), "test_lrpc_encode_decode.lrpc.yaml")
 lrpc_def = load_lrpc_def_from_url(def_url, warnings_as_errors=False)
-client = LrpcClient(lrpc_def)
+client = LrpcClient(lrpc_def, TestTransport())
 
 
 def test_call() -> None:

@@ -117,4 +117,10 @@ sequenceDiagram
 
 ## Use RPC (client side)
 
+### lrpcc
+
 On a client that runs Python it is very easy to communicate with a server. LotusRPC includes the **lrpcc** tool for this, the LotusRPC CLI. Like **lrpcg**, this tool is available in your Python installation after installing LotusRPC. The **lrpcc** tool does not require any code generation, just the interface definition file and a suitable transport implementation. Because command line arguments are reserved for communication with the server, these have to be provided in a configuration file (**lrpcc** will help you create one if it's not there). With the configuration file in place you can just type `lrpcc --help` to get a list of services in the interface. Suppose there is a _math_ service in the interface, just type `lrpcc math --help` to get a list of functions in the service. Suppose there is a function _add_ in the _math_ service, just type `lrpcc math add --help` to get more info about the usage of this function. Type `lrpcc math add 5 7` to call the _add_ function on the server. If the server knows how to add two numbers, the number 12 is then printed to the screen.
+
+### Custom client code
+
+TODO

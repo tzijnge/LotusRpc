@@ -157,7 +157,7 @@ class Lrpcc:
             logging.getLogger().setLevel(log_level_map[log_level])
 
     @staticmethod
-    def _make_transport(transport_type: str, transport_params: dict[str, Any]) -> LrpcTransport:  # type: ignore[misc]
+    def _make_transport(transport_type: str, transport_params: dict[str, Any]) -> LrpcTransport:
         transport_plugin = Path(os.getcwd() + f"/lrpcc_{transport_type}.py")
         if transport_plugin.exists():
             spec = importlib.util.spec_from_file_location(

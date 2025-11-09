@@ -1,5 +1,5 @@
 import struct
-from typing import Union, Optional, Generator
+from typing import Union, Generator
 
 from ..core.definition import LrpcDef
 from ..core import LrpcService, LrpcFun, LrpcStream, LrpcVar

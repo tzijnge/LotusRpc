@@ -123,4 +123,23 @@ On a client that runs Python it is very easy to communicate with a server. Lotus
 
 ### Custom client code
 
-TODO
+To communicate with a server from custom Python code, use the following approach.
+
+* Create an `lrpc.client.LrpcClient` object.
+* Call the `communicate` method on the client. It takes the service name and the function/stream name as arguments. It also takes the function/stream parameters as keyword arguments. `communicate` is a generator that yields for every response from the server. For functions this is always exactly once, but for streams it may be 0 or more times.
+
+Here's an example that prints the value 13
+
+``` Python
+from lrpc.client import LrpcClient
+from lrpc.utils import load_lrpc_def_from_url
+import serial
+
+lrpc_def = load_lrpc_def_from_url(def_url, warnings_as_errors=True)
+transport = serial.Serial()
+
+client = LrpcClient(lrpc_def, transport)
+
+for response in client.communicate("math_service", "add", v1=10, v2=3):
+    print(response["sum"])
+```

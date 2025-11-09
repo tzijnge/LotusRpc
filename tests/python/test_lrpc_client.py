@@ -7,18 +7,23 @@ from lrpc.utils import load_lrpc_def_from_url
 
 
 class TestTransport:
+    def __init__(self) -> None:
+        self.response: bytes = b""
+
     def read(self, count: int) -> bytes:
-        return b""
+        data = self.response[0:count]
+        self.response = self.response[count:]
+
+        return data
 
     def write(self, data: bytes) -> None:
         pass
 
-# TODO: use transport in tests
-
 
 def_url = path.join(path.dirname(path.abspath(__file__)), "test_lrpc_encode_decode.lrpc.yaml")
 lrpc_def = load_lrpc_def_from_url(def_url, warnings_as_errors=False)
-client = LrpcClient(lrpc_def, TestTransport())
+transport = TestTransport()
+client = LrpcClient(lrpc_def, transport)
 
 
 def test_call() -> None:
@@ -79,56 +84,35 @@ def test_encode_function() -> None:
     encoded = client.encode("srv1", "add5", p0=0xAB)
     assert encoded == b"\x04\x01\x00\xab"
 
-    has_response = client.has_response("srv1", "add5", start=True)
-    assert has_response is True
-
 
 def test_encode_stream_client_infinite() -> None:
     encoded = client.encode("srv2", "client_infinite", p0=0xAB, p1=0xCDEF)
     assert encoded == b"\x06\x02\x00\xab\xef\xcd"
-
-    has_response = client.has_response("srv2", "client_infinite", p0=0xAB, p1=0xCDEF)
-    assert has_response is False
 
 
 def test_encode_stream_client_finite() -> None:
     encoded = client.encode("srv2", "client_finite", p0=0xAB, p1=0xCDEF, final=True)
     assert encoded == b"\x07\x02\x01\xab\xef\xcd\x01"
 
-    has_response = client.has_response("srv2", "client_finite", p0=0xAB, p1=0xCDEF)
-    assert has_response is False
-
 
 def test_encode_stream_server_infinite_start() -> None:
     encoded = client.encode("srv2", "server_infinite", start=True)
     assert encoded == b"\x04\x02\x02\x01"
-
-    has_response = client.has_response("srv2", "server_infinite", start=True)
-    assert has_response is True
 
 
 def test_encode_stream_server_infinite_stop() -> None:
     encoded = client.encode("srv2", "server_infinite", start=False)
     assert encoded == b"\x04\x02\x02\x00"
 
-    has_response = client.has_response("srv2", "server_infinite", start=False)
-    assert has_response is False
-
 
 def test_encode_stream_server_finite_start() -> None:
     encoded = client.encode("srv2", "server_finite", start=True)
     assert encoded == b"\x04\x02\x03\x01"
 
-    has_response = client.has_response("srv2", "server_finite", start=True)
-    assert has_response is True
-
 
 def test_encode_stream_server_finite_stop() -> None:
     encoded = client.encode("srv2", "server_finite", start=False)
     assert encoded == b"\x04\x02\x03\x00"
-
-    has_response = client.has_response("srv2", "server_infinite", start=False)
-    assert has_response is False
 
 
 def test_decode_stream_client_infinite_request_stop() -> None:
@@ -230,20 +214,6 @@ def test_decode_error_response() -> None:
     assert str(e.value) == "The LRPC server reported an error"
 
 
-def test_has_response_invalid_service() -> None:
-    with pytest.raises(ValueError) as e:
-        client.has_response("invalid_service", "server_finite", start=False)
-
-    assert str(e.value) == "Service invalid_service not found in the LRPC definition file"
-
-
-def test_has_response_invalid_function_or_stream() -> None:
-    with pytest.raises(ValueError) as e:
-        client.has_response("srv2", "invalid_function_or_stream", start=False)
-
-    assert str(e.value) == "Function or stream invalid_function_or_stream not found in service srv2"
-
-
 def test_decode_void_function() -> None:
     # srv0.f0
     decoded = client.decode(b"\x03\x00\x00")
@@ -258,20 +228,57 @@ def test_remaining_bytes_after_decode() -> None:
     assert str(e.value) == "2 remaining bytes after decoding srv0.f0"
 
 
-def test_process_empty() -> None:
-    response = client.process(b"")
-    assert isinstance(response, LrpcClient.IncompleteResponse)
+def test_communicate_function() -> None:
+    transport.response = b"\x04\x01\x00\xcd"
+    for r in client.communicate("srv1", "add5", p0=0xAB):
+        assert "r0" in r
+        assert isinstance(r["r0"], int)
+        assert r["r0"] == 0xCD
 
 
-def test_process_complete_response() -> None:
-    response = client.process(b"\x03\x02\x00")
-    assert response == {}
+def test_communicate_stream_client_infinite() -> None:
+    for _ in client.communicate("srv2", "client_infinite", p0=0xAB, p1=0xCDEF):
+        assert False, "Response received for client stream"
 
 
-def test_process_byte_by_byte() -> None:
-    response = client.process(b"\x03")
-    assert isinstance(response, LrpcClient.IncompleteResponse)
-    response = client.process(b"\x02")
-    assert isinstance(response, LrpcClient.IncompleteResponse)
-    response = client.process(b"\x00")
-    assert response == {}
+def test_communicate_stream_client_finite() -> None:
+    for _ in client.communicate("srv2", "client_finite", p0=0xAB, p1=0xCDEF, final=True):
+        assert False, "Response received for client stream"
+
+
+def test_communicate_stream_server_infinite_stop() -> None:
+    for _ in client.communicate("srv2", "server_infinite", start=False):
+        assert False, "Response on end server stream"
+
+
+def test_communicate_stream_server_finite_stop() -> None:
+    for _ in client.communicate("srv2", "server_finite", start=False):
+        assert False, "Response on end server stream"
+
+
+def test_communicate_stream_server_infinite_start() -> None:
+    transport.response = b"\x06\x02\x02\xcd\x01\x02"
+    response = {}
+    with pytest.raises(TimeoutError, match="Timeout waiting for response"):
+        for r in client.communicate("srv2", "server_infinite", start=True):
+            response = r
+
+    assert "p0" in response
+    assert isinstance(response["p0"], int)
+    assert response["p0"] == 0xCD
+
+    assert "p1" in response
+    assert isinstance(response["p1"], int)
+    assert response["p1"] == 0x0201
+
+
+def test_communicate_stream_server_finite_start() -> None:
+    transport.response = b"\x07\x02\x03\xcd\x01\x02\x01"
+    for r in client.communicate("srv2", "server_finite", start=True):
+        assert "p0" in r
+        assert isinstance(r["p0"], int)
+        assert r["p0"] == 0xCD
+
+        assert "p1" in r
+        assert isinstance(r["p1"], int)
+        assert r["p1"] == 0x0201

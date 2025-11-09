@@ -10,17 +10,13 @@ def load_lrpc_def(def_str: str) -> LrpcDef:
 
 
 def get_function(lrpc_def: LrpcDef, service: str, fun: str) -> LrpcFun:
-    srv = lrpc_def.service_by_name(service)
-    assert srv is not None
-    f = srv.function_by_name(fun)
+    f = lrpc_def.function(service, fun)
     assert f is not None
     return f
 
 
 def get_stream(lrpc_def: LrpcDef, service: str, stream: str) -> LrpcStream:
-    srv = lrpc_def.service_by_name(service)
-    assert srv is not None
-    s = srv.stream_by_name(stream)
+    s = lrpc_def.stream(service, stream)
     assert s is not None
     return s
 
@@ -58,7 +54,7 @@ services:
 def test_optional_function_id() -> None:
     def_str = """name: test
 services:
-  - name: s1
+  - name: srv1
     functions:
       - name: "a4"
       - name: "a3"
@@ -67,15 +63,28 @@ services:
       - name: "a1"
 """
     lrpc_def = load_lrpc_def(def_str)
-    services = lrpc_def.services()
-    assert len(services) == 1
-    functions = services[0].functions()
-    assert len(functions) == 4
+    assert get_function(lrpc_def, "srv1", "a4").id() == 0
+    assert get_function(lrpc_def, "srv1", "a3").id() == 1
+    assert get_function(lrpc_def, "srv1", "a2").id() == 17
+    assert get_function(lrpc_def, "srv1", "a1").id() == 18
 
-    assert functions[0].id() == 0
-    assert functions[1].id() == 1
-    assert functions[2].id() == 17
-    assert functions[3].id() == 18
+
+def test_retrieve_non_existing_function_or_stream() -> None:
+    def_str = """name: test
+services:
+  - name: srv1
+    functions:
+      - name: "a4"
+    streams:
+      - name: "a5"
+        origin: client
+"""
+
+    lrpc_def = load_lrpc_def(def_str)
+    assert lrpc_def.function("srv0", "a4") is None
+    assert lrpc_def.function("srv1", "a0") is None
+    assert lrpc_def.stream("srv0", "a5") is None
+    assert lrpc_def.stream("srv1", "a0") is None
 
 
 def test_max_service_id() -> None:

@@ -190,7 +190,7 @@ class Lrpcc:
 
     def _command_handler(self, service_name: str, function_or_stream_name: str, **kwargs: LrpcType) -> None:
         for index, response in enumerate(self.client.communicate(service_name, function_or_stream_name, **kwargs)):
-            if self.client.is_stream(service_name, function_or_stream_name):
+            if self.lrpc_def.stream(service_name, function_or_stream_name) is not None:
                 print(colorama.Fore.CYAN + f"[#{index}]")
             self._print_response(response)
 

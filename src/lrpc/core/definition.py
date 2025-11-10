@@ -3,6 +3,8 @@ from typing_extensions import NotRequired
 
 from .constant import LrpcConstant, LrpcConstantDict
 from .enum import LrpcEnum, LrpcEnumDict
+from .function import LrpcFun
+from .stream import LrpcStream
 from .service import LrpcService, LrpcServiceDict
 from .struct import LrpcStruct, LrpcStructDict
 from .var import LrpcVarDict
@@ -151,6 +153,20 @@ class LrpcDef:
     def max_service_id(self) -> int:
         service_ids = [s.id() for s in self.services()]
         return max(service_ids)
+
+    def function(self, service_name: str, function_name: str) -> Optional[LrpcFun]:
+        service = self.service_by_name(service_name)
+        if service is None:
+            return None
+
+        return service.function_by_name(function_name)
+
+    def stream(self, service_name: str, stream_name: str) -> Optional[LrpcStream]:
+        service = self.service_by_name(service_name)
+        if service is None:
+            return None
+
+        return service.stream_by_name(stream_name)
 
     def structs(self) -> list[LrpcStruct]:
         return self.__structs

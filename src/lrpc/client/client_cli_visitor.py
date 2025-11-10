@@ -226,5 +226,7 @@ class ClientCliVisitor(LrpcVisitor):
         for a, v in kwargs.items():
             if v == NONE_ARG:
                 kwargs[a] = None
-
-        self.callback(service, function, **kwargs)
+        try:
+            self.callback(service, function, **kwargs)
+        except Exception as e:
+            raise click.ClickException(str(e))

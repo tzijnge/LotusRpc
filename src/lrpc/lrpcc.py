@@ -8,7 +8,7 @@ from glob import glob
 from importlib import import_module
 from os import path
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import click
 import colorama
@@ -16,7 +16,7 @@ import yaml
 
 from lrpc.client import ClientCliVisitor, LrpcClient
 from lrpc.types import LrpcType
-from lrpc.core import LrpcStream
+from lrpc.client import LrpcResponse, LrpcTransport
 from lrpc.utils import load_lrpc_def_from_url
 
 # pylint: disable=anomalous-backslash-in-string
@@ -146,9 +146,8 @@ class Lrpcc:
         def_url = config[DEFINITION_URL]
         self.lrpc_def = load_lrpc_def_from_url(def_url, warnings_as_errors=True)
 
-        self.client = LrpcClient(self.lrpc_def)
-
-        self.__set_transport(config[TRANSPORT_TYPE], config[TRANSPORT_PARAMS])
+        transport = self._make_transport(config[TRANSPORT_TYPE], config[TRANSPORT_PARAMS])
+        self.client = LrpcClient(self.lrpc_def, transport)
 
     @classmethod
     def __set_log_level(cls, log_level: str) -> None:
@@ -157,7 +156,8 @@ class Lrpcc:
         else:
             logging.getLogger().setLevel(log_level_map[log_level])
 
-    def __set_transport(self, transport_type: str, transport_params: dict[str, Any]) -> None:
+    @staticmethod
+    def _make_transport(transport_type: str, transport_params: dict[str, Any]) -> LrpcTransport:
         transport_plugin = Path(os.getcwd() + f"/lrpcc_{transport_type}.py")
         if transport_plugin.exists():
             spec = importlib.util.spec_from_file_location(
@@ -174,75 +174,28 @@ class Lrpcc:
             logging.debug("Using built-in LRPCC transport %s", transport_type)
 
         if not hasattr(module, "Transport"):
-            raise ImportError(f"No class named 'Transport' in {module}")
+            raise AttributeError(f"No class named 'Transport' in {module}")
 
         transport_module = getattr(module, "Transport")
         if not hasattr(transport_module, "read"):
-            raise ImportError(f"No method named 'read' in {transport_module}")
+            raise AttributeError(f"No method named 'read' in {transport_module}")
 
         if not hasattr(transport_module, "write"):
-            raise ImportError(f"No method named 'write' in {transport_module}")
+            raise AttributeError(f"No method named 'write' in {transport_module}")
 
         logging.debug("Constructing LRPCC transport with these params: %s", transport_params)
-        self._transport = transport_module(**transport_params)
 
-    def __receive_response(self) -> dict[str, Any]:
-        while True:
-            received = self._transport.read(1)
-            if len(received) == 0:
-                raise click.ClickException("Timeout waiting for response")
-
-            response = self.client.process(received)
-
-            if not isinstance(response, LrpcClient.IncompleteResponse):
-                return response
-
-    def __is_function(self, service_name: str, function_or_stream_name: str) -> bool:
-        service = self.lrpc_def.service_by_name(service_name)
-        if service is not None:
-            function = service.function_by_name(function_or_stream_name)
-            return function is not None
-
-        return False
-
-    def __get_stream(self, service_name: str, stream_name: str) -> Optional[LrpcStream]:
-        service = self.lrpc_def.service_by_name(service_name)
-        if service is not None:
-            return service.stream_by_name(stream_name)
-
-        return None
-
-    def __is_stream(self, service_name: str, function_or_stream_name: str) -> bool:
-        stream = self.__get_stream(service_name, function_or_stream_name)
-        return stream is not None
+        transport: LrpcTransport = transport_module(**transport_params)
+        return transport
 
     def _command_handler(self, service_name: str, function_or_stream_name: str, **kwargs: LrpcType) -> None:
-        encoded = self.client.encode(service_name, function_or_stream_name, **kwargs)
-        self._transport.write(encoded)
-
-        receive_more = self.client.has_response(service_name, function_or_stream_name, **kwargs)
-        response_index = 0
-        while receive_more:
-            response = self.__receive_response()
-
-            if self.__is_stream(service_name, function_or_stream_name):
-                print(colorama.Fore.CYAN + f"[#{response_index}]")
-
-            if self.__is_function(service_name, function_or_stream_name):
-                receive_more = False
-            else:
-                stream = self.__get_stream(service_name, function_or_stream_name)
-                assert stream is not None
-                if stream.is_finite():
-                    receive_more = response["final"] is False
-                    response.pop("final")
-
+        for index, response in enumerate(self.client.communicate(service_name, function_or_stream_name, **kwargs)):
+            if self.lrpc_def.stream(service_name, function_or_stream_name) is not None:
+                print(colorama.Fore.CYAN + f"[#{index}]")
             self._print_response(response)
 
-            response_index += 1
-
     @staticmethod
-    def _print_response(response: dict[str, Any]) -> None:
+    def _print_response(response: LrpcResponse) -> None:
         max_response_name_width = 0
         if len(response) != 0:
             max_response_name_width = max(len(k) for k in response)

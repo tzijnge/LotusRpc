@@ -11,3 +11,4 @@ typing_extensions==4.15.0
 coverage==7.11.0
 types-colorama==0.4.15
 yamllint==1.37.1
+towncrier==25.8.0

@@ -95,3 +95,10 @@ warn_unreachable = true
 
 [tool.coverage.run]
 branch = true
+
+[tool.towncrier]
+directory = "changes"
+package_dir = "src"
+filename = "CHANGES.md"
+issue_format = "[#{issue}](https://github.com/tzijnge/LotusRpc/issues/{issue})"
+title_format = "## {name} {version} ({project_date})"

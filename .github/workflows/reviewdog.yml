@@ -11,14 +11,20 @@ jobs:
         run: |
           pip install -r requirements/dev.txt
           pip install -r requirements/package.txt
-      - name: Run MyPy
+      - name: towncrier
+        uses: tzijnge/action-towncrier@0.9.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_level: any
+      - name: MyPy
         uses: tsuyoshicho/action-mypy@v5
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review
           level: error
           fail_on_error: false
-      - name: Run PyLint
+      - name: PyLint
         uses: dciborow/action-pylint@0.1.0
         with:
           github_token: ${{ secrets.github_token }}
@@ -39,9 +45,3 @@ jobs:
           reporter: github-pr-review
           fail_level: any
           markdownlint_flags: ". -i external -i changes -i examples/stm32_nucleo_l496/**/License.md"
-      - name: towncrier
-        uses: tzijnge/action-towncrier@0.9.0
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          fail_level: any

@@ -1,6 +1,7 @@
 ---
 title: Binary
 toc: true
+classes: wide
 ---
 
 As an engineer in the low level embedded domain, you are probably very curious what LotusRPC produces as binary data to transport a function call (or its response) from one device to another. Here is some info about that.

@@ -1,6 +1,7 @@
 ---
 title: Getting started
 toc: true
+classes: wide
 ---
 
 ## Concepts and terminology

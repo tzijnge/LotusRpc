@@ -12,4 +12,4 @@ main:
   - title: "Binary"
     url: /binary
   - title: "Release notes"
-    url: ../CHANGES.md
+    url: /CHANGES

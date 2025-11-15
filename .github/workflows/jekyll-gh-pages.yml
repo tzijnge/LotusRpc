@@ -31,7 +31,7 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Copy release notes
-        run: cp -a ../CHANGES.md CHANGES.md
+        run: cp -a CHANGES.md docs/CHANGES.md
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:

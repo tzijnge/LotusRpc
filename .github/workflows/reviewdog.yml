@@ -39,3 +39,9 @@ jobs:
           reporter: github-pr-review
           fail_level: any
           markdownlint_flags: ". -i external -i changes -i examples/stm32_nucleo_l496/**/License.md"
+      - name: towncrier
+        uses: tzijnge/action-towncrier@0.9.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_level: any

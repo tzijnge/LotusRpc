@@ -26,6 +26,35 @@ jobs:
           name: python-package-distributions
           path: dist/
 
+  release-notes:
+    name: Build and commit release notes
+    if: startsWith(github.ref, 'refs/tags/') # only build release notes on tag pushes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - name: Install Python requirements
+        run: pip install -r requirements/dev.txt
+      - name: Build release notes
+        run: towncrier build --yes
+      - name: Collect release notes artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: release-notes
+          path: CHANGES.md
+      - name: Push release notes
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: Release notes
+          branch: main
+
   publish-to-pypi:
     name: Publish LotusRPC 🌼 to PyPI
     if: startsWith(github.ref, 'refs/tags/') # only publish to PyPI on tag pushes
@@ -51,6 +80,7 @@ jobs:
     name: Sign LotusRPC 🌼 with Sigstore and upload them to GitHub Release
     needs:
       - publish-to-pypi
+      - release-notes
     runs-on: ubuntu-latest
 
     permissions:
@@ -63,6 +93,11 @@ jobs:
         with:
           name: python-package-distributions
           path: dist/
+      - name: Download release notes
+        uses: actions/download-artifact@v6
+        with:
+          name: release-notes
+          path: CHANGES.md
       - name: Sign the dists with Sigstore
         uses: sigstore/gh-action-sigstore-python@v3.1.0
         with:
@@ -80,10 +115,7 @@ jobs:
       - name: Upload artifact signatures to GitHub Release
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        # Upload to GitHub Release using the `gh` CLI.
-        # `dist/` contains the built packages, and the
-        # sigstore-produced signatures and certificates.
-        run: gh release upload "$GITHUB_REF_NAME" dist/** --repo "$GITHUB_REPOSITORY"
+        run: gh release upload "$GITHUB_REF_NAME" dist/** CHANGES.md --repo "$GITHUB_REPOSITORY"
 
   publish-to-testpypi:
     name: Publish LotusRPC 🌼 to TestPyPI

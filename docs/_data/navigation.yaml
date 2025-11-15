@@ -11,3 +11,5 @@ main:
     url: /extending_lrpc
   - title: "Binary"
     url: /binary
+  - title: "Release notes"
+    url: ../CHANGES.md

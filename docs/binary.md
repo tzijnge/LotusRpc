@@ -1,7 +1,6 @@
 ---
 title: Binary
 toc: true
-classes: wide
 ---
 
 As an engineer in the low level embedded domain, you are probably very curious what LotusRPC produces as binary data to transport a function call (or its response) from one device to another. Here is some info about that.
@@ -15,6 +14,9 @@ Here's a top level overview of a LotusRPC data frame. The payload field is not a
 ``` mermaid
 ---
 title: "LotusRPC data frame"
+config:
+  packet:
+    bitsPerRow: 16
 ---
 packet
 +8: "Packet size"
@@ -63,6 +65,9 @@ The string 'lrpc' is encoded as follows
 ``` mermaid
 ---
 title: "Auto string"
+config:
+  packet:
+    bitsPerRow: 16
 ---
 packet
 +8: "'l' (0x6C)"
@@ -75,6 +80,9 @@ packet
 ``` mermaid
 ---
 title: "Fixed size (7) string"
+config:
+  packet:
+    bitsPerRow: 16
 ---
 packet
 +8: "'l' (0x6C)"
@@ -94,6 +102,9 @@ In LotusRPC, an array always has a fixed capacity as specified in the interface 
 ``` mermaid
 ---
 title: "Array of capacity 6 with 4 elements"
+config:
+  packet:
+    bitsPerRow: 16
 ---
 packet
 +8: "Size (0x04)"
@@ -112,6 +123,9 @@ In LotusRPC, an optional can hold a value of any other type. The contained value
 ``` mermaid
 ---
 title: "Optional uint8_t. No contained value"
+config:
+  packet:
+    bitsPerRow: 16
 ---
 packet
 +8: "State (0x00)"
@@ -120,6 +134,9 @@ packet
 ``` mermaid
 ---
 title: "Optional uint8_t. Contained value is 0x88"
+config:
+  packet:
+    bitsPerRow: 16
 ---
 packet
 +8: "State (0x01)"
@@ -148,6 +165,9 @@ structs:
 ``` mermaid
 ---
 title: "Struct 'CompositeData' = {0x12, '34', 0x5678}"
+config:
+  packet:
+    bitsPerRow: 16
 ---
 packet
 +8: "a (0x12)"

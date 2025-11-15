@@ -61,6 +61,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
         with:
+          fetch-depth: 0
           submodules: true
 
       - name: Install sonar-scanner and build-wrapper

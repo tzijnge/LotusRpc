@@ -38,4 +38,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
           fail_level: any
-          markdownlint_flags: ". -i external -i examples/stm32_nucleo_l496/**/License.md"
+          markdownlint_flags: ". -i external -i changes -i examples/stm32_nucleo_l496/**/License.md"

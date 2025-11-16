@@ -105,7 +105,7 @@ jobs:
         uses: actions/download-artifact@v6
         with:
           name: release-notes
-          path: CHANGES.md
+          path: ./
       - name: Sign the dists with Sigstore
         uses: sigstore/gh-action-sigstore-python@v3.1.0
         with:

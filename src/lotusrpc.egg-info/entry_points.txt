@@ -1,3 +1,0 @@
-[console_scripts]
-lrpcc = lrpc.lrpcc:run_cli
-lrpcg = lrpc.lrpcg:run_cli

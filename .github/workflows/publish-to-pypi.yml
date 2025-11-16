@@ -60,6 +60,7 @@ jobs:
         with:
           commit_message: Release notes
           branch: main
+          file_pattern: "CHANGES.md changes/*"
 
   publish-to-pypi:
     name: Publish LotusRPC 🌼 to PyPI

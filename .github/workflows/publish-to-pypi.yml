@@ -29,6 +29,8 @@ jobs:
   release-notes:
     name: Build and commit release notes
     if: startsWith(github.ref, 'refs/tags/') # only build release notes on tag pushes
+    needs:
+      - build
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -42,6 +44,9 @@ jobs:
           python-version: "3.13"
       - name: Install Python requirements
         run: pip install -r requirements/dev.txt
+      - name: Install LotusRPC
+        # needed for towncrier to retrieve the version
+        run: pip install .
       - name: Build release notes
         run: towncrier build --yes
       - name: Collect release notes artifact
@@ -60,6 +65,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/') # only publish to PyPI on tag pushes
     needs:
       - build
+      - release-notes
     runs-on: ubuntu-latest
     environment:
       name: pypi

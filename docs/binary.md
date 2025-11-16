@@ -50,7 +50,7 @@ Float is encoded as 4 bytes
 
 ### Double
 
-Float is encoded as 8 bytes
+Double is encoded as 8 bytes
 
 ### Bool
 

@@ -37,8 +37,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          persist-credentials: false
+          persist-credentials: true
           fetch-depth: 0
+          ref: main
       - uses: actions/setup-python@v6
         with:
           python-version: "3.13"

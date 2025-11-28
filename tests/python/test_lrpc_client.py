@@ -194,10 +194,15 @@ class TestLrpcClient:
         assert str(e.value) == "Incorrect message size. Expected 4 but got 3"
 
     def test_decode_error_response(self) -> None:
-        with pytest.raises(ValueError) as e:
-            self.client().decode(b"\x13\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
-
-        assert str(e.value) == "The LRPC server reported an error"
+        decoded = self.client().decode(b"\x13\xff\x00\x11\x00\x00\x00\x22\x00\x00\x00\x33\x00\x00\x00\x44\x00\x00\x00")
+        assert "error_flag_1" in decoded
+        assert decoded["error_flag_1"] == 0x11
+        assert "error_flag_2" in decoded
+        assert decoded["error_flag_2"] == 0x22
+        assert "error_flag_3" in decoded
+        assert decoded["error_flag_3"] == 0x33
+        assert "error_flag_4" in decoded
+        assert decoded["error_flag_4"] == 0x44
 
     def test_decode_void_function(self) -> None:
         # srv0.f0

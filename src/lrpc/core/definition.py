@@ -26,9 +26,11 @@ class LrpcDefDict(TypedDict):
 # pylint: disable = too-many-instance-attributes
 class LrpcDef:
 
-    def __init__(self, raw: LrpcDefDict) -> None:
+    def __init__(self, raw: LrpcDefDict, meta_service: LrpcServiceDict) -> None:
         assert "name" in raw and isinstance(raw["name"], str)
         assert "services" in raw and isinstance(raw["services"], list)
+
+        meta_service["id"] = 255
 
         struct_names = []
         if "structs" in raw:
@@ -44,6 +46,7 @@ class LrpcDef:
         self.__name = raw["name"]
         self.__version = raw.get("version", None)
         self.__services = [LrpcService(s) for s in raw["services"]]
+        self.__meta_service = LrpcService(meta_service)
         self.__namespace = raw.get("namespace", None)
         self.__rx_buffer_size = raw.get("rx_buffer_size", 256)
         self.__tx_buffer_size = raw.get("tx_buffer_size", 256)
@@ -137,6 +140,9 @@ class LrpcDef:
         return self.__services
 
     def service_by_name(self, name: str) -> Optional[LrpcService]:
+        if name == "lrpc_internal_meta":
+            return self.__meta_service
+
         for s in self.services():
             if s.name() == name:
                 return s
@@ -144,11 +150,17 @@ class LrpcDef:
         return None
 
     def service_by_id(self, identifier: int) -> Optional[LrpcService]:
+        if identifier == 255:
+            return self.__meta_service
+
         for s in self.services():
             if s.id() == identifier:
                 return s
 
         return None
+
+    def meta_service(self) -> LrpcService:
+        return self.__meta_service
 
     def max_service_id(self) -> int:
         service_ids = [s.id() for s in self.services()]

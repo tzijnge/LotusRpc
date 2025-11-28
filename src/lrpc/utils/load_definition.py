@@ -3,9 +3,10 @@ from collections.abc import Hashable
 import jsonschema
 import yaml
 
-from ..core import LrpcDef, LrpcDefDict
+from ..core import LrpcDef, LrpcDefDict, LrpcServiceDict
 from ..schema import load_lrpc_schema
 from ..validation import SemanticAnalyzer
+from ..resources.definition import load_meta_def
 
 
 # pylint: disable = too-many-ancestors
@@ -47,10 +48,19 @@ def __yaml_safe_load(def_str: Union[str, TextIO]) -> LrpcDefDict:
     return def_dict
 
 
+def __load_meta_service() -> LrpcServiceDict:
+    with load_meta_def() as meta_def:
+        with open(meta_def, encoding="utf-8", mode="rt") as meta_def_file:
+            meta_def_dict = __yaml_safe_load(meta_def_file)
+            jsonschema.validate(meta_def_dict, load_lrpc_schema())
+            return meta_def_dict["services"][0]
+
+
 def load_lrpc_def_from_dict(definition: LrpcDefDict, warnings_as_errors: bool) -> LrpcDef:
     jsonschema.validate(definition, load_lrpc_schema())
+    meta_service = __load_meta_service()
 
-    lrpc_def = LrpcDef(definition)
+    lrpc_def = LrpcDef(definition, meta_service)
     sa = SemanticAnalyzer(lrpc_def)
     sa.analyze(warnings_as_errors)
 

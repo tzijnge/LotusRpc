@@ -356,6 +356,18 @@ services:
     assert lrpc_def.service_by_id(22) is None
 
 
+def test_get_service_out_of_range() -> None:
+    def_str = """name: test
+services:
+  - name: s1
+    id: 21
+    functions:
+      - name: f1
+"""
+    lrpc_def = load_lrpc_def(def_str)
+    assert lrpc_def.service_by_id(255) is None
+
+
 def test_get_struct_by_name() -> None:
     def_str = """name: test
 services:

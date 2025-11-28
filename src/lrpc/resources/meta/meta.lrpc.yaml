@@ -1,0 +1,8 @@
+name: meta_def
+services:
+  - name: lrpc_internal_meta
+    functions:
+      - name: error
+        params:
+          - name: type
+            type: uint32_t

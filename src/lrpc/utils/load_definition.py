@@ -6,7 +6,7 @@ import yaml
 from ..core import LrpcDef, LrpcDefDict, LrpcServiceDict
 from ..schema import load_lrpc_schema
 from ..validation import SemanticAnalyzer
-from ..resources.definition import load_meta_def
+from ..resources.meta import load_meta_def
 
 
 # pylint: disable = too-many-ancestors

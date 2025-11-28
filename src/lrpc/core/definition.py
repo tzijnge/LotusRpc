@@ -140,6 +140,9 @@ class LrpcDef:
         return self.__services
 
     def service_by_name(self, name: str) -> Optional[LrpcService]:
+        if name == "lrpc_internal_meta":
+            return self.__meta_service
+
         for s in self.services():
             if s.name() == name:
                 return s
@@ -147,6 +150,9 @@ class LrpcDef:
         return None
 
     def service_by_id(self, identifier: int) -> Optional[LrpcService]:
+        if identifier == 255:
+            return self.__meta_service
+
         for s in self.services():
             if s.id() == identifier:
                 return s

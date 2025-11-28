@@ -356,7 +356,7 @@ services:
     assert lrpc_def.service_by_id(22) is None
 
 
-def test_get_service_out_of_range() -> None:
+def test_get_meta_service() -> None:
     def_str = """name: test
 services:
   - name: s1
@@ -365,7 +365,15 @@ services:
       - name: f1
 """
     lrpc_def = load_lrpc_def(def_str)
-    assert lrpc_def.service_by_id(255) is None
+    meta_service = lrpc_def.service_by_id(255)
+    assert meta_service is not None
+    assert meta_service.id() == 255
+    assert meta_service.name() == "lrpc_internal_meta"
+
+    meta_service = lrpc_def.service_by_name("lrpc_internal_meta")
+    assert meta_service is not None
+    assert meta_service.id() == 255
+    assert meta_service.name() == "lrpc_internal_meta"
 
 
 def test_get_struct_by_name() -> None:

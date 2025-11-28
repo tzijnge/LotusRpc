@@ -6,3 +6,12 @@ services:
         params:
           - name: type
             type: uint32_t
+        returns:
+          - name: error_flag_1
+            type: uint32_t
+          - name: error_flag_2
+            type: uint32_t
+          - name: error_flag_3
+            type: uint32_t
+          - name: error_flag_4
+            type: uint32_t

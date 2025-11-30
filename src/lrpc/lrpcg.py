@@ -12,7 +12,9 @@ from lrpc.codegen import (
     MetaFileVisitor,
     ServerIncludeVisitor,
     ServiceIncludeVisitor,
+    MetaServiceIncludeVisitor,
     ServiceShimVisitor,
+    MetaServiceShimVisitor,
     StructFileVisitor,
 )
 from lrpc.core import LrpcDef
@@ -38,16 +40,18 @@ def copy_resources(output: os.PathLike[str]) -> None:
 def generate_rpc(lrpc_def: LrpcDef, generate_core: bool, output: os.PathLike[str]) -> None:
     create_dir_if_not_exists(output)
 
+    if generate_core:
+        copy_resources(output)
+
     lrpc_def.accept(ServerIncludeVisitor(output))
     lrpc_def.accept(ServiceIncludeVisitor(output))
+    lrpc_def.accept(MetaServiceIncludeVisitor(output))
     lrpc_def.accept(StructFileVisitor(output))
     lrpc_def.accept(EnumFileVisitor(output))
     lrpc_def.accept(ServiceShimVisitor(output))
+    lrpc_def.accept(MetaServiceShimVisitor(output))
     lrpc_def.accept(ConstantsFileVisitor(output))
     lrpc_def.accept(MetaFileVisitor(output))
-
-    if generate_core:
-        copy_resources(output)
 
 
 def generate_puml(lrpc_def: LrpcDef, output: os.PathLike[str]) -> None:

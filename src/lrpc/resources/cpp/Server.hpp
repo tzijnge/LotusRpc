@@ -1,4 +1,5 @@
 #pragma once
+#include "meta/meta_Service.hpp"
 #include "Service.hpp"
 #include <etl/array.h>
 #include <etl/vector.h>
@@ -13,6 +14,7 @@ namespace lrpc
         Server()
         {
             services.fill(&nullService);
+            registerService(metaService);
         }
 
         Writer getWriter() override
@@ -30,7 +32,9 @@ namespace lrpc
         void registerService(Service &service)
         {
             // TODO: check for out of bounds service
-            services[service.id()] = &service;
+
+            // integer overflow for meta service intended
+            services[service.id() + 1] = &service;
             service.linkServer(*this);
         }
 
@@ -56,9 +60,12 @@ namespace lrpc
         virtual void lrpcTransmit(etl::span<const uint8_t> bytes) = 0;
 
     private:
+        MetaService metaService;
         etl::vector<uint8_t, RX_SIZE> receiveBuffer;
         etl::array<uint8_t, TX_SIZE> sendBuffer;
-        etl::array<Service *, MAX_SERVICE_ID + 1> services;
+
+        // +2 to allocate space for all regular services and the meta service
+        etl::array<Service *, MAX_SERVICE_ID + 2> services;
         NullService nullService;
 
         bool messageIsComplete() const
@@ -68,9 +75,12 @@ namespace lrpc
 
         Service *service(const uint8_t serviceId)
         {
+            // integer overflow for meta service intended
+            uint8_t serviceIndex = serviceId + 1;
+
             if (serviceId < services.size())
             {
-                return services.at(serviceId);
+                return services.at(serviceIndex);
             }
 
             return &nullService;
@@ -78,7 +88,6 @@ namespace lrpc
 
         void invokeService()
         {
-
             Reader reader{receiveBuffer.begin(), receiveBuffer.end(), etl::endian::little};
             Writer writer{sendBuffer.begin(), sendBuffer.end(), etl::endian::little};
 

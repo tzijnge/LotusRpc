@@ -13,6 +13,9 @@ class ServiceIncludeVisitor(LrpcVisitor):
         self.__includes: set[str] = set()
 
     def visit_lrpc_service(self, service: LrpcService) -> None:
+        self.__includes = set()
+
+        # TODO: file name should be service_includes.hpp
         self.__file = CppFile(f"{self.__output}/{service.name()}.hpp")
         write_file_banner(self.__file)
         self.__file.write("#pragma once")
@@ -36,3 +39,19 @@ class ServiceIncludeVisitor(LrpcVisitor):
 
     def visit_lrpc_stream_param(self, param: LrpcVar) -> None:
         self.__includes.update(lrpc_var_includes(param))
+
+
+class MetaServiceIncludeVisitor(ServiceIncludeVisitor):
+    def __init__(self, output: os.PathLike[str]) -> None:
+        super().__init__(os.path.join(output, "lrpccore", "meta"))
+        self._active = False
+
+    def visit_lrpc_service(self, service: LrpcService) -> None:
+        if service.id() == 255:
+            super().visit_lrpc_service(service)
+            self._active = True
+
+    def visit_lrpc_service_end(self) -> None:
+        if self._active:
+            super().visit_lrpc_service_end()
+            self._active = False

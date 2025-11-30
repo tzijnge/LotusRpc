@@ -26,9 +26,6 @@ class LrpcVisitor(ABC):
     def visit_lrpc_service(self, service: "LrpcService") -> None:
         """Called before each service in the LRPC definition"""
 
-    def visit_lrpc_meta_service(self, service: "LrpcService") -> None:
-        """Called for the meta service"""
-
     def visit_lrpc_service_end(self) -> None:
         """Called after each service  in the LRPC definition"""
 

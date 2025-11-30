@@ -51,7 +51,12 @@ lrpcc = "lrpc.lrpcc:run_cli"
 
 [tool.setuptools.package-data]
 "lrpc.schema" = ["lotusrpc-schema.json"]
-"lrpc.resources.cpp" = ["Server.hpp", "Service.hpp", "EtlRwExtensions.hpp"]
+"lrpc.resources.cpp" = [
+    "Server.hpp",
+    "Service.hpp",
+    "EtlRwExtensions.hpp",
+    "meta/meta_Service.hpp",
+]
 "lrpc.resources.meta" = ["meta.lrpc.yaml"]
 lotusrpc = ["py.typed"]
 

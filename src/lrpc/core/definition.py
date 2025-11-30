@@ -31,6 +31,7 @@ class LrpcDef:
         assert "services" in raw and isinstance(raw["services"], list)
 
         meta_service["id"] = 255
+        meta_service["name"] = "meta"
 
         struct_names = []
         if "structs" in raw:
@@ -118,6 +119,8 @@ class LrpcDef:
 
         for service in self.services():
             service.accept(visitor)
+
+        self.__meta_service.accept(visitor)
 
         visitor.visit_lrpc_def_end()
 

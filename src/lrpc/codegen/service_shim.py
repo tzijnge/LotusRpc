@@ -9,9 +9,9 @@ from ..core import LrpcDef, LrpcService, LrpcFun, LrpcVar, LrpcStream
 
 
 class ServiceShimVisitor(LrpcVisitor):
-    def __init__(self, output: os.PathLike[str]) -> None:
+    def __init__(self, output: os.PathLike[str], namespace: Optional[str] = None) -> None:
         self.__file: CppFile
-        self.__namespace: Optional[str]
+        self.__namespace = namespace
         self.__output = output
         self.__service: LrpcService
 
@@ -19,6 +19,7 @@ class ServiceShimVisitor(LrpcVisitor):
         self.__namespace = lrpc_def.namespace()
 
     def visit_lrpc_service(self, service: LrpcService) -> None:
+        # TODO: file name should be service_shim.hpp
         self.__file = CppFile(f"{self.__output}/{service.name()}_ServiceShim.hpp")
         self.__service = service
 
@@ -263,3 +264,24 @@ class ServiceShimVisitor(LrpcVisitor):
 
     def __service_id(self) -> int:
         return self.__service.id()
+
+
+# Purpose: generate service include in different folder and different namespace
+# TODO: this is not the clean way?
+class MetaServiceShimVisitor(ServiceShimVisitor):
+    def __init__(self, output: os.PathLike[str]) -> None:
+        super().__init__(os.path.join(output, "lrpccore", "meta"), namespace="lrpc")
+        self._active = False
+
+    def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
+        pass
+
+    def visit_lrpc_service(self, service: LrpcService) -> None:
+        if service.id() == 255:
+            super().visit_lrpc_service(service)
+            self._active = True
+
+    def visit_lrpc_service_end(self) -> None:
+        if self._active:
+            super().visit_lrpc_service_end()
+            self._active = False

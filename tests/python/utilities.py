@@ -14,6 +14,14 @@ class StringifyVisitor(LrpcVisitor):
         self._insert_separator()
         self.result += "service_end"
 
+    def visit_lrpc_meta_service(self, _service: LrpcService) -> None:
+        self._insert_separator()
+        self.result += "meta_service"
+
+    def visit_lrpc_meta_service_end(self) -> None:
+        self._insert_separator()
+        self.result += "meta_service_end"
+
     def visit_lrpc_stream(self, stream: LrpcStream) -> None:
         self._insert_separator()
         self.result += f"stream[{stream.name()}+{stream.id()}+{stream.origin().value}]"
@@ -73,3 +81,20 @@ class StringifyVisitor(LrpcVisitor):
     def _add_param_end(self) -> None:
         self._insert_separator()
         self.result += "param_end"
+
+
+class MetaServiceVisitor(LrpcVisitor):
+    def __init__(self) -> None:
+        self.result: str = ""
+
+    def _insert_separator(self) -> None:
+        if len(self.result) != 0:
+            self.result += "-"
+
+    def visit_lrpc_meta_service(self, _service: LrpcService) -> None:
+        self._insert_separator()
+        self.result += "meta_service"
+
+    def visit_lrpc_meta_service_end(self) -> None:
+        self._insert_separator()
+        self.result += "meta_service_end"

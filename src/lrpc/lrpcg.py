@@ -3,6 +3,7 @@ import os
 import traceback
 from os import path
 from typing import TextIO
+from pathlib import Path
 
 import click
 
@@ -12,9 +13,7 @@ from lrpc.codegen import (
     MetaFileVisitor,
     ServerIncludeVisitor,
     ServiceIncludeVisitor,
-    MetaServiceIncludeVisitor,
     ServiceShimVisitor,
-    MetaServiceShimVisitor,
     StructFileVisitor,
 )
 from lrpc.core import LrpcDef
@@ -37,7 +36,7 @@ def copy_resources(output: os.PathLike[str]) -> None:
     export_to(output)
 
 
-def generate_rpc(lrpc_def: LrpcDef, generate_core: bool, output: os.PathLike[str]) -> None:
+def generate_rpc(lrpc_def: LrpcDef, generate_core: bool, output: Path) -> None:
     create_dir_if_not_exists(output)
 
     if generate_core:
@@ -45,11 +44,9 @@ def generate_rpc(lrpc_def: LrpcDef, generate_core: bool, output: os.PathLike[str
 
     lrpc_def.accept(ServerIncludeVisitor(output))
     lrpc_def.accept(ServiceIncludeVisitor(output))
-    lrpc_def.accept(MetaServiceIncludeVisitor(output))
     lrpc_def.accept(StructFileVisitor(output))
     lrpc_def.accept(EnumFileVisitor(output))
     lrpc_def.accept(ServiceShimVisitor(output))
-    lrpc_def.accept(MetaServiceShimVisitor(output))
     lrpc_def.accept(ConstantsFileVisitor(output))
     lrpc_def.accept(MetaFileVisitor(output))
 
@@ -89,12 +86,12 @@ def run_cli() -> None:
     is_flag=True,
     type=bool,
 )
-def cpp(definition_file: TextIO, output: os.PathLike[str], core: bool, warnings_as_errors: bool) -> None:
+def cpp(definition_file: TextIO, output: str, core: bool, warnings_as_errors: bool) -> None:
     """Generate C++ server code for the specified lrpc definition file"""
 
     try:
         lrpc_def = load_lrpc_def_from_file(definition_file, warnings_as_errors)
-        generate_rpc(lrpc_def, core, output)
+        generate_rpc(lrpc_def, core, Path(output))
         logging.info("Generated LRPC code for %s in %s", definition_file.name, output)
 
     # catching general exception here is considered ok, because application will terminate

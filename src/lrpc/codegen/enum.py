@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 from typing import Optional
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 
@@ -11,7 +11,7 @@ from ..codegen.common import write_file_banner
 
 class EnumFileVisitor(LrpcVisitor):
 
-    def __init__(self, output: os.PathLike[str]) -> None:
+    def __init__(self, output: Path) -> None:
         self.__descriptor: LrpcEnum
         self.__file: CppFile
         self.__namespace: Optional[str]

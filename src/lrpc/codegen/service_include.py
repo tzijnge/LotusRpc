@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 from ..visitors import LrpcVisitor
@@ -7,22 +7,32 @@ from ..core import LrpcFun, LrpcService, LrpcVar
 
 
 class ServiceIncludeVisitor(LrpcVisitor):
-    def __init__(self, output: os.PathLike[str]) -> None:
+    def __init__(self, output: Path) -> None:
         self.__output = output
         self.__file: CppFile
         self.__includes: set[str] = set()
 
-    def visit_lrpc_service(self, service: LrpcService) -> None:
+    def _create_service_include(self, output: Path, service_name: str) -> None:
         self.__includes = set()
 
         # TODO: file name should be service_includes.hpp
-        self.__file = CppFile(f"{self.__output}/{service.name()}.hpp")
+        self.__file = CppFile(f"{output}/{service_name}.hpp")
         write_file_banner(self.__file)
         self.__file.write("#pragma once")
+
+    def visit_lrpc_service(self, service: LrpcService) -> None:
+        self._create_service_include(self.__output, service.name())
 
     def visit_lrpc_service_end(self) -> None:
         for i in sorted(self.__includes):
             self.__file.write(f"#include {i}")
+
+    def visit_lrpc_meta_service(self, service: LrpcService) -> None:
+        output = self.__output.joinpath("lrpccore", "meta")
+        self._create_service_include(output, service.name())
+
+    def visit_lrpc_meta_service_end(self) -> None:
+        self.visit_lrpc_service_end()
 
     def visit_lrpc_function(self, function: LrpcFun) -> None:
         if function.number_returns() > 1:
@@ -39,19 +49,3 @@ class ServiceIncludeVisitor(LrpcVisitor):
 
     def visit_lrpc_stream_param(self, param: LrpcVar) -> None:
         self.__includes.update(lrpc_var_includes(param))
-
-
-class MetaServiceIncludeVisitor(ServiceIncludeVisitor):
-    def __init__(self, output: os.PathLike[str]) -> None:
-        super().__init__(os.path.join(output, "lrpccore", "meta"))
-        self._active = False
-
-    def visit_lrpc_service(self, service: LrpcService) -> None:
-        if service.id() == 255:
-            super().visit_lrpc_service(service)
-            self._active = True
-
-    def visit_lrpc_service_end(self) -> None:
-        if self._active:
-            super().visit_lrpc_service_end()
-            self._active = False

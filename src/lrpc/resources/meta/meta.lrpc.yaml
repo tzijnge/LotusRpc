@@ -1,12 +1,12 @@
 name: meta_def
 services:
   - name: lrpc_internal_meta
-    functions:
+    functions_before_streams: false
+    streams:
       - name: error
+        origin: server
+        finite: true
         params:
-          - name: type
-            type: uint32_t
-        returns:
           - name: error_flag_1
             type: uint32_t
           - name: error_flag_2

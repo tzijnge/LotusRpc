@@ -34,7 +34,7 @@ namespace lrpc
             // TODO: check for out of bounds service
 
             // integer overflow for meta service intended
-            services[service.id() + 1] = &service;
+            services.at(static_cast<uint8_t>(service.id() + 1U)) = &service;
             service.linkServer(*this);
         }
 
@@ -65,7 +65,7 @@ namespace lrpc
         etl::array<uint8_t, TX_SIZE> sendBuffer;
 
         // +2 to allocate space for all regular services and the meta service
-        etl::array<Service *, MAX_SERVICE_ID + 2> services;
+        etl::array<Service *, MAX_SERVICE_ID + 2U> services;
         NullService nullService;
 
         bool messageIsComplete() const
@@ -76,7 +76,7 @@ namespace lrpc
         Service *service(const uint8_t serviceId)
         {
             // integer overflow for meta service intended
-            uint8_t serviceIndex = serviceId + 1;
+            const uint8_t serviceIndex = static_cast<uint8_t>(serviceId + 1U);
 
             if (serviceId < services.size())
             {

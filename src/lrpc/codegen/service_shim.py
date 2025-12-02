@@ -33,8 +33,7 @@ class ServiceShimVisitor(LrpcVisitor):
         self._write_service_shim(self._output, service, self._namespace)
 
     def visit_lrpc_meta_service(self, service: LrpcService) -> None:
-        output = self._output.joinpath("lrpccore", "meta")
-        self._write_service_shim(output, service, "lrpc")
+        self._write_service_shim(self._output, service, "lrpc")
 
     def __write_service_shim(self) -> None:
         functions = self._service.functions()

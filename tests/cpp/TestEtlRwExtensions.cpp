@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "a/lrpccore/EtlRwExtensions.hpp"
+#include "core/lrpccore/EtlRwExtensions.hpp"
 #include <string>
 #include <array>
 #include <etl/vector.h>
@@ -145,7 +145,17 @@ TEST(TestEtlRwExtensions, readArray)
 
 TEST(TestEtlRwExtensions, readArrayOfString)
 {
-    etl::vector<uint8_t, 10> storage{'t', '1', '\0', 't', '2', '\0', 't', '3', '\0', };
+    etl::vector<uint8_t, 10> storage{
+        't',
+        '1',
+        '\0',
+        't',
+        '2',
+        '\0',
+        't',
+        '3',
+        '\0',
+    };
     etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
 
     auto a = lrpc::read_unchecked<etl::array<etl::string<2>, 3>>(reader);

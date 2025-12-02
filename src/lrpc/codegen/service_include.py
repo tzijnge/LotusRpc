@@ -28,8 +28,7 @@ class ServiceIncludeVisitor(LrpcVisitor):
             self.__file.write(f"#include {i}")
 
     def visit_lrpc_meta_service(self, service: LrpcService) -> None:
-        output = self.__output.joinpath("lrpccore", "meta")
-        self._create_service_include(output, service.name())
+        self._create_service_include(self.__output, service.name())
 
     def visit_lrpc_meta_service_end(self) -> None:
         self.visit_lrpc_service_end()

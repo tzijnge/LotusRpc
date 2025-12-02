@@ -136,8 +136,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_ROOT_CERT: ${{ secrets.SONAR_ROOT_CERT }}
         with:
-          args: >
-            --define sonar.cfamily.compile-commands="${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json"
+          args: --define "sonar.cfamily.compile-commands=${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json"
 
       - name: Draft release notes
         run: towncrier build --draft

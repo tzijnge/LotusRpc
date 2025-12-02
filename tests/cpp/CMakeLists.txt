@@ -23,10 +23,10 @@ add_custom_command(OUTPUT ${LRPC_IS_BUILT}
                   COMMENT "Build LRPC Python package"
                   DEPENDS ${LRPC_PY_SRC_FILES})
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/lrpccore/EtlRwExtensions.hpp
+add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/a/lrpccore/EtlRwExtensions.hpp
                   COMMENT "Generate LRPC server core"
                   DEPENDS ${LRPC_IS_BUILT}
-                  COMMAND lrpcg cppcore -o ${CMAKE_CURRENT_SOURCE_DIR}/generated)
+                  COMMAND lrpcg cppcore -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/a)
 
 
 function(generate_lrpc server_name)
@@ -62,7 +62,7 @@ add_executable(UnitTests
                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server3/Server3.hpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server4/Server4.hpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server5/Server5.hpp
-                ${CMAKE_CURRENT_SOURCE_DIR}/generated/lrpccore/EtlRwExtensions.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/generated/a/lrpccore/EtlRwExtensions.hpp
                 TestServerErrors.cpp)
 
 target_include_directories(UnitTests PRIVATE .)

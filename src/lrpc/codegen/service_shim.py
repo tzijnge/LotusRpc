@@ -17,8 +17,7 @@ class ServiceShimVisitor(LrpcVisitor):
         self._service: LrpcService
 
     def _write_service_shim(self, output: Path, service: LrpcService, namespace: Optional[str]) -> None:
-        # TODO: file name should be service_shim.hpp
-        self._file = CppFile(f"{output.absolute()}/{service.name()}_ServiceShim.hpp")
+        self._file = CppFile(f"{output.absolute()}/{service.name()}_shim.hpp")
         self._service = service
 
         write_file_banner(self._file)
@@ -33,7 +32,7 @@ class ServiceShimVisitor(LrpcVisitor):
         self._write_service_shim(self._output, service, self._namespace)
 
     def visit_lrpc_meta_service(self, service: LrpcService) -> None:
-        self._write_service_shim(self._output, service, "lrpc")
+        self._write_service_shim(self._output, service, self._namespace)
 
     def __write_service_shim(self) -> None:
         functions = self._service.functions()
@@ -260,12 +259,12 @@ class ServiceShimVisitor(LrpcVisitor):
     def __write_includes(self) -> None:
         self._file('#include "lrpccore/Service.hpp"')
         self._file('#include "lrpccore/EtlRwExtensions.hpp"')
-        self._file(f'#include "{self._service.name()}.hpp"')
+        self._file(f'#include "{self._service.name()}_includes.hpp"')
 
         self._file.newline()
 
     def __class_name(self) -> str:
-        return self._service.name() + "ServiceShim"
+        return self._service.name() + "_shim"
 
     def __service_id(self) -> int:
         return self._service.id()

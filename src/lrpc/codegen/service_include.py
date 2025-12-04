@@ -15,8 +15,7 @@ class ServiceIncludeVisitor(LrpcVisitor):
     def _create_service_include(self, output: Path, service_name: str) -> None:
         self.__includes = set()
 
-        # TODO: file name should be service_includes.hpp
-        self.__file = CppFile(f"{output}/{service_name}.hpp")
+        self.__file = CppFile(f"{output}/{service_name}_includes.hpp")
         write_file_banner(self.__file)
         self.__file.write("#pragma once")
 

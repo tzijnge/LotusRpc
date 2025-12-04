@@ -20,7 +20,7 @@ class ServerIncludeVisitor(LrpcVisitor):
         tx = lrpc_def.tx_buffer_size()
         name = lrpc_def.name()
         max_service_id = lrpc_def.max_service_id()
-        self.__server_class = f"using {name} = lrpc::Server<{max_service_id}, {rx}, {tx}>;"
+        self.__server_class = f"using {name} = lrpc::Server<{max_service_id}, LrpcMeta_service, {rx}, {tx}>;"
 
         self.__namespace = lrpc_def.namespace()
         self.__file = CppFile(f"{self.__output}/{lrpc_def.name()}.hpp")
@@ -31,11 +31,11 @@ class ServerIncludeVisitor(LrpcVisitor):
         if len(lrpc_def.constants()) != 0:
             self.__file.write(f'#include "{lrpc_def.name()}_Constants.hpp"')
         self.__file.write(f'#include "{lrpc_def.name()}_Meta.hpp"')
+        self.__file.write('#include "LrpcMeta_service.hpp"')
 
     def visit_lrpc_service(self, service: LrpcService) -> None:
-        if service.id() != 255:
-            self.__file.write(f'#include "{service.name()}.hpp"')
-            self.__file.write(f'#include "{service.name()}_ServiceShim.hpp"')
+        self.__file.write(f'#include "{service.name()}_includes.hpp"')
+        self.__file.write(f'#include "{service.name()}_shim.hpp"')
 
     def visit_lrpc_def_end(self) -> None:
         self.__file.newline()

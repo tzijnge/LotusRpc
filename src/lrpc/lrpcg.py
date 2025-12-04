@@ -15,6 +15,7 @@ from lrpc.codegen import (
     ServiceIncludeVisitor,
     ServiceShimVisitor,
     StructFileVisitor,
+    MetaServiceVisitor,
 )
 from lrpc.core import LrpcDef
 from lrpc.resources.cpp import export_to
@@ -49,6 +50,7 @@ def generate_rpc(lrpc_def: LrpcDef, generate_core: bool, output: Path) -> None:
     lrpc_def.accept(ServiceShimVisitor(output))
     lrpc_def.accept(ConstantsFileVisitor(output))
     lrpc_def.accept(MetaFileVisitor(output))
+    lrpc_def.accept(MetaServiceVisitor(output))
 
 
 def generate_puml(lrpc_def: LrpcDef, output: os.PathLike[str]) -> None:

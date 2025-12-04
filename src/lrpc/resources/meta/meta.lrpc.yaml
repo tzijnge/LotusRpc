@@ -1,6 +1,6 @@
 name: meta_def
 services:
-  - name: lrpc_internal_meta
+  - name: LrpcMeta
     functions_before_streams: false
     streams:
       - name: error

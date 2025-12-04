@@ -31,8 +31,6 @@ class LrpcDef:
         assert "services" in raw and isinstance(raw["services"], list)
 
         meta_service["id"] = 255
-        # TODO: name should not be changed
-        meta_service["name"] = "meta"
 
         struct_names = []
         if "structs" in raw:

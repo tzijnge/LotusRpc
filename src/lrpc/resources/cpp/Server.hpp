@@ -1,12 +1,11 @@
 #pragma once
-#include "meta/meta_Service.hpp"
 #include "Service.hpp"
 #include <etl/array.h>
 #include <etl/vector.h>
 
 namespace lrpc
 {
-    template <size_t MAX_SERVICE_ID, size_t RX_SIZE = 256, size_t TX_SIZE = RX_SIZE>
+    template <size_t MAX_SERVICE_ID, typename META_SERVICE, size_t RX_SIZE = 256, size_t TX_SIZE = RX_SIZE>
     class Server : public IServer
     {
     private:
@@ -60,7 +59,7 @@ namespace lrpc
         virtual void lrpcTransmit(etl::span<const uint8_t> bytes) = 0;
 
     private:
-        MetaService metaService;
+        META_SERVICE metaService;
         etl::vector<uint8_t, RX_SIZE> receiveBuffer;
         etl::array<uint8_t, TX_SIZE> sendBuffer;
 

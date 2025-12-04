@@ -143,7 +143,7 @@ class LrpcDef:
         return self.__services
 
     def service_by_name(self, name: str) -> Optional[LrpcService]:
-        if name == "lrpc_internal_meta":
+        if name == "LrpcMeta":
             return self.__meta_service
 
         for s in self.services():

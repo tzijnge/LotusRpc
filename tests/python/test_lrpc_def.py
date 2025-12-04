@@ -369,12 +369,12 @@ services:
     meta_service = lrpc_def.service_by_id(255)
     assert meta_service is not None
     assert meta_service.id() == 255
-    assert meta_service.name() == "lrpc_internal_meta"
+    assert meta_service.name() == "LrpcMeta"
 
-    meta_service = lrpc_def.service_by_name("lrpc_internal_meta")
+    meta_service = lrpc_def.service_by_name("LrpcMeta")
     assert meta_service is not None
     assert meta_service.id() == 255
-    assert meta_service.name() == "lrpc_internal_meta"
+    assert meta_service.name() == "LrpcMeta"
 
 
 def test_get_struct_by_name() -> None:

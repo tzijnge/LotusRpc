@@ -3,7 +3,7 @@
 
 using ::testing::Return;
 
-class MockS01Service : public s01ServiceShim
+class MockS01Service : public s01_shim
 {
 public:
     MOCK_METHOD(void, f0, (const etl::span<const etl::string_view> &p0), (override));

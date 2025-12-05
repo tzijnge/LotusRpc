@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 from typing import Optional
 
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
@@ -10,7 +10,7 @@ from ..core import LrpcDef, LrpcStruct, LrpcVar
 
 class StructFileVisitor(LrpcVisitor):
 
-    def __init__(self, output: os.PathLike[str]) -> None:
+    def __init__(self, output: Path) -> None:
         self.__output = output
         self.__namespace: Optional[str]
         self.__file: CppFile

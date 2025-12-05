@@ -2,6 +2,7 @@ import math
 import pytest
 from lrpc.utils import load_lrpc_def_from_str
 from lrpc.core import LrpcDef, LrpcFun, LrpcStream
+from .utilities import MetaServiceVisitor
 
 
 def load_lrpc_def(def_str: str) -> LrpcDef:
@@ -356,6 +357,26 @@ services:
     assert lrpc_def.service_by_id(22) is None
 
 
+def test_get_meta_service() -> None:
+    def_str = """name: test
+services:
+  - name: s1
+    id: 21
+    functions:
+      - name: f1
+"""
+    lrpc_def = load_lrpc_def(def_str)
+    meta_service = lrpc_def.service_by_id(255)
+    assert meta_service is not None
+    assert meta_service.id() == 255
+    assert meta_service.name() == "LrpcMeta"
+
+    meta_service = lrpc_def.service_by_name("LrpcMeta")
+    assert meta_service is not None
+    assert meta_service.id() == 255
+    assert meta_service.name() == "LrpcMeta"
+
+
 def test_get_struct_by_name() -> None:
     def_str = """name: test
 services:
@@ -698,3 +719,21 @@ enums:
     assert s0_params[1].base_type_is_custom() is True
     assert s0_params[1].base_type_is_enum() is True
     assert s0_params[1].base_type_is_struct() is False
+
+
+def test_visit_meta_service() -> None:
+    def_str = """name: test
+services:
+  - name: srv0
+    functions:
+      - name: f0
+        params:
+          - { name: p0, type: uint8_t }
+"""
+
+    lrpc_def = load_lrpc_def(def_str)
+    v = MetaServiceVisitor()
+
+    lrpc_def.accept(v)
+
+    assert v.result == "meta_service-meta_service_end"

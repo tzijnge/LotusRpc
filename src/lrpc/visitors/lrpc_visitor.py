@@ -29,6 +29,12 @@ class LrpcVisitor(ABC):
     def visit_lrpc_service_end(self) -> None:
         """Called after each service  in the LRPC definition"""
 
+    def visit_lrpc_meta_service(self, service: "LrpcService") -> None:
+        """Called before the meta service"""
+
+    def visit_lrpc_meta_service_end(self) -> None:
+        """Called after the meta service"""
+
     def visit_lrpc_struct(self, struct: "LrpcStruct") -> None:
         """Called before each struct in the LRPC definition. All
         structs are visited before the first service"""

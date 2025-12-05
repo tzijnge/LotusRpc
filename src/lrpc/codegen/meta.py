@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 from importlib.metadata import version
 from typing import Optional
 
@@ -12,7 +12,7 @@ from ..visitors import LrpcVisitor
 
 class MetaFileVisitor(LrpcVisitor):
 
-    def __init__(self, output: os.PathLike[str]) -> None:
+    def __init__(self, output: Path) -> None:
         self.__output = output
         self.__file: CppFile
         self.__namespace: Optional[str] = None

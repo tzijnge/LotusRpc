@@ -4,42 +4,42 @@
 using ::testing::Return;
 namespace
 {
-class Mockservice : public ts1::s0ServiceShim
-{
-public:
-    MOCK_METHOD(void, f0, (), (override));
-    MOCK_METHOD(void, f1, (), (override));
-    MOCK_METHOD(void, f2, (uint8_t a), (override));
-    MOCK_METHOD(void, f3, (uint16_t a), (override));
-    MOCK_METHOD(void, f4, (float a), (override));
-    MOCK_METHOD(void, f5, ((const etl::span<const uint16_t>)&a), (override));
-    MOCK_METHOD(void, f6, (const etl::string_view &a), (override));
-    MOCK_METHOD(void, f7, (const ts1::CompositeData &a), (override));
-    MOCK_METHOD(void, f8, (ts1::MyEnum a), (override));
-    MOCK_METHOD(void, f9, ((const etl::span<const ts1::CompositeData2>)&a), (override));
-    MOCK_METHOD(void, f10, (const ts1::CompositeData3 &a), (override));
-    MOCK_METHOD(void, f11, (uint8_t a, uint8_t b), (override));
-    MOCK_METHOD(uint8_t, f12, (), (override));
-    MOCK_METHOD(uint16_t, f13, (), (override));
-    MOCK_METHOD(float, f14, (), (override));
-    MOCK_METHOD((etl::array<uint16_t, 2>), f15, (), (override));
-    MOCK_METHOD(etl::string<8>, f16, (), (override));
-    MOCK_METHOD(ts1::CompositeData, f17, (), (override));
-    MOCK_METHOD(ts1::MyEnum, f18, (), (override));
-    MOCK_METHOD((etl::array<ts1::CompositeData2, 2>), f19, (), (override));
-    MOCK_METHOD(ts1::CompositeData3, f20, (), (override));
-    MOCK_METHOD((std::tuple<uint8_t, uint8_t>), f21, (), (override));
-    MOCK_METHOD((std::tuple<etl::string<4>, etl::string<4>>), f22, (const etl::string_view &s1, const etl::string_view &s2), (override));
-    MOCK_METHOD(etl::string_view, f23, (), (override));
-    MOCK_METHOD((std::tuple<etl::string_view, etl::string_view>), f24, (), (override));
-    MOCK_METHOD((etl::optional<etl::string_view>), f25, (), (override));
-    MOCK_METHOD((etl::array<etl::string_view, 3>), f26, (), (override));
-};
+    class Mockservice : public ts1::s0_shim
+    {
+    public:
+        MOCK_METHOD(void, f0, (), (override));
+        MOCK_METHOD(void, f1, (), (override));
+        MOCK_METHOD(void, f2, (uint8_t a), (override));
+        MOCK_METHOD(void, f3, (uint16_t a), (override));
+        MOCK_METHOD(void, f4, (float a), (override));
+        MOCK_METHOD(void, f5, ((const etl::span<const uint16_t>)&a), (override));
+        MOCK_METHOD(void, f6, (const etl::string_view &a), (override));
+        MOCK_METHOD(void, f7, (const ts1::CompositeData &a), (override));
+        MOCK_METHOD(void, f8, (ts1::MyEnum a), (override));
+        MOCK_METHOD(void, f9, ((const etl::span<const ts1::CompositeData2>)&a), (override));
+        MOCK_METHOD(void, f10, (const ts1::CompositeData3 &a), (override));
+        MOCK_METHOD(void, f11, (uint8_t a, uint8_t b), (override));
+        MOCK_METHOD(uint8_t, f12, (), (override));
+        MOCK_METHOD(uint16_t, f13, (), (override));
+        MOCK_METHOD(float, f14, (), (override));
+        MOCK_METHOD((etl::array<uint16_t, 2>), f15, (), (override));
+        MOCK_METHOD(etl::string<8>, f16, (), (override));
+        MOCK_METHOD(ts1::CompositeData, f17, (), (override));
+        MOCK_METHOD(ts1::MyEnum, f18, (), (override));
+        MOCK_METHOD((etl::array<ts1::CompositeData2, 2>), f19, (), (override));
+        MOCK_METHOD(ts1::CompositeData3, f20, (), (override));
+        MOCK_METHOD((std::tuple<uint8_t, uint8_t>), f21, (), (override));
+        MOCK_METHOD((std::tuple<etl::string<4>, etl::string<4>>), f22, (const etl::string_view &s1, const etl::string_view &s2), (override));
+        MOCK_METHOD(etl::string_view, f23, (), (override));
+        MOCK_METHOD((std::tuple<etl::string_view, etl::string_view>), f24, (), (override));
+        MOCK_METHOD((etl::optional<etl::string_view>), f25, (), (override));
+        MOCK_METHOD((etl::array<etl::string_view, 3>), f26, (), (override));
+    };
 }
 
 using TestServer1 = testutils::TestServerBase<ts1::Server1, Mockservice>;
 
-static_assert(std::is_same<ts1::Server1, lrpc::Server<0, 100, 200>>::value, "RX and/or TX buffer size are unequal to the definition file");
+static_assert(std::is_same<ts1::Server1, lrpc::Server<0, ts1::LrpcMeta_service, 100, 200>>::value, "RX and/or TX buffer size are unequal to the definition file");
 
 // Decode void function f0. Make sure f1 is not called
 TEST_F(TestServer1, decodeF0)

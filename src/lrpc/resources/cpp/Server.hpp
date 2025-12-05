@@ -5,14 +5,27 @@
 
 namespace lrpc
 {
-    template <size_t MAX_SERVICE_ID, size_t RX_SIZE = 256, size_t TX_SIZE = RX_SIZE>
+    template <size_t MAX_SERVICE_ID, typename META_SERVICE, size_t RX_SIZE = 256, size_t TX_SIZE = RX_SIZE>
     class Server : public IServer
     {
     private:
+        class ServiceNotFoundService : public Service
+        {
+        public:
+            // TODO: constructor taking reference to META_SERVICE?
+            uint8_t id() const override { return 0; };
+            void invoke(Service::Reader &, Service::Writer &) override
+            {
+                server->error(0, 0, 0, 0);
+            };
+        };
+
     public:
         Server()
         {
-            services.fill(&nullService);
+            services.fill(&serviceNotFound);
+            serviceNotFound.linkServer(*this);
+            registerService(metaService);
         }
 
         Writer getWriter() override
@@ -30,7 +43,9 @@ namespace lrpc
         void registerService(Service &service)
         {
             // TODO: check for out of bounds service
-            services[service.id()] = &service;
+
+            // integer overflow for meta service intended
+            services.at(static_cast<uint8_t>(service.id() + 1U)) = &service;
             service.linkServer(*this);
         }
 
@@ -53,13 +68,21 @@ namespace lrpc
             }
         }
 
+        void error(const uint32_t errorFlag1, const uint32_t errorFlag2, const uint32_t errorFlag3, const uint32_t errorFlag4) override
+        {
+            metaService.error_response(errorFlag1, errorFlag2, errorFlag3, errorFlag4);
+        }
+
         virtual void lrpcTransmit(etl::span<const uint8_t> bytes) = 0;
 
     private:
         etl::vector<uint8_t, RX_SIZE> receiveBuffer;
         etl::array<uint8_t, TX_SIZE> sendBuffer;
-        etl::array<Service *, MAX_SERVICE_ID + 1> services;
-        NullService nullService;
+
+        // +2 to allocate space for all regular services and the meta service
+        etl::array<Service *, MAX_SERVICE_ID + 2U> services;
+        META_SERVICE metaService;
+        ServiceNotFoundService serviceNotFound;
 
         bool messageIsComplete() const
         {
@@ -68,23 +91,25 @@ namespace lrpc
 
         Service *service(const uint8_t serviceId)
         {
+            // integer overflow for meta service intended
+            const uint8_t serviceIndex = static_cast<uint8_t>(serviceId + 1U);
+
             if (serviceId < services.size())
             {
-                return services.at(serviceId);
+                return services.at(serviceIndex);
             }
 
-            return &nullService;
+            return &serviceNotFound;
         }
 
         void invokeService()
         {
-
             Reader reader{receiveBuffer.begin(), receiveBuffer.end(), etl::endian::little};
             Writer writer{sendBuffer.begin(), sendBuffer.end(), etl::endian::little};
 
             reader.skip<uint8_t>(1); // message size
 
-            auto serviceId = reader.read_unchecked<uint8_t>();
+            const auto serviceId = reader.read_unchecked<uint8_t>();
 
             service(serviceId)->invoke(reader, writer);
 

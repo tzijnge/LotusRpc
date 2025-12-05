@@ -5,7 +5,7 @@ from code_generation.code_generator import CppFile  # type: ignore[import-untype
 from ..visitors import LrpcVisitor
 from ..codegen.common import write_file_banner
 from ..codegen.utils import optionally_in_namespace
-from ..core import LrpcDef, LrpcService, LrpcStream
+from ..core import LrpcDef
 
 
 class MetaServiceVisitor(LrpcVisitor):

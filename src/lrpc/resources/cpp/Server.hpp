@@ -9,10 +9,22 @@ namespace lrpc
     class Server : public IServer
     {
     private:
+        class ServiceNotFoundService : public Service
+        {
+        public:
+            // TODO: constructor taking reference to META_SERVICE?
+            uint8_t id() const override { return 0; };
+            void invoke(Service::Reader &, Service::Writer &) override
+            {
+                server->error(0, 0, 0, 0);
+            };
+        };
+
     public:
         Server()
         {
-            services.fill(&nullService);
+            services.fill(&serviceNotFound);
+            serviceNotFound.linkServer(*this);
             registerService(metaService);
         }
 
@@ -56,16 +68,21 @@ namespace lrpc
             }
         }
 
+        void error(const uint32_t errorFlag1, const uint32_t errorFlag2, const uint32_t errorFlag3, const uint32_t errorFlag4) override
+        {
+            metaService.error_response(errorFlag1, errorFlag2, errorFlag3, errorFlag4);
+        }
+
         virtual void lrpcTransmit(etl::span<const uint8_t> bytes) = 0;
 
     private:
-        META_SERVICE metaService;
         etl::vector<uint8_t, RX_SIZE> receiveBuffer;
         etl::array<uint8_t, TX_SIZE> sendBuffer;
 
         // +2 to allocate space for all regular services and the meta service
         etl::array<Service *, MAX_SERVICE_ID + 2U> services;
-        NullService nullService;
+        META_SERVICE metaService;
+        ServiceNotFoundService serviceNotFound;
 
         bool messageIsComplete() const
         {
@@ -82,7 +99,7 @@ namespace lrpc
                 return services.at(serviceIndex);
             }
 
-            return &nullService;
+            return &serviceNotFound;
         }
 
         void invokeService()
@@ -92,7 +109,7 @@ namespace lrpc
 
             reader.skip<uint8_t>(1); // message size
 
-            auto serviceId = reader.read_unchecked<uint8_t>();
+            const auto serviceId = reader.read_unchecked<uint8_t>();
 
             service(serviceId)->invoke(reader, writer);
 

@@ -5,7 +5,7 @@ services:
     streams:
       - name: error
         origin: server
-        finite: true
+        finite: false
         params:
           - name: error_flag_1
             type: uint32_t

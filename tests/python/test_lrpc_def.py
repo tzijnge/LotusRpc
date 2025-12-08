@@ -351,7 +351,22 @@ services:
     assert lrpc_def.service_by_name("") is None
 
 
-def test_get_service_by_id() -> None:
+def test_get_service_by_id_with_implicit_id() -> None:
+    def_str = """name: test
+services:
+  - name: s1
+    functions:
+      - name: f1
+"""
+    lrpc_def = load_lrpc_def(def_str)
+
+    service = lrpc_def.service_by_id(0)
+    assert service is not None
+    assert service.name() == "s1"
+    assert lrpc_def.service_by_id(22) is None
+
+
+def test_get_service_by_id_with_explicit_id() -> None:
     def_str = """name: test
 services:
   - name: s1
@@ -362,6 +377,22 @@ services:
     lrpc_def = load_lrpc_def(def_str)
 
     service = lrpc_def.service_by_id(21)
+    assert service is not None
+    assert service.name() == "s1"
+    assert lrpc_def.service_by_id(22) is None
+
+
+def test_get_service_by_id_with_max_id() -> None:
+    def_str = """name: test
+services:
+  - name: s1
+    id: 254
+    functions:
+      - name: f1
+"""
+    lrpc_def = load_lrpc_def(def_str)
+
+    service = lrpc_def.service_by_id(254)
     assert service is not None
     assert service.name() == "s1"
     assert lrpc_def.service_by_id(22) is None

@@ -12,7 +12,6 @@ namespace lrpc
         class ServiceNotFoundService : public Service
         {
         public:
-            // TODO: constructor taking reference to META_SERVICE?
             uint8_t id() const override { return 0; };
             void invoke(Service::Reader &, Service::Writer &) override
             {

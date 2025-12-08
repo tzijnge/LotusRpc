@@ -39,18 +39,11 @@ class LrpcDef:
             enum_names.extend([e["name"] for e in raw["enums"]])
 
         self.__init_all_vars(raw, struct_names, enum_names)
+        self.__init_meta_service(raw)
         self.__init_service_ids(raw)
 
         self.__name = raw["name"]
         self.__version = raw.get("version", None)
-
-        # todo: should be done in separate function and before
-        # __init_service_ids. There should be a test to show this
-        for s in raw["services"]:
-            if s["name"] == "LrpcMeta":
-                s["id"] = 255
-                self.__meta_service = LrpcService(s)
-                raw["services"].remove(s)
 
         self.__services = [LrpcService(s) for s in raw["services"]]
         self.__namespace = raw.get("namespace", None)
@@ -84,6 +77,17 @@ class LrpcDef:
     def __init_vars(self, lrpc_vars: list[LrpcVarDict], struct_names: list[str], enum_names: list[str]) -> None:
         for var in lrpc_vars:
             self.__init_structs_and_enums(var, struct_names, enum_names)
+
+    def __init_meta_service(self, raw: LrpcDefDict) -> None:
+        meta_service_found = False
+        for s in raw["services"]:
+            if s["name"] == "LrpcMeta":
+                s["id"] = 255
+                self.__meta_service = LrpcService(s)
+                raw["services"].remove(s)
+                meta_service_found = True
+
+        assert meta_service_found, "No meta service found in definition"
 
     @classmethod
     def __init_structs_and_enums(cls, var: LrpcVarDict, struct_names: list[str], enum_names: list[str]) -> None:

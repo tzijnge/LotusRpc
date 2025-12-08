@@ -13,7 +13,7 @@ namespace lrpc
 
         virtual Writer getWriter() = 0;
         virtual void transmit(const Writer &w) = 0;
-        virtual void error(const LrpcMetaError type, const uint8_t errorFlag2, const uint8_t errorFlag3, const int32_t errorFlag4) = 0;
+        virtual void error(const LrpcMetaError type, const uint8_t errorFlag1, const uint8_t errorFlag2, const int32_t errorFlag3) = 0;
     };
 
     class Service

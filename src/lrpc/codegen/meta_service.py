@@ -28,5 +28,6 @@ class MetaServiceVisitor(LrpcVisitor):
 
     def _write_service_class(self) -> None:
         with self._file.block("class LrpcMeta_service : public LrpcMeta_shim", ";"):
+            self._file.write("public:")
             self._file.write("void error() override {};")
             self._file.write("void error_stop() override {};")

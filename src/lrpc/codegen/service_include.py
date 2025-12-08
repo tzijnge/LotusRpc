@@ -26,12 +26,6 @@ class ServiceIncludeVisitor(LrpcVisitor):
         for i in sorted(self.__includes):
             self.__file.write(f"#include {i}")
 
-    def visit_lrpc_meta_service(self, service: LrpcService) -> None:
-        self._create_service_include(self.__output, service.name())
-
-    def visit_lrpc_meta_service_end(self) -> None:
-        self.visit_lrpc_service_end()
-
     def visit_lrpc_function(self, function: LrpcFun) -> None:
         if function.number_returns() > 1:
             self.__includes.add("<tuple>")

@@ -55,7 +55,7 @@ lrpcc = "lrpc.lrpcc:run_cli"
     "Server.hpp",
     "Service.hpp",
     "EtlRwExtensions.hpp",
-    "meta/meta_Service.hpp",
+    "MetaError.hpp",
 ]
 "lrpc.resources.meta" = ["meta.lrpc.yaml"]
 lotusrpc = ["py.typed"]

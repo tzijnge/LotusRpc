@@ -2,7 +2,7 @@ import math
 import pytest
 from lrpc.utils import load_lrpc_def_from_str
 from lrpc.core import LrpcDef, LrpcFun, LrpcStream
-from .utilities import MetaServiceVisitor
+from .utilities import StringifyVisitor
 
 
 def load_lrpc_def(def_str: str) -> LrpcDef:
@@ -119,8 +119,10 @@ services:
 """
     lrpc_def = load_lrpc_def(def_str)
     assert len(lrpc_def.constants()) == 0
-    assert len(lrpc_def.enums()) == 0
     assert len(lrpc_def.structs()) == 0
+    enums = lrpc_def.enums()
+    assert len(enums) == 1
+    assert enums[0].name() == "LrpcMetaError"
 
 
 def test_constants() -> None:
@@ -198,7 +200,7 @@ enums:
 """
     lrpc_def = load_lrpc_def(def_str)
     enums = lrpc_def.enums()
-    assert len(enums) == 2
+    assert len(enums) == 3
 
     assert enums[0].name() == "MyEnum1"
     fields = enums[0].fields()
@@ -214,6 +216,14 @@ enums:
     assert fields[0].name() == "f1"
     assert fields[0].id() == 0
     assert fields[1].name() == "f2"
+    assert fields[1].id() == 1
+
+    assert enums[2].name() == "LrpcMetaError"
+    fields = enums[2].fields()
+    assert len(fields) == 2
+    assert fields[0].name() == "UnknownService"
+    assert fields[0].id() == 0
+    assert fields[1].name() == "UnknownFunctionOrStream"
     assert fields[1].id() == 1
 
 
@@ -252,7 +262,7 @@ enums:
 """
     lrpc_def = load_lrpc_def(def_str)
     enums = lrpc_def.enums()
-    assert len(enums) == 1
+    assert len(enums) == 2  # Including LrpcMetaError, not tested here
 
     assert enums[0].name() == "MyEnum1"
     fields = enums[0].fields()
@@ -732,8 +742,11 @@ services:
 """
 
     lrpc_def = load_lrpc_def(def_str)
-    v = MetaServiceVisitor()
+    v = StringifyVisitor()
 
     lrpc_def.accept(v)
 
-    assert v.result == "meta_service-meta_service_end"
+    assert (
+        "service[LrpcMeta]-stream[error+0+server]-param[start]-param_end-return[type]-return[error_flag_1]-return[error_flag_2]-return[error_flag_3]-return_end-stream_end-service_end"
+        in v.result
+    )

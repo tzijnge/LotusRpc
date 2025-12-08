@@ -31,3 +31,4 @@ def export_to(output: os.PathLike[str]) -> None:
     export("EtlRwExtensions.hpp", core_dir)
     export("Server.hpp", core_dir)
     export("Service.hpp", core_dir)
+    export("MetaError.hpp", core_dir)

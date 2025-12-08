@@ -26,11 +26,9 @@ class LrpcDefDict(TypedDict):
 # pylint: disable = too-many-instance-attributes
 class LrpcDef:
 
-    def __init__(self, raw: LrpcDefDict, meta_service: LrpcServiceDict) -> None:
+    def __init__(self, raw: LrpcDefDict) -> None:
         assert "name" in raw and isinstance(raw["name"], str)
         assert "services" in raw and isinstance(raw["services"], list)
-
-        meta_service["id"] = 255
 
         struct_names = []
         if "structs" in raw:
@@ -45,8 +43,16 @@ class LrpcDef:
 
         self.__name = raw["name"]
         self.__version = raw.get("version", None)
+
+        # todo: should be done in separate function and before
+        # __init_service_ids. There should be a test to show this
+        for s in raw["services"]:
+            if s["name"] == "LrpcMeta":
+                s["id"] = 255
+                self.__meta_service = LrpcService(s)
+                raw["services"].remove(s)
+
         self.__services = [LrpcService(s) for s in raw["services"]]
-        self.__meta_service = LrpcService(meta_service)
         self.__namespace = raw.get("namespace", None)
         self.__rx_buffer_size = raw.get("rx_buffer_size", 256)
         self.__tx_buffer_size = raw.get("tx_buffer_size", 256)
@@ -119,8 +125,7 @@ class LrpcDef:
         for service in self.services():
             service.accept(visitor)
 
-        visitor.visit_lrpc_meta_service(self.__meta_service)
-        visitor.visit_lrpc_meta_service_end()
+        self.__meta_service.accept(visitor)
 
         visitor.visit_lrpc_def_end()
 

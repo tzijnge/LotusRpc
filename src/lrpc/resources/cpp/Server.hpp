@@ -16,7 +16,7 @@ namespace lrpc
             uint8_t id() const override { return 0; };
             void invoke(Service::Reader &, Service::Writer &) override
             {
-                server->error(0, 0, 0, 0);
+                server->error(LrpcMetaError::UnknownService, 0, 0, 0);
             };
         };
 
@@ -68,9 +68,9 @@ namespace lrpc
             }
         }
 
-        void error(const uint32_t errorFlag1, const uint32_t errorFlag2, const uint32_t errorFlag3, const uint32_t errorFlag4) override
+        void error(const LrpcMetaError type, const uint8_t errorFlag1, const uint8_t errorFlag2, const int32_t errorFlag3) override
         {
-            metaService.error_response(errorFlag1, errorFlag2, errorFlag3, errorFlag4);
+            metaService.error_response(type, errorFlag1, errorFlag2, errorFlag3);
         }
 
         virtual void lrpcTransmit(etl::span<const uint8_t> bytes) = 0;

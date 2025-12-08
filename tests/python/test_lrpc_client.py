@@ -193,16 +193,27 @@ class TestLrpcClient:
 
         assert str(e.value) == "Incorrect message size. Expected 4 but got 3"
 
-    def test_decode_error_response(self) -> None:
-        decoded = self.client().decode(b"\x13\xff\x00\x11\x00\x00\x00\x22\x00\x00\x00\x33\x00\x00\x00\x44\x00\x00\x00")
+    def test_decode_error_response_unknown_service(self) -> None:
+        decoded = self.client().decode(b"\x0a\xff\x00\x00\x55\x66\x00\x00\x00\x77")
+        assert "type" in decoded
+        assert decoded["type"] == "UnknownService"
         assert "error_flag_1" in decoded
-        assert decoded["error_flag_1"] == 0x11
+        assert decoded["error_flag_1"] == 0x55
         assert "error_flag_2" in decoded
-        assert decoded["error_flag_2"] == 0x22
+        assert decoded["error_flag_2"] == 0x66
         assert "error_flag_3" in decoded
-        assert decoded["error_flag_3"] == 0x33
-        assert "error_flag_4" in decoded
-        assert decoded["error_flag_4"] == 0x44
+        assert decoded["error_flag_3"] == 0x77000000
+
+    def test_decode_error_response_unknown_function_or_stream(self) -> None:
+        decoded = self.client().decode(b"\x0a\xff\x00\x01\x22\x33\x44\x00\x00\x00")
+        assert "type" in decoded
+        assert decoded["type"] == "UnknownFunctionOrStream"
+        assert "error_flag_1" in decoded
+        assert decoded["error_flag_1"] == 0x22
+        assert "error_flag_2" in decoded
+        assert decoded["error_flag_2"] == 0x33
+        assert "error_flag_3" in decoded
+        assert decoded["error_flag_3"] == 0x44
 
     def test_decode_void_function(self) -> None:
         # srv0.f0

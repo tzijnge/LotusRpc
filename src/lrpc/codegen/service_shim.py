@@ -31,9 +31,6 @@ class ServiceShimVisitor(LrpcVisitor):
     def visit_lrpc_service(self, service: LrpcService) -> None:
         self._write_service_shim(self._output, service, self._namespace)
 
-    def visit_lrpc_meta_service(self, service: LrpcService) -> None:
-        self._write_service_shim(self._output, service, self._namespace)
-
     def __write_service_shim(self) -> None:
         functions = self._service.functions()
         client_streams = [s for s in self._service.streams() if s.origin() == LrpcStream.Origin.CLIENT]
@@ -173,7 +170,9 @@ class ServiceShimVisitor(LrpcVisitor):
         max_function_or_stream_id = self.__max_function_or_stream_id(functions, client_streams, server_streams)
 
         self._file.write(f"using ShimType = void ({self.__class_name()}::*)(Reader &, Writer &);")
-        self._file.write("void missingFunction_shim(Reader&, Writer&) { server->error(0, 0, 0, 0); }")
+        self._file.write(
+            "void missingFunction_shim(Reader&, Writer&) { server->error(LrpcMetaError::UnknownFunctionOrStream, 0, 0, 0); }"
+        )
         self._file.newline()
 
         with self._file.block("static ShimType shim(const size_t functionId)"):

@@ -1,6 +1,7 @@
 #pragma once
 #include <etl/byte_stream.h>
 #include <cstdint>
+#include "MetaError.hpp"
 
 namespace lrpc
 {
@@ -12,7 +13,7 @@ namespace lrpc
 
         virtual Writer getWriter() = 0;
         virtual void transmit(const Writer &w) = 0;
-        virtual void error(const uint32_t errorFlag1, const uint32_t errorFlag2, const uint32_t errorFlag3, const uint32_t errorFlag4) = 0;
+        virtual void error(const LrpcMetaError type, const uint8_t errorFlag2, const uint8_t errorFlag3, const int32_t errorFlag4) = 0;
     };
 
     class Service

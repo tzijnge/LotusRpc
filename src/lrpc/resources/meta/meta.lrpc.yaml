@@ -7,11 +7,18 @@ services:
         origin: server
         finite: false
         params:
+          - name: type
+            type: "@LrpcMetaError"
           - name: error_flag_1
-            type: uint32_t
+            type: uint8_t
           - name: error_flag_2
-            type: uint32_t
+            type: uint8_t
           - name: error_flag_3
-            type: uint32_t
-          - name: error_flag_4
-            type: uint32_t
+            type: int32_t
+enums:
+  - name: LrpcMetaError
+    external: "lrpccore/MetaError.hpp"
+    external_namespace: lrpc
+    fields:
+      - UnknownService
+      - UnknownFunctionOrStream

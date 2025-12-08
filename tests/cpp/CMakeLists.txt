@@ -15,7 +15,9 @@ mark_as_advanced(
 add_subdirectory(../../external/gtest External/gtest EXCLUDE_FROM_ALL)
 
 set(LRPC_IS_BUILT ${CMAKE_BINARY_DIR}/lrpc_is_built)
-file(GLOB_RECURSE LRPC_PY_SRC_FILES ${CMAKE_SOURCE_DIR}/src/lrpc/*.py ${CMAKE_SOURCE_DIR}/**/lotusrpc-schema.json)
+file(GLOB_RECURSE LRPC_PY_SRC_FILES ${CMAKE_SOURCE_DIR}/src/lrpc/*.py
+                                    ${CMAKE_SOURCE_DIR}/**/lotusrpc-schema.json
+                                    ${CMAKE_SOURCE_DIR}/**/meta.lrpc.yaml)
 
 add_custom_command(OUTPUT ${LRPC_IS_BUILT}
                   COMMAND pip install --upgrade --no-deps --force-reinstall ${CMAKE_SOURCE_DIR}

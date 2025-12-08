@@ -3,7 +3,7 @@ from collections.abc import Hashable
 import jsonschema
 import yaml
 
-from ..core import LrpcDef, LrpcDefDict, LrpcServiceDict
+from ..core import LrpcDef, LrpcDefDict
 from ..schema import load_lrpc_schema
 from ..validation import SemanticAnalyzer
 from ..resources.meta import load_meta_def

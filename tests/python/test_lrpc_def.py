@@ -262,7 +262,8 @@ enums:
 """
     lrpc_def = load_lrpc_def(def_str)
     enums = lrpc_def.enums()
-    assert len(enums) == 2  # Including LrpcMetaError, not tested here
+    # Including LrpcMetaError, not tested here
+    assert len(enums) == 2
 
     assert enums[0].name() == "MyEnum1"
     fields = enums[0].fields()

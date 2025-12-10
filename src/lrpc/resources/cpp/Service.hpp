@@ -1,5 +1,7 @@
 #pragma once
 #include <etl/byte_stream.h>
+#include <etl/optional.h>
+#include <etl/string_view.h>
 #include <cstdint>
 #include "MetaError.hpp"
 
@@ -13,7 +15,9 @@ namespace lrpc
 
         virtual Writer getWriter() = 0;
         virtual void transmit(const Writer &w) = 0;
-        virtual void error(const LrpcMetaError type, const uint8_t errorFlag1, const uint8_t errorFlag2, const int32_t errorFlag3) = 0;
+
+        using OptionalMessage = etl::optional<etl::string_view>;
+        virtual void error(const LrpcMetaError type, const uint8_t p1 = 0, const uint8_t p2 = 0, const int32_t p3 = 0, const OptionalMessage &message = {}) = 0;
     };
 
     class Service

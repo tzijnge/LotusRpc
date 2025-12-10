@@ -9,12 +9,15 @@ services:
         params:
           - name: type
             type: "@LrpcMetaError"
-          - name: error_flag_1
+          - name: p1
             type: uint8_t
-          - name: error_flag_2
+          - name: p2
             type: uint8_t
-          - name: error_flag_3
+          - name: p3
             type: int32_t
+          - name: message
+            type: string
+            count: "?"
 enums:
   - name: LrpcMetaError
     external: "lrpccore/MetaError.hpp"

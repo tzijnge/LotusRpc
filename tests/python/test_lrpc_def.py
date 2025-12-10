@@ -779,6 +779,6 @@ services:
     lrpc_def.accept(v)
 
     assert (
-        "service[LrpcMeta]-stream[error+0+server]-param[start]-param_end-return[type]-return[error_flag_1]-return[error_flag_2]-return[error_flag_3]-return_end-stream_end-service_end"
+        "service[LrpcMeta]-stream[error+0+server]-param[start]-param_end-return[type]-return[p1]-return[p2]-return[p3]-return[message]-return_end-stream_end-service_end"
         in v.result
     )

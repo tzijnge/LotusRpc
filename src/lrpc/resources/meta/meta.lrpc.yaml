@@ -7,16 +7,11 @@ services:
         origin: server
         finite: false
         params:
-          - name: type
-            type: "@LrpcMetaError"
-          - name: p1
-            type: uint8_t
-          - name: p2
-            type: uint8_t
-          - name: p3
-            type: int32_t
-          - name: message
-            type: string
+          - { name: type, type: "@LrpcMetaError" }
+          - { name: p1, type: uint8_t }
+          - { name: p2, type: uint8_t }
+          - { name: p3, type: int32_t }
+          - { name: message, type: string }
 enums:
   - name: LrpcMetaError
     external: "lrpccore/MetaError.hpp"

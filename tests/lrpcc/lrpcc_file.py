@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import yaml
 
 
@@ -5,7 +7,7 @@ class Transport:
     def __init__(self, file_url: str) -> None:
         self.current_message = b""
 
-        with open(file_url, encoding="UTF-8") as f:
+        with Path(file_url).open(encoding="UTF-8") as f:
             self.server = yaml.safe_load(f)
 
     def read(self, size: int = 1) -> bytes:

@@ -140,7 +140,7 @@ class Lrpcc:
     def __init__(self, config: dict[str, Any]) -> None:
         self.__set_log_level(config.get(LOG_LEVEL, "INFO"))
 
-        def_url = config[DEFINITION_URL]
+        def_url = Path(config[DEFINITION_URL])
         self.lrpc_def = load_lrpc_def_from_url(def_url, warnings_as_errors=True)
 
         transport = self._make_transport(config[TRANSPORT_TYPE], config[TRANSPORT_PARAMS])

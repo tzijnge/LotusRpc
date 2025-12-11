@@ -354,7 +354,7 @@ services:
 
     assert_log_entries(
         [
-            "Invalid function name: s0_shim. This name is incompatible with the generated code for the containing service",
+            "Invalid function name: s0_shim. This name is incompatible with the generated code for the containing service",  # noqa: E501
         ],
         caplog.text,
     )

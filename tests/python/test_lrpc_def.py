@@ -9,8 +9,7 @@ from .utilities import StringifyVisitor
 
 
 def load_lrpc_def(def_str: str) -> LrpcDef:
-    lrpc_def = load_lrpc_def_from_str(def_str, warnings_as_errors=False)
-    return lrpc_def
+    return load_lrpc_def_from_str(def_str, warnings_as_errors=False)
 
 
 def get_function(lrpc_def: LrpcDef, service: str, fun: str) -> LrpcFun:

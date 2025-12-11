@@ -1,15 +1,17 @@
 import os
 import re
+from collections.abc import Generator
 
 import pytest
 
 from lrpc.lrpcc import Lrpcc
 
 # pylint: disable=protected-access
+# ruff: noqa: SLF001
 
 
 @pytest.fixture(autouse=True)
-def change_test_dir(request: pytest.FixtureRequest):  # type: ignore[no-untyped-def]
+def change_test_dir(request: pytest.FixtureRequest) -> Generator[None, None, None]:
     os.chdir(request.fspath.dirname)  # type: ignore[attr-defined]
     yield
     os.chdir(request.config.invocation_params.dir)

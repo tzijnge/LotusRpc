@@ -1,7 +1,7 @@
 import math
 import re
 import struct
-from os import path
+from pathlib import Path
 
 import pytest
 
@@ -9,7 +9,7 @@ from lrpc.client import LrpcDecoder, lrpc_decode
 from lrpc.core import LrpcVar
 from lrpc.utils import load_lrpc_def_from_url
 
-definition_file = path.join(path.dirname(path.abspath(__file__)), "test_lrpc_encode_decode.lrpc.yaml")
+definition_file = Path(__file__).resolve().parent.joinpath("test_lrpc_encode_decode.lrpc.yaml")
 lrpc_def = load_lrpc_def_from_url(definition_file, warnings_as_errors=False)
 
 
@@ -36,7 +36,8 @@ def test_decode_uint8_t() -> None:
     with pytest.raises(
         struct.error,
         match=re.escape(
-            "unpack_from requires a buffer of at least 1 bytes for unpacking 1 bytes at offset 0 (actual buffer size is 0)",
+            "unpack_from requires a buffer of at least 1 bytes for unpacking 1 bytes at offset 0 "
+            "(actual buffer size is 0)",
         ),
     ):
         lrpc_decode(b"", var, lrpc_def)
@@ -175,7 +176,8 @@ def test_decode_array() -> None:
     with pytest.raises(
         struct.error,
         match=re.escape(
-            "unpack_from requires a buffer of at least 4 bytes for unpacking 1 bytes at offset 3 (actual buffer size is 3)",
+            "unpack_from requires a buffer of at least 4 bytes for unpacking 1 bytes at offset 3 "
+            "(actual buffer size is 3)",
         ),
     ):
         lrpc_decode(b"\x01\x02\x03", var, lrpc_def)
@@ -231,7 +233,8 @@ def test_decode_optional() -> None:
     with pytest.raises(
         struct.error,
         match=re.escape(
-            "unpack_from requires a buffer of at least 2 bytes for unpacking 1 bytes at offset 1 (actual buffer size is 1)",
+            "unpack_from requires a buffer of at least 2 bytes for unpacking 1 bytes at offset 1 "
+            "(actual buffer size is 1)",
         ),
     ):
         lrpc_decode(b"\x01", var, lrpc_def)
@@ -289,7 +292,8 @@ def test_decode_struct() -> None:
     with pytest.raises(
         struct.error,
         match=re.escape(
-            "unpack_from requires a buffer of at least 4 bytes for unpacking 1 bytes at offset 3 (actual buffer size is 3)",
+            "unpack_from requires a buffer of at least 4 bytes for unpacking 1 bytes at offset 3 "
+            "(actual buffer size is 3)",
         ),
     ):
         lrpc_decode(b"\xd7\x11\x7b", var, lrpc_def)

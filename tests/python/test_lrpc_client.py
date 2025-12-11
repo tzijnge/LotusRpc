@@ -1,6 +1,6 @@
 import re
 import struct
-from os import path
+from pathlib import Path
 
 import pytest
 
@@ -23,7 +23,7 @@ class TestTransport:
         pass
 
 
-def_url = path.join(path.dirname(path.abspath(__file__)), "test_lrpc_encode_decode.lrpc.yaml")
+def_url = Path(__file__).resolve().parent.joinpath("test_lrpc_encode_decode.lrpc.yaml")
 lrpc_def = load_lrpc_def_from_url(def_url, warnings_as_errors=False)
 
 
@@ -58,7 +58,7 @@ class TestLrpcClient:
             self.client().encode("invalid_service", "f2")
 
     def test_encode_function_invalid_function(self) -> None:
-        with pytest.raises(ValueError, match="Function or stream invalid_function not found in service srv1") as e:
+        with pytest.raises(ValueError, match="Function or stream invalid_function not found in service srv1"):
             self.client().encode("srv1", "invalid_function")
 
     def test_encode_function_too_many_parameters(self) -> None:
@@ -72,7 +72,7 @@ class TestLrpcClient:
             self.client().encode("srv1", "add5")
 
     def test_encode_function_invalid_parameter_name(self) -> None:
-        with pytest.raises(ValueError, match=re.escape("No such parameter(s): {'invalid'}")) as e:
+        with pytest.raises(ValueError, match=re.escape("No such parameter(s): {'invalid'}")):
             # function takes one parameter, but none given
             self.client().encode("srv1", "add5", invalid=5)
 
@@ -123,7 +123,7 @@ class TestLrpcClient:
     def test_decode_stream_client_finite_invalid(self) -> None:
         # In a client stream, the server can only send a stop request
         # that is a message with no fields other than message size, service ID and stream ID
-        with pytest.raises(ValueError, match=re.escape("2 remaining bytes after decoding srv2.client_finite")) as e:
+        with pytest.raises(ValueError, match=re.escape("2 remaining bytes after decoding srv2.client_finite")):
             self.client().decode(b"\x05\x02\x01\xff\x66")
 
     def test_decode_stream_server_infinite(self) -> None:
@@ -224,26 +224,24 @@ class TestLrpcClient:
 
     def test_communicate_stream_client_infinite(self) -> None:
         for _ in self.client().communicate("srv2", "client_infinite", p0=0xAB, p1=0xCDEF):
-            assert False, "Response received for client stream"
+            pytest.fail("Response received for client stream")
 
     def test_communicate_stream_client_finite(self) -> None:
         for _ in self.client().communicate("srv2", "client_finite", p0=0xAB, p1=0xCDEF, final=True):
-            assert False, "Response received for client stream"
+            pytest.fail("Response received for client stream")
 
     def test_communicate_stream_server_infinite_stop(self) -> None:
         for _ in self.client().communicate("srv2", "server_infinite", start=False):
-            assert False, "Response on end server stream"
+            pytest.fail("Response on end server stream")
 
     def test_communicate_stream_server_finite_stop(self) -> None:
         for _ in self.client().communicate("srv2", "server_finite", start=False):
-            assert False, "Response on end server stream"
+            pytest.fail("Response on end server stream")
 
     def test_communicate_stream_server_infinite_start(self) -> None:
         response_bytes = b"\x06\x02\x02\xcd\x01\x02"
-        response = {}
-        with pytest.raises(TimeoutError, match="Timeout waiting for response"):
-            for r in self.client(response_bytes).communicate("srv2", "server_infinite", start=True):
-                response = r
+        response_generator = self.client(response_bytes).communicate("srv2", "server_infinite", start=True)
+        response = next(response_generator)
 
         assert "p0" in response
         assert isinstance(response["p0"], int)
@@ -252,6 +250,9 @@ class TestLrpcClient:
         assert "p1" in response
         assert isinstance(response["p1"], int)
         assert response["p1"] == 0x0201
+
+        with pytest.raises(TimeoutError, match="Timeout waiting for response"):
+            next(response_generator)
 
     def test_communicate_stream_server_finite_start(self) -> None:
         response = b"\x07\x02\x03\xcd\x01\x02\x01"

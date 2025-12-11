@@ -81,8 +81,8 @@ def load_lrpc_def_from_str(def_str: str, *, warnings_as_errors: bool) -> LrpcDef
     return load_lrpc_def_from_dict(user_def, meta_def, warnings_as_errors=warnings_as_errors)
 
 
-def load_lrpc_def_from_url(def_url: str, *, warnings_as_errors: bool) -> LrpcDef:
-    with Path(def_url).open(encoding="utf-8") as def_file:
+def load_lrpc_def_from_url(def_url: Path, *, warnings_as_errors: bool) -> LrpcDef:
+    with def_url.open(encoding="utf-8") as def_file:
         return load_lrpc_def_from_file(def_file, warnings_as_errors=warnings_as_errors)
 
 

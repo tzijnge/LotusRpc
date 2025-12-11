@@ -22,7 +22,7 @@ class YamlParamType(click.ParamType):
 
     # function does not always return
     # pylint: disable=inconsistent-return-statements
-    def convert(self, value: Any, param: click.Parameter | None, ctx: click.Context | None) -> dict[str, Any]:
+    def convert(self, value: Any, param: click.Parameter | None, ctx: click.Context | None) -> dict[str, Any]:  # noqa: RET503
         if isinstance(value, dict):
             return value
 
@@ -82,10 +82,8 @@ class VersionOption(click.Option):
 
         super().__init__(param_decls, **kwargs)
 
-    # argument 'param' required by click
-    # pylint: disable=unused-argument
     @staticmethod
-    def show_version(ctx: click.Context, _param: click.Parameter, value: bool) -> None:
+    def show_version(ctx: click.Context, _param: click.Parameter, value: bool) -> None:  # noqa: FBT001
         if not value or ctx.resilient_parsing:
             return
         click.echo(metadata.version("lotusrpc"))

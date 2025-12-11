@@ -152,7 +152,10 @@ def test_visit_stream() -> None:
     service.accept(v)
 
     functions = "function[f0+36]-return_end-param_end-function_end-function[f1+40]-return_end-param_end-function_end"
-    streams = "stream[s0+36+client]-param_end-return_end-stream_end-stream[s1+40+server]-param[start]-param_end-return_end-stream_end"
+    streams = (
+        "stream[s0+36+client]-param_end-return_end-stream_end-"
+        "stream[s1+40+server]-param[start]-param_end-return_end-stream_end"
+    )
 
     assert v.result == f"service[srv0]-{functions}-{streams}-service_end"
 
@@ -167,7 +170,9 @@ def test_stream_by_name() -> None:
     service = LrpcService(s)
 
     s0 = service.stream_by_name("s0")
-    assert s0 is not None and s0.name() == "s0"
+    assert s0 is not None
+    assert s0.name() == "s0"
     s1 = service.stream_by_name("s1")
-    assert s1 is not None and s1.name() == "s1"
+    assert s1 is not None
+    assert s1.name() == "s1"
     assert service.stream_by_name("s2") is None

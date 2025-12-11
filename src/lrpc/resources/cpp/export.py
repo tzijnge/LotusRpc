@@ -4,8 +4,7 @@ from pathlib import Path
 
 
 def create_dir_if_not_exists(target_dir: Path) -> None:
-    if not target_dir.exists():
-        Path.mkdir(target_dir, 511, exist_ok=True)
+    target_dir.mkdir(parents=True, exist_ok=True)
 
 
 def export(resource: str, output: Path) -> None:

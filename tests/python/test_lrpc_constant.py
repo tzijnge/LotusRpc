@@ -95,7 +95,7 @@ def test_invalid_type() -> None:
 
 def test_invalid_implicit_type() -> None:
     # Ignore type error because that's what this test is about
-    c: LrpcConstantDict = {"name": "t", "value": {"invalid_type": 1}}
+    c: LrpcConstantDict = {"name": "t", "value": {"invalid_type": 1}}  # type: ignore[typeddict-item]
 
     with pytest.raises(
         ValueError,

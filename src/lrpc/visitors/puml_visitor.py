@@ -1,4 +1,3 @@
-import os
 from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
@@ -190,7 +189,7 @@ class PumlFile:
 
 # pylint: disable = too-many-instance-attributes
 class PlantUmlVisitor(LrpcVisitor):
-    def __init__(self, output: os.PathLike[str]) -> None:
+    def __init__(self, output: Path) -> None:
         self.__output = output
         self.__puml: PumlFile
         self.__max_function_or_stream_id = 0
@@ -209,7 +208,7 @@ class PlantUmlVisitor(LrpcVisitor):
         self.__const_items_max = 10
 
     def visit_lrpc_def(self, lrpc_def: "LrpcDef") -> None:
-        self.__puml = PumlFile(f"{self.__output}/{lrpc_def.name()}.puml")
+        self.__puml = PumlFile(self.__output.joinpath(f"{lrpc_def.name()}.puml"))
 
         self.__puml.block(lrpc_def.name(), "Yellow", level=1)
         self.__puml.list_item(f"Namespace: {lrpc_def.namespace()}", level=0)

@@ -52,7 +52,7 @@ def generate_rpc(lrpc_def: LrpcDef, output: Path, *, generate_core: bool) -> Non
     lrpc_def.accept(MetaServiceVisitor(output))
 
 
-def generate_puml(lrpc_def: LrpcDef, output: os.PathLike[str]) -> None:
+def generate_puml(lrpc_def: LrpcDef, output: Path) -> None:
     create_dir_if_not_exists(output)
     lrpc_def.accept(PlantUmlVisitor(output))
 
@@ -117,7 +117,7 @@ def cppcore(output: os.PathLike[str]) -> None:
 @click.option("-o", "--output", help="Path to put the generated files", required=False, default=".", type=click.Path())
 def schema(output: os.PathLike[str]) -> None:
     """Export the schema for the LRPC definition file"""
-    create_dir_if_not_exists(output)
+    create_dir_if_not_exists(Path(output))
     export_lrpc_schema(Path(output))
     log.info("Exported LRPC schema to %s", output)
 
@@ -137,8 +137,8 @@ def schema(output: os.PathLike[str]) -> None:
 def puml(definition_file: TextIO, warnings_as_errors: bool, output: os.PathLike[str]) -> None:  # noqa: FBT001
     """Generate a PlantUML diagram for lrpc definition INPUT"""
 
-    lrpc_def = load_lrpc_def_from_file(Path(definition_file), warnings_as_errors=warnings_as_errors)
-    generate_puml(lrpc_def, output)
+    lrpc_def = load_lrpc_def_from_file(definition_file, warnings_as_errors=warnings_as_errors)
+    generate_puml(lrpc_def, Path(output))
     log.info("Generated PlantUML diagram for %s in %s", definition_file.name, output)
 
 

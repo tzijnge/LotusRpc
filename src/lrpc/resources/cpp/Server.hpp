@@ -18,7 +18,7 @@ namespace lrpc
                 const auto data = r.data();
                 const auto serviceId = data.at(1);
                 const auto functionOrStreamId = data.at(2);
-                server->error(LrpcMetaError::UnknownService, serviceId, functionOrStreamId, 0);
+                server->error(LrpcMetaError::UnknownService, serviceId, functionOrStreamId);
             };
         };
 
@@ -70,7 +70,7 @@ namespace lrpc
             }
         }
 
-        void error(const LrpcMetaError type, const uint8_t p1 = 0, const uint8_t p2 = 0, const int32_t p3 = 0, const OptionalMessage &message = {}) override
+        void error(const LrpcMetaError type, const uint8_t p1 = 0, const uint8_t p2 = 0, const int32_t p3 = 0, const etl::string_view &message = {}) override
         {
             metaService.error_response(type, p1, p2, p3, message);
         }

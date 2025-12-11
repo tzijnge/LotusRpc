@@ -173,7 +173,7 @@ class ServiceShimVisitor(LrpcVisitor):
         with self._file.block("void missingFunction_shim(Reader& r, Writer&)"):
             self._file.write("const auto data = r.data();")
             self._file.write("const auto functionOrStreamId = data.at(2);")
-            self._file.write("server->error(LrpcMetaError::UnknownFunctionOrStream, id(), functionOrStreamId, 0);")
+            self._file.write("server->error(LrpcMetaError::UnknownFunctionOrStream, id(), functionOrStreamId);")
         self._file.newline()
 
         with self._file.block("static ShimType shim(const size_t functionId)"):

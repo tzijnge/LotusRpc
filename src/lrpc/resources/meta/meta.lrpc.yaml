@@ -17,7 +17,6 @@ services:
             type: int32_t
           - name: message
             type: string
-            count: "?"
 enums:
   - name: LrpcMetaError
     external: "lrpccore/MetaError.hpp"

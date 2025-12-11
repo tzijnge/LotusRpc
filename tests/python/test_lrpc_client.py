@@ -204,10 +204,10 @@ class TestLrpcClient:
         assert "p3" in decoded
         assert decoded["p3"] == 0x77000000
         assert "message" in decoded
-        assert decoded["message"] is None
+        assert decoded["message"] == ""
 
     def test_decode_error_response_unknown_function_or_stream(self) -> None:
-        decoded = self.client().decode(b"\x10\xff\x00\x01\x22\x33\x44\x00\x00\x00\x01\x74\x65\x73\x74\x00")
+        decoded = self.client().decode(b"\x0f\xff\x00\x01\x22\x33\x44\x00\x00\x00\x74\x65\x73\x74\x00")
         assert "type" in decoded
         assert decoded["type"] == "UnknownFunctionOrStream"
         assert "p1" in decoded

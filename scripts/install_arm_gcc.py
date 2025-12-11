@@ -9,7 +9,7 @@ from urllib import request
 
 import click
 
-ssl._create_default_https_context = ssl._create_unverified_context  # noqa: SLF001
+ssl._create_default_https_context = ssl._create_unverified_context  # type: ignore[assignment]  # noqa: SLF001  # pylint: disable=protected-access
 
 ARM_GCC_VERSION = "14.3.rel1"
 ARM_GCC_NAME = f"arm-gnu-toolchain-{ARM_GCC_VERSION}-x86_64-arm-none-eabi"

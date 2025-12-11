@@ -1,4 +1,5 @@
-from typing import Optional, TypedDict, Union
+from typing import TypedDict
+
 from typing_extensions import NotRequired
 
 from ..visitors import LrpcVisitor
@@ -16,8 +17,10 @@ class LrpcEnumFieldDict(TypedDict):
 
 class LrpcEnumField:
     def __init__(self, raw: LrpcEnumFieldDict) -> None:
-        assert "name" in raw and isinstance(raw["name"], str)
-        assert "id" in raw and isinstance(raw["id"], int)
+        assert "name" in raw
+        assert isinstance(raw["name"], str)
+        assert "id" in raw
+        assert isinstance(raw["id"], int)
 
         self.__name = raw["name"]
         self.__id = raw["id"]
@@ -31,16 +34,17 @@ class LrpcEnumField:
 
 class LrpcEnumDict(TypedDict):
     name: str
-    fields: list[Union[LrpcEnumFieldSimpleDict, str]]
+    fields: list[LrpcEnumFieldSimpleDict | str]
     external: NotRequired[str]
     external_namespace: NotRequired[str]
 
 
 class LrpcEnum:
-
     def __init__(self, raw: LrpcEnumDict) -> None:
-        assert "name" in raw and isinstance(raw["name"], str)
-        assert "fields" in raw and isinstance(raw["fields"], list)
+        assert "name" in raw
+        assert isinstance(raw["name"], str)
+        assert "fields" in raw
+        assert isinstance(raw["fields"], list)
 
         self.__name = raw["name"]
         self.__fields = raw["fields"]
@@ -78,7 +82,7 @@ class LrpcEnum:
 
         return all_fields
 
-    def field_id(self, name: str) -> Optional[int]:
+    def field_id(self, name: str) -> int | None:
         for f in self.fields():
             if f.name() == name:
                 return f.id()
@@ -88,8 +92,8 @@ class LrpcEnum:
     def is_external(self) -> bool:
         return self.__external is not None
 
-    def external_file(self) -> Optional[str]:
+    def external_file(self) -> str | None:
         return self.__external
 
-    def external_namespace(self) -> Optional[str]:
+    def external_namespace(self) -> str | None:
         return self.__external_namespace

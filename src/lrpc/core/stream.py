@@ -21,9 +21,12 @@ class LrpcStream:
         SERVER = "server"
 
     def __init__(self, raw: LrpcStreamDict) -> None:
-        assert "name" in raw and isinstance(raw["name"], str)
-        assert "id" in raw and isinstance(raw["id"], int)
-        assert "origin" in raw and isinstance(raw["origin"], str)
+        assert "name" in raw
+        assert isinstance(raw["name"], str)
+        assert "id" in raw
+        assert isinstance(raw["id"], int)
+        assert "origin" in raw
+        assert isinstance(raw["origin"], str)
 
         self.__name = raw["name"]
         self.__id = raw["id"]

@@ -1,20 +1,18 @@
 from pathlib import Path
-from typing import Optional
+
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 
-from ..visitors import LrpcVisitor
-from ..core import LrpcDef
-from ..core import LrpcEnum
-from ..codegen.utils import optionally_in_namespace
 from ..codegen.common import write_file_banner
+from ..codegen.utils import optionally_in_namespace
+from ..core import LrpcDef, LrpcEnum
+from ..visitors import LrpcVisitor
 
 
 class EnumFileVisitor(LrpcVisitor):
-
     def __init__(self, output: Path) -> None:
         self.__descriptor: LrpcEnum
         self.__file: CppFile
-        self.__namespace: Optional[str]
+        self.__namespace: str | None
         self.__output = output
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
@@ -62,11 +60,11 @@ class EnumFileVisitor(LrpcVisitor):
                 field_id = f.id()
                 if ns:
                     self.__file.write(
-                        f'static_assert(static_cast<uint8_t>({ns}::{enum_name}::{field_name}) == {field_id}, "External enum value {field_name} is not as specified in LRPC");'
+                        f'static_assert(static_cast<uint8_t>({ns}::{enum_name}::{field_name}) == {field_id}, "External enum value {field_name} is not as specified in LRPC");',  # noqa: E501
                     )
                 else:
                     self.__file.write(
-                        f'static_assert(static_cast<uint8_t>({enum_name}::{field_name}) == {field_id}, "External enum value {field_name} is not as specified in LRPC");'
+                        f'static_assert(static_cast<uint8_t>({enum_name}::{field_name}) == {field_id}, "External enum value {field_name} is not as specified in LRPC");',  # noqa: E501
                     )
 
             self.__file.newline()
@@ -74,13 +72,15 @@ class EnumFileVisitor(LrpcVisitor):
             self.__file.write("// With the right compiler settings this function generates a compiler warning")
             self.__file.write("// if the external enum declaration has fields that are not known to LRPC")
             self.__file.write(
-                "// This function does not serve any purpose and is optimized out with the right compiler/linker settings"
+                "// This function does not serve any purpose and is optimized out with the right compiler/linker settings",  # noqa: E501
             )
 
-            with self.__file.block(f"constexpr void CheckEnum(const {self.__name()} v)"):
-                with self.__file.block("switch (v)"):
-                    for f in self.__descriptor.fields():
-                        self.__file.write(f"case {self.__name()}::{f.name()}: break;")
+            with (
+                self.__file.block(f"constexpr void CheckEnum(const {self.__name()} v)"),
+                self.__file.block("switch (v)"),
+            ):
+                for f in self.__descriptor.fields():
+                    self.__file.write(f"case {self.__name()}::{f.name()}: break;")
 
     def __write_enum(self) -> None:
         n = self.__descriptor.name()

@@ -1,4 +1,5 @@
 from typing import TypedDict
+
 from typing_extensions import NotRequired
 
 from ..visitors import LrpcVisitor
@@ -13,10 +14,11 @@ class LrpcFunDict(TypedDict):
 
 
 class LrpcFun:
-
     def __init__(self, raw: LrpcFunDict) -> None:
-        assert "name" in raw and isinstance(raw["name"], str)
-        assert "id" in raw and isinstance(raw["id"], int)
+        assert "name" in raw
+        assert isinstance(raw["name"], str)
+        assert "id" in raw
+        assert isinstance(raw["id"], int)
 
         self.__params = []
         self.__returns = []

@@ -1,4 +1,4 @@
-from ..core import LrpcDef, LrpcService, LrpcFun, LrpcStream
+from ..core import LrpcDef, LrpcFun, LrpcService, LrpcStream
 from .validator import LrpcValidator
 
 
@@ -15,7 +15,7 @@ class FunctionAndStreamIdValidator(LrpcValidator):
     def warnings(self) -> list[str]:
         return self.__warnings
 
-    def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
+    def visit_lrpc_def(self, _lrpc_def: LrpcDef) -> None:
         self.__errors.clear()
         self.__warnings.clear()
         self.__ids.clear()
@@ -57,7 +57,7 @@ class FunctionAndStreamNameValidator(LrpcValidator):
     def warnings(self) -> list[str]:
         return self.__warnings
 
-    def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
+    def visit_lrpc_def(self, _lrpc_def: LrpcDef) -> None:
         self.__errors.clear()
         self.__warnings.clear()
         self.__function_names.clear()
@@ -71,9 +71,9 @@ class FunctionAndStreamNameValidator(LrpcValidator):
         if name in self.__function_names:
             self.__errors.append(f"Duplicate function name in service {self.__current_service}: {name}")
 
-        if name == (self.__current_service + "ServiceShim"):
+        if name == (self.__current_service + "_shim"):
             self.__errors.append(
-                f"Invalid function name: {name}. This name is incompatible with the generated code for the containing service"
+                f"Invalid function name: {name}. This name is incompatible with the generated code for the containing service",  # noqa: E501
             )
 
         self.__function_names.add(name)

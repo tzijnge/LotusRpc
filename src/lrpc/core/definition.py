@@ -1,14 +1,15 @@
-from typing import Optional, TypedDict
+from typing import TypedDict
+
 from typing_extensions import NotRequired
 
+from ..visitors import LrpcVisitor
 from .constant import LrpcConstant, LrpcConstantDict
 from .enum import LrpcEnum, LrpcEnumDict
 from .function import LrpcFun
-from .stream import LrpcStream
 from .service import LrpcService, LrpcServiceDict
+from .stream import LrpcStream
 from .struct import LrpcStruct, LrpcStructDict
 from .var import LrpcVarDict
-from ..visitors import LrpcVisitor
 
 
 class LrpcDefDict(TypedDict):
@@ -25,10 +26,13 @@ class LrpcDefDict(TypedDict):
 
 # pylint: disable = too-many-instance-attributes
 class LrpcDef:
+    META_SERVICE_ID = 255
 
     def __init__(self, raw: LrpcDefDict) -> None:
-        assert "name" in raw and isinstance(raw["name"], str)
-        assert "services" in raw and isinstance(raw["services"], list)
+        assert "name" in raw
+        assert isinstance(raw["name"], str)
+        assert "services" in raw
+        assert isinstance(raw["services"], list)
 
         struct_names = []
         if "structs" in raw:
@@ -82,7 +86,7 @@ class LrpcDef:
         meta_service_found = False
         for s in raw["services"]:
             if s["name"] == "LrpcMeta":
-                s["id"] = 255
+                s["id"] = self.META_SERVICE_ID
                 self.__meta_service = LrpcService(s)
                 raw["services"].remove(s)
                 meta_service_found = True
@@ -136,10 +140,10 @@ class LrpcDef:
     def name(self) -> str:
         return self.__name
 
-    def version(self) -> Optional[str]:
+    def version(self) -> str | None:
         return self.__version
 
-    def namespace(self) -> Optional[str]:
+    def namespace(self) -> str | None:
         return self.__namespace
 
     def rx_buffer_size(self) -> int:
@@ -151,7 +155,7 @@ class LrpcDef:
     def services(self) -> list[LrpcService]:
         return self.__services
 
-    def service_by_name(self, name: str) -> Optional[LrpcService]:
+    def service_by_name(self, name: str) -> LrpcService | None:
         if name == "LrpcMeta":
             return self.__meta_service
 
@@ -161,8 +165,8 @@ class LrpcDef:
 
         return None
 
-    def service_by_id(self, identifier: int) -> Optional[LrpcService]:
-        if identifier == 255:
+    def service_by_id(self, identifier: int) -> LrpcService | None:
+        if identifier == self.META_SERVICE_ID:
             return self.__meta_service
 
         for s in self.services():
@@ -178,14 +182,14 @@ class LrpcDef:
         service_ids = [s.id() for s in self.services()]
         return max(service_ids)
 
-    def function(self, service_name: str, function_name: str) -> Optional[LrpcFun]:
+    def function(self, service_name: str, function_name: str) -> LrpcFun | None:
         service = self.service_by_name(service_name)
         if service is None:
             return None
 
         return service.function_by_name(function_name)
 
-    def stream(self, service_name: str, stream_name: str) -> Optional[LrpcStream]:
+    def stream(self, service_name: str, stream_name: str) -> LrpcStream | None:
         service = self.service_by_name(service_name)
         if service is None:
             return None

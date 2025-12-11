@@ -1,9 +1,10 @@
 from pathlib import Path
 
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
-from ..visitors import LrpcVisitor
+
 from ..codegen.common import lrpc_var_includes, write_file_banner
 from ..core import LrpcFun, LrpcService, LrpcVar
+from ..visitors import LrpcVisitor
 
 
 class ServiceIncludeVisitor(LrpcVisitor):

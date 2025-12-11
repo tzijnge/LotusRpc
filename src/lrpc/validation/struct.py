@@ -14,12 +14,12 @@ class StructValidator(LrpcValidator):
     def warnings(self) -> list[str]:
         return self.__warnings
 
-    def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
+    def visit_lrpc_def(self, _lrpc_def: LrpcDef) -> None:
         self.__errors.clear()
         self.__warnings.clear()
         self.__struct_names.clear()
 
-    def visit_lrpc_struct(self, struct: LrpcStruct) -> None:
+    def visit_lrpc_struct(self, _struct: LrpcStruct) -> None:
         self.__struct_names.clear()
 
     def visit_lrpc_struct_field(self, struct: LrpcStruct, field: LrpcVar) -> None:

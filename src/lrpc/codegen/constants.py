@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Optional
 
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 
@@ -10,10 +9,9 @@ from ..visitors import LrpcVisitor
 
 
 class ConstantsFileVisitor(LrpcVisitor):
-
     def __init__(self, output: Path) -> None:
         self.__output = output
-        self.__namespace: Optional[str] = None
+        self.__namespace: str | None = None
         self.__file: CppFile
         self.__includes: set[str] = set()
         self.__constant_definitions: list[str] = []

@@ -1,4 +1,5 @@
-from typing import Optional, TypedDict
+from typing import TypedDict
+
 from typing_extensions import NotRequired
 
 from ..visitors import LrpcVisitor
@@ -14,8 +15,10 @@ class LrpcStructDict(TypedDict):
 
 class LrpcStruct:
     def __init__(self, raw: LrpcStructDict) -> None:
-        assert "name" in raw and isinstance(raw["name"], str)
-        assert "fields" in raw and isinstance(raw["fields"], list)
+        assert "name" in raw
+        assert isinstance(raw["name"], str)
+        assert "fields" in raw
+        assert isinstance(raw["fields"], list)
 
         self.__name = raw["name"]
         self.__fields = [LrpcVar(f) for f in raw["fields"]]
@@ -39,8 +42,8 @@ class LrpcStruct:
     def is_external(self) -> bool:
         return self.__external is not None
 
-    def external_file(self) -> Optional[str]:
+    def external_file(self) -> str | None:
         return self.__external
 
-    def external_namespace(self) -> Optional[str]:
+    def external_namespace(self) -> str | None:
         return self.__external_namespace

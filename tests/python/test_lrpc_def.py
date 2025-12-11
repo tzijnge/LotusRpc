@@ -1,7 +1,10 @@
 import math
+
 import pytest
-from lrpc.utils import load_lrpc_def_from_str
+
 from lrpc.core import LrpcDef, LrpcFun, LrpcStream
+from lrpc.utils import load_lrpc_def_from_str
+
 from .utilities import StringifyVisitor
 
 
@@ -436,7 +439,7 @@ structs:
     s = lrpc_def.struct("MyStruct1")
     assert s.name() == "MyStruct1"
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="No struct  in LRPC definition test"):
         lrpc_def.struct("")
 
 
@@ -457,7 +460,7 @@ enums:
     e = lrpc_def.enum("MyEnum1")
     assert e.name() == "MyEnum1"
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="No enum  in LRPC definition test"):
         lrpc_def.enum("")
 
 

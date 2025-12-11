@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Literal, TypedDict, Union
+from typing import Literal, TypedDict
 
 from typing_extensions import NotRequired
 
@@ -21,14 +21,16 @@ PACK_TYPES: dict[str, str] = {
 class LrpcVarDict(TypedDict):
     name: str
     type: str
-    count: NotRequired[Union[int, Literal["?"]]]
+    count: NotRequired[int | Literal["?"]]
 
 
 # pylint: disable = too-many-public-methods
 class LrpcVar:
     def __init__(self, raw: LrpcVarDict) -> None:
-        assert "name" in raw and isinstance(raw["name"], str)
-        assert "type" in raw and isinstance(raw["type"], str)
+        assert "name" in raw
+        assert isinstance(raw["name"], str)
+        assert "type" in raw
+        assert isinstance(raw["type"], str)
 
         self.__name = raw["name"]
         self.__type = raw["type"].replace("struct@", "").replace("enum@", "").strip("@")
@@ -38,11 +40,11 @@ class LrpcVar:
 
         c = raw.get("count", 1)
         if isinstance(c, int):
-            self.__is_optional = False
-            self.__count = c
+            self._is_optional = False
+            self._count = c
         else:
-            self.__is_optional = True
-            self.__count = 1
+            self._is_optional = True
+            self._count = 1
 
     def name(self) -> str:
         return self.__name
@@ -84,10 +86,7 @@ class LrpcVar:
         return t
 
     def param_type(self) -> str:
-        if self.base_type_is_string():
-            t = "etl::string_view"
-        else:
-            t = self.base_type()
+        t = "etl::string_view" if self.base_type_is_string() else self.base_type()
 
         if self.is_array():
             return f"const etl::span<const {t}>&"
@@ -173,10 +172,10 @@ class LrpcVar:
         return self.base_type_is_struct()
 
     def is_optional(self) -> bool:
-        return self.__is_optional
+        return self._is_optional
 
     def is_array(self) -> bool:
-        return self.__count > 1
+        return self._count > 1
 
     def is_array_of_strings(self) -> bool:
         return self.is_array() and self.base_type_is_string()
@@ -206,7 +205,7 @@ class LrpcVar:
         if self.is_optional():
             return -1
 
-        return self.__count
+        return self._count
 
     def pack_type(self) -> str:
         if self.base_type_is_struct():
@@ -226,6 +225,6 @@ class LrpcVar:
     def contained(self) -> "LrpcVar":
         contained_item = deepcopy(self)
         # pylint: disable=protected-access, unused-private-member
-        contained_item.__is_optional = False
-        contained_item.__count = 1
+        contained_item._is_optional = False  # noqa: SLF001
+        contained_item._count = 1  # noqa: SLF001
         return contained_item

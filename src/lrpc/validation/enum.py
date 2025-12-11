@@ -15,13 +15,13 @@ class EnumValidator(LrpcValidator):
     def warnings(self) -> list[str]:
         return self.__warnings
 
-    def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
+    def visit_lrpc_def(self, _lrpc_def: LrpcDef) -> None:
         self.__errors.clear()
         self.__warnings.clear()
         self.__enum_ids.clear()
         self.__enum_names.clear()
 
-    def visit_lrpc_enum(self, enum: LrpcEnum) -> None:
+    def visit_lrpc_enum(self, _enum: LrpcEnum) -> None:
         self.__enum_ids.clear()
         self.__enum_names.clear()
 

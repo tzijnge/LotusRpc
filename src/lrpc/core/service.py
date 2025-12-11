@@ -1,4 +1,5 @@
-from typing import Optional, TypedDict, Union
+from typing import TypedDict
+
 from typing_extensions import NotRequired
 
 from ..visitors import LrpcVisitor
@@ -16,9 +17,12 @@ class LrpcServiceDict(TypedDict):
 
 class LrpcService:
     def __init__(self, raw: LrpcServiceDict) -> None:
-        assert "name" in raw and isinstance(raw["name"], str)
-        assert "id" in raw and isinstance(raw["id"], int)
-        assert "functions_before_streams" in raw and isinstance(raw["functions_before_streams"], bool)
+        assert "name" in raw
+        assert isinstance(raw["name"], str)
+        assert "id" in raw
+        assert isinstance(raw["id"], int)
+        assert "functions_before_streams" in raw
+        assert isinstance(raw["functions_before_streams"], bool)
 
         functions = raw.get("functions", [])
         streams = raw.get("streams", [])
@@ -31,7 +35,11 @@ class LrpcService:
         if "streams" in raw:
             assert isinstance(raw["streams"], list)
 
-        self.__assign_function_and_stream_ids(functions, streams, raw["functions_before_streams"])
+        self.__assign_function_and_stream_ids(
+            functions,
+            streams,
+            functions_before_streams=raw["functions_before_streams"],
+        )
 
         self.__name = raw["name"]
         self.__id = raw["id"]
@@ -40,7 +48,10 @@ class LrpcService:
 
     @staticmethod
     def __assign_function_and_stream_ids(
-        functions: list[LrpcFunDict], streams: list[LrpcStreamDict], functions_before_streams: bool
+        functions: list[LrpcFunDict],
+        streams: list[LrpcStreamDict],
+        *,
+        functions_before_streams: bool,
     ) -> None:
         last_id = -1
 
@@ -66,7 +77,7 @@ class LrpcService:
         return LrpcService.__assign_ids(streams, last_id)
 
     @staticmethod
-    def __assign_ids(items_needing_id: Union[list[LrpcFunDict], list[LrpcStreamDict]], last_id: int) -> int:
+    def __assign_ids(items_needing_id: list[LrpcFunDict] | list[LrpcStreamDict], last_id: int) -> int:
         for item in items_needing_id:
             if "id" in item:
                 last_id = item["id"]
@@ -96,14 +107,14 @@ class LrpcService:
     def functions(self) -> list[LrpcFun]:
         return self.__functions
 
-    def function_by_name(self, name: str) -> Optional[LrpcFun]:
+    def function_by_name(self, name: str) -> LrpcFun | None:
         for f in self.functions():
             if f.name() == name:
                 return f
 
         return None
 
-    def function_by_id(self, function_id: int) -> Optional[LrpcFun]:
+    def function_by_id(self, function_id: int) -> LrpcFun | None:
         for f in self.functions():
             if f.id() == function_id:
                 return f
@@ -113,14 +124,14 @@ class LrpcService:
     def streams(self) -> list[LrpcStream]:
         return self.__streams
 
-    def stream_by_name(self, name: str) -> Optional[LrpcStream]:
+    def stream_by_name(self, name: str) -> LrpcStream | None:
         for s in self.streams():
             if s.name() == name:
                 return s
 
         return None
 
-    def stream_by_id(self, stream_id: int) -> Optional[LrpcStream]:
+    def stream_by_id(self, stream_id: int) -> LrpcStream | None:
         for s in self.streams():
             if s.id() == stream_id:
                 return s

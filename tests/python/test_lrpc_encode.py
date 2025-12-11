@@ -1,11 +1,13 @@
+import re
 import struct
 from os import path
 
 import pytest
+
 from lrpc.client import lrpc_encode
 from lrpc.core import LrpcVar
-from lrpc.utils import load_lrpc_def_from_url
 from lrpc.types import LrpcType
+from lrpc.utils import load_lrpc_def_from_url
 
 definition_file = path.join(path.dirname(path.abspath(__file__)), "test_lrpc_encode_decode.lrpc.yaml")
 lrpc_def = load_lrpc_def_from_url(definition_file, warnings_as_errors=False)
@@ -21,13 +23,13 @@ def test_encode_uint8_t() -> None:
     assert encode_var(0, var) == b"\x00"
     assert encode_var(255, var) == b"\xff"
 
-    with pytest.raises(struct.error):
+    with pytest.raises(struct.error, match="ubyte format requires 0 <= number <= 255"):
         encode_var(-1, var)
 
-    with pytest.raises(struct.error):
+    with pytest.raises(struct.error, match="ubyte format requires 0 <= number <= 255"):
         encode_var(256, var)
 
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="Type error for v1: expected bool, int, float or str, but got <class 'set'>"):
         encode_var({123}, var)
 
 
@@ -39,13 +41,13 @@ def test_encode_int8_t() -> None:
     assert encode_var(-1, var) == b"\xff"
     assert encode_var(-128, var) == b"\x80"
 
-    with pytest.raises(struct.error):
+    with pytest.raises(struct.error, match="byte format requires -128 <= number <= 127"):
         encode_var(128, var)
 
-    with pytest.raises(struct.error):
+    with pytest.raises(struct.error, match="byte format requires -128 <= number <= 127"):
         encode_var(-129, var)
 
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match="Type error for v1: expected bool, int, float or str, but got <class 'tuple'>"):
         encode_var((123, 124), var)
 
 
@@ -55,13 +57,16 @@ def test_encode_uint16_t() -> None:
     assert encode_var(0, var) == b"\x00\x00"
     assert encode_var(65535, var) == b"\xff\xff"
 
-    with pytest.raises(struct.error):
+    with pytest.raises(struct.error, match=re.escape("ushort format requires 0 <= number <= 65535")):
         encode_var(-1, var)
 
-    with pytest.raises(struct.error):
+    with pytest.raises(struct.error, match=re.escape("ushort format requires 0 <= number <= 65535")):
         encode_var(65536, var)
 
-    with pytest.raises(TypeError):
+    with pytest.raises(
+        TypeError,
+        match=re.escape("Type error for v1: expected bool, int, float or str, but got <class 'list'>"),
+    ):
         encode_var([123], var)
 
 
@@ -73,13 +78,16 @@ def test_encode_int16_t() -> None:
     assert encode_var(-1, var) == b"\xff\xff"
     assert encode_var(-32768, var) == b"\x00\x80"
 
-    with pytest.raises(struct.error):
+    with pytest.raises(struct.error, match=re.escape("short format requires -32768 <= number <= 32767")):
         encode_var(32768, var)
 
-    with pytest.raises(struct.error):
+    with pytest.raises(struct.error, match=re.escape("short format requires -32768 <= number <= 32767")):
         encode_var(-32769, var)
 
-    with pytest.raises(TypeError):
+    with pytest.raises(
+        TypeError,
+        match=re.escape("Type error for v1: expected bool, int, float or str, but got <class 'NoneType'>"),
+    ):
         encode_var(None, var)
 
 
@@ -89,13 +97,13 @@ def test_encode_uint32_t() -> None:
     assert encode_var(0, var) == b"\x00\x00\x00\x00"
     assert encode_var((2**32) - 1, var) == b"\xff\xff\xff\xff"
 
-    with pytest.raises(struct.error):
+    with pytest.raises(struct.error, match=re.escape("argument out of range")):
         encode_var(-1, var)
 
-    with pytest.raises(struct.error):
+    with pytest.raises(struct.error, match=re.escape("argument out of range")):
         encode_var(2**32, var)
 
-    with pytest.raises(struct.error):
+    with pytest.raises(struct.error, match=re.escape("required argument is not an integer")):
         encode_var("123", var)
 
 
@@ -107,10 +115,10 @@ def test_encode_int32_t() -> None:
     assert encode_var(-1, var) == b"\xff\xff\xff\xff"
     assert encode_var(-(2**31), var) == b"\x00\x00\x00\x80"
 
-    with pytest.raises(struct.error):
+    with pytest.raises(struct.error, match=re.escape("argument out of range")):
         encode_var(2**31, var)
 
-    with pytest.raises(struct.error):
+    with pytest.raises(struct.error, match=re.escape("argument out of range")):
         encode_var(-(2**31) - 1, var)
 
 
@@ -120,10 +128,10 @@ def test_encode_uint64_t() -> None:
     assert encode_var(0, var) == b"\x00\x00\x00\x00\x00\x00\x00\x00"
     assert encode_var((2**64) - 1, var) == b"\xff\xff\xff\xff\xff\xff\xff\xff"
 
-    with pytest.raises(struct.error):
+    with pytest.raises(struct.error, match=re.escape("argument out of range")):
         encode_var(-1, var)
 
-    with pytest.raises(struct.error):
+    with pytest.raises(struct.error, match=re.escape("argument out of range")):
         encode_var(2**64, var)
 
 
@@ -135,10 +143,10 @@ def test_encode_int64_t() -> None:
     assert encode_var(-1, var) == b"\xff\xff\xff\xff\xff\xff\xff\xff"
     assert encode_var(-(2**63), var) == b"\x00\x00\x00\x00\x00\x00\x00\x80"
 
-    with pytest.raises(struct.error):
+    with pytest.raises(struct.error, match=re.escape("argument out of range")):
         encode_var(2**63, var)
 
-    with pytest.raises(struct.error):
+    with pytest.raises(struct.error, match=re.escape("argument out of range")):
         encode_var(-(2**63) - 1, var)
 
 
@@ -148,10 +156,10 @@ def test_encode_float() -> None:
     assert encode_var(0, var) == b"\x00\x00\x00\x00"
     assert encode_var(123.456, var) == b"\x79\xe9\xf6\x42"
 
-    with pytest.raises(OverflowError):
+    with pytest.raises(OverflowError, match=re.escape("float too large to pack with f format")):
         encode_var(3.5e38, var)
 
-    with pytest.raises(OverflowError):
+    with pytest.raises(OverflowError, match=re.escape("float too large to pack with f format")):
         encode_var(-3.5e38, var)
 
 
@@ -167,8 +175,8 @@ def test_encode_double() -> None:
 def test_encode_bool() -> None:
     var = LrpcVar({"name": "v1", "type": "bool"})
 
-    assert encode_var(False, var) == b"\x00"
-    assert encode_var(True, var) == b"\x01"
+    assert encode_var(value=False, var=var) == b"\x00"
+    assert encode_var(value=True, var=var) == b"\x01"
 
 
 def test_encode_string() -> None:
@@ -176,7 +184,7 @@ def test_encode_string() -> None:
 
     assert encode_var("test123", var) == b"test123\x00"
 
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=re.escape("Type error for v1: expected string, but got <class 'list'>")):
         encode_var(["test123"], var)
 
 
@@ -185,7 +193,7 @@ def test_encode_fixed_size_string() -> None:
 
     assert encode_var("test123", var) == b"test123\x00\x00\x00\x00"
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=re.escape("String length error for v1: max length 10, but got 11 ")):
         encode_var("0123456789_", var)
 
 
@@ -194,13 +202,13 @@ def test_encode_array() -> None:
 
     assert encode_var([1, 2, 3, 4], var) == b"\x01\x02\x03\x04"
 
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=re.escape("Type error for v1: expected list or tuple, but got <class 'int'>")):
         encode_var(0, var)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=re.escape("Length error for v1: expected 4, but gor 3")):
         encode_var([1, 2, 3], var)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=re.escape("Length error for v1: expected 4, but gor 5")):
         encode_var([1, 2, 3, 4, 5], var)
 
 
@@ -231,16 +239,16 @@ def test_encode_struct() -> None:
     encoded = encode_var({"b": 123, "a": 4567, "c": True}, var)
     assert encoded == b"\xd7\x11\x7b\x01"
 
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=re.escape("Type error for v1: expected dict, but got <class 'tuple'>")):
         encode_var((123, 4567, True), var)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=re.escape("Missing fields for v1: {'b'}")):
         encode_var({1: 123, "a": 4567, "c": True}, var)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=re.escape("Missing fields for v1: {'c'}")):
         encode_var({"b": 123, "a": 4567}, var)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=re.escape("Unknown fields for v1: {'d'}")):
         encode_var({"b": 123, "a": 4567, "c": True, "d": False}, var)
 
 
@@ -263,7 +271,7 @@ def test_encode_nested_struct() -> None:
 def test_encode_unknown_struct() -> None:
     var = LrpcVar({"name": "v1", "type": "struct@UnknownStruct"})
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="No struct UnknownStruct"):
         encode_var({"b": 123, "a": 4567}, var)
 
 
@@ -275,7 +283,10 @@ def test_encode_enum() -> None:
     encoded = encode_var("test2", var)
     assert encoded == b"\x37"
 
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=re.escape("Enum error for v1 of type MyEnum1: test3 is not a valid enum value"),
+    ):
         encode_var("test3", var)
 
 
@@ -296,7 +307,7 @@ def test_encode_enum_invalid_input() -> None:
     encoded = encode_var("test2", var)
     assert encoded == b"\x37"
 
-    with pytest.raises(TypeError):
+    with pytest.raises(TypeError, match=re.escape("Type error for v1: expected str, but got <class 'int'>")):
         encode_var(123, var)
 
 

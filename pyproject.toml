@@ -70,8 +70,13 @@ local_scheme = "no-local-version"
 pythonpath = "src"
 testpaths = ["tests"]
 
-[tool.black]
+[tool.ruff]
 line-length = 120
+
+[tool.ruff.lint]
+select = ["ALL"]
+fixable = ["ALL"]
+ignore = ["D", "TID252", "EM101", "TRY003", "S101", "EM102", "ANN401"]
 
 [tool.pylint]
 disable = [

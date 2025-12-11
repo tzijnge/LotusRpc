@@ -1,5 +1,5 @@
-from lrpc.utils import load_lrpc_def_from_str
 from lrpc.core import LrpcDef
+from lrpc.utils import load_lrpc_def_from_str
 
 
 def load_meta_def() -> LrpcDef:
@@ -10,8 +10,7 @@ services:
       - name: "f0"
 """
 
-    lrpc_def = load_lrpc_def_from_str(def_str, warnings_as_errors=False)
-    return lrpc_def
+    return load_lrpc_def_from_str(def_str, warnings_as_errors=False)
 
 
 def test_meta_service_properties() -> None:

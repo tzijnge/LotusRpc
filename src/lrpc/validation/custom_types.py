@@ -15,7 +15,7 @@ class CustomTypesValidator(LrpcValidator):
     def warnings(self) -> list[str]:
         return list(self.__warnings)
 
-    def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
+    def visit_lrpc_def(self, _lrpc_def: LrpcDef) -> None:
         self.__errors.clear()
         self.__warnings.clear()
         self.__declared_custom_types.clear()
@@ -39,7 +39,7 @@ class CustomTypesValidator(LrpcValidator):
     def visit_lrpc_function_param(self, param: LrpcVar) -> None:
         self.__handle_used_type(param)
 
-    def visit_lrpc_struct_field(self, struct: LrpcStruct, field: LrpcVar) -> None:
+    def visit_lrpc_struct_field(self, _struct: LrpcStruct, field: LrpcVar) -> None:
         self.__handle_used_type(field)
 
     def visit_lrpc_stream_param(self, param: LrpcVar) -> None:

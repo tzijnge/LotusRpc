@@ -1,4 +1,7 @@
+import re
+
 import pytest
+
 from lrpc.core import LrpcVar, LrpcVarDict
 
 
@@ -145,7 +148,10 @@ def test_struct_pack_type() -> None:
     v1: LrpcVarDict = {"name": "v1", "type": "struct@MyStruct"}
     assert LrpcVar(v1).base_type_is_struct()
 
-    with pytest.raises(TypeError):
+    with pytest.raises(
+        TypeError,
+        match=re.escape("Pack type is not defined for LrpcVar of type struct"),
+    ):
         LrpcVar(v1).pack_type()
 
 
@@ -153,7 +159,10 @@ def test_optional_pack_type() -> None:
     v1: LrpcVarDict = {"name": "v1", "type": "bool", "count": "?"}
     assert LrpcVar(v1).is_optional()
 
-    with pytest.raises(TypeError):
+    with pytest.raises(
+        TypeError,
+        match=re.escape("Pack type is not defined for LrpcVar of type optional"),
+    ):
         LrpcVar(v1).pack_type()
 
 
@@ -161,7 +170,10 @@ def test_array_pack_type() -> None:
     v1: LrpcVarDict = {"name": "v1", "type": "bool", "count": 5}
     assert LrpcVar(v1).is_array()
 
-    with pytest.raises(TypeError):
+    with pytest.raises(
+        TypeError,
+        match=re.escape("Pack type is not defined for LrpcVar of type array"),
+    ):
         LrpcVar(v1).pack_type()
 
 
@@ -169,5 +181,8 @@ def test_string_pack_type() -> None:
     v1: LrpcVarDict = {"name": "v1", "type": "string"}
     assert LrpcVar(v1).is_string()
 
-    with pytest.raises(TypeError):
+    with pytest.raises(
+        TypeError,
+        match=re.escape("Pack type is not defined for LrpcVar of type string"),
+    ):
         LrpcVar(v1).pack_type()

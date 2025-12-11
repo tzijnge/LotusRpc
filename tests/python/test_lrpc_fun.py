@@ -1,5 +1,9 @@
+import re
+
 import pytest
+
 from lrpc.core import LrpcFun, LrpcFunDict
+
 from .utilities import StringifyVisitor
 
 
@@ -47,7 +51,7 @@ def test_get_param_by_name() -> None:
 
     fun = LrpcFun(f)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=re.escape("No parameter  in function f1")):
         fun.param("")
     p1 = fun.param("p1")
     assert p1 is not None
@@ -64,7 +68,7 @@ def test_get_return_by_name() -> None:
 
     fun = LrpcFun(f)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=re.escape("No return value  in function f1")):
         fun.ret("")
     r1 = fun.ret("r1")
     assert r1 is not None

@@ -4,9 +4,7 @@ import importlib.util
 import logging
 import os
 import traceback
-from glob import glob
 from importlib import import_module
-from os import path
 from pathlib import Path
 from typing import Any
 
@@ -14,9 +12,8 @@ import click
 import colorama
 import yaml
 
-from lrpc.client import ClientCliVisitor, LrpcClient
+from lrpc.client import ClientCliVisitor, LrpcClient, LrpcResponse, LrpcTransport
 from lrpc.types import LrpcType
-from lrpc.client import LrpcResponse, LrpcTransport
 from lrpc.utils import load_lrpc_def_from_url
 
 # pylint: disable=anomalous-backslash-in-string
@@ -24,6 +21,7 @@ from lrpc.utils import load_lrpc_def_from_url
 colorama.init(autoreset=True)
 
 logging.basicConfig(format="[LRPCC] %(levelname)-8s: %(message)s", level=logging.INFO)
+log = logging.getLogger("LRPCC")
 
 LRPCC_CONFIG_ENV_VAR = "LRPCC_CONFIG"
 LRPCC_CONFIG_YAML = "lrpcc.config.yaml"
@@ -45,38 +43,37 @@ log_level_map = {
 
 
 def __load_config() -> dict[str, Any]:
-    configs = glob(f"**/{LRPCC_CONFIG_YAML}", recursive=True)
-    if len(configs) == 0:
+    configs = Path.cwd().rglob(pattern=f"**/{LRPCC_CONFIG_YAML}")
+    config_path = next(configs, None)
+    if config_path is None:
         if LRPCC_CONFIG_ENV_VAR in os.environ:
             env_var_value = os.environ[LRPCC_CONFIG_ENV_VAR]
-            if not path.exists(env_var_value):
+            if not Path(env_var_value).exists():
                 raise ValueError(
-                    f"No configuration file found in location {env_var_value} (environment variable {LRPCC_CONFIG_ENV_VAR})"
+                    f"No configuration file found in location {env_var_value} (environment variable {LRPCC_CONFIG_ENV_VAR})",  # noqa: E501
                 )
-            configs.append(env_var_value)
+            config_path = Path(env_var_value).resolve()
         else:
             raise ValueError(
-                f"No lrpcc configuration ({LRPCC_CONFIG_YAML}) in current working directory (recursive) or environment variable {LRPCC_CONFIG_ENV_VAR}"
+                f"No lrpcc configuration ({LRPCC_CONFIG_YAML}) in current working directory (recursive) or environment variable {LRPCC_CONFIG_ENV_VAR}",  # noqa: E501
             )
 
-    config_url = path.abspath(configs[0])
-
-    with open(config_url, mode="rt", encoding="utf-8") as config_file:
+    with config_path.open(encoding="utf-8") as config_file:
         config = yaml.safe_load(config_file)
         if not isinstance(config, dict):
-            raise ValueError(f"Invalid YAML input for {config_file.name}")
+            raise TypeError(f"Invalid YAML input for {config_file.name}")
 
     if DEFINITION_URL not in config:
-        raise ValueError(f"Missing field `{DEFINITION_URL}` in {config_url}")
+        raise ValueError(f"Missing field `{DEFINITION_URL}` in {config_path.name}")
 
     if TRANSPORT_TYPE not in config:
-        raise ValueError(f"Missing field `{TRANSPORT_TYPE}` in {config_url}")
+        raise ValueError(f"Missing field `{TRANSPORT_TYPE}` in {config_path.name}")
 
     if TRANSPORT_PARAMS not in config:
-        raise ValueError(f"Missing field `{TRANSPORT_PARAMS}` in {config_url}")
+        raise ValueError(f"Missing field `{TRANSPORT_PARAMS}` in {config_path.name}")
 
-    if not path.isabs(config[DEFINITION_URL]):
-        config[DEFINITION_URL] = path.join(path.dirname(config_url), config[DEFINITION_URL])
+    if not Path(config[DEFINITION_URL]).is_absolute():
+        config[DEFINITION_URL] = config_path.parent.joinpath(config[DEFINITION_URL])
 
     return config
 
@@ -86,10 +83,10 @@ def __load_config() -> dict[str, Any]:
 def run_lrpcc_config_creator() -> None:
     """\b
         __          __             ____  ____  ______
-       / /   ____  / /___  _______/ __ \/ __ \/ ____/
-      / /   / __ \/ __/ / / / ___/ /_/ / /_/ / /
+       / /   ____  / /___  _______/ __ \\/ __ \\/ ____/
+      / /   / __ \\/ __/ / / / ___/ /_/ / /_/ / /
      / /___/ /_/ / /_/ /_/ (__  ) _, _/ ____/ /___
-    /_____/\____/\__/\__,_/____/_/ |_/_/    \____/
+    /_____/\\____/\\__/\\__,_/____/_/ |_/_/    \\____/
 
     lrpcc is the LotusRPC client CLI tool.
 
@@ -132,10 +129,10 @@ def create(definition_url: str, transport_type: str) -> None:
         TRANSPORT_TYPE: transport_type,
         TRANSPORT_PARAMS: transport_params,
     }
-    with open(LRPCC_CONFIG_YAML, mode="wt", encoding="utf-8") as lrpcc_config_file:
+    with Path(LRPCC_CONFIG_YAML).open(mode="w", encoding="utf-8") as lrpcc_config_file:
         yaml.safe_dump(lrpcc_config, lrpcc_config_file)
 
-    logging.info("Created file %s", LRPCC_CONFIG_YAML)
+    log.info("Created file %s", LRPCC_CONFIG_YAML)
 
 
 # pylint: disable = too-few-public-methods
@@ -152,38 +149,39 @@ class Lrpcc:
     @classmethod
     def __set_log_level(cls, log_level: str) -> None:
         if log_level not in log_level_map:
-            logging.info("Invalid log level: %s. Using log level INFO", log_level)
+            log.info("Invalid log level: %s. Using log level INFO", log_level)
         else:
             logging.getLogger().setLevel(log_level_map[log_level])
 
     @staticmethod
     def _make_transport(transport_type: str, transport_params: dict[str, Any]) -> LrpcTransport:
-        transport_plugin = Path(os.getcwd() + f"/lrpcc_{transport_type}.py")
+        transport_plugin = Path.cwd().joinpath(f"lrpcc_{transport_type}.py")
         if transport_plugin.exists():
             spec = importlib.util.spec_from_file_location(
-                f".lrpcc_{transport_type}", os.getcwd() + f"/lrpcc_{transport_type}.py"
+                f".lrpcc_{transport_type}",
+                Path.cwd().joinpath(f"lrpcc_{transport_type}.py"),
             )
             if spec is not None and spec.loader is not None:
-                logging.debug("Using transport plugin from: %s", transport_plugin)
+                log.debug("Using transport plugin from: %s", transport_plugin)
                 module = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(module)
             else:
                 raise ImportError(f"Unable to load transport plugin from {transport_plugin}")
         else:
             module = import_module(f"lrpc.plugins.lrpcc_{transport_type}")
-            logging.debug("Using built-in LRPCC transport %s", transport_type)
+            log.debug("Using built-in LRPCC transport %s", transport_type)
 
         if not hasattr(module, "Transport"):
             raise AttributeError(f"No class named 'Transport' in {module}")
 
-        transport_module = getattr(module, "Transport")
+        transport_module = module.Transport
         if not hasattr(transport_module, "read"):
             raise AttributeError(f"No method named 'read' in {transport_module}")
 
         if not hasattr(transport_module, "write"):
             raise AttributeError(f"No method named 'write' in {transport_module}")
 
-        logging.debug("Constructing LRPCC transport with these params: %s", transport_params)
+        log.debug("Constructing LRPCC transport with params: %s", transport_params)
 
         transport: LrpcTransport = transport_module(**transport_params)
         return transport
@@ -191,7 +189,7 @@ class Lrpcc:
     def _command_handler(self, service_name: str, function_or_stream_name: str, **kwargs: LrpcType) -> None:
         for index, response in enumerate(self.client.communicate(service_name, function_or_stream_name, **kwargs)):
             if self.lrpc_def.stream(service_name, function_or_stream_name) is not None:
-                print(colorama.Fore.CYAN + f"[#{index}]")
+                print(colorama.Fore.CYAN + f"[#{index}]")  # noqa: T201
             self._print_response(response)
 
     @staticmethod
@@ -207,7 +205,7 @@ class Lrpcc:
                 if (isinstance(value, int) and not isinstance(value, bool))
                 else ""
             )
-            print(f"{name_text}: {value}{hex_repr}")
+            print(f"{name_text}: {value}{hex_repr}")  # noqa: T201
 
     def run(self) -> None:
         cli = ClientCliVisitor(self._command_handler)
@@ -221,9 +219,9 @@ def run_cli() -> None:
 
     # catching general exception here is considered ok, because application will terminate
     # pylint: disable=broad-exception-caught
-    except Exception as e:
-        logging.error(str(e))
-        logging.info("Entering lrpcc config creator")
+    except Exception:
+        log.exception("Something unexpected happened in LRPCC")
+        log.info("Entering lrpcc config creator")
         run_lrpcc_config_creator()
         return
 
@@ -232,10 +230,9 @@ def run_cli() -> None:
 
     # catching general exception here is considered ok, because application will terminate
     # pylint: disable=broad-exception-caught
-    except Exception as e:
-        logging.error("Error running lrpcc for %s", config[DEFINITION_URL])
-        logging.error(str(e))
-        print(traceback.format_exc())
+    except Exception:
+        log.exception("Error running lrpcc for %s", config[DEFINITION_URL])
+        log.info(traceback.format_exc())
 
 
 if __name__ == "__main__":

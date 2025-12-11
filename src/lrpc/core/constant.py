@@ -1,4 +1,5 @@
-from typing import TypedDict, Union
+from typing import TypedDict
+
 from typing_extensions import NotRequired
 
 from ..visitors import LrpcVisitor
@@ -21,17 +22,18 @@ CPP_TYPES: list[str] = [
 
 class LrpcConstantDict(TypedDict):
     name: str
-    value: Union[int, float, bool, str]
+    value: int | float | bool | str
     cppType: NotRequired[str]
 
 
 class LrpcConstant:
     def __init__(self, raw: LrpcConstantDict) -> None:
-        assert "name" in raw and isinstance(raw["name"], str)
+        assert "name" in raw
+        assert isinstance(raw["name"], str)
         assert "value" in raw
 
         self.__name: str = raw["name"]
-        self.__value: Union[int, float, bool, str] = raw["value"]
+        self.__value: int | float | bool | str = raw["value"]
         self.__cpp_type: str = self.__init_cpp_type(raw)
 
     def __init_cpp_type(self, raw: LrpcConstantDict) -> str:
@@ -59,7 +61,7 @@ class LrpcConstant:
     def name(self) -> str:
         return self.__name
 
-    def value(self) -> Union[int, float, bool, str]:
+    def value(self) -> int | float | bool | str:
         return self.__value
 
     def cpp_type(self) -> str:

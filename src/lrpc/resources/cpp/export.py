@@ -1,29 +1,29 @@
 from importlib import resources
 from importlib.metadata import version
-import os
-from os import path
+from pathlib import Path
 
 
-def create_dir_if_not_exists(target_dir: str) -> None:
-    if not path.exists(target_dir):
-        os.makedirs(target_dir, 511, True)
+def create_dir_if_not_exists(target_dir: Path) -> None:
+    if not target_dir.exists():
+        Path.mkdir(target_dir, 511, exist_ok=True)
 
 
-def export(resource: str, output: str) -> None:
+def export(resource: str, output: Path) -> None:
     resource_path = resources.files(__package__).joinpath(resource)
 
-    with resources.as_file(resource_path) as resource_file:
-        with open(resource_file, mode="rt", encoding="utf8") as source:
-            with open(path.join(output, resource_file.name), mode="wt", encoding="utf-8") as dest:
-                v = version("lotusrpc")
-                dest.write(f"// This file has been generated with LRPC version {v}\n")
+    with (
+        resources.as_file(resource_path) as resource_file,
+        resource_file.open(encoding="utf8") as source,
+        output.joinpath(resource_file.name).open(mode="w", encoding="utf-8") as dest,
+    ):
+        v = version("lotusrpc")
+        dest.write(f"// This file has been generated with LRPC version {v}\n")
 
-                for l in source.readlines():
-                    dest.write(l)
+        dest.writelines(source.readlines())
 
 
-def export_to(output: os.PathLike[str]) -> None:
-    core_dir = path.join(output, "lrpccore")
+def export_to(output: Path) -> None:
+    core_dir = output.joinpath("lrpccore")
     create_dir_if_not_exists(core_dir)
 
     export("EtlRwExtensions.hpp", core_dir)

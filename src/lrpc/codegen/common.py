@@ -1,4 +1,5 @@
 from importlib.metadata import version
+
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 
 from ..core import LrpcVar

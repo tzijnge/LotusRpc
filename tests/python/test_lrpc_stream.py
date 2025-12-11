@@ -1,5 +1,9 @@
+import re
+
 import pytest
+
 from lrpc.core import LrpcStream, LrpcStreamDict
+
 from .utilities import StringifyVisitor
 
 
@@ -125,7 +129,7 @@ def test_stream_param() -> None:
 
     assert stream.returns()[0].name() == "p1"
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=re.escape("No parameter p2 in function s1")):
         stream.param("p2")
 
 

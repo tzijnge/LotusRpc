@@ -1,5 +1,9 @@
+import re
+
 import pytest
+
 from lrpc.core import LrpcService, LrpcServiceDict
+
 from .utilities import StringifyVisitor
 
 
@@ -129,7 +133,7 @@ def test_functions_and_streams() -> None:
 def test_fail_when_neither_functions_nor_streams() -> None:
     s: LrpcServiceDict = {"name": "srv0", "id": 123, "functions_before_streams": True}
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(AssertionError, match=re.escape("")):
         LrpcService(s)
 
 

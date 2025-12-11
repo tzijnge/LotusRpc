@@ -1,4 +1,4 @@
-from ..core import LrpcDef, LrpcService, LrpcFun, LrpcVar, LrpcStream
+from ..core import LrpcDef, LrpcFun, LrpcService, LrpcStream, LrpcVar
 from .validator import LrpcValidator
 
 
@@ -18,7 +18,7 @@ class ParamAndReturnValidator(LrpcValidator):
     def warnings(self) -> list[str]:
         return self.__warnings
 
-    def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
+    def visit_lrpc_def(self, _lrpc_def: LrpcDef) -> None:
         self.__errors.clear()
         self.__warnings.clear()
         self.__current_service = ""

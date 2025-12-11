@@ -1,5 +1,5 @@
-from .validator import LrpcValidator
 from ..core import LrpcConstant, LrpcDef, LrpcEnum, LrpcService, LrpcStruct
+from .validator import LrpcValidator
 
 
 class NamesValidator(LrpcValidator):

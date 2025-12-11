@@ -4,7 +4,7 @@ import subprocess
 import pytest
 import yaml
 
-with open("tests/lrpcc/server.yaml", mode="rt", encoding="utf-8") as server:
+with open("tests/lrpcc/server.yaml", encoding="utf-8") as server:
     server_config = yaml.safe_load(server)
     test_params = [(config["cli"], config["response"]) for config in server_config]
 

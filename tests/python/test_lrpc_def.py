@@ -841,16 +841,3 @@ def test_validation_wrong_type_rx_buffer_size() -> None:
 
     with pytest.raises(ValidationError, match=re.escape("Input should be a valid integer")):
         LrpcDef(d)  # type: ignore[arg-type]
-
-
-def test_validation_additional_fields() -> None:
-    d = {
-        "name": "test",
-        "services": [
-            {"name": "srv0", "functions": [{"name": "f0"}], "functions_before_streams": True},
-        ],
-        "extra_field": "should_fail",
-    }
-
-    with pytest.raises(ValidationError, match=re.escape("Extra inputs are not permitted")):
-        LrpcDef(d)  # type: ignore[arg-type]

@@ -55,3 +55,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
           fail_level: any
+          compare_with: "origin/${{ github.base_ref }}"

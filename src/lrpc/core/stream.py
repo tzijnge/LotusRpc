@@ -23,7 +23,7 @@ class LrpcStreamOptionalIdDict(TypedDict):
     params: NotRequired[list[LrpcVarDict]]
 
 
-LrpcStreamValidator = TypeAdapter(LrpcStreamDict)
+LrpcStreamValidator = TypeAdapter(LrpcStreamDict)  # pylint: disable=invalid-name
 
 
 class LrpcStream:

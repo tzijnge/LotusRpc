@@ -25,7 +25,7 @@ class LrpcConstantDict(TypedDict):
     cppType: NotRequired[str]
 
 
-LrpcConstantValidator = TypeAdapter(LrpcConstantDict)
+LrpcConstantValidator = TypeAdapter(LrpcConstantDict)  # pylint: disable=invalid-name
 
 
 class LrpcConstant:

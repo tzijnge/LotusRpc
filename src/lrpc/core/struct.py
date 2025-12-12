@@ -12,7 +12,7 @@ class LrpcStructDict(TypedDict):
     external_namespace: NotRequired[str]
 
 
-LrpcStructValidator = TypeAdapter(LrpcStructDict)
+LrpcStructValidator = TypeAdapter(LrpcStructDict)  # pylint: disable=invalid-name
 
 
 class LrpcStruct:

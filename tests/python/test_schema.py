@@ -386,8 +386,8 @@ structs:
         load_def(rpc_def)
 
     errors = caplog.text.splitlines()
-    assert len(errors) == 4
-    assert caplog.text.count("Duplicate name: server") == 4
+    assert len(errors) == 1
+    assert caplog.text.count("Duplicate name: server") == 1
 
 
 def test_duplicate_constant_names(caplog: pytest.LogCaptureFixture) -> None:

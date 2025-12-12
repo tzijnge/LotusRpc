@@ -7,10 +7,12 @@ from .enum import LrpcEnumDict as LrpcEnumDict
 from .enum import LrpcEnumField as LrpcEnumField
 from .function import LrpcFun as LrpcFun
 from .function import LrpcFunDict as LrpcFunDict
+from .function import LrpcFunOptionalIdDict as LrpcFunOptionalIdDict
 from .service import LrpcService as LrpcService
 from .service import LrpcServiceDict as LrpcServiceDict
 from .stream import LrpcStream as LrpcStream
 from .stream import LrpcStreamDict as LrpcStreamDict
+from .stream import LrpcStreamOptionalIdDict as LrpcStreamOptionalIdDict
 from .struct import LrpcStruct as LrpcStruct
 from .struct import LrpcStructDict as LrpcStructDict
 from .var import LrpcVar as LrpcVar

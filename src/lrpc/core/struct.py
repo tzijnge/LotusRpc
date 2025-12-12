@@ -1,6 +1,5 @@
-from typing import TypedDict
-
-from typing_extensions import NotRequired
+from pydantic import TypeAdapter
+from typing_extensions import NotRequired, TypedDict
 
 from ..visitors import LrpcVisitor
 from .var import LrpcVar, LrpcVarDict
@@ -13,12 +12,12 @@ class LrpcStructDict(TypedDict):
     external_namespace: NotRequired[str]
 
 
+LrpcStructValidator = TypeAdapter(LrpcStructDict)
+
+
 class LrpcStruct:
     def __init__(self, raw: LrpcStructDict) -> None:
-        assert "name" in raw
-        assert isinstance(raw["name"], str)
-        assert "fields" in raw
-        assert isinstance(raw["fields"], list)
+        LrpcStructValidator.validate_python(raw, strict=True, extra="forbid")
 
         self.__name = raw["name"]
         self.__fields = [LrpcVar(f) for f in raw["fields"]]

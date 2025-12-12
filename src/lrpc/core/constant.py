@@ -1,6 +1,5 @@
-from typing import TypedDict
-
-from typing_extensions import NotRequired
+from pydantic import TypeAdapter
+from typing_extensions import NotRequired, TypedDict
 
 from ..visitors import LrpcVisitor
 
@@ -26,11 +25,12 @@ class LrpcConstantDict(TypedDict):
     cppType: NotRequired[str]
 
 
+LrpcConstantValidator = TypeAdapter(LrpcConstantDict)
+
+
 class LrpcConstant:
     def __init__(self, raw: LrpcConstantDict) -> None:
-        assert "name" in raw
-        assert isinstance(raw["name"], str)
-        assert "value" in raw
+        LrpcConstantValidator.validate_python(raw, strict=True, extra="forbid")
 
         self.__name: str = raw["name"]
         self.__value: int | float | bool | str = raw["value"]

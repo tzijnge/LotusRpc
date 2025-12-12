@@ -1,3 +1,8 @@
+import re
+
+import pytest
+from pydantic import ValidationError
+
 from lrpc.core import LrpcStruct, LrpcStructDict
 
 
@@ -72,3 +77,52 @@ def test_external_with_namespace() -> None:
     assert struct.is_external() is True
     assert struct.external_file() == "path/to/enum.hpp"
     assert struct.external_namespace() == "path::to"
+
+
+def test_validation_missing_name() -> None:
+    s = {
+        "fields": [{"name": "f1", "type": "uint64_t"}],
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Field required")):
+        LrpcStruct(s)  # type: ignore[arg-type]
+
+
+def test_validation_missing_fields() -> None:
+    s = {
+        "name": "MyStruct",
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Field required")):
+        LrpcStruct(s)  # type: ignore[arg-type]
+
+
+def test_validation_wrong_type_name() -> None:
+    s = {
+        "name": 123,
+        "fields": [{"name": "f1", "type": "uint64_t"}],
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Input should be a valid string")):
+        LrpcStruct(s)  # type: ignore[arg-type]
+
+
+def test_validation_wrong_type_fields() -> None:
+    s = {
+        "name": "MyStruct",
+        "fields": "not_a_list",
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Input should be a valid list")):
+        LrpcStruct(s)  # type: ignore[arg-type]
+
+
+def test_validation_additional_fields() -> None:
+    s = {
+        "name": "MyStruct",
+        "fields": [{"name": "f1", "type": "uint64_t"}],
+        "extra_field": "should_fail",
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Extra inputs are not permitted")):
+        LrpcStruct(s)  # type: ignore[arg-type]

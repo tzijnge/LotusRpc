@@ -1,3 +1,6 @@
+import pytest
+from pydantic import ValidationError
+
 from lrpc.core import LrpcEnum, LrpcEnumDict
 
 
@@ -111,3 +114,30 @@ def test_field_id() -> None:
     assert enum.field_id("f1") == 111
     assert enum.field_id("f2") == 222
     assert enum.field_id("f3") is None
+
+
+def test_validate_additional_fields() -> None:
+    e = {
+        "name": "MyEnum1",
+        "fields": [
+            {"name": "f1", "id": 111},
+            {"name": "f2", "id": 222},
+        ],
+        "additional_field": 123,
+    }
+
+    with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
+        LrpcEnum(e)  # type: ignore[arg-type]
+
+
+def test_validate_wrong_type() -> None:
+    e = {
+        "name": 1,
+        "fields": [
+            {"name": "f1", "id": 111},
+            {"name": "f2", "id": 222},
+        ],
+    }
+
+    with pytest.raises(ValidationError, match="Input should be a valid string"):
+        LrpcEnum(e)  # type: ignore[arg-type]

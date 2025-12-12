@@ -1,6 +1,5 @@
-from typing import TypedDict
-
-from typing_extensions import NotRequired
+from pydantic import TypeAdapter
+from typing_extensions import NotRequired, TypedDict
 
 from ..visitors import LrpcVisitor
 from .var import LrpcVar, LrpcVarDict
@@ -13,12 +12,19 @@ class LrpcFunDict(TypedDict):
     returns: NotRequired[list[LrpcVarDict]]
 
 
+class LrpcFunOptionalIdDict(TypedDict):
+    name: str
+    id: NotRequired[int]
+    params: NotRequired[list[LrpcVarDict]]
+    returns: NotRequired[list[LrpcVarDict]]
+
+
+LrpcFunValidator = TypeAdapter(LrpcFunDict)
+
+
 class LrpcFun:
     def __init__(self, raw: LrpcFunDict) -> None:
-        assert "name" in raw
-        assert isinstance(raw["name"], str)
-        assert "id" in raw
-        assert isinstance(raw["id"], int)
+        LrpcFunValidator.validate_python(raw, strict=True, extra="forbid")
 
         self.__params = []
         self.__returns = []

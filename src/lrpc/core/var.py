@@ -1,7 +1,8 @@
 from copy import deepcopy
-from typing import Literal, TypedDict
+from typing import Literal
 
-from typing_extensions import NotRequired
+from pydantic import TypeAdapter
+from typing_extensions import NotRequired, TypedDict
 
 PACK_TYPES: dict[str, str] = {
     "uint8_t": "B",
@@ -24,13 +25,13 @@ class LrpcVarDict(TypedDict):
     count: NotRequired[int | Literal["?"]]
 
 
+LrpcVarValidator = TypeAdapter(LrpcVarDict)
+
+
 # pylint: disable = too-many-public-methods
 class LrpcVar:
     def __init__(self, raw: LrpcVarDict) -> None:
-        assert "name" in raw
-        assert isinstance(raw["name"], str)
-        assert "type" in raw
-        assert isinstance(raw["type"], str)
+        LrpcVarValidator.validate_python(raw, strict=True, extra="forbid")
 
         self.__name = raw["name"]
         self.__type = raw["type"].replace("struct@", "").replace("enum@", "").strip("@")

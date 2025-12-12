@@ -1,12 +1,13 @@
-from typing import TypedDict
+from typing import cast
 
-from typing_extensions import NotRequired
+from pydantic import TypeAdapter
+from typing_extensions import NotRequired, TypedDict
 
 from ..visitors import LrpcVisitor
 from .constant import LrpcConstant, LrpcConstantDict
 from .enum import LrpcEnum, LrpcEnumDict
 from .function import LrpcFun
-from .service import LrpcService, LrpcServiceDict
+from .service import LrpcService, LrpcServiceDict, LrpcServiceOptionalIdDict
 from .stream import LrpcStream
 from .struct import LrpcStruct, LrpcStructDict
 from .var import LrpcVarDict
@@ -15,7 +16,7 @@ from .var import LrpcVarDict
 class LrpcDefDict(TypedDict):
     name: str
     version: NotRequired[str]
-    services: list[LrpcServiceDict]
+    services: list[LrpcServiceOptionalIdDict]
     namespace: NotRequired[str]
     rx_buffer_size: NotRequired[int]
     tx_buffer_size: NotRequired[int]
@@ -24,15 +25,15 @@ class LrpcDefDict(TypedDict):
     constants: NotRequired[list[LrpcConstantDict]]
 
 
+LrpcDefValidator = TypeAdapter(LrpcDefDict)
+
+
 # pylint: disable = too-many-instance-attributes
 class LrpcDef:
     META_SERVICE_ID = 255
 
     def __init__(self, raw: LrpcDefDict) -> None:
-        assert "name" in raw
-        assert isinstance(raw["name"], str)
-        assert "services" in raw
-        assert isinstance(raw["services"], list)
+        LrpcDefValidator.validate_python(raw, strict=True, extra="allow")
 
         struct_names = []
         if "structs" in raw:
@@ -49,7 +50,7 @@ class LrpcDef:
         self.__name = raw["name"]
         self.__version = raw.get("version", None)
 
-        self.__services = [LrpcService(s) for s in raw["services"]]
+        self.__services = [LrpcService(cast(LrpcServiceDict, s)) for s in raw["services"]]
         self.__namespace = raw.get("namespace", None)
         self.__rx_buffer_size = raw.get("rx_buffer_size", 256)
         self.__tx_buffer_size = raw.get("tx_buffer_size", 256)
@@ -87,7 +88,7 @@ class LrpcDef:
         for s in raw["services"]:
             if s["name"] == "LrpcMeta":
                 s["id"] = self.META_SERVICE_ID
-                self.__meta_service = LrpcService(s)
+                self.__meta_service = LrpcService(cast(LrpcServiceDict, s))
                 raw["services"].remove(s)
                 meta_service_found = True
 
@@ -109,10 +110,7 @@ class LrpcDef:
             if "id" in s:
                 last_service_id = s["id"]
             else:
-                # id field must be present in LrpcServiceDict to construct LrpcService
-                # but it is optional when constructing LrpcDef. This method
-                # makes sure that service IDs are initialized properly
-                last_service_id = last_service_id + 1  # type: ignore[unreachable]
+                last_service_id = last_service_id + 1
                 s["id"] = last_service_id
 
     def accept(self, visitor: LrpcVisitor) -> None:

@@ -5,3 +5,4 @@ click==8.3.0
 pyserial==3.5
 typing-extensions==4.15.0
 colorama==0.4.6
+pydantic==2.12.5

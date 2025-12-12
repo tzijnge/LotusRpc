@@ -1,6 +1,8 @@
 import math
+import re
 
 import pytest
+from pydantic import ValidationError
 
 from lrpc.core import LrpcDef, LrpcFun, LrpcStream
 from lrpc.utils import load_lrpc_def_from_str
@@ -784,3 +786,71 @@ services:
         "service[LrpcMeta]-stream[error+0+server]-param[start]-param_end-return[type]-return[p1]-return[p2]-return[p3]-return[message]-return_end-stream_end-service_end"
         in v.result
     )
+
+
+def test_validation_missing_name() -> None:
+    d = {
+        "services": [
+            {"name": "srv0", "functions": [{"name": "f0"}], "functions_before_streams": True},
+        ],
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Field required")):
+        LrpcDef(d)  # type: ignore[arg-type]
+
+
+def test_validation_missing_services() -> None:
+    d = {
+        "name": "test",
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Field required")):
+        LrpcDef(d)  # type: ignore[arg-type]
+
+
+def test_validation_wrong_type_name() -> None:
+    d = {
+        "name": 123,
+        "services": [
+            {"name": "srv0", "functions": [{"name": "f0"}], "functions_before_streams": True},
+        ],
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Input should be a valid string")):
+        LrpcDef(d)  # type: ignore[arg-type]
+
+
+def test_validation_wrong_type_services() -> None:
+    d = {
+        "name": "test",
+        "services": "not_a_list",
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Input should be a valid list")):
+        LrpcDef(d)  # type: ignore[arg-type]
+
+
+def test_validation_wrong_type_rx_buffer_size() -> None:
+    d = {
+        "name": "test",
+        "rx_buffer_size": "invalid",
+        "services": [
+            {"name": "srv0", "functions": [{"name": "f0"}], "functions_before_streams": True},
+        ],
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Input should be a valid integer")):
+        LrpcDef(d)  # type: ignore[arg-type]
+
+
+def test_validation_additional_fields() -> None:
+    d = {
+        "name": "test",
+        "services": [
+            {"name": "srv0", "functions": [{"name": "f0"}], "functions_before_streams": True},
+        ],
+        "extra_field": "should_fail",
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Extra inputs are not permitted")):
+        LrpcDef(d)  # type: ignore[arg-type]

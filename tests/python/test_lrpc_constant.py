@@ -1,7 +1,7 @@
 import math
-import re
 
 import pytest
+from pydantic import ValidationError
 
 from lrpc.core import LrpcConstant, LrpcConstantDict
 
@@ -95,10 +95,7 @@ def test_invalid_type() -> None:
 
 def test_invalid_implicit_type() -> None:
     # Ignore type error because that's what this test is about
-    c: LrpcConstantDict = {"name": "t", "value": {"invalid_type": 1}}  # type: ignore[typeddict-item]
+    c = {"name": "t", "value": {"invalid_type": 1}}
 
-    with pytest.raises(
-        ValueError,
-        match=re.escape("Unable to infer cppType for LrpcConstant value: {'invalid_type': 1}"),
-    ):
-        LrpcConstant(c)
+    with pytest.raises(ValidationError, match="Input should be a valid integer"):
+        LrpcConstant(c)  # type: ignore[arg-type]

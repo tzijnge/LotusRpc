@@ -1,13 +1,7 @@
-from typing import TypedDict
-
-from typing_extensions import NotRequired
+from pydantic import TypeAdapter
+from typing_extensions import NotRequired, TypedDict
 
 from ..visitors import LrpcVisitor
-
-
-class LrpcEnumFieldSimpleDict(TypedDict):
-    name: str
-    id: NotRequired[int]
 
 
 class LrpcEnumFieldDict(TypedDict):
@@ -15,12 +9,12 @@ class LrpcEnumFieldDict(TypedDict):
     id: int
 
 
+LrpcEnumFieldValidator = TypeAdapter(LrpcEnumFieldDict)
+
+
 class LrpcEnumField:
     def __init__(self, raw: LrpcEnumFieldDict) -> None:
-        assert "name" in raw
-        assert isinstance(raw["name"], str)
-        assert "id" in raw
-        assert isinstance(raw["id"], int)
+        LrpcEnumFieldValidator.validate_python(raw)
 
         self.__name = raw["name"]
         self.__id = raw["id"]
@@ -32,6 +26,14 @@ class LrpcEnumField:
         return self.__id
 
 
+class LrpcEnumFieldSimpleDict(TypedDict):
+    name: str
+    id: NotRequired[int]
+
+
+LrpcEnumFieldSimpleValidator = TypeAdapter(LrpcEnumFieldSimpleDict)
+
+
 class LrpcEnumDict(TypedDict):
     name: str
     fields: list[LrpcEnumFieldSimpleDict | str]
@@ -39,12 +41,12 @@ class LrpcEnumDict(TypedDict):
     external_namespace: NotRequired[str]
 
 
+LrpcEnumValidator = TypeAdapter(LrpcEnumDict)
+
+
 class LrpcEnum:
     def __init__(self, raw: LrpcEnumDict) -> None:
-        assert "name" in raw
-        assert isinstance(raw["name"], str)
-        assert "fields" in raw
-        assert isinstance(raw["fields"], list)
+        LrpcEnumValidator.validate_python(raw, strict=True, extra="forbid")
 
         self.__name = raw["name"]
         self.__fields = raw["fields"]

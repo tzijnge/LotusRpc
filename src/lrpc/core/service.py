@@ -1,43 +1,39 @@
-from typing import TypedDict
+from typing import cast
 
-from typing_extensions import NotRequired
+from pydantic import TypeAdapter
+from typing_extensions import NotRequired, TypedDict
 
 from ..visitors import LrpcVisitor
-from .function import LrpcFun, LrpcFunDict
-from .stream import LrpcStream, LrpcStreamDict
+from .function import LrpcFun, LrpcFunDict, LrpcFunOptionalIdDict
+from .stream import LrpcStream, LrpcStreamDict, LrpcStreamOptionalIdDict
 
 
 class LrpcServiceDict(TypedDict):
     name: str
     id: int
-    functions: NotRequired[list[LrpcFunDict]]
-    streams: NotRequired[list[LrpcStreamDict]]
+    functions: NotRequired[list[LrpcFunOptionalIdDict]]
+    streams: NotRequired[list[LrpcStreamOptionalIdDict]]
     functions_before_streams: bool
+
+
+class LrpcServiceOptionalIdDict(TypedDict):
+    name: str
+    id: NotRequired[int]
+    functions: NotRequired[list[LrpcFunOptionalIdDict]]
+    streams: NotRequired[list[LrpcStreamOptionalIdDict]]
+    functions_before_streams: bool
+
+
+LrpcServiceValidator = TypeAdapter(LrpcServiceDict)
 
 
 class LrpcService:
     def __init__(self, raw: LrpcServiceDict) -> None:
-        assert "name" in raw
-        assert isinstance(raw["name"], str)
-        assert "id" in raw
-        assert isinstance(raw["id"], int)
-        assert "functions_before_streams" in raw
-        assert isinstance(raw["functions_before_streams"], bool)
+        LrpcServiceValidator.validate_python(raw, strict=True, extra="forbid")
 
-        functions = raw.get("functions", [])
-        streams = raw.get("streams", [])
-
-        assert (len(functions) != 0) or (len(streams) != 0)
-
-        if "functions" in raw:
-            assert isinstance(raw["functions"], list)
-
-        if "streams" in raw:
-            assert isinstance(raw["streams"], list)
-
-        self.__assign_function_and_stream_ids(
-            functions,
-            streams,
+        functions, streams = self.__assign_function_and_stream_ids(
+            raw.get("functions", []),
+            raw.get("streams", []),
             functions_before_streams=raw["functions_before_streams"],
         )
 
@@ -48,11 +44,13 @@ class LrpcService:
 
     @staticmethod
     def __assign_function_and_stream_ids(
-        functions: list[LrpcFunDict],
-        streams: list[LrpcStreamDict],
+        functions: list[LrpcFunOptionalIdDict],
+        streams: list[LrpcStreamOptionalIdDict],
         *,
         functions_before_streams: bool,
-    ) -> None:
+    ) -> tuple[list[LrpcFunDict], list[LrpcStreamDict]]:
+        assert (len(functions) != 0) or (len(streams) != 0)
+
         last_id = -1
 
         if functions_before_streams:
@@ -62,30 +60,34 @@ class LrpcService:
             last_id = LrpcService.__assign_stream_ids(streams, last_id)
             LrpcService.__assign_function_ids(functions, last_id)
 
+        # functions and streams are now converted to LrpcFunDict and LrpcStreamDict respectively
+        # This is validated in the LrpcFun and LrpcStream constructors
+        return cast(list[LrpcFunDict], functions), cast(list[LrpcStreamDict], streams)
+
     @staticmethod
     def __assign_function_ids(
-        functions: list[LrpcFunDict],
+        functions: list[LrpcFunOptionalIdDict],
         last_id: int,
     ) -> int:
         return LrpcService.__assign_ids(functions, last_id)
 
     @staticmethod
     def __assign_stream_ids(
-        streams: list[LrpcStreamDict],
+        streams: list[LrpcStreamOptionalIdDict],
         last_id: int,
     ) -> int:
         return LrpcService.__assign_ids(streams, last_id)
 
     @staticmethod
-    def __assign_ids(items_needing_id: list[LrpcFunDict] | list[LrpcStreamDict], last_id: int) -> int:
+    def __assign_ids(
+        items_needing_id: list[LrpcFunOptionalIdDict] | list[LrpcStreamOptionalIdDict],
+        last_id: int,
+    ) -> int:
         for item in items_needing_id:
             if "id" in item:
                 last_id = item["id"]
             else:
-                # id field must be present in LrpcFunDict to construct LrpcFun
-                # but it is optional when constructing LrpcService. This method
-                # makes sure that function IDs are initialized properly
-                last_id = last_id + 1  # type: ignore[unreachable]
+                last_id = last_id + 1
                 item["id"] = last_id
 
         return last_id

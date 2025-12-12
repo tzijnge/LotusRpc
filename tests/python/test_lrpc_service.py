@@ -1,6 +1,7 @@
 import re
 
 import pytest
+from pydantic import ValidationError
 
 from lrpc.core import LrpcService, LrpcServiceDict
 
@@ -176,3 +177,73 @@ def test_stream_by_name() -> None:
     assert s1 is not None
     assert s1.name() == "s1"
     assert service.stream_by_name("s2") is None
+
+
+def test_validation_missing_name() -> None:
+    s = {
+        "id": 123,
+        "functions": [{"name": "f0"}],
+        "functions_before_streams": True,
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Field required")):
+        LrpcService(s)  # type: ignore[arg-type]
+
+
+def test_validation_missing_id() -> None:
+    s = {
+        "name": "s0",
+        "functions": [{"name": "f0"}],
+        "functions_before_streams": True,
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Field required")):
+        LrpcService(s)  # type: ignore[arg-type]
+
+
+def test_validation_missing_functions_before_streams() -> None:
+    s = {
+        "name": "s0",
+        "id": 123,
+        "functions": [{"name": "f0"}],
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Field required")):
+        LrpcService(s)  # type: ignore[arg-type]
+
+
+def test_validation_wrong_type_name() -> None:
+    s = {
+        "name": 123,
+        "id": 123,
+        "functions": [{"name": "f0"}],
+        "functions_before_streams": True,
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Input should be a valid string")):
+        LrpcService(s)  # type: ignore[arg-type]
+
+
+def test_validation_wrong_type_id() -> None:
+    s = {
+        "name": "s0",
+        "id": "123",
+        "functions": [{"name": "f0"}],
+        "functions_before_streams": True,
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Input should be a valid integer")):
+        LrpcService(s)  # type: ignore[arg-type]
+
+
+def test_validation_additional_fields() -> None:
+    s = {
+        "name": "s0",
+        "id": 123,
+        "functions": [{"name": "f0"}],
+        "functions_before_streams": True,
+        "extra_field": "should_fail",
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Extra inputs are not permitted")):
+        LrpcService(s)  # type: ignore[arg-type]

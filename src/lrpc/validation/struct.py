@@ -4,19 +4,11 @@ from .validator import LrpcValidator
 
 class StructValidator(LrpcValidator):
     def __init__(self) -> None:
-        self.__errors: list[str] = []
-        self.__warnings: list[str] = []
+        super().__init__()
         self.__struct_names: set[str] = set()
 
-    def errors(self) -> list[str]:
-        return self.__errors
-
-    def warnings(self) -> list[str]:
-        return self.__warnings
-
     def visit_lrpc_def(self, _lrpc_def: LrpcDef) -> None:
-        self.__errors.clear()
-        self.__warnings.clear()
+        self.reset()
         self.__struct_names.clear()
 
     def visit_lrpc_struct(self, _struct: LrpcStruct) -> None:
@@ -26,6 +18,6 @@ class StructValidator(LrpcValidator):
         name = field.name()
 
         if name in self.__struct_names:
-            self.__errors.append(f"Duplicate field name in struct {struct.name()}: {name}")
+            self.add_error(f"Duplicate field name in struct {struct.name()}: {name}")
 
         self.__struct_names.add(name)

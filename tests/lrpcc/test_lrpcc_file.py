@@ -20,7 +20,7 @@ def change_test_dir(request: pytest.FixtureRequest) -> Generator[None, None, Non
 
 @pytest.mark.parametrize(("cli", "response"), test_params)
 def test_lrpcc(cli: str, response: str) -> None:
-    result = subprocess.run(cli, shell=False, capture_output=True, check=False)  # noqa: S603
+    result = subprocess.run(cli, shell=True, capture_output=True, check=False)  # noqa: S602
 
     assert result.returncode == 0
     assert result.stderr.decode().strip() == ""

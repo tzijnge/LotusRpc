@@ -79,7 +79,7 @@ jobs:
 
       - name: Build examples
         run: >
-          set -e\n
+          set -e
           cmake
           -DTOOLCHAIN_PATH=${{env.TOOLS_DIR}}/arm-gcc/bin/
           -DCMAKE_BUILD_TYPE=Release

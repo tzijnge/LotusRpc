@@ -96,7 +96,7 @@ namespace lrpc
             // integer overflow for meta service intended
             const uint8_t serviceIndex = static_cast<uint8_t>(serviceId + 1U);
 
-            if (serviceId < services.size())
+            if (serviceIndex < services.size())
             {
                 return services.at(serviceIndex);
             }

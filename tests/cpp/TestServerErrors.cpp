@@ -59,7 +59,17 @@ TEST_F(TestServerErrors, decodeUnknownServiceLessThanMaxServiceId)
     EXPECT_EQ("0BFF000002AB0000000000", transmitted);
 }
 
-TEST_F(TestServerErrors, decodeUnknownServiceGreaterThanMaxServiceId)
+TEST_F(TestServerErrors, decodeUnknownServiceGreaterThanServiceId)
+{
+    static constexpr uint8_t SRV3_MAX_SERVICE_ID{6};
+    static_assert(std::is_same<srv3::Server3, lrpc::Server<SRV3_MAX_SERVICE_ID, srv3::LrpcMeta_service>>::value, "Unexpected server properties");
+
+    // Non-existing service 0x07 (one greater than MAX_SERVICE_ID), function ID 0xAB and no additional bytes
+    receive("0307AB");
+    EXPECT_EQ("0BFF000007AB0000000000", transmitted);
+}
+
+TEST_F(TestServerErrors, decodeUnknownServiceMuchGreaterThanMaxServiceId)
 {
     // Non-existing service 0x77 (greater than MAX_SERVICE_ID), function ID 0 and two additional bytes
     receive("0577000000");
@@ -81,6 +91,14 @@ TEST_F(TestServerErrors, decodeUnknownFunctionSmallerThanMaxFunctionId)
 }
 
 TEST_F(TestServerErrors, decodeUnknownFunctionGreaterThanMaxFunctionId)
+{
+    // register service s01 (ID 5) and call non-existing function with ID 0x09 and two additional bytes
+    registerService(service01);
+    receive("050509CCDD");
+    EXPECT_EQ("0BFF000105090000000000", transmitted);
+}
+
+TEST_F(TestServerErrors, decodeUnknownFunctionMuchGreaterThanMaxFunctionId)
 {
     // register service s01 (ID 5) and call non-existing function with ID 0xAB and two additional bytes
     registerService(service01);

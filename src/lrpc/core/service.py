@@ -50,7 +50,8 @@ class LrpcService:
         *,
         functions_before_streams: bool,
     ) -> tuple[list[LrpcFunDict], list[LrpcStreamDict]]:
-        assert (len(functions) != 0) or (len(streams) != 0)
+        if (len(functions) == 0) and (len(streams) == 0):
+            raise ValueError("A service must have at least one function or stream")
 
         last_id = -1
 

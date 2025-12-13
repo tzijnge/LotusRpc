@@ -134,7 +134,7 @@ def test_functions_and_streams() -> None:
 def test_fail_when_neither_functions_nor_streams() -> None:
     s: LrpcServiceDict = {"name": "srv0", "id": 123, "functions_before_streams": True}
 
-    with pytest.raises(AssertionError, match=re.escape("")):
+    with pytest.raises(ValueError, match="A service must have at least one function or stream"):
         LrpcService(s)
 
 

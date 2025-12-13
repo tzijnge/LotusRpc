@@ -7,7 +7,7 @@ extern "C" void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     (void)huart;
 }
 
-class Srv1 : public srv1ServiceShim
+class Srv1 : public srv1_shim
 {
 public:
     uint8_t f1(uint8_t p1) override
@@ -79,7 +79,7 @@ public:
     }
 };
 
-class Srv2 : public srv2ServiceShim
+class Srv2 : public srv2_shim
 {
 public:
     int32_t f1(int32_t p1) override

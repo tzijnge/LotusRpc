@@ -78,7 +78,7 @@ jobs:
         run: python install_arm_gcc.py --destination ${{env.TOOLS_DIR}}/arm-gcc
 
       - name: Build examples
-        run: >
+        run: |
           set -e
           cmake \
           -DTOOLCHAIN_PATH=${{env.TOOLS_DIR}}/arm-gcc/bin/ \

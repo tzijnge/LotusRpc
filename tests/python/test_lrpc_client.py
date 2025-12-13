@@ -223,20 +223,24 @@ class TestLrpcClient:
             assert r["r0"] == 0xCD
 
     def test_communicate_stream_client_infinite(self) -> None:
-        for _ in self.client().communicate("srv2", "client_infinite", p0=0xAB, p1=0xCDEF):
-            pytest.fail("Response received for client stream")
+        communicator = self.client().communicate("srv2", "client_infinite", p0=0xAB, p1=0xCDEF)
+        response = next(communicator, None)
+        assert response is None
 
     def test_communicate_stream_client_finite(self) -> None:
-        for _ in self.client().communicate("srv2", "client_finite", p0=0xAB, p1=0xCDEF, final=True):
-            pytest.fail("Response received for client stream")
+        communicator = self.client().communicate("srv2", "client_finite", p0=0xAB, p1=0xCDEF, final=True)
+        response = next(communicator, None)
+        assert response is None
 
     def test_communicate_stream_server_infinite_stop(self) -> None:
-        for _ in self.client().communicate("srv2", "server_infinite", start=False):
-            pytest.fail("Response on end server stream")
+        communicator = self.client().communicate("srv2", "server_infinite", start=False)
+        response = next(communicator, None)
+        assert response is None
 
     def test_communicate_stream_server_finite_stop(self) -> None:
-        for _ in self.client().communicate("srv2", "server_finite", start=False):
-            pytest.fail("Response on end server stream")
+        communicator = self.client().communicate("srv2", "server_finite", start=False)
+        response = next(communicator, None)
+        assert response is None
 
     def test_communicate_stream_server_infinite_start(self) -> None:
         response_bytes = b"\x06\x02\x02\xcd\x01\x02"

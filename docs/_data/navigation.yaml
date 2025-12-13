@@ -9,7 +9,9 @@ main:
     url: /examples
   - title: "Extending LotusRPC"
     url: /extending_lrpc
-  - title: "Binary"
+  - title: "Frame format"
     url: /binary
+  - title: "Meta service"
+    url: /meta
   - title: "Release notes"
     url: /CHANGES

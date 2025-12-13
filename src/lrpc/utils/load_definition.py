@@ -6,6 +6,7 @@ import yaml
 from ..core import LrpcDef, LrpcDefDict
 from ..schema import load_lrpc_schema
 from ..validation import SemanticAnalyzer
+from ..resources.meta import load_meta_def
 
 
 # pylint: disable = too-many-ancestors
@@ -47,10 +48,26 @@ def __yaml_safe_load(def_str: Union[str, TextIO]) -> LrpcDefDict:
     return def_dict
 
 
-def load_lrpc_def_from_dict(definition: LrpcDefDict, warnings_as_errors: bool) -> LrpcDef:
-    jsonschema.validate(definition, load_lrpc_schema())
+def __load_meta_def() -> LrpcDefDict:
+    with load_meta_def() as meta_def:
+        with open(meta_def, encoding="utf-8", mode="rt") as meta_def_file:
+            meta_def_dict = __yaml_safe_load(meta_def_file)
+            jsonschema.validate(meta_def_dict, load_lrpc_schema())
+            return meta_def_dict
 
-    lrpc_def = LrpcDef(definition)
+
+def load_lrpc_def_from_dict(user_def: LrpcDefDict, meta_def: LrpcDefDict, warnings_as_errors: bool) -> LrpcDef:
+    user_def["services"].extend(meta_def["services"])
+
+    assert "enums" in meta_def
+    if "enums" in user_def:
+        user_def["enums"].extend(meta_def["enums"])
+    else:
+        user_def["enums"] = meta_def["enums"]
+
+    jsonschema.validate(user_def, load_lrpc_schema())
+
+    lrpc_def = LrpcDef(user_def)
     sa = SemanticAnalyzer(lrpc_def)
     sa.analyze(warnings_as_errors)
 
@@ -58,16 +75,19 @@ def load_lrpc_def_from_dict(definition: LrpcDefDict, warnings_as_errors: bool) -
 
 
 def load_lrpc_def_from_str(def_str: str, warnings_as_errors: bool) -> LrpcDef:
-    def_dict = __yaml_safe_load(def_str)
-    return load_lrpc_def_from_dict(def_dict, warnings_as_errors)
+    user_def = __yaml_safe_load(def_str)
+    meta_def = __load_meta_def()
+    return load_lrpc_def_from_dict(user_def, meta_def, warnings_as_errors)
 
 
 def load_lrpc_def_from_url(def_url: str, warnings_as_errors: bool) -> LrpcDef:
     with open(def_url, mode="rt", encoding="utf-8") as def_file:
-        def_dict = __yaml_safe_load(def_file)
-        return load_lrpc_def_from_dict(def_dict, warnings_as_errors)
+        user_def = __yaml_safe_load(def_file)
+        meta_def = __load_meta_def()
+        return load_lrpc_def_from_dict(user_def, meta_def, warnings_as_errors)
 
 
 def load_lrpc_def_from_file(def_file: TextIO, warnings_as_errors: bool) -> LrpcDef:
-    def_dict = __yaml_safe_load(def_file)
-    return load_lrpc_def_from_dict(def_dict, warnings_as_errors)
+    user_def = __yaml_safe_load(def_file)
+    meta_def = __load_meta_def()
+    return load_lrpc_def_from_dict(user_def, meta_def, warnings_as_errors)

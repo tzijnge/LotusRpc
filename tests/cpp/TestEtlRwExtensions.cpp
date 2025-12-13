@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "lrpccore/EtlRwExtensions.hpp"
+#include "core/lrpccore/EtlRwExtensions.hpp"
 #include <string>
 #include <array>
 #include <etl/vector.h>
@@ -77,7 +77,7 @@ TEST(TestEtlRwExtensions, readEnum)
 
 TEST(TestEtlRwExtensions, readAutoString)
 {
-    etl::vector<uint8_t, 10> storage{'T', 'e', 's', 't', '\0'};
+    etl::vector<char, 10> storage{'T', 'e', 's', 't', '\0'};
     etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
 
     EXPECT_EQ("Test", lrpc::read_unchecked<etl::string_view>(reader));
@@ -85,7 +85,7 @@ TEST(TestEtlRwExtensions, readAutoString)
 
 TEST(TestEtlRwExtensions, readFixedSizeString)
 {
-    etl::vector<uint8_t, 10> storage{'T', 'e', 's', 't', '\0'};
+    etl::vector<char, 10> storage{'T', 'e', 's', 't', '\0'};
     etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
 
     EXPECT_EQ("Tes", lrpc::read_unchecked<etl::string<3>>(reader));
@@ -145,7 +145,7 @@ TEST(TestEtlRwExtensions, readArray)
 
 TEST(TestEtlRwExtensions, readArrayOfString)
 {
-    etl::vector<uint8_t, 10> storage{'t', '1', '\0', 't', '2', '\0', 't', '3', '\0', };
+    etl::vector<char, 10> storage{'t', '1', '\0', 't', '2', '\0', 't', '3', '\0'};
     etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
 
     auto a = lrpc::read_unchecked<etl::array<etl::string<2>, 3>>(reader);

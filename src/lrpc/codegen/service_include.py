@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 from ..visitors import LrpcVisitor
@@ -7,15 +7,20 @@ from ..core import LrpcFun, LrpcService, LrpcVar
 
 
 class ServiceIncludeVisitor(LrpcVisitor):
-    def __init__(self, output: os.PathLike[str]) -> None:
+    def __init__(self, output: Path) -> None:
         self.__output = output
         self.__file: CppFile
         self.__includes: set[str] = set()
 
-    def visit_lrpc_service(self, service: LrpcService) -> None:
-        self.__file = CppFile(f"{self.__output}/{service.name()}.hpp")
+    def _create_service_include(self, output: Path, service_name: str) -> None:
+        self.__includes = set()
+
+        self.__file = CppFile(f"{output}/{service_name}_includes.hpp")
         write_file_banner(self.__file)
         self.__file.write("#pragma once")
+
+    def visit_lrpc_service(self, service: LrpcService) -> None:
+        self._create_service_include(self.__output, service.name())
 
     def visit_lrpc_service_end(self) -> None:
         for i in sorted(self.__includes):

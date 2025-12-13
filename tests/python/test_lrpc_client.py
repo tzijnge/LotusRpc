@@ -193,11 +193,31 @@ class TestLrpcClient:
 
         assert str(e.value) == "Incorrect message size. Expected 4 but got 3"
 
-    def test_decode_error_response(self) -> None:
-        with pytest.raises(ValueError) as e:
-            self.client().decode(b"\x13\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
+    def test_decode_error_response_unknown_service(self) -> None:
+        decoded = self.client().decode(b"\x0b\xff\x00\x00\x55\x66\x00\x00\x00\x77\x00")
+        assert "type" in decoded
+        assert decoded["type"] == "UnknownService"
+        assert "p1" in decoded
+        assert decoded["p1"] == 0x55
+        assert "p2" in decoded
+        assert decoded["p2"] == 0x66
+        assert "p3" in decoded
+        assert decoded["p3"] == 0x77000000
+        assert "message" in decoded
+        assert decoded["message"] == ""
 
-        assert str(e.value) == "The LRPC server reported an error"
+    def test_decode_error_response_unknown_function_or_stream(self) -> None:
+        decoded = self.client().decode(b"\x0f\xff\x00\x01\x22\x33\x44\x00\x00\x00\x74\x65\x73\x74\x00")
+        assert "type" in decoded
+        assert decoded["type"] == "UnknownFunctionOrStream"
+        assert "p1" in decoded
+        assert decoded["p1"] == 0x22
+        assert "p2" in decoded
+        assert decoded["p2"] == 0x33
+        assert "p3" in decoded
+        assert decoded["p3"] == 0x44
+        assert "message" in decoded
+        assert decoded["message"] == "test"
 
     def test_decode_void_function(self) -> None:
         # srv0.f0

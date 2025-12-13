@@ -33,9 +33,6 @@ class LrpcClient:
         if message_size != len(encoded):
             raise ValueError(f"Incorrect message size. Expected {message_size} but got {len(encoded)}")
 
-        if (service_id == 255) and (function_or_stream_id == 0):
-            raise ValueError("The LRPC server reported an error")
-
         service = self._lrpc_def.service_by_id(service_id)
         if not service:
             raise ValueError(f"Service with ID {service_id} not found in the LRPC definition file")

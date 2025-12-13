@@ -39,10 +39,12 @@ class LrpcDef:
             enum_names.extend([e["name"] for e in raw["enums"]])
 
         self.__init_all_vars(raw, struct_names, enum_names)
+        self.__init_meta_service(raw)
         self.__init_service_ids(raw)
 
         self.__name = raw["name"]
         self.__version = raw.get("version", None)
+
         self.__services = [LrpcService(s) for s in raw["services"]]
         self.__namespace = raw.get("namespace", None)
         self.__rx_buffer_size = raw.get("rx_buffer_size", 256)
@@ -75,6 +77,17 @@ class LrpcDef:
     def __init_vars(self, lrpc_vars: list[LrpcVarDict], struct_names: list[str], enum_names: list[str]) -> None:
         for var in lrpc_vars:
             self.__init_structs_and_enums(var, struct_names, enum_names)
+
+    def __init_meta_service(self, raw: LrpcDefDict) -> None:
+        meta_service_found = False
+        for s in raw["services"]:
+            if s["name"] == "LrpcMeta":
+                s["id"] = 255
+                self.__meta_service = LrpcService(s)
+                raw["services"].remove(s)
+                meta_service_found = True
+
+        assert meta_service_found, "No meta service found in definition"
 
     @classmethod
     def __init_structs_and_enums(cls, var: LrpcVarDict, struct_names: list[str], enum_names: list[str]) -> None:
@@ -116,6 +129,8 @@ class LrpcDef:
         for service in self.services():
             service.accept(visitor)
 
+        self.__meta_service.accept(visitor)
+
         visitor.visit_lrpc_def_end()
 
     def name(self) -> str:
@@ -137,6 +152,9 @@ class LrpcDef:
         return self.__services
 
     def service_by_name(self, name: str) -> Optional[LrpcService]:
+        if name == "LrpcMeta":
+            return self.__meta_service
+
         for s in self.services():
             if s.name() == name:
                 return s
@@ -144,11 +162,17 @@ class LrpcDef:
         return None
 
     def service_by_id(self, identifier: int) -> Optional[LrpcService]:
+        if identifier == 255:
+            return self.__meta_service
+
         for s in self.services():
             if s.id() == identifier:
                 return s
 
         return None
+
+    def meta_service(self) -> LrpcService:
+        return self.__meta_service
 
     def max_service_id(self) -> int:
         service_ids = [s.id() for s in self.services()]

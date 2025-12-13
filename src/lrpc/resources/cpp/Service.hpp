@@ -1,6 +1,8 @@
 #pragma once
 #include <etl/byte_stream.h>
+#include <etl/string_view.h>
 #include <cstdint>
+#include "MetaError.hpp"
 
 namespace lrpc
 {
@@ -12,6 +14,8 @@ namespace lrpc
 
         virtual Writer getWriter() = 0;
         virtual void transmit(const Writer &w) = 0;
+
+        virtual void error(const LrpcMetaError type, const uint8_t p1 = 0, const uint8_t p2 = 0, const int32_t p3 = 0, const etl::string_view &message = {}) = 0;
     };
 
     class Service
@@ -59,33 +63,4 @@ namespace lrpc
             }
         }
     };
-
-    class NullService : public Service
-    {
-    public:
-        uint8_t id() const override { return 0; };
-        void invoke(Service::Reader &, Service::Writer &writer) override
-        {
-            writer.write_unchecked<uint8_t>(0x14); // message size
-            writer.write_unchecked<uint8_t>(0xFF); // service ID
-            writer.write_unchecked<uint8_t>(0);    // function ID
-            writer.write_unchecked<uint8_t>(0);    // error type
-            writer.write_unchecked<int32_t>(0);    // p0
-            writer.write_unchecked<int32_t>(0);    // p1
-            writer.write_unchecked<int32_t>(0);    // p2
-            writer.write_unchecked<int32_t>(0);    // p3
-        };
-    };
-
-    static void missingFunction(Service::Reader &, Service::Writer &writer)
-    {
-        writer.write_unchecked<uint8_t>(0x14); // message size
-        writer.write_unchecked<uint8_t>(0xFF); // service ID
-        writer.write_unchecked<uint8_t>(0);    // function ID
-        writer.write_unchecked<uint8_t>(0);    // error type
-        writer.write_unchecked<int32_t>(0);    // p0
-        writer.write_unchecked<int32_t>(0);    // p1
-        writer.write_unchecked<int32_t>(0);    // p2
-        writer.write_unchecked<int32_t>(0);    // p3
-    }
 }

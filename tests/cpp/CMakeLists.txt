@@ -15,7 +15,9 @@ mark_as_advanced(
 add_subdirectory(../../external/gtest External/gtest EXCLUDE_FROM_ALL)
 
 set(LRPC_IS_BUILT ${CMAKE_BINARY_DIR}/lrpc_is_built)
-file(GLOB_RECURSE LRPC_PY_SRC_FILES ${CMAKE_SOURCE_DIR}/src/lrpc/*.py ${CMAKE_SOURCE_DIR}/**/lotusrpc-schema.json)
+file(GLOB_RECURSE LRPC_PY_SRC_FILES ${CMAKE_SOURCE_DIR}/src/lrpc/*.py
+                                    ${CMAKE_SOURCE_DIR}/**/lotusrpc-schema.json
+                                    ${CMAKE_SOURCE_DIR}/**/meta.lrpc.yaml)
 
 add_custom_command(OUTPUT ${LRPC_IS_BUILT}
                   COMMAND pip install --upgrade --no-deps --force-reinstall ${CMAKE_SOURCE_DIR}
@@ -23,10 +25,10 @@ add_custom_command(OUTPUT ${LRPC_IS_BUILT}
                   COMMENT "Build LRPC Python package"
                   DEPENDS ${LRPC_PY_SRC_FILES})
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/lrpccore/EtlRwExtensions.hpp
+add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/core/lrpccore/EtlRwExtensions.hpp
                   COMMENT "Generate LRPC server core"
                   DEPENDS ${LRPC_IS_BUILT}
-                  COMMAND lrpcg cppcore -o ${CMAKE_CURRENT_SOURCE_DIR}/generated)
+                  COMMAND lrpcg cppcore -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/core)
 
 
 function(generate_lrpc server_name)
@@ -37,7 +39,7 @@ function(generate_lrpc server_name)
   add_custom_command(OUTPUT ${LRPC_SERVER_HEADER}
                   COMMENT "Generate Test${server_name} LRPC files"
                   DEPENDS ${LRPC_DEF} ${LRPC_IS_BUILT}
-                  COMMAND lrpcg cpp -d ${LRPC_DEF} -o ${LRPC_OUT_DIR} -w --no-core)
+                  COMMAND lrpcg cpp -d ${LRPC_DEF} -o ${LRPC_OUT_DIR} -w)
 
 endfunction()
 
@@ -62,7 +64,7 @@ add_executable(UnitTests
                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server3/Server3.hpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server4/Server4.hpp
                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server5/Server5.hpp
-                ${CMAKE_CURRENT_SOURCE_DIR}/generated/lrpccore/EtlRwExtensions.hpp
+                ${CMAKE_CURRENT_SOURCE_DIR}/generated/core/lrpccore/EtlRwExtensions.hpp
                 TestServerErrors.cpp)
 
 target_include_directories(UnitTests PRIVATE .)

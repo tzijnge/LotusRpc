@@ -19,7 +19,8 @@ class LrpcFunOptionalIdDict(TypedDict):
     returns: NotRequired[list[LrpcVarDict]]
 
 
-LrpcFunValidator = TypeAdapter(LrpcFunDict)  # pylint: disable=invalid-name
+# pylint: disable=invalid-name
+LrpcFunValidator = TypeAdapter(LrpcFunDict)
 
 
 class LrpcFun:

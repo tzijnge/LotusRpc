@@ -25,7 +25,8 @@ class LrpcVarDict(TypedDict):
     count: NotRequired[int | Literal["?"]]
 
 
-LrpcVarValidator = TypeAdapter(LrpcVarDict)  # pylint: disable=invalid-name
+# pylint: disable=invalid-name
+LrpcVarValidator = TypeAdapter(LrpcVarDict)
 
 
 # pylint: disable = too-many-public-methods

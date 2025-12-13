@@ -24,7 +24,8 @@ class LrpcServiceOptionalIdDict(TypedDict):
     functions_before_streams: bool
 
 
-LrpcServiceValidator = TypeAdapter(LrpcServiceDict)  # pylint: disable=invalid-name
+# pylint: disable=invalid-name
+LrpcServiceValidator = TypeAdapter(LrpcServiceDict)
 
 
 class LrpcService:

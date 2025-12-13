@@ -8,7 +8,7 @@ from lrpc.client import LrpcClient
 from lrpc.utils import load_lrpc_def_from_url
 
 
-class TestTransport:
+class FakeTransport:
     def __init__(self, response: bytes) -> None:
         self.response = response
 
@@ -31,7 +31,7 @@ lrpc_def = load_lrpc_def_from_url(def_url, warnings_as_errors=False)
 class TestLrpcClient:
     @staticmethod
     def client(response: bytes = b"") -> LrpcClient:
-        transport = TestTransport(response)
+        transport = FakeTransport(response)
         return LrpcClient(lrpc_def, transport)
 
     def test_call(self) -> None:

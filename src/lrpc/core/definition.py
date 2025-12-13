@@ -25,7 +25,8 @@ class LrpcDefDict(TypedDict):
     constants: NotRequired[list[LrpcConstantDict]]
 
 
-LrpcDefValidator = TypeAdapter(LrpcDefDict)  # pylint: disable=invalid-name
+# pylint: disable=invalid-name
+LrpcDefValidator = TypeAdapter(LrpcDefDict)
 
 
 # pylint: disable = too-many-instance-attributes

@@ -9,7 +9,8 @@ class LrpcEnumFieldDict(TypedDict):
     id: int
 
 
-LrpcEnumFieldValidator = TypeAdapter(LrpcEnumFieldDict)  # pylint: disable=invalid-name
+# pylint: disable=invalid-name
+LrpcEnumFieldValidator = TypeAdapter(LrpcEnumFieldDict)
 
 
 class LrpcEnumField:
@@ -31,7 +32,8 @@ class LrpcEnumFieldSimpleDict(TypedDict):
     id: NotRequired[int]
 
 
-LrpcEnumFieldSimpleValidator = TypeAdapter(LrpcEnumFieldSimpleDict)  # pylint: disable=invalid-name
+# pylint: disable=invalid-name
+LrpcEnumFieldSimpleValidator = TypeAdapter(LrpcEnumFieldSimpleDict)
 
 
 class LrpcEnumDict(TypedDict):
@@ -41,7 +43,8 @@ class LrpcEnumDict(TypedDict):
     external_namespace: NotRequired[str]
 
 
-LrpcEnumValidator = TypeAdapter(LrpcEnumDict)  # pylint: disable=invalid-name
+# pylint: disable=invalid-name
+LrpcEnumValidator = TypeAdapter(LrpcEnumDict)
 
 
 class LrpcEnum:

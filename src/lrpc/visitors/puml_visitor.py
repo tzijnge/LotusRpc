@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from .lrpc_visitor import LrpcVisitor
 
 if TYPE_CHECKING:
-    from ..core import (
+    from lrpc.core import (
         LrpcConstant,
         LrpcDef,
         LrpcEnum,

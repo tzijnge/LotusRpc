@@ -3,7 +3,8 @@ from enum import Enum
 from pydantic import TypeAdapter
 from typing_extensions import NotRequired, TypedDict
 
-from ..visitors import LrpcVisitor
+from lrpc.visitors import LrpcVisitor
+
 from .var import LrpcVar, LrpcVarDict
 
 

@@ -1,7 +1,7 @@
 import struct
 from typing import Any
 
-from ..core import LrpcDef, LrpcVar
+from lrpc.core import LrpcDef, LrpcVar
 
 
 # pylint: disable = too-few-public-methods

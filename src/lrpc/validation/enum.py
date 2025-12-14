@@ -1,4 +1,5 @@
-from ..core import LrpcDef, LrpcEnum, LrpcEnumField
+from lrpc.core import LrpcDef, LrpcEnum, LrpcEnumField
+
 from .validator import LrpcValidator
 
 

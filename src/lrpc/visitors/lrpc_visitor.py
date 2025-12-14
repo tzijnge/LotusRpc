@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..core import (
+    from lrpc.core import (
         LrpcConstant,
         LrpcDef,
         LrpcEnum,

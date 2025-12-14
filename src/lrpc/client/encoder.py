@@ -1,7 +1,7 @@
 import struct
 
-from ..core import LrpcDef, LrpcVar
-from ..types import LrpcBasicType, LrpcType
+from lrpc.core import LrpcDef, LrpcVar
+from lrpc.types import LrpcBasicType, LrpcType
 
 
 def __check_string(value: LrpcType, var: LrpcVar) -> str:

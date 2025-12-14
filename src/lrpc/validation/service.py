@@ -1,4 +1,5 @@
-from ..core import LrpcDef, LrpcService
+from lrpc.core import LrpcDef, LrpcService
+
 from .validator import LrpcValidator
 
 

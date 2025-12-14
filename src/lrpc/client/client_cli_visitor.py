@@ -7,8 +7,8 @@ import click
 import yaml
 import yaml.parser
 
-from ..core import LrpcDef, LrpcEnum, LrpcEnumField, LrpcFun, LrpcService, LrpcStream, LrpcVar
-from ..visitors import LrpcVisitor
+from lrpc.core import LrpcDef, LrpcEnum, LrpcEnumField, LrpcFun, LrpcService, LrpcStream, LrpcVar
+from lrpc.visitors import LrpcVisitor
 
 NONE_ARG = "7bc9ddaa-b6c9-4afb-93c1-5240ec91ab9c"
 

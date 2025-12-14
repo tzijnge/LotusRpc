@@ -1,7 +1,8 @@
 import logging
 from typing import TYPE_CHECKING
 
-from ..core import LrpcDef
+from lrpc.core import LrpcDef
+
 from .custom_types import CustomTypesValidator
 from .enum import EnumValidator
 from .function_and_stream import FunctionAndStreamIdValidator, FunctionAndStreamNameValidator

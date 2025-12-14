@@ -2,10 +2,10 @@ from pathlib import Path
 
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 
-from ..codegen.common import lrpc_var_includes, write_file_banner
-from ..codegen.utils import optionally_in_namespace
-from ..core import LrpcDef, LrpcStruct, LrpcVar
-from ..visitors import LrpcVisitor
+from lrpc.codegen.common import lrpc_var_includes, write_file_banner
+from lrpc.codegen.utils import optionally_in_namespace
+from lrpc.core import LrpcDef, LrpcStruct, LrpcVar
+from lrpc.visitors import LrpcVisitor
 
 
 class StructFileVisitor(LrpcVisitor):

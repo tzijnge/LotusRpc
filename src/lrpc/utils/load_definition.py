@@ -5,10 +5,10 @@ from typing import Any, TextIO
 import jsonschema
 import yaml
 
-from ..core import LrpcDef, LrpcDefDict
-from ..resources.meta import load_meta_def
-from ..schema import load_lrpc_schema
-from ..validation import SemanticAnalyzer
+from lrpc.core import LrpcDef, LrpcDefDict
+from lrpc.resources.meta import load_meta_def
+from lrpc.schema import load_lrpc_schema
+from lrpc.validation import SemanticAnalyzer
 
 
 # pylint: disable = too-many-ancestors

@@ -1,4 +1,5 @@
-from ..core import LrpcDef, LrpcEnum, LrpcStruct, LrpcVar
+from lrpc.core import LrpcDef, LrpcEnum, LrpcStruct, LrpcVar
+
 from .validator import LrpcValidator
 
 

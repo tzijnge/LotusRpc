@@ -1,4 +1,5 @@
-from ..core import LrpcConstant, LrpcDef, LrpcEnum, LrpcService, LrpcStruct
+from lrpc.core import LrpcConstant, LrpcDef, LrpcEnum, LrpcService, LrpcStruct
+
 from .validator import LrpcValidator
 
 

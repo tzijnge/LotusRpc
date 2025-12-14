@@ -1,9 +1,10 @@
 import struct
 from collections.abc import Generator
 
-from ..core import LrpcFun, LrpcService, LrpcStream, LrpcVar
-from ..core.definition import LrpcDef
-from ..types import LrpcType
+from lrpc.core import LrpcFun, LrpcService, LrpcStream, LrpcVar
+from lrpc.core.definition import LrpcDef
+from lrpc.types import LrpcType
+
 from .decoder import LrpcDecoder
 from .encoder import lrpc_encode
 from .transport import LrpcTransport

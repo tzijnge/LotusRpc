@@ -3,7 +3,8 @@ from typing import cast
 from pydantic import TypeAdapter
 from typing_extensions import NotRequired, TypedDict
 
-from ..visitors import LrpcVisitor
+from lrpc.visitors import LrpcVisitor
+
 from .function import LrpcFun, LrpcFunDict, LrpcFunOptionalIdDict
 from .stream import LrpcStream, LrpcStreamDict, LrpcStreamOptionalIdDict
 

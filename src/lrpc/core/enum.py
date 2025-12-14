@@ -1,7 +1,7 @@
 from pydantic import TypeAdapter
 from typing_extensions import NotRequired, TypedDict
 
-from ..visitors import LrpcVisitor
+from lrpc.visitors import LrpcVisitor
 
 
 class LrpcEnumFieldDict(TypedDict):

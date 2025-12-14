@@ -80,7 +80,6 @@ select = ["ALL"]
 fixable = ["ALL"]
 ignore = [
     "D",      # doc strings
-    "TID252", # relative imports
     "EM101",  # strings in exceptions
     "EM102",  # strings in exceptions
     "TRY003", # strings in exceptions

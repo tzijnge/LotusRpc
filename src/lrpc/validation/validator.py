@@ -1,4 +1,4 @@
-from ..visitors import LrpcVisitor
+from lrpc.visitors import LrpcVisitor
 
 
 class LrpcValidator(LrpcVisitor):

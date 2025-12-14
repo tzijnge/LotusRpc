@@ -57,7 +57,8 @@ class FunctionAndStreamNameValidator(LrpcValidator):
 
         if name == (self.__current_service + "_shim"):
             self.add_error(
-                f"Invalid function name: {name}. This name is incompatible with the generated code for the containing service",  # noqa: E501
+                f"Invalid function name: {name}. This name is incompatible with the generated code "
+                "for the containing service",
             )
 
         self.__function_names.add(name)

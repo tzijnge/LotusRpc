@@ -60,7 +60,9 @@ def __load_meta_def() -> LrpcDefDict:
 def load_lrpc_def_from_dict(user_def: LrpcDefDict, meta_def: LrpcDefDict, *, warnings_as_errors: bool) -> LrpcDef:
     user_def["services"].extend(meta_def["services"])
 
-    assert "enums" in meta_def
+    if "enums" not in meta_def:
+        raise ValueError("meta definition is expected to have an error type enum")
+
     if "enums" in user_def:
         user_def["enums"].extend(meta_def["enums"])
     else:

@@ -42,7 +42,8 @@ def install_arm_gcc(destination: str) -> None:
         with closing(request.urlopen(ARM_GCC["url"])) as r, file.open("wb") as f:  # noqa: S310
             shutil.copyfileobj(r, f)
 
-        assert ARM_GCC["hash"] == get_hash(file), f"Invalid hash for {file}"
+        if ARM_GCC["hash"] != get_hash(file):
+            raise ValueError(f"Invalid hash for {file}")
 
         shutil.unpack_archive(file, extract_dir=temp)
         copytree(temp + "/" + ARM_GCC_NAME, destination)

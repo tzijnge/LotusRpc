@@ -50,12 +50,14 @@ def __load_config() -> dict[str, Any]:
             env_var_value = os.environ[LRPCC_CONFIG_ENV_VAR]
             if not Path(env_var_value).exists():
                 raise ValueError(
-                    f"No configuration file found in location {env_var_value} (environment variable {LRPCC_CONFIG_ENV_VAR})",  # noqa: E501
+                    f"No configuration file found in location {env_var_value} "
+                    f"(environment variable {LRPCC_CONFIG_ENV_VAR})",
                 )
             config_path = Path(env_var_value).resolve()
         else:
             raise ValueError(
-                f"No lrpcc configuration ({LRPCC_CONFIG_YAML}) in current working directory (recursive) or environment variable {LRPCC_CONFIG_ENV_VAR}",  # noqa: E501
+                f"No lrpcc configuration ({LRPCC_CONFIG_YAML}) in current working directory "
+                f"(recursive) or environment variable {LRPCC_CONFIG_ENV_VAR}",
             )
 
     with config_path.open(encoding="utf-8") as config_file:

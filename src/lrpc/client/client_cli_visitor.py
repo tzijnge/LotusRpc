@@ -125,7 +125,8 @@ class ClientCliVisitor(LrpcVisitor):
         self.enum_values[enum.name()].append(field.name())
 
     def visit_lrpc_function(self, function: LrpcFun) -> None:
-        assert self.current_service.name is not None
+        if self.current_service.name is None:
+            raise ValueError("Click group initialized without name")
         self.current_function = click.Command(
             name=function.name(),
             callback=partial(self.__handle_command, self.current_service.name, function.name()),
@@ -143,7 +144,8 @@ class ClientCliVisitor(LrpcVisitor):
         self.current_function.params.append(arg)
 
     def visit_lrpc_stream(self, stream: LrpcStream) -> None:
-        assert self.current_service.name is not None
+        if self.current_service.name is None:
+            raise ValueError("Click group initialized without name")
 
         self.current_stream_origin = stream.origin()
         self.current_stream_is_finite = stream.is_finite()
@@ -165,7 +167,8 @@ class ClientCliVisitor(LrpcVisitor):
         click_param: click.Parameter
 
         if self.current_stream_origin == LrpcStream.Origin.SERVER:
-            assert param.name() == "start", "Server stream takes a single parameter named 'start'"
+            if param.name() != "start":
+                raise ValueError("Server stream takes a single parameter named 'start'")
             click_param = click.Option(
                 ["--start/--stop"],
                 is_flag=True,

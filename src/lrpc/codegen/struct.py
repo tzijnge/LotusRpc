@@ -79,12 +79,16 @@ class StructFileVisitor(LrpcVisitor):
 
             self.__file.newline()
             self.__file.write(
-                f'static_assert(sizeof(dummy::{self.__qualified_name()}) == sizeof({self.__name()}), "External struct size not as expected. It may have missing or additional fields or different packing.");',  # noqa: E501
+                f"static_assert(sizeof(dummy::{self.__qualified_name()}) == sizeof({self.__name()}), "
+                '"External struct size not as expected. It may have missing or additional fields '
+                'or different packing.");',
             )
             self.__file.newline()
             for f in self.__descriptor.fields():
                 self.__file.write(
-                    f'static_assert(std::is_same<decltype(dummy::{self.__qualified_name()}::{f.name()}), decltype({self.__name()}::{f.name()})>::value, "Type of field {f.name()} is not as specified in LRPC");',  # noqa: E501
+                    f"static_assert(std::is_same<decltype(dummy::{self.__qualified_name()}::{f.name()}), "
+                    f'decltype({self.__name()}::{f.name()})>::value, "Type of field {f.name()} '
+                    'is not as specified in LRPC");',
                 )
 
     def __write_external_alias(self) -> None:

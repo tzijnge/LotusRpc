@@ -20,7 +20,8 @@ class LrpcDecoder:
     def __decode_fixed_size_string(self, var: LrpcVar) -> str:
         if len(self.encoded) < (var.string_size() + 1):
             raise ValueError(
-                f"Wrong string size (including string termination): expected {var.string_size() + 1}, got {len(self.encoded)}",  # noqa: E501
+                "Wrong string size (including string termination): "
+                f"expected {var.string_size() + 1}, got {len(self.encoded)}",
             )
 
         s = self.__decode_string_from(var.string_size() + 1)

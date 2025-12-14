@@ -60,11 +60,13 @@ class EnumFileVisitor(LrpcVisitor):
                 field_id = f.id()
                 if ns:
                     self.__file.write(
-                        f'static_assert(static_cast<uint8_t>({ns}::{enum_name}::{field_name}) == {field_id}, "External enum value {field_name} is not as specified in LRPC");',  # noqa: E501
+                        f"static_assert(static_cast<uint8_t>({ns}::{enum_name}::{field_name}) == {field_id}, "
+                        f'"External enum value {field_name} is not as specified in LRPC");',
                     )
                 else:
                     self.__file.write(
-                        f'static_assert(static_cast<uint8_t>({enum_name}::{field_name}) == {field_id}, "External enum value {field_name} is not as specified in LRPC");',  # noqa: E501
+                        f"static_assert(static_cast<uint8_t>({enum_name}::{field_name}) == {field_id}, "
+                        f'"External enum value {field_name} is not as specified in LRPC");',
                     )
 
             self.__file.newline()
@@ -72,7 +74,8 @@ class EnumFileVisitor(LrpcVisitor):
             self.__file.write("// With the right compiler settings this function generates a compiler warning")
             self.__file.write("// if the external enum declaration has fields that are not known to LRPC")
             self.__file.write(
-                "// This function does not serve any purpose and is optimized out with the right compiler/linker settings",  # noqa: E501
+                "// This function does not serve any purpose and is optimized out "
+                "with the right compiler/linker settings",
             )
 
             with (

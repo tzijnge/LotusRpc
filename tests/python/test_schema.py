@@ -354,14 +354,11 @@ services:
 
     assert_log_entries(
         [
-            "Invalid function name: s0_shim. This name is incompatible with the generated code for the containing service",  # noqa: E501
+            "Invalid function name: s0_shim. This name is incompatible with the generated code "
+            "for the containing service",
         ],
         caplog.text,
     )
-
-
-# id, invoke and linkServer are an invalid function/stream names
-# invalid stream names are not tested
 
 
 def test_duplicate_server_name(caplog: pytest.LogCaptureFixture) -> None:

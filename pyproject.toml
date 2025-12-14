@@ -78,10 +78,20 @@ line-length = 120
 [tool.ruff.lint]
 select = ["ALL"]
 fixable = ["ALL"]
-ignore = ["D", "TID252", "EM101", "TRY003", "S101", "EM102", "ANN401", "TC006"]
+ignore = [
+    "D",      # doc strings
+    "TID252", # relative imports
+    "EM101",  # strings in exceptions
+    "EM102",  # strings in exceptions
+    "TRY003", # strings in exceptions
+    "ANN401", # any type
+]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["PLR2004"]
+"tests/*" = [
+    "PLR2004", # magic numbers
+    "S101",    # use of assert
+]
 
 [tool.pylint]
 disable = [

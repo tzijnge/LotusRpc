@@ -64,7 +64,7 @@ class LrpcService:
 
         # functions and streams are now converted to LrpcFunDict and LrpcStreamDict respectively
         # This is validated in the LrpcFun and LrpcStream constructors
-        return cast(list[LrpcFunDict], functions), cast(list[LrpcStreamDict], streams)
+        return cast("list[LrpcFunDict]", functions), cast("list[LrpcStreamDict]", streams)
 
     @staticmethod
     def __assign_function_ids(

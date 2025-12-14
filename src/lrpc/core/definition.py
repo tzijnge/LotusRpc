@@ -51,7 +51,7 @@ class LrpcDef:
         self.__name = raw["name"]
         self.__version = raw.get("version", None)
 
-        self.__services = [LrpcService(cast(LrpcServiceDict, s)) for s in raw["services"]]
+        self.__services = [LrpcService(cast("LrpcServiceDict", s)) for s in raw["services"]]
         self.__namespace = raw.get("namespace", None)
         self.__rx_buffer_size = raw.get("rx_buffer_size", 256)
         self.__tx_buffer_size = raw.get("tx_buffer_size", 256)
@@ -89,11 +89,12 @@ class LrpcDef:
         for s in raw["services"]:
             if s["name"] == "LrpcMeta":
                 s["id"] = self.META_SERVICE_ID
-                self.__meta_service = LrpcService(cast(LrpcServiceDict, s))
+                self.__meta_service = LrpcService(cast("LrpcServiceDict", s))
                 raw["services"].remove(s)
                 meta_service_found = True
 
-        assert meta_service_found, "No meta service found in definition"
+        if not meta_service_found:
+            raise ValueError("No meta service found in definition")
 
     @classmethod
     def __init_structs_and_enums(cls, var: LrpcVarDict, struct_names: list[str], enum_names: list[str]) -> None:

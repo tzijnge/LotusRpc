@@ -113,7 +113,8 @@ def lrpc_encode(value: LrpcType, var: LrpcVar, lrpc_def: LrpcDef) -> bytes:
         value = __check_enum_field_id(value, var, lrpc_def)
         e = lrpc_def.enum(var.base_type())
         field_id = e.field_id(value)
-        assert field_id is not None
+        if field_id is None:
+            raise ValueError(f"{value} is not a field in enum {var.name()}")
         return __encode_basic_type(var.pack_type(), field_id)
 
     if not isinstance(value, (bool, int, float, str)):

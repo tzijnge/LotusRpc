@@ -86,7 +86,10 @@ class LrpcClient:
                 receive_more = False
             else:
                 stream = self._lrpc_def.stream(service_name, function_or_stream_name)
-                assert stream is not None
+                if stream is None:
+                    raise ValueError(
+                        f"{service_name}.{function_or_stream_name} is not recognized as function or stream",
+                    )
                 if stream.is_finite():
                     receive_more = response["final"] is False
                     response.pop("final")
@@ -110,8 +113,6 @@ class LrpcClient:
         raise ValueError(f"Function or stream {function_or_stream_name} not found in service {service_name}")
 
     def _decode_response(self, encoded: bytes) -> LrpcResponse | IncompleteResponse:
-        assert len(encoded) != 0
-
         self._receive_buffer += encoded
         received = len(self._receive_buffer)
 

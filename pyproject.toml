@@ -84,6 +84,7 @@ ignore = [
     "EM102",  # strings in exceptions
     "TRY003", # strings in exceptions
     "ANN401", # any type
+    "TC006",  # quotes around type in typing.cast
 ]
 
 [tool.ruff.lint.per-file-ignores]

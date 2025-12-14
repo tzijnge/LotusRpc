@@ -1,4 +1,8 @@
+import re
+
 import pytest
+from pydantic import ValidationError
+
 from lrpc.core import LrpcVar, LrpcVarDict
 
 
@@ -145,7 +149,10 @@ def test_struct_pack_type() -> None:
     v1: LrpcVarDict = {"name": "v1", "type": "struct@MyStruct"}
     assert LrpcVar(v1).base_type_is_struct()
 
-    with pytest.raises(TypeError):
+    with pytest.raises(
+        TypeError,
+        match=re.escape("Pack type is not defined for LrpcVar of type struct"),
+    ):
         LrpcVar(v1).pack_type()
 
 
@@ -153,7 +160,10 @@ def test_optional_pack_type() -> None:
     v1: LrpcVarDict = {"name": "v1", "type": "bool", "count": "?"}
     assert LrpcVar(v1).is_optional()
 
-    with pytest.raises(TypeError):
+    with pytest.raises(
+        TypeError,
+        match=re.escape("Pack type is not defined for LrpcVar of type optional"),
+    ):
         LrpcVar(v1).pack_type()
 
 
@@ -161,7 +171,10 @@ def test_array_pack_type() -> None:
     v1: LrpcVarDict = {"name": "v1", "type": "bool", "count": 5}
     assert LrpcVar(v1).is_array()
 
-    with pytest.raises(TypeError):
+    with pytest.raises(
+        TypeError,
+        match=re.escape("Pack type is not defined for LrpcVar of type array"),
+    ):
         LrpcVar(v1).pack_type()
 
 
@@ -169,5 +182,50 @@ def test_string_pack_type() -> None:
     v1: LrpcVarDict = {"name": "v1", "type": "string"}
     assert LrpcVar(v1).is_string()
 
-    with pytest.raises(TypeError):
+    with pytest.raises(
+        TypeError,
+        match=re.escape("Pack type is not defined for LrpcVar of type string"),
+    ):
         LrpcVar(v1).pack_type()
+
+
+def test_validation_missing_name() -> None:
+    v = {"type": "uint8_t"}
+
+    with pytest.raises(ValidationError, match=re.escape("Field required")):
+        LrpcVar(v)  # type: ignore[arg-type]
+
+
+def test_validation_missing_type() -> None:
+    v = {"name": "v1"}
+
+    with pytest.raises(ValidationError, match=re.escape("Field required")):
+        LrpcVar(v)  # type: ignore[arg-type]
+
+
+def test_validation_wrong_type_name() -> None:
+    v = {"name": 123, "type": "uint8_t"}
+
+    with pytest.raises(ValidationError, match=re.escape("Input should be a valid string")):
+        LrpcVar(v)  # type: ignore[arg-type]
+
+
+def test_validation_wrong_type_type() -> None:
+    v = {"name": "v1", "type": 123}
+
+    with pytest.raises(ValidationError, match=re.escape("Input should be a valid string")):
+        LrpcVar(v)  # type: ignore[arg-type]
+
+
+def test_validation_wrong_type_count() -> None:
+    v = {"name": "v1", "type": "uint8_t", "count": "invalid"}
+
+    with pytest.raises(ValidationError, match=re.escape("Input should be a valid integer")):
+        LrpcVar(v)  # type: ignore[arg-type]
+
+
+def test_validation_additional_fields() -> None:
+    v = {"name": "v1", "type": "uint8_t", "extra_field": "should_fail"}
+
+    with pytest.raises(ValidationError, match=re.escape("Extra inputs are not permitted")):
+        LrpcVar(v)  # type: ignore[arg-type]

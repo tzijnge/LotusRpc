@@ -1,13 +1,15 @@
 import math
+import re
 import struct
-from os import path
+from pathlib import Path
 
 import pytest
-from lrpc.client import lrpc_decode, LrpcDecoder
+
+from lrpc.client import LrpcDecoder, lrpc_decode
 from lrpc.core import LrpcVar
 from lrpc.utils import load_lrpc_def_from_url
 
-definition_file = path.join(path.dirname(path.abspath(__file__)), "test_lrpc_encode_decode.lrpc.yaml")
+definition_file = Path(__file__).resolve().parent.joinpath("test_lrpc_encode_decode.lrpc.yaml")
 lrpc_def = load_lrpc_def_from_url(definition_file, warnings_as_errors=False)
 
 
@@ -31,7 +33,13 @@ def test_decode_uint8_t() -> None:
     # decode with trailing byte
     assert lrpc_decode(b"\xff\x00", var, lrpc_def) == 255
 
-    with pytest.raises(struct.error):
+    with pytest.raises(
+        struct.error,
+        match=re.escape(
+            "unpack_from requires a buffer of at least 1 bytes for unpacking 1 bytes at offset 0 "
+            "(actual buffer size is 0)",
+        ),
+    ):
         lrpc_decode(b"", var, lrpc_def)
 
 
@@ -123,7 +131,7 @@ def test_decode_string() -> None:
     assert lrpc_decode(b"test123\x00", var, lrpc_def) == "test123"
 
     # no string termination
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="test123"):
         lrpc_decode(b"test123", var, lrpc_def)
 
     # trailing bytes
@@ -144,15 +152,18 @@ def test_decode_fixed_size_string() -> None:
     assert lrpc_decode(b"0123456789\x00\x01", var, lrpc_def) == "0123456789"
 
     # no string termination
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="String not terminated: b'01234567890'"):
         lrpc_decode(b"01234567890", var, lrpc_def)
 
     # too short
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=re.escape("Wrong string size (including string termination): expected 11, got 10"),
+    ):
         lrpc_decode(b"012345678\x00", var, lrpc_def)
 
     # too long
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=re.escape("String not terminated: b'01234567890\\x00'")):
         lrpc_decode(b"01234567890\x00", var, lrpc_def)
 
 
@@ -162,7 +173,13 @@ def test_decode_array() -> None:
     assert lrpc_decode(b"\x01\x02\x03\x04", var, lrpc_def) == [1, 2, 3, 4]
     assert lrpc_decode(b"\x01\x02\x03\x04\x05", var, lrpc_def) == [1, 2, 3, 4]
 
-    with pytest.raises(struct.error):
+    with pytest.raises(
+        struct.error,
+        match=re.escape(
+            "unpack_from requires a buffer of at least 4 bytes for unpacking 1 bytes at offset 3 "
+            "(actual buffer size is 3)",
+        ),
+    ):
         lrpc_decode(b"\x01\x02\x03", var, lrpc_def)
 
 
@@ -174,15 +191,15 @@ def test_decode_array_of_fixed_size_string() -> None:
     assert lrpc_decode(b"ab\x00cd\x00ef\x00gh\x00", var, lrpc_def) == ["ab", "cd", "ef"]
 
     # last string not terminated
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=re.escape("String not terminated: b'ab\\x00cd'")):
         lrpc_decode(b"ab\x00cd", var, lrpc_def)
 
     # strings too long
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=re.escape("String not terminated: b'abc\\x00def\\x00'")):
         lrpc_decode(b"abc\x00def\x00", var, lrpc_def)
 
     # one string in array
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=re.escape("String not terminated: b'ab\\x00'")):
         lrpc_decode(b"ab\x00", var, lrpc_def)
 
 
@@ -197,11 +214,11 @@ def test_decode_array_of_auto_string() -> None:
     ]
 
     # last string not terminated
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=re.escape("String not terminated: b'abcd\\x00ef'")):
         lrpc_decode(b"abcd\x00ef", var, lrpc_def)
 
     # two strings in array
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=re.escape("String not terminated: b'ab\\x00cd\\x00'")):
         lrpc_decode(b"ab\x00cd\x00", var, lrpc_def)
 
 
@@ -213,7 +230,13 @@ def test_decode_optional() -> None:
     assert lrpc_decode(b"\xff\xab", var, lrpc_def) == 0xAB
     assert lrpc_decode(b"\x01\x01\x01", var, lrpc_def) == 0x01
 
-    with pytest.raises(struct.error):
+    with pytest.raises(
+        struct.error,
+        match=re.escape(
+            "unpack_from requires a buffer of at least 2 bytes for unpacking 1 bytes at offset 1 "
+            "(actual buffer size is 1)",
+        ),
+    ):
         lrpc_decode(b"\x01", var, lrpc_def)
 
 
@@ -226,7 +249,7 @@ def test_decode_optional_fixed_size_string() -> None:
     # trailing bytes
     assert lrpc_decode(b"\x01ab\x00\x00", var, lrpc_def) == "ab"
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=re.escape("String not terminated: b'\\x01ab'")):
         lrpc_decode(b"\x01ab", var, lrpc_def)
 
 
@@ -239,17 +262,15 @@ def test_decode_optional_auto_string() -> None:
     # trailing bytes
     assert lrpc_decode(b"\x01ab\x00\x00", var, lrpc_def) == "ab"
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=re.escape("String not terminated: b'\\x01ab'")):
         lrpc_decode(b"\x01ab", var, lrpc_def)
 
 
 def test_decode_struct_not_in_def() -> None:
     var = LrpcVar({"name": "v1", "type": "struct@not_in_def"})
 
-    with pytest.raises(ValueError) as e:
+    with pytest.raises(ValueError, match="No struct not_in_def in LRPC definition test_LrpcVar"):
         lrpc_decode(b"\xd7\x11\x7b\x01", var, lrpc_def)
-
-    assert "No struct not_in_def in LRPC definition" in str(e.value)
 
 
 def test_decode_struct() -> None:
@@ -268,7 +289,13 @@ def test_decode_struct() -> None:
         "c": True,
     }
 
-    with pytest.raises(struct.error):
+    with pytest.raises(
+        struct.error,
+        match=re.escape(
+            "unpack_from requires a buffer of at least 4 bytes for unpacking 1 bytes at offset 3 "
+            "(actual buffer size is 3)",
+        ),
+    ):
         lrpc_decode(b"\xd7\x11\x7b", var, lrpc_def)
 
 
@@ -295,7 +322,7 @@ def test_decode_enum() -> None:
     assert lrpc_decode(b"\x00", var, lrpc_def) == "test1"
     assert lrpc_decode(b"\x37", var, lrpc_def) == "test2"
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=re.escape("Value 34 (0x22) is not valid for enum MyEnum1")):
         lrpc_decode(b"\x22", var, lrpc_def)
 
 

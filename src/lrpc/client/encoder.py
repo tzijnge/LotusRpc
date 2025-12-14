@@ -1,8 +1,7 @@
 import struct
-from typing import Optional
 
-from ..core import LrpcDef, LrpcVar
-from ..types import LrpcType, LrpcBasicType
+from lrpc.core import LrpcDef, LrpcVar
+from lrpc.types import LrpcBasicType, LrpcType
 
 
 def __check_string(value: LrpcType, var: LrpcVar) -> str:
@@ -21,11 +20,11 @@ def __encode_string(s: str, var: LrpcVar) -> bytes:
     return struct.pack(f"<{len(s)}s", s.encode("utf-8")) + b"\x00"
 
 
-def __encode_optional(value: Optional[LrpcType], var: LrpcVar, lrpc_def: LrpcDef) -> bytes:
+def __encode_optional(value: LrpcType | None, var: LrpcVar, lrpc_def: LrpcDef) -> bytes:
     if value is None:
-        return struct.pack("<?", False)
+        return struct.pack("<?", False)  # noqa: FBT003
 
-    return struct.pack("<?", True) + lrpc_encode(value, var.contained(), lrpc_def)
+    return struct.pack("<?", True) + lrpc_encode(value, var.contained(), lrpc_def)  # noqa: FBT003
 
 
 def __check_struct(value: LrpcType, var: LrpcVar, lrpc_def: LrpcDef) -> dict[str, LrpcType]:
@@ -71,7 +70,7 @@ def __check_array(value: LrpcType, var: LrpcVar) -> list[LrpcType]:
 
 def __encode_array(value: list[LrpcType], var: LrpcVar, lrpc_def: LrpcDef) -> bytes:
     encoded = b""
-    for i in range(0, var.array_size()):
+    for i in range(var.array_size()):
         item = lrpc_encode(value[i], var.contained(), lrpc_def)
         encoded += item
 
@@ -114,7 +113,8 @@ def lrpc_encode(value: LrpcType, var: LrpcVar, lrpc_def: LrpcDef) -> bytes:
         value = __check_enum_field_id(value, var, lrpc_def)
         e = lrpc_def.enum(var.base_type())
         field_id = e.field_id(value)
-        assert field_id is not None
+        if field_id is None:
+            raise ValueError(f"{value} is not a field in enum {var.name()}")
         return __encode_basic_type(var.pack_type(), field_id)
 
     if not isinstance(value, (bool, int, float, str)):

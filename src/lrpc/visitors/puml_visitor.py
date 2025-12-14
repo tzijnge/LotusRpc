@@ -1,11 +1,12 @@
-import os
+from collections.abc import Iterator
 from contextlib import contextmanager
-from typing import TYPE_CHECKING, Iterator, Optional, Union
+from pathlib import Path
+from typing import TYPE_CHECKING
 
 from .lrpc_visitor import LrpcVisitor
 
 if TYPE_CHECKING:
-    from ..core import (
+    from lrpc.core import (
         LrpcConstant,
         LrpcDef,
         LrpcEnum,
@@ -18,7 +19,7 @@ if TYPE_CHECKING:
     )
 
 
-def in_color(t: Union[str, int], c: str) -> str:
+def in_color(t: str | int, c: str) -> str:
     return f"<color:{c}>{t}</color>"
 
 
@@ -52,12 +53,12 @@ def const_string(p: "LrpcConstant") -> str:
 
 
 class PumlFile:
-    def __init__(self, filename: str) -> None:
-        self.text = "@startmindmap\n"
-        self.filename = filename
+    def __init__(self, file: Path) -> None:
+        self._text = "@startmindmap\n"
+        self._file = file
 
     def write(self, t: str) -> None:
-        self.text += t
+        self._text += t
 
     @contextmanager
     def font(self, f: str) -> Iterator[None]:
@@ -111,7 +112,7 @@ class PumlFile:
 
         self.write("endlegend\n")
 
-    def block(self, name: str, background: str, level: int, icon: Optional[str] = None) -> None:
+    def block(self, name: str, background: str, level: int, icon: str | None = None) -> None:
         indent = "*" * level
         self.write(f"{indent}[#{background}]: ")
         if icon:
@@ -123,7 +124,7 @@ class PumlFile:
 
         self.write("\n----")
 
-    def list_item(self, text: str, level: int = 1, font: Optional[str] = None) -> None:
+    def list_item(self, text: str, level: int = 1, font: str | None = None) -> None:
         indent = "*" * level
         if level != 0:
             indent += " "
@@ -139,16 +140,15 @@ class PumlFile:
 
     def dump_to_file(self) -> None:
         self.write("\n@endmindmap")
-        with open(self.filename, mode="w", encoding="utf-8") as file:
-            file.write(self.text)
+        with self._file.open(mode="w", encoding="utf-8") as file:
+            file.write(self._text)
 
     def function_string(self, fun: "LrpcFun", max_function_or_stream_id: int) -> None:
         with self.font("monospaced"):
-            with self.enclosed_in("[", "]"):
-                with self.color("Orange"):
-                    id_width = len(str(max_function_or_stream_id))
-                    id_str = f"{fun.id()}".rjust(id_width)
-                    self.write(f"F  {id_str}")
+            with self.enclosed_in("[", "]"), self.color("Orange"):
+                id_width = len(str(max_function_or_stream_id))
+                id_str = f"{fun.id()}".rjust(id_width)
+                self.write(f"F  {id_str}")
             with self.bold():
                 self.write(fun.name())
             with self.color("Magenta"):
@@ -166,12 +166,11 @@ class PumlFile:
 
     def stream_string(self, stream: "LrpcStream", max_function_or_stream_id: int) -> None:
         with self.font("monospaced"):
-            with self.enclosed_in("[", "]"):
-                with self.color("Green"):
-                    id_width = len(str(max_function_or_stream_id))
-                    infinite = " " if stream.is_finite() else self.icon("infinity")
-                    id_str = f"{stream.id()}".rjust(id_width)
-                    self.write(f"S{infinite} {id_str}")
+            with self.enclosed_in("[", "]"), self.color("Green"):
+                id_width = len(str(max_function_or_stream_id))
+                infinite = " " if stream.is_finite() else self.icon("infinity")
+                id_str = f"{stream.id()}".rjust(id_width)
+                self.write(f"S{infinite} {id_str}")
             with self.bold():
                 self.write(stream.name())
             with self.color("Magenta"):
@@ -190,8 +189,7 @@ class PumlFile:
 
 # pylint: disable = too-many-instance-attributes
 class PlantUmlVisitor(LrpcVisitor):
-
-    def __init__(self, output: os.PathLike[str]) -> None:
+    def __init__(self, output: Path) -> None:
         self.__output = output
         self.__puml: PumlFile
         self.__max_function_or_stream_id = 0
@@ -210,7 +208,7 @@ class PlantUmlVisitor(LrpcVisitor):
         self.__const_items_max = 10
 
     def visit_lrpc_def(self, lrpc_def: "LrpcDef") -> None:
-        self.__puml = PumlFile(f"{self.__output}/{lrpc_def.name()}.puml")
+        self.__puml = PumlFile(self.__output.joinpath(f"{lrpc_def.name()}.puml"))
 
         self.__puml.block(lrpc_def.name(), "Yellow", level=1)
         self.__puml.list_item(f"Namespace: {lrpc_def.namespace()}", level=0)

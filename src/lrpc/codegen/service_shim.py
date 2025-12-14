@@ -1,22 +1,21 @@
 from pathlib import Path
-from typing import Optional
 
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 
-from ..codegen.common import write_file_banner
-from ..codegen.utils import optionally_in_namespace
-from ..core import LrpcDef, LrpcFun, LrpcService, LrpcStream, LrpcVar
-from ..visitors import LrpcVisitor
+from lrpc.codegen.common import write_file_banner
+from lrpc.codegen.utils import optionally_in_namespace
+from lrpc.core import LrpcDef, LrpcFun, LrpcService, LrpcStream, LrpcVar
+from lrpc.visitors import LrpcVisitor
 
 
 class ServiceShimVisitor(LrpcVisitor):
     def __init__(self, output: Path) -> None:
         self._file: CppFile
-        self._namespace: Optional[str]
+        self._namespace: str | None
         self._output = output
         self._service: LrpcService
 
-    def _write_service_shim(self, output: Path, service: LrpcService, namespace: Optional[str]) -> None:
+    def _write_service_shim(self, output: Path, service: LrpcService, namespace: str | None) -> None:
         self._file = CppFile(f"{output.absolute()}/{service.name()}_shim.hpp")
         self._service = service
 
@@ -165,7 +164,10 @@ class ServiceShimVisitor(LrpcVisitor):
             self._file.newline()
 
     def __write_shim_array(
-        self, functions: list[LrpcFun], client_streams: list[LrpcStream], server_streams: list[LrpcStream]
+        self,
+        functions: list[LrpcFun],
+        client_streams: list[LrpcStream],
+        server_streams: list[LrpcStream],
     ) -> None:
         max_function_or_stream_id = self.__max_function_or_stream_id(functions, client_streams, server_streams)
 
@@ -182,7 +184,7 @@ class ServiceShimVisitor(LrpcVisitor):
                 client_stream_info = {stream.id(): stream.name() for stream in client_streams}
                 server_stream_info = {stream.id(): stream.name() + "_start_stop" for stream in server_streams}
 
-                for fid in range(0, max_function_or_stream_id + 1):
+                for fid in range(max_function_or_stream_id + 1):
                     name = "missingFunction"
                     name = function_info.get(fid, name)
                     name = client_stream_info.get(fid, name)
@@ -246,7 +248,10 @@ class ServiceShimVisitor(LrpcVisitor):
         return f"std::tuple<{types}>"
 
     def __max_function_or_stream_id(
-        self, functions: list[LrpcFun], client_streams: list[LrpcStream], server_streams: list[LrpcStream]
+        self,
+        functions: list[LrpcFun],
+        client_streams: list[LrpcStream],
+        server_streams: list[LrpcStream],
     ) -> int:
         server_stream_ids = [s.id() for s in server_streams]
         client_stream_ids = [s.id() for s in client_streams]

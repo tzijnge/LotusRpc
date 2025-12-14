@@ -1,13 +1,14 @@
-from functools import partial
-from typing import Any, Optional
 from collections.abc import Callable, Sequence
+from functools import partial
 from importlib import metadata
+from typing import Any
 
 import click
 import yaml
 import yaml.parser
-from ..visitors import LrpcVisitor
-from ..core import LrpcDef, LrpcEnum, LrpcEnumField, LrpcFun, LrpcService, LrpcVar, LrpcStream
+
+from lrpc.core import LrpcDef, LrpcEnum, LrpcEnumField, LrpcFun, LrpcService, LrpcStream, LrpcVar
+from lrpc.visitors import LrpcVisitor
 
 NONE_ARG = "7bc9ddaa-b6c9-4afb-93c1-5240ec91ab9c"
 
@@ -21,7 +22,7 @@ class YamlParamType(click.ParamType):
 
     # function does not always return
     # pylint: disable=inconsistent-return-statements
-    def convert(self, value: Any, param: Optional[click.Parameter], ctx: Optional[click.Context]) -> dict[str, Any]:
+    def convert(self, value: Any, param: click.Parameter | None, ctx: click.Context | None) -> dict[str, Any]:  # noqa: RET503
         if isinstance(value, dict):
             return value
 
@@ -46,7 +47,7 @@ class OptionalParamType(click.ParamType):
     def __init__(self, contained_type: click.ParamType) -> None:
         self.contained_type: click.ParamType = contained_type
 
-    def convert(self, value: Any, param: Optional[click.Parameter], ctx: Optional[click.Context]) -> Any:
+    def convert(self, value: Any, param: click.Parameter | None, ctx: click.Context | None) -> Any:
         if not isinstance(value, str):
             self.fail(f"{value} is not a string", param, ctx)
 
@@ -67,7 +68,7 @@ class VersionOption(click.Option):
 
     def __init__(
         self,
-        param_decls: Optional[Sequence[str]] = None,
+        param_decls: Sequence[str] | None = None,
         **kwargs: Any,
     ) -> None:
         if not param_decls:
@@ -81,10 +82,8 @@ class VersionOption(click.Option):
 
         super().__init__(param_decls, **kwargs)
 
-    # argument 'param' required by click
-    # pylint: disable=unused-argument
     @staticmethod
-    def show_version(ctx: click.Context, param: click.Parameter, value: bool) -> None:
+    def show_version(ctx: click.Context, _param: click.Parameter, value: bool) -> None:  # noqa: FBT001
         if not value or ctx.resilient_parsing:
             return
         click.echo(metadata.version("lotusrpc"))
@@ -126,7 +125,8 @@ class ClientCliVisitor(LrpcVisitor):
         self.enum_values[enum.name()].append(field.name())
 
     def visit_lrpc_function(self, function: LrpcFun) -> None:
-        assert self.current_service.name is not None
+        if self.current_service.name is None:
+            raise ValueError("Click group initialized without name")
         self.current_function = click.Command(
             name=function.name(),
             callback=partial(self.__handle_command, self.current_service.name, function.name()),
@@ -144,7 +144,8 @@ class ClientCliVisitor(LrpcVisitor):
         self.current_function.params.append(arg)
 
     def visit_lrpc_stream(self, stream: LrpcStream) -> None:
-        assert self.current_service.name is not None
+        if self.current_service.name is None:
+            raise ValueError("Click group initialized without name")
 
         self.current_stream_origin = stream.origin()
         self.current_stream_is_finite = stream.is_finite()
@@ -166,7 +167,8 @@ class ClientCliVisitor(LrpcVisitor):
         click_param: click.Parameter
 
         if self.current_stream_origin == LrpcStream.Origin.SERVER:
-            assert param.name() == "start", "Server stream takes a single parameter named 'start'"
+            if param.name() != "start":
+                raise ValueError("Server stream takes a single parameter named 'start'")
             click_param = click.Option(
                 ["--start/--stop"],
                 is_flag=True,
@@ -175,19 +177,18 @@ class ClientCliVisitor(LrpcVisitor):
                 required=False,
                 help="Start or stop the stream",
             )
+        elif self.current_stream_is_finite and (param.name() == "final"):
+            click_param = click.Option(
+                ["--final"],
+                is_flag=True,
+                default=False,
+                show_default=True,
+                required=False,
+                help="Indicate the final message in the stream",
+            )
         else:
-            if self.current_stream_is_finite and (param.name() == "final"):
-                click_param = click.Option(
-                    ["--final"],
-                    is_flag=True,
-                    default=False,
-                    show_default=True,
-                    required=False,
-                    help="Indicate the final message in the stream",
-                )
-            else:
-                attributes = {"type": self.__click_type(param), "nargs": param.array_size() if param.is_array() else 1}
-                click_param = click.Argument([param.name()], required=True, **attributes)
+            attributes = {"type": self.__click_type(param), "nargs": param.array_size() if param.is_array() else 1}
+            click_param = click.Argument([param.name()], required=True, **attributes)
 
         self.current_stream.params.append(click_param)
 
@@ -229,4 +230,4 @@ class ClientCliVisitor(LrpcVisitor):
         try:
             self.callback(service, function, **kwargs)
         except Exception as e:
-            raise click.ClickException(str(e))
+            raise click.ClickException(str(e)) from e

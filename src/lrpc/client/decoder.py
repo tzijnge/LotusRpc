@@ -1,7 +1,7 @@
 import struct
 from typing import Any
 
-from ..core import LrpcDef, LrpcVar
+from lrpc.core import LrpcDef, LrpcVar
 
 
 # pylint: disable = too-few-public-methods
@@ -20,7 +20,8 @@ class LrpcDecoder:
     def __decode_fixed_size_string(self, var: LrpcVar) -> str:
         if len(self.encoded) < (var.string_size() + 1):
             raise ValueError(
-                f"Wrong string size (including string termination): expected {var.string_size() + 1}, got {len(self.encoded)}"
+                "Wrong string size (including string termination): "
+                f"expected {var.string_size() + 1}, got {len(self.encoded)}",
             )
 
         s = self.__decode_string_from(var.string_size() + 1)
@@ -43,17 +44,15 @@ class LrpcDecoder:
     def __decode_array_of_strings(self, var: LrpcVar) -> list[str]:
         decoded = []
         if var.is_auto_string():
-            for _ in range(0, var.array_size()):
-                decoded.append(self.__decode_auto_string())
+            decoded.extend([self.__decode_auto_string() for _ in range(var.array_size())])
         else:
-            for _ in range(0, var.array_size()):
-                decoded.append(self.__decode_fixed_size_string(var))
+            decoded.extend([self.__decode_fixed_size_string(var) for _ in range(var.array_size())])
 
         return decoded
 
     def __decode_array(self, var: LrpcVar) -> Any:
         decoded = []
-        for _ in range(0, var.array_size()):
+        for _ in range(var.array_size()):
             item = self.lrpc_decode(var.contained())
             decoded.append(item)
 
@@ -102,7 +101,7 @@ class LrpcDecoder:
         return unpacked[0]
 
     # pylint: disable = too-many-return-statements
-    def lrpc_decode(self, var: LrpcVar) -> Any:
+    def lrpc_decode(self, var: LrpcVar) -> Any:  # noqa: PLR0911
         if var.is_array_of_strings():
             return self.__decode_array_of_strings(var)
 

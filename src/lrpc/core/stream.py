@@ -1,9 +1,10 @@
 from enum import Enum
-from typing import TypedDict
 
-from typing_extensions import NotRequired
+from pydantic import TypeAdapter
+from typing_extensions import NotRequired, TypedDict
 
-from ..visitors import LrpcVisitor
+from lrpc.visitors import LrpcVisitor
+
 from .var import LrpcVar, LrpcVarDict
 
 
@@ -15,15 +16,25 @@ class LrpcStreamDict(TypedDict):
     params: NotRequired[list[LrpcVarDict]]
 
 
+class LrpcStreamOptionalIdDict(TypedDict):
+    name: str
+    id: NotRequired[int]
+    origin: str
+    finite: NotRequired[bool]
+    params: NotRequired[list[LrpcVarDict]]
+
+
+# pylint: disable=invalid-name
+LrpcStreamValidator = TypeAdapter(LrpcStreamDict)
+
+
 class LrpcStream:
     class Origin(str, Enum):
         CLIENT = "client"
         SERVER = "server"
 
     def __init__(self, raw: LrpcStreamDict) -> None:
-        assert "name" in raw and isinstance(raw["name"], str)
-        assert "id" in raw and isinstance(raw["id"], int)
-        assert "origin" in raw and isinstance(raw["origin"], str)
+        LrpcStreamValidator.validate_python(raw, strict=True, extra="forbid")
 
         self.__name = raw["name"]
         self.__id = raw["id"]

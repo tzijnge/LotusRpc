@@ -12,7 +12,15 @@ jobs:
       - name: Install requirements
         run: |
           pip install -r requirements/dev.txt
-          pip install -r requirements/package.txt
+          pip install -r requirements/package.txt
+      - name: Ruff
+        uses: benny123tw/action-ruff@226d241bdf7205e6e048f1407d21bd69a64b7298
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          level: error
+          fail_level: any
+          changed_files: false
       - name: MyPy
         uses: tsuyoshicho/action-mypy@v5
         with:
@@ -47,3 +55,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
           fail_level: any
+          compare_with: "origin/${{ github.base_ref }}"

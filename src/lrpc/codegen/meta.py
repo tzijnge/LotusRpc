@@ -1,22 +1,20 @@
-from pathlib import Path
 from importlib.metadata import version
-from typing import Optional
+from pathlib import Path
 
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 
-from ..codegen.common import write_file_banner
-from ..codegen.utils import optionally_in_namespace
-from ..core import LrpcDef
-from ..visitors import LrpcVisitor
+from lrpc.codegen.common import write_file_banner
+from lrpc.codegen.utils import optionally_in_namespace
+from lrpc.core import LrpcDef
+from lrpc.visitors import LrpcVisitor
 
 
 class MetaFileVisitor(LrpcVisitor):
-
     def __init__(self, output: Path) -> None:
         self.__output = output
         self.__file: CppFile
-        self.__namespace: Optional[str] = None
-        self.__version: Optional[str] = None
+        self.__namespace: str | None = None
+        self.__version: str | None = None
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
         self.__file = CppFile(f"{self.__output}/{lrpc_def.name()}_Meta.hpp")
@@ -45,5 +43,5 @@ class MetaFileVisitor(LrpcVisitor):
                 self.__file.write(f"constexpr etl::string_view DefinitionVersion {{{definition_version}}};")
             else:
                 self.__file.write(
-                    "// Define a version in the definition file to generate a DefinitionVersion constant here"
+                    "// Define a version in the definition file to generate a DefinitionVersion constant here",
                 )

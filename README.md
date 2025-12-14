@@ -1,12 +1,8 @@
 # LotusRPC 🌼
 
-![Automated build](https://github.com/tzijnge/LotusRpc/actions/workflows/cmake.yml/badge.svg)
-
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=tzijnge_LotusRpc&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=tzijnge_LotusRpc)
+![Automated build](https://github.com/tzijnge/LotusRpc/actions/workflows/cmake.yml/badge.svg) [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=tzijnge_LotusRpc&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=tzijnge_LotusRpc) [![Code style: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/format.json)](https://github.com/astral-sh/ruff) [![linting: pylint](https://img.shields.io/badge/linting-pylint-yellowgreen)](https://github.com/PyCQA/pylint)
 
 [![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=tzijnge_LotusRpc)](https://sonarcloud.io/summary/new_code?id=tzijnge_LotusRpc)
-
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 > **_WARNING:_**  This project is work in progress
 

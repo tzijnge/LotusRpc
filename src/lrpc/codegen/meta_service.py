@@ -1,16 +1,16 @@
 from pathlib import Path
-from typing import Optional
 
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
-from ..visitors import LrpcVisitor
-from ..codegen.common import write_file_banner
-from ..codegen.utils import optionally_in_namespace
-from ..core import LrpcDef
+
+from lrpc.codegen.common import write_file_banner
+from lrpc.codegen.utils import optionally_in_namespace
+from lrpc.core import LrpcDef
+from lrpc.visitors import LrpcVisitor
 
 
 class MetaServiceVisitor(LrpcVisitor):
     def __init__(self, output: Path) -> None:
-        self._namespace: Optional[str]
+        self._namespace: str | None
         self._output = output
         self._file: CppFile
         self._processing_meta_service = False

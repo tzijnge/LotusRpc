@@ -1,9 +1,10 @@
 import struct
-from typing import Union, Generator
+from collections.abc import Generator
 
-from ..core.definition import LrpcDef
-from ..core import LrpcService, LrpcFun, LrpcStream, LrpcVar
-from ..types import LrpcType
+from lrpc.core import LrpcFun, LrpcService, LrpcStream, LrpcVar
+from lrpc.core.definition import LrpcDef
+from lrpc.types import LrpcType
+
 from .decoder import LrpcDecoder
 from .encoder import lrpc_encode
 from .transport import LrpcTransport
@@ -12,6 +13,8 @@ LrpcResponse = dict[str, LrpcType]
 
 
 class LrpcClient:
+    LRPC_MESSAGE_MIN_LENGTH = 3
+
     # This class is just a tag to signal a kind of result from the process function
     # pylint: disable=too-few-public-methods
     class IncompleteResponse:
@@ -23,7 +26,7 @@ class LrpcClient:
         self._receive_buffer = b""
 
     def decode(self, encoded: bytes) -> LrpcResponse:
-        if len(encoded) < 3:
+        if len(encoded) < self.LRPC_MESSAGE_MIN_LENGTH:
             raise ValueError(f"Unable to decode message from {encoded!r}: an LRPC message has at least 3 bytes")
 
         message_size = encoded[0]
@@ -66,14 +69,17 @@ class LrpcClient:
         raise ValueError(f"Function or stream {function_or_stream_name} not found in service {service_name}")
 
     def communicate(
-        self, service_name: str, function_or_stream_name: str, **kwargs: LrpcType
+        self,
+        service_name: str,
+        function_or_stream_name: str,
+        **kwargs: LrpcType,
     ) -> Generator[LrpcResponse, None, None]:
         encoded = self.encode(service_name, function_or_stream_name, **kwargs)
         self._transport.write(encoded)
 
         start_param = ("start" in kwargs) and (kwargs["start"] is True)
 
-        receive_more = self._has_response(service_name, function_or_stream_name, start_param)
+        receive_more = self._has_response(service_name, function_or_stream_name, start_param=start_param)
         while receive_more:
             response = self._receive_response()
 
@@ -81,14 +87,17 @@ class LrpcClient:
                 receive_more = False
             else:
                 stream = self._lrpc_def.stream(service_name, function_or_stream_name)
-                assert stream is not None
+                if stream is None:
+                    raise ValueError(
+                        f"{service_name}.{function_or_stream_name} is not recognized as function or stream",
+                    )
                 if stream.is_finite():
                     receive_more = response["final"] is False
                     response.pop("final")
 
             yield response
 
-    def _has_response(self, service_name: str, function_or_stream_name: str, start_param: bool) -> bool:
+    def _has_response(self, service_name: str, function_or_stream_name: str, *, start_param: bool) -> bool:
         function = self._lrpc_def.function(service_name, function_or_stream_name)
         stream = self._lrpc_def.stream(service_name, function_or_stream_name)
 
@@ -104,9 +113,7 @@ class LrpcClient:
 
         raise ValueError(f"Function or stream {function_or_stream_name} not found in service {service_name}")
 
-    def _decode_response(self, encoded: bytes) -> Union[LrpcResponse, IncompleteResponse]:
-        assert len(encoded) != 0
-
+    def _decode_response(self, encoded: bytes) -> LrpcResponse | IncompleteResponse:
         self._receive_buffer += encoded
         received = len(self._receive_buffer)
 
@@ -168,7 +175,7 @@ class LrpcClient:
     def _encode_parameters(
         self,
         service: LrpcService,
-        function_or_stream: Union[LrpcFun, LrpcStream],
+        function_or_stream: LrpcFun | LrpcStream,
         **kwargs: LrpcType,
     ) -> bytes:
         encoded = struct.pack("<B", service.id())

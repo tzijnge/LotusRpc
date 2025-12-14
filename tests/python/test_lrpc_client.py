@@ -1,12 +1,14 @@
+import re
 import struct
-from os import path
+from pathlib import Path
 
 import pytest
+
 from lrpc.client import LrpcClient
 from lrpc.utils import load_lrpc_def_from_url
 
 
-class TestTransport:
+class FakeTransport:
     def __init__(self, response: bytes) -> None:
         self.response = response
 
@@ -21,20 +23,19 @@ class TestTransport:
         pass
 
 
-def_url = path.join(path.dirname(path.abspath(__file__)), "test_lrpc_encode_decode.lrpc.yaml")
+def_url = Path(__file__).resolve().parent.joinpath("test_lrpc_encode_decode.lrpc.yaml")
 lrpc_def = load_lrpc_def_from_url(def_url, warnings_as_errors=False)
 
 
 # pylint: disable = too-many-public-methods
 class TestLrpcClient:
-
     @staticmethod
     def client(response: bytes = b"") -> LrpcClient:
-        transport = TestTransport(response)
+        transport = FakeTransport(response)
         return LrpcClient(lrpc_def, transport)
 
     def test_call(self) -> None:
-        encoded = self.client().encode("srv1", "add5", **{"p0": 123})
+        encoded = self.client().encode("srv1", "add5", p0=123)
         # client: send encoded to server
 
         # server: copy service ID and function ID and append return value
@@ -53,35 +54,27 @@ class TestLrpcClient:
         )
 
     def test_encode_function_invalid_service(self) -> None:
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Service invalid_service not found in the LRPC definition file"):
             self.client().encode("invalid_service", "f2")
 
     def test_encode_function_invalid_function(self) -> None:
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(ValueError, match="Function or stream invalid_function not found in service srv1"):
             self.client().encode("srv1", "invalid_function")
 
-        assert str(e.value) == "Function or stream invalid_function not found in service srv1"
-
     def test_encode_function_too_many_parameters(self) -> None:
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(ValueError, match=re.escape("No such parameter(s): {'invalid'}")):
             # function takes no parameters
             self.client().encode("srv1", "f2", invalid=123)
 
-        assert str(e.value) == "No such parameter(s): {'invalid'}"
-
     def test_encode_function_missing_parameter(self) -> None:
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(ValueError, match=re.escape("Required parameter(s) {'p0'} not given")):
             # function takes one parameter, but none given
             self.client().encode("srv1", "add5")
 
-        assert str(e.value) == "Required parameter(s) {'p0'} not given"
-
     def test_encode_function_invalid_parameter_name(self) -> None:
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(ValueError, match=re.escape("No such parameter(s): {'invalid'}")):
             # function takes one parameter, but none given
             self.client().encode("srv1", "add5", invalid=5)
-
-        assert str(e.value) == "No such parameter(s): {'invalid'}"
 
     def test_encode_function(self) -> None:
         encoded = self.client().encode("srv1", "add5", p0=0xAB)
@@ -119,10 +112,8 @@ class TestLrpcClient:
     def test_decode_stream_client_infinite_invalid(self) -> None:
         # In a client stream, the server can only send a stop request
         # that is a message with no fields other than message size, service ID and stream ID
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(ValueError, match=re.escape("1 remaining bytes after decoding srv2.client_infinite")):
             self.client().decode(b"\x04\x02\x00\x00")
-
-        assert str(e.value) == "1 remaining bytes after decoding srv2.client_infinite"
 
     def test_decode_stream_client_finite_request_stop(self) -> None:
         decoded = self.client().decode(b"\x03\x02\x01")
@@ -132,10 +123,8 @@ class TestLrpcClient:
     def test_decode_stream_client_finite_invalid(self) -> None:
         # In a client stream, the server can only send a stop request
         # that is a message with no fields other than message size, service ID and stream ID
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(ValueError, match=re.escape("2 remaining bytes after decoding srv2.client_finite")):
             self.client().decode(b"\x05\x02\x01\xff\x66")
-
-        assert str(e.value) == "2 remaining bytes after decoding srv2.client_finite"
 
     def test_decode_stream_server_infinite(self) -> None:
         decoded = self.client().decode(b"\x06\x02\x02\x45\x67\x89")
@@ -158,40 +147,37 @@ class TestLrpcClient:
         assert decoded.get("final") is False
 
     def test_decode_invalid_service_id(self) -> None:
-        with pytest.raises(ValueError) as e:
-            encoded = b"\x04\xaa\x00\x02"
+        encoded = b"\x04\xaa\x00\x02"
+        with pytest.raises(ValueError, match="Service with ID 170 not found in the LRPC definition file"):
             self.client().decode(encoded)
-
-        assert str(e.value) == "Service with ID 170 not found in the LRPC definition file"
 
     def test_decode_invalid_function_id(self) -> None:
-        with pytest.raises(ValueError) as e:
-            encoded = b"\x04\x01\xaa\x02"
+        encoded = b"\x04\x01\xaa\x02"
+        with pytest.raises(ValueError, match="No function or stream with ID 170 found in service srv1"):
             self.client().decode(encoded)
 
-        assert str(e.value) == "No function or stream with ID 170 found in service srv1"
-
     def test_decode_message_too_short(self) -> None:
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(
+            ValueError,
+            match=re.escape("Unable to decode message from b'': an LRPC message has at least 3 bytes"),
+        ):
             self.client().decode(b"")
 
-        assert str(e.value) == "Unable to decode message from b'': an LRPC message has at least 3 bytes"
-
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(
+            ValueError,
+            match=re.escape("Unable to decode message from b'\\x04': an LRPC message has at least 3 bytes"),
+        ):
             self.client().decode(b"\x04")
 
-        assert str(e.value) == "Unable to decode message from b'\\x04': an LRPC message has at least 3 bytes"
-
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(
+            ValueError,
+            match=re.escape("Unable to decode message from b'\\x04\\x01': an LRPC message has at least 3 bytes"),
+        ):
             self.client().decode(b"\x04\x01")
 
-        assert str(e.value) == "Unable to decode message from b'\\x04\\x01': an LRPC message has at least 3 bytes"
-
     def test_decode_incorrect_size(self) -> None:
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(ValueError, match=re.escape("Incorrect message size. Expected 4 but got 3")):
             self.client().decode(b"\x04\x00\x00")
-
-        assert str(e.value) == "Incorrect message size. Expected 4 but got 3"
 
     def test_decode_error_response_unknown_service(self) -> None:
         decoded = self.client().decode(b"\x0b\xff\x00\x00\x55\x66\x00\x00\x00\x77\x00")
@@ -226,10 +212,8 @@ class TestLrpcClient:
         assert len(decoded.items()) == 0
 
     def test_remaining_bytes_after_decode(self) -> None:
-        with pytest.raises(ValueError) as e:
+        with pytest.raises(ValueError, match=re.escape("2 remaining bytes after decoding srv0.f0")):
             self.client().decode(b"\x05\x00\x00\xab\xcd")
-
-        assert str(e.value) == "2 remaining bytes after decoding srv0.f0"
 
     def test_communicate_function(self) -> None:
         response = b"\x04\x01\x00\xcd"
@@ -239,27 +223,29 @@ class TestLrpcClient:
             assert r["r0"] == 0xCD
 
     def test_communicate_stream_client_infinite(self) -> None:
-        for _ in self.client().communicate("srv2", "client_infinite", p0=0xAB, p1=0xCDEF):
-            assert False, "Response received for client stream"
+        communicator = self.client().communicate("srv2", "client_infinite", p0=0xAB, p1=0xCDEF)
+        response = next(communicator, None)
+        assert response is None
 
     def test_communicate_stream_client_finite(self) -> None:
-        for _ in self.client().communicate("srv2", "client_finite", p0=0xAB, p1=0xCDEF, final=True):
-            assert False, "Response received for client stream"
+        communicator = self.client().communicate("srv2", "client_finite", p0=0xAB, p1=0xCDEF, final=True)
+        response = next(communicator, None)
+        assert response is None
 
     def test_communicate_stream_server_infinite_stop(self) -> None:
-        for _ in self.client().communicate("srv2", "server_infinite", start=False):
-            assert False, "Response on end server stream"
+        communicator = self.client().communicate("srv2", "server_infinite", start=False)
+        response = next(communicator, None)
+        assert response is None
 
     def test_communicate_stream_server_finite_stop(self) -> None:
-        for _ in self.client().communicate("srv2", "server_finite", start=False):
-            assert False, "Response on end server stream"
+        communicator = self.client().communicate("srv2", "server_finite", start=False)
+        response = next(communicator, None)
+        assert response is None
 
     def test_communicate_stream_server_infinite_start(self) -> None:
         response_bytes = b"\x06\x02\x02\xcd\x01\x02"
-        response = {}
-        with pytest.raises(TimeoutError, match="Timeout waiting for response"):
-            for r in self.client(response_bytes).communicate("srv2", "server_infinite", start=True):
-                response = r
+        response_generator = self.client(response_bytes).communicate("srv2", "server_infinite", start=True)
+        response = next(response_generator)
 
         assert "p0" in response
         assert isinstance(response["p0"], int)
@@ -268,6 +254,9 @@ class TestLrpcClient:
         assert "p1" in response
         assert isinstance(response["p1"], int)
         assert response["p1"] == 0x0201
+
+        with pytest.raises(TimeoutError, match="Timeout waiting for response"):
+            next(response_generator)
 
     def test_communicate_stream_server_finite_start(self) -> None:
         response = b"\x07\x02\x03\xcd\x01\x02\x01"

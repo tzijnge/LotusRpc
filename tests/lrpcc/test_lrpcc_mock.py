@@ -1,13 +1,17 @@
-import re
 import os
+import re
+from collections.abc import Generator
+
 import pytest
+
 from lrpc.lrpcc import Lrpcc
 
 # pylint: disable=protected-access
+# ruff: noqa: SLF001
 
 
 @pytest.fixture(autouse=True)
-def change_test_dir(request: pytest.FixtureRequest):  # type: ignore[no-untyped-def]
+def change_test_dir(request: pytest.FixtureRequest) -> Generator[None, None, None]:
     os.chdir(request.fspath.dirname)  # type: ignore[attr-defined]
     yield
     os.chdir(request.config.invocation_params.dir)
@@ -61,10 +65,8 @@ def test_server_infinite_start(capsys: pytest.CaptureFixture[str]) -> None:
     response += b"\x06\x42\x00\xe8\xfd\x03"
 
     lrpcc = make_lrpcc("../testdata/TestServer5.lrpc.yaml", response)
-    with pytest.raises(TimeoutError) as e:
+    with pytest.raises(TimeoutError, match="Timeout waiting for response"):
         lrpcc._command_handler("srv1", "server_infinite", start=True)
-
-    assert str(e.value) == "Timeout waiting for response"
 
     expected_response = """[#0]
 p0: 1234 (0x4d2)
@@ -117,10 +119,8 @@ def test_server_finite_start_no_final_response(capsys: pytest.CaptureFixture[str
 
     lrpcc = make_lrpcc("../testdata/TestServer5.lrpc.yaml", response)
 
-    with pytest.raises(TimeoutError) as e:
+    with pytest.raises(TimeoutError, match="Timeout waiting for response"):
         lrpcc._command_handler("srv1", "server_finite", start=True)
-
-    assert str(e.value) == "Timeout waiting for response"
 
     expected_response = """[#0]
 p0: False

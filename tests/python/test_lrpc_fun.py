@@ -1,5 +1,10 @@
+import re
+
 import pytest
+from pydantic import ValidationError
+
 from lrpc.core import LrpcFun, LrpcFunDict
+
 from .utilities import StringifyVisitor
 
 
@@ -47,7 +52,7 @@ def test_get_param_by_name() -> None:
 
     fun = LrpcFun(f)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=re.escape("No parameter  in function f1")):
         fun.param("")
     p1 = fun.param("p1")
     assert p1 is not None
@@ -64,7 +69,7 @@ def test_get_return_by_name() -> None:
 
     fun = LrpcFun(f)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=re.escape("No return value  in function f1")):
         fun.ret("")
     r1 = fun.ret("r1")
     assert r1 is not None
@@ -86,3 +91,42 @@ def test_visit_stream() -> None:
     stream.accept(v)
 
     assert v.result == "function[f1+123]-return[r1]-return[r2]-return_end-param[p1]-param[p2]-param_end-function_end"
+
+
+def test_validate_additional_fields() -> None:
+    f = {
+        "name": "f1",
+        "id": 123,
+        "additional_field": "not_allowed",
+    }
+
+    with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
+        LrpcFun(f)  # type: ignore[arg-type]
+
+
+def test_validate_missing_name() -> None:
+    f = {"id": 123}
+
+    with pytest.raises(ValidationError, match="Field required"):
+        LrpcFun(f)  # type: ignore[arg-type]
+
+
+def test_validate_missing_id() -> None:
+    f = {"name": "f1"}
+
+    with pytest.raises(ValidationError, match="Field required"):
+        LrpcFun(f)  # type: ignore[arg-type]
+
+
+def test_validate_wrong_type_name() -> None:
+    f = {"name": 123, "id": 123}
+
+    with pytest.raises(ValidationError, match="Input should be a valid string"):
+        LrpcFun(f)  # type: ignore[arg-type]
+
+
+def test_validate_wrong_type_id() -> None:
+    f = {"name": "f1", "id": "not_an_int"}
+
+    with pytest.raises(ValidationError, match="Input should be a valid integer"):
+        LrpcFun(f)  # type: ignore[arg-type]

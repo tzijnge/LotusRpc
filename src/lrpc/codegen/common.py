@@ -1,7 +1,8 @@
 from importlib.metadata import version
+
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 
-from ..core import LrpcVar
+from lrpc.core import LrpcVar
 
 
 def lrpc_var_includes(var: LrpcVar) -> set[str]:

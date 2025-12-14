@@ -1,14 +1,15 @@
 import hashlib
 import shutil
-from urllib import request
-from contextlib import closing
-from os import path
 import ssl
-from shutil import copytree
 import tempfile
+from contextlib import closing
+from pathlib import Path
+from shutil import copytree
+from urllib import request
+
 import click
 
-ssl._create_default_https_context = ssl._create_unverified_context
+ssl._create_default_https_context = ssl._create_unverified_context  # type: ignore[assignment]  # noqa: SLF001  # pylint: disable=protected-access
 
 ARM_GCC_VERSION = "14.3.rel1"
 ARM_GCC_NAME = f"arm-gnu-toolchain-{ARM_GCC_VERSION}-x86_64-arm-none-eabi"
@@ -19,10 +20,10 @@ ARM_GCC = {
 }
 
 
-def get_hash(file_name: str) -> str:
+def get_hash(file: Path) -> str:
     h = hashlib.sha256()
 
-    with open(file_name, "rb") as f:
+    with file.open("rb") as f:
         while True:
             data = f.read(65536)
             if not data:
@@ -36,16 +37,16 @@ def get_hash(file_name: str) -> str:
 @click.option("-d", "--destination", type=click.Path(), required=True, help="Destination path")
 def install_arm_gcc(destination: str) -> None:
     with tempfile.TemporaryDirectory() as temp:
-        file_name = path.join(temp, "arm_gcc.tar.xz")
+        file = Path(temp).joinpath("arm_gcc.tar.xz")
 
-        with closing(request.urlopen(ARM_GCC["url"])) as r:
-            with open(file_name, "wb") as f:
-                shutil.copyfileobj(r, f)
+        with closing(request.urlopen(ARM_GCC["url"])) as r, file.open("wb") as f:  # noqa: S310
+            shutil.copyfileobj(r, f)
 
-        assert ARM_GCC["hash"] == get_hash(file_name), f"Invalid hash for {file_name}"
+        if ARM_GCC["hash"] != get_hash(file):
+            raise ValueError(f"Invalid hash for {file}")
 
-        shutil.unpack_archive(file_name, temp)
-        copytree(path.join(temp, ARM_GCC_NAME), destination)
+        shutil.unpack_archive(file, extract_dir=temp)
+        copytree(temp + "/" + ARM_GCC_NAME, destination)
 
 
 if __name__ == "__main__":

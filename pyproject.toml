@@ -33,6 +33,7 @@ dependencies = [
     "click==8.3.0",
     "typing-extensions==4.15.0",
     "colorama==0.4.6",
+    "pydantic==2.12.5",
 ]
 dynamic = ["version"]
 
@@ -69,9 +70,28 @@ local_scheme = "no-local-version"
 [tool.pytest.ini_options]
 pythonpath = "src"
 testpaths = ["tests"]
+filterwarnings = ["error"]
 
-[tool.black]
+[tool.ruff]
 line-length = 120
+
+[tool.ruff.lint]
+select = ["ALL"]
+fixable = ["ALL"]
+ignore = [
+    "D",      # doc strings
+    "EM101",  # strings in exceptions
+    "EM102",  # strings in exceptions
+    "TRY003", # strings in exceptions
+    "ANN401", # any type
+    "TC006",  # quotes around type in typing.cast
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+    "PLR2004", # magic numbers
+    "S101",    # use of assert
+]
 
 [tool.pylint]
 disable = [
@@ -82,7 +102,7 @@ disable = [
 max-attributes = 12
 
 [tool.pylint.format]
-# line length is handled by black. Any remaining long lines cannot be formatted properly
+# line length is handled by ruff. Any remaining long lines cannot be formatted properly
 disable = ["line-too-long"]
 allow-reexport-from-package = true
 

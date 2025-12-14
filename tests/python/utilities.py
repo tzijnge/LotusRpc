@@ -1,5 +1,5 @@
+from lrpc.core import LrpcFun, LrpcService, LrpcStream, LrpcVar
 from lrpc.visitors import LrpcVisitor
-from lrpc.core import LrpcService, LrpcVar, LrpcFun, LrpcStream
 
 
 class StringifyVisitor(LrpcVisitor):

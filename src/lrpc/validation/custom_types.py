@@ -1,23 +1,16 @@
-from ..core import LrpcDef, LrpcEnum, LrpcStruct, LrpcVar
+from lrpc.core import LrpcDef, LrpcEnum, LrpcStruct, LrpcVar
+
 from .validator import LrpcValidator
 
 
 class CustomTypesValidator(LrpcValidator):
     def __init__(self) -> None:
-        self.__errors: set[str] = set()
-        self.__warnings: set[str] = set()
+        super().__init__()
         self.__declared_custom_types: set[str] = set()
         self.__used_custom_types: set[str] = set()
 
-    def errors(self) -> list[str]:
-        return list(self.__errors)
-
-    def warnings(self) -> list[str]:
-        return list(self.__warnings)
-
-    def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
-        self.__errors.clear()
-        self.__warnings.clear()
+    def visit_lrpc_def(self, _lrpc_def: LrpcDef) -> None:
+        self.reset()
         self.__declared_custom_types.clear()
         self.__used_custom_types.clear()
 
@@ -39,7 +32,7 @@ class CustomTypesValidator(LrpcValidator):
     def visit_lrpc_function_param(self, param: LrpcVar) -> None:
         self.__handle_used_type(param)
 
-    def visit_lrpc_struct_field(self, struct: LrpcStruct, field: LrpcVar) -> None:
+    def visit_lrpc_struct_field(self, _struct: LrpcStruct, field: LrpcVar) -> None:
         self.__handle_used_type(field)
 
     def visit_lrpc_stream_param(self, param: LrpcVar) -> None:
@@ -50,6 +43,6 @@ class CustomTypesValidator(LrpcValidator):
 
     def visit_lrpc_def_end(self) -> None:
         for undeclared_custom_type in self.__used_custom_types - self.__declared_custom_types:
-            self.__errors.add(f"Undeclared custom type: {undeclared_custom_type}")
+            self.add_error(f"Undeclared custom type: {undeclared_custom_type}")
         for unused_custom_type in self.__declared_custom_types - self.__used_custom_types:
-            self.__warnings.add(f"Unused custom type: {unused_custom_type}")
+            self.add_warning(f"Unused custom type: {unused_custom_type}")

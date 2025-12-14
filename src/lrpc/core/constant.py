@@ -1,7 +1,7 @@
-from typing import TypedDict, Union
-from typing_extensions import NotRequired
+from pydantic import TypeAdapter
+from typing_extensions import NotRequired, TypedDict
 
-from ..visitors import LrpcVisitor
+from lrpc.visitors import LrpcVisitor
 
 CPP_TYPES: list[str] = [
     "uint8_t",
@@ -21,17 +21,20 @@ CPP_TYPES: list[str] = [
 
 class LrpcConstantDict(TypedDict):
     name: str
-    value: Union[int, float, bool, str]
+    value: int | float | bool | str
     cppType: NotRequired[str]
+
+
+# pylint: disable=invalid-name
+LrpcConstantValidator = TypeAdapter(LrpcConstantDict)
 
 
 class LrpcConstant:
     def __init__(self, raw: LrpcConstantDict) -> None:
-        assert "name" in raw and isinstance(raw["name"], str)
-        assert "value" in raw
+        LrpcConstantValidator.validate_python(raw, strict=True, extra="forbid")
 
         self.__name: str = raw["name"]
-        self.__value: Union[int, float, bool, str] = raw["value"]
+        self.__value: int | float | bool | str = raw["value"]
         self.__cpp_type: str = self.__init_cpp_type(raw)
 
     def __init_cpp_type(self, raw: LrpcConstantDict) -> str:
@@ -59,7 +62,7 @@ class LrpcConstant:
     def name(self) -> str:
         return self.__name
 
-    def value(self) -> Union[int, float, bool, str]:
+    def value(self) -> int | float | bool | str:
         return self.__value
 
     def cpp_type(self) -> str:

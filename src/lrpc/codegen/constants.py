@@ -1,19 +1,17 @@
 from pathlib import Path
-from typing import Optional
 
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 
-from ..codegen.common import write_file_banner
-from ..codegen.utils import optionally_in_namespace
-from ..core import LrpcConstant, LrpcDef
-from ..visitors import LrpcVisitor
+from lrpc.codegen.common import write_file_banner
+from lrpc.codegen.utils import optionally_in_namespace
+from lrpc.core import LrpcConstant, LrpcDef
+from lrpc.visitors import LrpcVisitor
 
 
 class ConstantsFileVisitor(LrpcVisitor):
-
     def __init__(self, output: Path) -> None:
         self.__output = output
-        self.__namespace: Optional[str] = None
+        self.__namespace: str | None = None
         self.__file: CppFile
         self.__includes: set[str] = set()
         self.__constant_definitions: list[str] = []

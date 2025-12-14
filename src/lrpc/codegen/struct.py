@@ -1,18 +1,17 @@
 from pathlib import Path
-from typing import Optional
 
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
-from ..visitors import LrpcVisitor
-from ..codegen.common import lrpc_var_includes, write_file_banner
-from ..codegen.utils import optionally_in_namespace
-from ..core import LrpcDef, LrpcStruct, LrpcVar
+
+from lrpc.codegen.common import lrpc_var_includes, write_file_banner
+from lrpc.codegen.utils import optionally_in_namespace
+from lrpc.core import LrpcDef, LrpcStruct, LrpcVar
+from lrpc.visitors import LrpcVisitor
 
 
 class StructFileVisitor(LrpcVisitor):
-
     def __init__(self, output: Path) -> None:
         self.__output = output
-        self.__namespace: Optional[str]
+        self.__namespace: str | None
         self.__file: CppFile
         self.__descriptor: LrpcStruct
         self.__alias: str = ""
@@ -44,7 +43,7 @@ class StructFileVisitor(LrpcVisitor):
         if self.__descriptor.is_external():
             self.__write_external_struct_checks()
 
-    def visit_lrpc_struct_field(self, struct: LrpcStruct, field: LrpcVar) -> None:
+    def visit_lrpc_struct_field(self, _struct: LrpcStruct, field: LrpcVar) -> None:
         if self.__descriptor.is_external():
             return
 
@@ -70,20 +69,26 @@ class StructFileVisitor(LrpcVisitor):
             self.__file.newline()
 
     def __write_external_struct_checks(self) -> None:
-        with self.__file.block("namespace lrpc_private"):
-            with self.__file.block("namespace dummy"):
-                with self.__file.block(f"struct {self.__qualified_name()}", ";"):
-                    for f in self.__descriptor.fields():
-                        self.__write_struct_field(f)
+        with (
+            self.__file.block("namespace lrpc_private"),
+            self.__file.block("namespace dummy"),
+        ):
+            with self.__file.block(f"struct {self.__qualified_name()}", ";"):
+                for f in self.__descriptor.fields():
+                    self.__write_struct_field(f)
 
             self.__file.newline()
             self.__file.write(
-                f'static_assert(sizeof(dummy::{self.__qualified_name()}) == sizeof({self.__name()}), "External struct size not as expected. It may have missing or additional fields or different packing.");'
+                f"static_assert(sizeof(dummy::{self.__qualified_name()}) == sizeof({self.__name()}), "
+                '"External struct size not as expected. It may have missing or additional fields '
+                'or different packing.");',
             )
             self.__file.newline()
             for f in self.__descriptor.fields():
                 self.__file.write(
-                    f'static_assert(std::is_same<decltype(dummy::{self.__qualified_name()}::{f.name()}), decltype({self.__name()}::{f.name()})>::value, "Type of field {f.name()} is not as specified in LRPC");'
+                    f"static_assert(std::is_same<decltype(dummy::{self.__qualified_name()}::{f.name()}), "
+                    f'decltype({self.__name()}::{f.name()})>::value, "Type of field {f.name()} '
+                    'is not as specified in LRPC");',
                 )
 
     def __write_external_alias(self) -> None:
@@ -127,7 +132,7 @@ class StructFileVisitor(LrpcVisitor):
 
             self.__file("template<>")
             with self.__file.block(
-                f"inline void write_unchecked<{name}>(etl::byte_stream_writer& writer, const {name}& obj)"
+                f"inline void write_unchecked<{name}>(etl::byte_stream_writer& writer, const {name}& obj)",
             ):
                 self.__write_encoder_body()
 

@@ -1,5 +1,10 @@
+import re
+
 import pytest
+from pydantic import ValidationError
+
 from lrpc.core import LrpcStream, LrpcStreamDict
+
 from .utilities import StringifyVisitor
 
 
@@ -125,7 +130,7 @@ def test_stream_param() -> None:
 
     assert stream.returns()[0].name() == "p1"
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=re.escape("No parameter p2 in function s1")):
         stream.param("p2")
 
 
@@ -215,3 +220,78 @@ def test_visit_infinite_stream() -> None:
     }
 
     assert not LrpcStream(s).is_finite()
+
+
+def test_validation_missing_name() -> None:
+    s = {
+        "id": 123,
+        "origin": "client",
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Field required")):
+        LrpcStream(s)  # type: ignore[arg-type]
+
+
+def test_validation_missing_id() -> None:
+    s = {
+        "name": "s1",
+        "origin": "client",
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Field required")):
+        LrpcStream(s)  # type: ignore[arg-type]
+
+
+def test_validation_missing_origin() -> None:
+    s = {
+        "name": "s1",
+        "id": 123,
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Field required")):
+        LrpcStream(s)  # type: ignore[arg-type]
+
+
+def test_validation_wrong_type_name() -> None:
+    s = {
+        "name": 123,
+        "id": 123,
+        "origin": "client",
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Input should be a valid string")):
+        LrpcStream(s)  # type: ignore[arg-type]
+
+
+def test_validation_wrong_type_id() -> None:
+    s = {
+        "name": "s1",
+        "id": "123",
+        "origin": "client",
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Input should be a valid integer")):
+        LrpcStream(s)  # type: ignore[arg-type]
+
+
+def test_validation_wrong_type_origin() -> None:
+    s = {
+        "name": "s1",
+        "id": 123,
+        "origin": 123,
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Input should be a valid string")):
+        LrpcStream(s)  # type: ignore[arg-type]
+
+
+def test_validation_additional_fields() -> None:
+    s = {
+        "name": "s1",
+        "id": 123,
+        "origin": "client",
+        "extra_field": "should_fail",
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Extra inputs are not permitted")):
+        LrpcStream(s)  # type: ignore[arg-type]

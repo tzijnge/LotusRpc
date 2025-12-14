@@ -1,13 +1,17 @@
 import math
+import re
+
 import pytest
-from lrpc.utils import load_lrpc_def_from_str
+from pydantic import ValidationError
+
 from lrpc.core import LrpcDef, LrpcFun, LrpcStream
+from lrpc.utils import load_lrpc_def_from_str
+
 from .utilities import StringifyVisitor
 
 
 def load_lrpc_def(def_str: str) -> LrpcDef:
-    lrpc_def = load_lrpc_def_from_str(def_str, warnings_as_errors=False)
-    return lrpc_def
+    return load_lrpc_def_from_str(def_str, warnings_as_errors=False)
 
 
 def get_function(lrpc_def: LrpcDef, service: str, fun: str) -> LrpcFun:
@@ -436,7 +440,7 @@ structs:
     s = lrpc_def.struct("MyStruct1")
     assert s.name() == "MyStruct1"
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="No struct  in LRPC definition test"):
         lrpc_def.struct("")
 
 
@@ -457,7 +461,7 @@ enums:
     e = lrpc_def.enum("MyEnum1")
     assert e.name() == "MyEnum1"
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="No enum  in LRPC definition test"):
         lrpc_def.enum("")
 
 
@@ -782,3 +786,58 @@ services:
         "service[LrpcMeta]-stream[error+0+server]-param[start]-param_end-return[type]-return[p1]-return[p2]-return[p3]-return[message]-return_end-stream_end-service_end"
         in v.result
     )
+
+
+def test_validation_missing_name() -> None:
+    d = {
+        "services": [
+            {"name": "srv0", "functions": [{"name": "f0"}], "functions_before_streams": True},
+        ],
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Field required")):
+        LrpcDef(d)  # type: ignore[arg-type]
+
+
+def test_validation_missing_services() -> None:
+    d = {
+        "name": "test",
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Field required")):
+        LrpcDef(d)  # type: ignore[arg-type]
+
+
+def test_validation_wrong_type_name() -> None:
+    d = {
+        "name": 123,
+        "services": [
+            {"name": "srv0", "functions": [{"name": "f0"}], "functions_before_streams": True},
+        ],
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Input should be a valid string")):
+        LrpcDef(d)  # type: ignore[arg-type]
+
+
+def test_validation_wrong_type_services() -> None:
+    d = {
+        "name": "test",
+        "services": "not_a_list",
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Input should be a valid list")):
+        LrpcDef(d)  # type: ignore[arg-type]
+
+
+def test_validation_wrong_type_rx_buffer_size() -> None:
+    d = {
+        "name": "test",
+        "rx_buffer_size": "invalid",
+        "services": [
+            {"name": "srv0", "functions": [{"name": "f0"}], "functions_before_streams": True},
+        ],
+    }
+
+    with pytest.raises(ValidationError, match=re.escape("Input should be a valid integer")):
+        LrpcDef(d)  # type: ignore[arg-type]

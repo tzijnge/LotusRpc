@@ -1,11 +1,13 @@
+from pathlib import Path
+
 import yaml
 
 
 class Transport:
     def __init__(self, file_url: str) -> None:
-        self.current_message = bytes()
+        self.current_message = b""
 
-        with open(file_url, mode="rt", encoding="UTF-8") as f:
+        with Path(file_url).open(encoding="UTF-8") as f:
             self.server = yaml.safe_load(f)
 
     def read(self, size: int = 1) -> bytes:
@@ -15,7 +17,7 @@ class Transport:
         return data
 
     def write(self, data: bytes) -> None:
-        self.current_message = bytes()
+        self.current_message = b""
 
         for a in self.server:
             if data == bytes.fromhex(a["write"]):

@@ -1,22 +1,21 @@
-from abc import ABC
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ..core import (
+    from lrpc.core import (
+        LrpcConstant,
         LrpcDef,
-        LrpcService,
-        LrpcStruct,
-        LrpcVar,
         LrpcEnum,
         LrpcEnumField,
         LrpcFun,
-        LrpcConstant,
+        LrpcService,
         LrpcStream,
+        LrpcStruct,
+        LrpcVar,
     )
 
 
 # pylint: disable = too-many-public-methods
-class LrpcVisitor(ABC):
+class LrpcVisitor:
     def visit_lrpc_def(self, lrpc_def: "LrpcDef") -> None:
         """Called before visiting the LRPC definition"""
 

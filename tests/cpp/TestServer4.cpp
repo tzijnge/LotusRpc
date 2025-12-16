@@ -78,8 +78,20 @@ static_assert(static_cast<int>(srv4::MyEnum4::f2) == 1, "");
 static_assert(static_cast<int>(srv4::MyEnum4::f3) == 222, "");
 static_assert(static_cast<int>(srv4::MyEnum4::f4) == 223, "");
 
-static_assert(srv4::meta::DefinitionVersion == "11.22.33.44", "");
-static_assert(std::is_same<decltype(srv4::meta::DefinitionVersion), const etl::string_view>::value, "");
+using meta = srv4::LrpcMeta_service;
+static_assert(meta::DefinitionVersion == "11.22.33.44", "");
+static_assert(std::is_same<decltype(meta::DefinitionVersion), const etl::string_view>::value, "");
 
-static_assert(!srv4::meta::LrpcVersion.empty(), "");
-static_assert(std::is_same<decltype(srv4::meta::LrpcVersion), const etl::string_view>::value, "");
+static_assert(meta::DefinitionHash.size() == 64, "");
+static_assert(std::is_same<decltype(meta::DefinitionHash), const etl::string_view>::value, "");
+
+static_assert(!meta::LrpcVersion.empty(), "");
+static_assert(std::is_same<decltype(meta::LrpcVersion), const etl::string_view>::value, "");
+
+TEST(TestServer4, versionInfo)
+{
+    const auto version = meta().version();
+    EXPECT_EQ(std::get<0>(version), "11.22.33.44");
+    EXPECT_EQ(std::get<1>(version).size(), 64);
+    EXPECT_FALSE(std::get<2>(version).empty());
+}

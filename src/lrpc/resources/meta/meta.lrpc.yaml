@@ -12,6 +12,12 @@ services:
           - { name: p2, type: uint8_t }
           - { name: p3, type: int32_t }
           - { name: message, type: string }
+    functions:
+      - name: version
+        returns:
+          - { name: definition, type: string }
+          - { name: definition_hash, type: string }
+          - { name: lrpc, type: string }
 enums:
   - name: LrpcMetaError
     external: "lrpccore/MetaError.hpp"

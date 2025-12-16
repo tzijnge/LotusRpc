@@ -30,4 +30,6 @@ def test_meta_service_properties() -> None:
     assert meta_streams[0].name() == "error"
 
     meta_functions = meta_service.functions()
-    assert len(meta_functions) == 0
+    assert len(meta_functions) == 1
+    assert meta_functions[0].id() == 1
+    assert meta_functions[0].name() == "version"

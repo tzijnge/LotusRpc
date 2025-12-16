@@ -9,7 +9,6 @@ import click
 from lrpc.codegen import (
     ConstantsFileVisitor,
     EnumFileVisitor,
-    MetaFileVisitor,
     MetaServiceVisitor,
     ServerIncludeVisitor,
     ServiceIncludeVisitor,
@@ -48,7 +47,6 @@ def generate_rpc(lrpc_def: LrpcDef, output: Path, *, generate_core: bool) -> Non
     lrpc_def.accept(EnumFileVisitor(output))
     lrpc_def.accept(ServiceShimVisitor(output))
     lrpc_def.accept(ConstantsFileVisitor(output))
-    lrpc_def.accept(MetaFileVisitor(output))
     lrpc_def.accept(MetaServiceVisitor(output))
 
 

@@ -1,6 +1,5 @@
 from .constants import ConstantsFileVisitor as ConstantsFileVisitor
 from .enum import EnumFileVisitor as EnumFileVisitor
-from .meta import MetaFileVisitor as MetaFileVisitor
 from .meta_service import MetaServiceVisitor as MetaServiceVisitor
 from .server_include import ServerIncludeVisitor as ServerIncludeVisitor
 from .service_include import ServiceIncludeVisitor as ServiceIncludeVisitor

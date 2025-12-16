@@ -30,7 +30,6 @@ class ServerIncludeVisitor(LrpcVisitor):
         self.__file.write('#include "lrpccore/Server.hpp"')
         if len(lrpc_def.constants()) != 0:
             self.__file.write(f'#include "{lrpc_def.name()}_Constants.hpp"')
-        self.__file.write(f'#include "{lrpc_def.name()}_Meta.hpp"')
         self.__file.write('#include "LrpcMeta_service.hpp"')
 
     def visit_lrpc_service(self, service: LrpcService) -> None:

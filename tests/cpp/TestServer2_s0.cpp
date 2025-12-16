@@ -39,3 +39,21 @@ TEST_F(TestServer2, decodeF2)
     const auto response = receive("090002543100543200");
     EXPECT_EQ("030002", response);
 }
+
+using meta = LrpcMeta_service;
+static_assert(meta::DefinitionVersion.empty(), "");
+static_assert(std::is_same<decltype(meta::DefinitionVersion), const etl::string_view>::value, "");
+
+static_assert(meta::DefinitionHash.empty(), "");
+static_assert(std::is_same<decltype(meta::DefinitionHash), const etl::string_view>::value, "");
+
+static_assert(!meta::LrpcVersion.empty(), "");
+static_assert(std::is_same<decltype(meta::LrpcVersion), const etl::string_view>::value, "");
+
+TEST_F(TestServer2, versionInfo)
+{
+    const auto version = meta().version();
+    EXPECT_TRUE(std::get<0>(version).empty());
+    EXPECT_TRUE(std::get<1>(version).empty());
+    EXPECT_FALSE(std::get<2>(version).empty());
+}

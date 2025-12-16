@@ -39,9 +39,9 @@ class MetaServiceVisitor(LrpcVisitor):
             lrpc_version_str = f'"{lrpc_version}"'
 
             self._file.label("public")
-            self._file.write(f"static constexpr etl::string_view DefinitionVersion {{{def_version_str}}};")
-            self._file.write(f"static constexpr etl::string_view DefinitionHash {{{def_version_hash_str}}};")
-            self._file.write(f"static constexpr etl::string_view LrpcVersion {{{lrpc_version_str}}};")
+            self._file.write(f"static inline constexpr etl::string_view DefinitionVersion {{{def_version_str}}};")
+            self._file.write(f"static inline constexpr etl::string_view DefinitionHash {{{def_version_hash_str}}};")
+            self._file.write(f"static inline constexpr etl::string_view LrpcVersion {{{lrpc_version_str}}};")
 
             self._file.newline()
 

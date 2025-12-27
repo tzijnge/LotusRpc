@@ -9,7 +9,6 @@ import click
 from lrpc.codegen import (
     ConstantsFileVisitor,
     EnumFileVisitor,
-    MetaFileVisitor,
     MetaServiceVisitor,
     ServerIncludeVisitor,
     ServiceIncludeVisitor,
@@ -21,8 +20,6 @@ from lrpc.resources.cpp import export_to
 from lrpc.schema import export_lrpc_schema
 from lrpc.utils import load_lrpc_def_from_file
 from lrpc.visitors import PlantUmlVisitor
-
-# pylint: disable=anomalous-backslash-in-string
 
 logging.basicConfig(format="[LRPCG] %(levelname)-8s: %(message)s", level=logging.INFO)
 log = logging.getLogger("LRPCG")
@@ -48,7 +45,6 @@ def generate_rpc(lrpc_def: LrpcDef, output: Path, *, generate_core: bool) -> Non
     lrpc_def.accept(EnumFileVisitor(output))
     lrpc_def.accept(ServiceShimVisitor(output))
     lrpc_def.accept(ConstantsFileVisitor(output))
-    lrpc_def.accept(MetaFileVisitor(output))
     lrpc_def.accept(MetaServiceVisitor(output))
 
 

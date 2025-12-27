@@ -17,6 +17,8 @@ from .var import LrpcVarDict
 class LrpcDefDict(TypedDict):
     name: str
     version: NotRequired[str]
+    definition_hash: str
+    definition_hash_length: NotRequired[int]
     services: list[LrpcServiceOptionalIdDict]
     namespace: NotRequired[str]
     rx_buffer_size: NotRequired[int]
@@ -48,6 +50,7 @@ class LrpcDef:
         self.__init_all_vars(raw, struct_names, enum_names)
         self.__init_meta_service(raw)
         self.__init_service_ids(raw)
+        self.__init_definition_hash(raw)
 
         self.__name = raw["name"]
         self.__version = raw.get("version", None)
@@ -116,7 +119,14 @@ class LrpcDef:
                 last_service_id = last_service_id + 1
                 s["id"] = last_service_id
 
-    def accept(self, visitor: LrpcVisitor) -> None:
+    def __init_definition_hash(self, raw: LrpcDefDict) -> None:
+        full_sha3_256_hash_length = 64
+        definition_hash_length = raw.get("definition_hash_length", full_sha3_256_hash_length)
+        self.__definition_hash = (
+            None if definition_hash_length == 0 else raw["definition_hash"][:definition_hash_length]
+        )
+
+    def accept(self, visitor: LrpcVisitor, *, visit_meta_service: bool = True) -> None:
         visitor.visit_lrpc_def(self)
 
         if len(self.constants()) != 0:
@@ -134,7 +144,8 @@ class LrpcDef:
         for service in self.services():
             service.accept(visitor)
 
-        self.__meta_service.accept(visitor)
+        if visit_meta_service:
+            self.__meta_service.accept(visitor)
 
         visitor.visit_lrpc_def_end()
 
@@ -143,6 +154,9 @@ class LrpcDef:
 
     def version(self) -> str | None:
         return self.__version
+
+    def definition_hash(self) -> str | None:
+        return self.__definition_hash
 
     def namespace(self) -> str | None:
         return self.__namespace

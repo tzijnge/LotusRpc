@@ -504,6 +504,46 @@ services:
     assert lrpc_def.tx_buffer_size() == 456
 
 
+def test_definition_hash() -> None:
+    def_str = """name: test
+services:
+  - name: s1
+    functions:
+      - name: f1
+"""
+    lrpc_def = load_lrpc_def(def_str)
+    dh = lrpc_def.definition_hash()
+    assert dh is not None
+    assert len(dh) == 64
+
+
+def test_definition_hash_truncated() -> None:
+    def_str = """name: test
+definition_hash_length: 20
+services:
+  - name: s1
+    functions:
+      - name: f1
+"""
+    lrpc_def = load_lrpc_def(def_str)
+    dh = lrpc_def.definition_hash()
+    assert dh is not None
+    assert len(dh) == 20
+
+
+def test_definition_hash_removed() -> None:
+    def_str = """name: test
+definition_hash_length: 0
+services:
+  - name: s1
+    functions:
+      - name: f1
+"""
+    lrpc_def = load_lrpc_def(def_str)
+    dh = lrpc_def.definition_hash()
+    assert dh is None
+
+
 def test_implicit_function_and_stream_id() -> None:
     def_str = """name: test
 services:
@@ -780,12 +820,33 @@ services:
     lrpc_def = load_lrpc_def(def_str)
     v = StringifyVisitor()
 
-    lrpc_def.accept(v)
+    lrpc_def.accept(v, visit_meta_service=True)
 
     assert (
-        "service[LrpcMeta]-stream[error+0+server]-param[start]-param_end-return[type]-return[p1]-return[p2]-return[p3]-return[message]-return_end-stream_end-service_end"
-        in v.result
+        "service[LrpcMeta]"
+        "-function[version+1]-return[definition]-return[definition_hash]-return[lrpc]-return_end-param_end-function_end"
+        "-stream[error+0+server]"
+        "-param[start]-param_end-return[type]-return[p1]-return[p2]-return[p3]-return[message]-return_end-stream_end"
+        "-service_end" in v.result
     )
+
+
+def test_dont_visit_meta_service() -> None:
+    def_str = """name: test
+services:
+  - name: srv0
+    functions:
+      - name: f0
+        params:
+          - { name: p0, type: uint8_t }
+"""
+
+    lrpc_def = load_lrpc_def(def_str)
+    v = StringifyVisitor()
+
+    lrpc_def.accept(v, visit_meta_service=False)
+
+    assert "LrpcMeta" not in v.result
 
 
 def test_validation_missing_name() -> None:

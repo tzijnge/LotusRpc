@@ -22,18 +22,32 @@ def escape_ansi(line: str) -> str:
     return ansi_escape.sub("", line)
 
 
-def make_lrpcc(definition_url: str, response: bytes = b"") -> Lrpcc:
+def make_lrpcc(definition_url: str, response: bytes = b"", *, check_server_version: bool = False) -> Lrpcc:
+    # dummy version response with all fields set to empty string
+    meta_version_response = b"\x06\xff\x01\x00\x00\x00" if check_server_version else b""
+
     lrpcc_config = {
         "definition_url": definition_url,
         "transport_type": "mock",
-        "transport_params": {"response": response},
+        "transport_params": {"response": meta_version_response + response},
+        "check_server_version": check_server_version,
     }
     return Lrpcc(lrpcc_config)
 
 
 def test_server1_f13(capsys: pytest.CaptureFixture[str]) -> None:
     response = b"\x05\x00\x0d\xcd\xab"
-    lrpcc = make_lrpcc("../testdata/TestServer1.lrpc.yaml", response)
+    lrpcc = make_lrpcc("../testdata/TestServer1.lrpc.yaml", response, check_server_version=False)
+    lrpcc._command_handler("s0", "f13")
+
+    expected_response = """a: 43981 (0xabcd)
+"""
+    assert escape_ansi(capsys.readouterr().out) == expected_response
+
+
+def test_server1_f13_with_version_check(capsys: pytest.CaptureFixture[str]) -> None:
+    response = b"\x05\x00\x0d\xcd\xab"
+    lrpcc = make_lrpcc("../testdata/TestServer1.lrpc.yaml", response, check_server_version=True)
     lrpcc._command_handler("s0", "f13")
 
     expected_response = """a: 43981 (0xabcd)

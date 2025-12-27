@@ -1,5 +1,6 @@
 import re
 import struct
+from importlib.metadata import version
 from pathlib import Path
 
 import pytest
@@ -217,10 +218,10 @@ class TestLrpcClient:
 
     def test_communicate_function(self) -> None:
         response = b"\x04\x01\x00\xcd"
-        for r in self.client(response).communicate("srv1", "add5", p0=0xAB):
-            assert "r0" in r
-            assert isinstance(r["r0"], int)
-            assert r["r0"] == 0xCD
+        r = self.client(response).communicate_single("srv1", "add5", p0=0xAB)
+        assert "r0" in r
+        assert isinstance(r["r0"], int)
+        assert r["r0"] == 0xCD
 
     def test_communicate_stream_client_infinite(self) -> None:
         communicator = self.client().communicate("srv2", "client_infinite", p0=0xAB, p1=0xCDEF)
@@ -260,11 +261,87 @@ class TestLrpcClient:
 
     def test_communicate_stream_server_finite_start(self) -> None:
         response = b"\x07\x02\x03\xcd\x01\x02\x01"
-        for r in self.client(response).communicate("srv2", "server_finite", start=True):
-            assert "p0" in r
-            assert isinstance(r["p0"], int)
-            assert r["p0"] == 0xCD
+        r = self.client(response).communicate_single("srv2", "server_finite", start=True)
+        assert "p0" in r
+        assert isinstance(r["p0"], int)
+        assert r["p0"] == 0xCD
 
-            assert "p1" in r
-            assert isinstance(r["p1"], int)
-            assert r["p1"] == 0x0201
+        assert "p1" in r
+        assert isinstance(r["p1"], int)
+        assert r["p1"] == 0x0201
+
+    @staticmethod
+    def make_version_response(def_version: str, def_hash: str, lrpc_version: str) -> bytes:
+        message_length = 3 + len(def_version) + 1 + len(def_hash) + 1 + len(lrpc_version) + 1
+        msg_len = message_length.to_bytes(length=1, byteorder="little")
+
+        return (
+            msg_len
+            + b"\xff\x01"
+            + def_version.encode("utf-8")
+            + b"\x00"
+            + def_hash.encode("utf-8")
+            + b"\x00"
+            + lrpc_version.encode("utf-8")
+            + b"\x00"
+        )
+
+    def test_check_server_version_ok(self, caplog: pytest.LogCaptureFixture) -> None:
+        def_version = lrpc_def.version() or ""
+        def_hash = lrpc_def.definition_hash() or ""
+        lrpc_version = version("lotusrpc")
+
+        response = self.make_version_response(def_version, def_hash, lrpc_version)
+        client = self.client(response)
+        server_ok = client.check_server_version()
+
+        assert server_ok
+        assert len(caplog.messages) == 0
+
+    def test_check_server_version_mismatch_def_hash(self, caplog: pytest.LogCaptureFixture) -> None:
+        def_version = lrpc_def.version() or ""
+        def_hash = "[wrong hash]"
+        lrpc_version = version("lotusrpc")
+
+        response = self.make_version_response(def_version, def_hash, lrpc_version)
+        client = self.client(response)
+        server_ok = client.check_server_version()
+
+        assert not server_ok
+        assert len(caplog.messages) == 4
+        assert "Server mismatch detected. Details client vs server:" in caplog.messages
+        assert f"LotusRPC version: {lrpc_version} vs {lrpc_version}" in caplog.messages
+        assert "Definition version: [disabled] vs [disabled]" in caplog.messages
+        assert "Definition hash: 1e63f37cfb4c9aa9... vs [wrong hash]..." in caplog.messages
+
+    def test_check_server_version_mismatch_lrpc_version(self, caplog: pytest.LogCaptureFixture) -> None:
+        def_version = lrpc_def.version() or ""
+        def_hash = lrpc_def.definition_hash() or ""
+        lrpc_version = "[wrong version]"
+
+        response = self.make_version_response(def_version, def_hash, lrpc_version)
+        client = self.client(response)
+        server_ok = client.check_server_version()
+
+        assert not server_ok
+        assert len(caplog.messages) == 4
+        assert "Server mismatch detected. Details client vs server:" in caplog.messages
+        assert f"LotusRPC version: {version('lotusrpc')} vs [wrong version]" in caplog.messages
+        assert "Definition version: [disabled] vs [disabled]" in caplog.messages
+        assert "Definition hash: 1e63f37cfb4c9aa9... vs 1e63f37cfb4c9aa9..." in caplog.messages
+
+    def test_check_server_version_mismatch_def_version(self, caplog: pytest.LogCaptureFixture) -> None:
+        def_version = "[wrong version]"
+        def_hash = lrpc_def.definition_hash() or ""
+        lrpc_version = version("lotusrpc")
+
+        response = self.make_version_response(def_version, def_hash, lrpc_version)
+        client = self.client(response)
+        server_ok = client.check_server_version()
+
+        assert not server_ok
+        assert len(caplog.messages) == 4
+        assert "Server mismatch detected. Details client vs server:" in caplog.messages
+        assert f"LotusRPC version: {lrpc_version} vs {lrpc_version}" in caplog.messages
+        assert "Definition version: [disabled] vs [wrong version]" in caplog.messages
+        assert "Definition hash: 1e63f37cfb4c9aa9... vs 1e63f37cfb4c9aa9..." in caplog.messages

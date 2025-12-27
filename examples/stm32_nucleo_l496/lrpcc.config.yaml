@@ -4,3 +4,4 @@ transport_params:
   port: COM28
   timeout: 3
 transport_type: serial
+check_server_version: false

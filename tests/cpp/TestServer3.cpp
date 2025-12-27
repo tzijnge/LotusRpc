@@ -66,3 +66,21 @@ TEST_F(TestServer3, decodeI0AndI5)
     receive("040000BB050508CCDD");
     EXPECT_EQ("040000BB050508CCDD", transmitted);
 }
+
+namespace meta = srv3::lrpc_meta_version;
+static_assert(meta::DefinitionVersion.empty(), "");
+static_assert(std::is_same<decltype(meta::DefinitionVersion), const etl::string_view>::value, "");
+
+static_assert(meta::DefinitionHash.size() == 20, "");
+static_assert(std::is_same<decltype(meta::DefinitionHash), const etl::string_view>::value, "");
+
+static_assert(!meta::LrpcVersion.empty(), "");
+static_assert(std::is_same<decltype(meta::LrpcVersion), const etl::string_view>::value, "");
+
+TEST_F(TestServer3, versionInfo)
+{
+    const auto version = srv3::LrpcMeta_service().version();
+    EXPECT_TRUE(std::get<0>(version).empty());
+    EXPECT_EQ(std::get<1>(version).size(), 20);
+    EXPECT_FALSE(std::get<2>(version).empty());
+}

@@ -22,7 +22,7 @@ def escape_ansi(line: str) -> str:
     return ansi_escape.sub("", line)
 
 
-def make_lrpcc(definition_url: str, response: bytes = b"", check_server_version: bool = False) -> Lrpcc:
+def make_lrpcc(definition_url: str, response: bytes = b"", *, check_server_version: bool = False) -> Lrpcc:
     # dummy version response with all fields set to empty string
     meta_version_response = b"\x06\xff\x01\x00\x00\x00" if check_server_version else b""
 

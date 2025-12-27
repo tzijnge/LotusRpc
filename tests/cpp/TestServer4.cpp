@@ -79,7 +79,7 @@ static_assert(static_cast<int>(srv4::MyEnum4::f3) == 222, "");
 static_assert(static_cast<int>(srv4::MyEnum4::f4) == 223, "");
 
 namespace meta = srv4::lrpc_meta_version;
-static_assert(meta::DefinitionVersion == "11.22.33.44", "");
+static_assert(meta::DefinitionVersion == "major.minor.patch.123", "");
 static_assert(std::is_same<decltype(meta::DefinitionVersion), const etl::string_view>::value, "");
 
 static_assert(meta::DefinitionHash.size() == 64, "");
@@ -91,7 +91,7 @@ static_assert(std::is_same<decltype(meta::LrpcVersion), const etl::string_view>:
 TEST(TestServer4, versionInfo)
 {
     const auto version = srv4::LrpcMeta_service().version();
-    EXPECT_EQ(std::get<0>(version), "11.22.33.44");
+    EXPECT_EQ(std::get<0>(version), "major.minor.patch.123");
     EXPECT_EQ(std::get<1>(version).size(), 64);
     EXPECT_FALSE(std::get<2>(version).empty());
 }

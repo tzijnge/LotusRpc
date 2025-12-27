@@ -16,8 +16,6 @@ from lrpc.client import ClientCliVisitor, LrpcClient, LrpcResponse, LrpcTranspor
 from lrpc.types import LrpcType
 from lrpc.utils import load_lrpc_def_from_url
 
-# pylint: disable=anomalous-backslash-in-string
-
 colorama.init(autoreset=True)
 
 logging.basicConfig(format="[LRPCC] %(levelname)-8s: %(message)s", level=logging.INFO)
@@ -29,6 +27,7 @@ DEFINITION_URL = "definition_url"
 TRANSPORT_TYPE = "transport_type"
 TRANSPORT_PARAMS = "transport_params"
 LOG_LEVEL = "log_level"
+CHECK_SERVER_VERSION = "check_server_version"
 
 log_level_map = {
     "CRITICAL": logging.CRITICAL,
@@ -42,7 +41,7 @@ log_level_map = {
 }
 
 
-def __load_config() -> dict[str, Any]:
+def _config_path() -> Path:
     configs = Path.cwd().rglob(pattern=f"**/{LRPCC_CONFIG_YAML}")
     config_path = next(configs, None)
     if config_path is None:
@@ -60,19 +59,26 @@ def __load_config() -> dict[str, Any]:
                 f"(recursive) or environment variable {LRPCC_CONFIG_ENV_VAR}",
             )
 
+    return config_path.resolve()
+
+
+def _load_config() -> dict[str, Any]:
+    config_path = _config_path()
+    log.debug("Using configuration file %s", config_path)
+
     with config_path.open(encoding="utf-8") as config_file:
         config = yaml.safe_load(config_file)
         if not isinstance(config, dict):
-            raise TypeError(f"Invalid YAML input for {config_file.name}")
+            raise TypeError(f"Invalid YAML input for {config_file}")
 
     if DEFINITION_URL not in config:
-        raise ValueError(f"Missing field `{DEFINITION_URL}` in {config_path.name}")
+        raise ValueError(f"Missing field `{DEFINITION_URL}` in {config_path}")
 
     if TRANSPORT_TYPE not in config:
-        raise ValueError(f"Missing field `{TRANSPORT_TYPE}` in {config_path.name}")
+        raise ValueError(f"Missing field `{TRANSPORT_TYPE}` in {config_path}")
 
     if TRANSPORT_PARAMS not in config:
-        raise ValueError(f"Missing field `{TRANSPORT_PARAMS}` in {config_path.name}")
+        raise ValueError(f"Missing field `{TRANSPORT_PARAMS}` in {config_path}")
 
     if not Path(config[DEFINITION_URL]).is_absolute():
         config[DEFINITION_URL] = config_path.parent.joinpath(config[DEFINITION_URL])
@@ -148,12 +154,21 @@ class Lrpcc:
         transport = self._make_transport(config[TRANSPORT_TYPE], config[TRANSPORT_PARAMS])
         self.client = LrpcClient(self.lrpc_def, transport)
 
+        if config.get(CHECK_SERVER_VERSION, False):
+            version_ok = self.client.check_server_version()
+            if not version_ok:
+                log.info(
+                    "Use the '%s' setting in the config file (%s) to disable the version check",
+                    CHECK_SERVER_VERSION,
+                    _config_path(),
+                )
+
     @classmethod
     def __set_log_level(cls, log_level: str) -> None:
         if log_level not in log_level_map:
             log.info("Invalid log level: %s. Using log level INFO", log_level)
         else:
-            logging.getLogger().setLevel(log_level_map[log_level])
+            log.setLevel(log_level_map[log_level])
 
     @staticmethod
     def _make_transport(transport_type: str, transport_params: dict[str, Any]) -> LrpcTransport:
@@ -217,7 +232,7 @@ class Lrpcc:
 
 def run_cli() -> None:
     try:
-        config = __load_config()
+        config = _load_config()
 
     # catching general exception here is considered ok, because application will terminate
     # pylint: disable=broad-exception-caught

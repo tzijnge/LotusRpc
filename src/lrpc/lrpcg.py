@@ -21,8 +21,6 @@ from lrpc.schema import export_lrpc_schema
 from lrpc.utils import load_lrpc_def_from_file
 from lrpc.visitors import PlantUmlVisitor
 
-# pylint: disable=anomalous-backslash-in-string
-
 logging.basicConfig(format="[LRPCG] %(levelname)-8s: %(message)s", level=logging.INFO)
 log = logging.getLogger("LRPCG")
 

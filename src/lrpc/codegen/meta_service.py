@@ -32,19 +32,20 @@ class MetaServiceVisitor(LrpcVisitor):
         optionally_in_namespace(self._file, self._write_service_class, self._namespace)
 
     def _write_service_class(self) -> None:
-        with self._file.block("class LrpcMeta_service : public LrpcMeta_shim", ";"):
+        with self._file.block("namespace lrpc_meta_version"):
             lrpc_version = version("lotusrpc")
             def_version_str = f'"{self._definition_version}"' if self._definition_version else ""
             def_version_hash_str = f'"{self._definition_hash}"' if self._definition_hash else ""
             lrpc_version_str = f'"{lrpc_version}"'
 
+            self._file.write(f"static constexpr etl::string_view DefinitionVersion {{{def_version_str}}};")
+            self._file.write(f"static constexpr etl::string_view DefinitionHash {{{def_version_hash_str}}};")
+            self._file.write(f"static constexpr etl::string_view LrpcVersion {{{lrpc_version_str}}};")
+
+        self._file.newline()
+
+        with self._file.block("class LrpcMeta_service : public LrpcMeta_shim", ";"):
             self._file.label("public")
-            self._file.write(f"static inline constexpr etl::string_view DefinitionVersion {{{def_version_str}}};")
-            self._file.write(f"static inline constexpr etl::string_view DefinitionHash {{{def_version_hash_str}}};")
-            self._file.write(f"static inline constexpr etl::string_view LrpcVersion {{{lrpc_version_str}}};")
-
-            self._file.newline()
-
             self._file.write("void error() override {}")
             self._file.write("void error_stop() override {}")
 
@@ -56,6 +57,6 @@ class MetaServiceVisitor(LrpcVisitor):
                 ),
                 self._file.block("return ", ";"),
             ):
-                self._file.write("DefinitionVersion,")
-                self._file.write("DefinitionHash,")
-                self._file.write("LrpcVersion")
+                self._file.write("lrpc_meta_version::DefinitionVersion,")
+                self._file.write("lrpc_meta_version::DefinitionHash,")
+                self._file.write("lrpc_meta_version::LrpcVersion")

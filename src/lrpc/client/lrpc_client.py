@@ -1,8 +1,12 @@
+import logging
 import struct
 from collections.abc import Generator
+from importlib.metadata import version
+from typing import cast
 
 from lrpc.core import LrpcFun, LrpcService, LrpcStream, LrpcVar
 from lrpc.core.definition import LrpcDef
+from lrpc.core.meta import MetaVersionResponseDict, MetaVersionResponseValidator
 from lrpc.types import LrpcType
 
 from .decoder import LrpcDecoder
@@ -24,6 +28,37 @@ class LrpcClient:
         self._transport = transport
         self._lrpc_def = lrpc_def
         self._receive_buffer = b""
+        self._log = logging.getLogger(self.__class__.__name__)
+
+    def check_server_version(self) -> bool:
+        disabled = "[disabled]"
+        client_side_lrpc_version = version("lotusrpc")
+        client_side_def_hash = self._lrpc_def.definition_hash() or disabled
+        client_side_def_version = self._lrpc_def.version() or disabled
+
+        def get_server_version() -> MetaVersionResponseDict:
+            version_response = self.communicate_single("LrpcMeta", "version")
+            MetaVersionResponseValidator.validate_python(version_response, strict=True, extra="forbid")
+            return cast(MetaVersionResponseDict, version_response)
+
+        version_response = get_server_version()
+
+        server_side_def_hash = version_response["definition_hash"]
+        server_side_def_version = version_response["definition"] or disabled
+        server_side_lrpc_version = version_response["lrpc"] or disabled
+
+        def_hash_mismatch = client_side_def_hash != server_side_def_hash
+        def_version_mismatch = client_side_def_version != server_side_def_version
+        lrpc_version_mismatch = client_side_lrpc_version != server_side_lrpc_version
+
+        if def_hash_mismatch or lrpc_version_mismatch or def_version_mismatch:
+            self._log.warning("Server mismatch detected. Details client vs server:")
+            self._log.warning("LotusRPC version: %s vs %s", client_side_lrpc_version, server_side_lrpc_version)
+            self._log.warning("Definition version: %s vs %s", client_side_def_version, server_side_def_version)
+            self._log.warning("Definition hash: %s... vs %s...", client_side_def_hash[:16], server_side_def_hash[:16])
+            return False
+
+        return True
 
     def decode(self, encoded: bytes) -> LrpcResponse:
         if len(encoded) < self.LRPC_MESSAGE_MIN_LENGTH:
@@ -96,6 +131,14 @@ class LrpcClient:
                     response.pop("final")
 
             yield response
+
+    def communicate_single(
+        self,
+        service_name: str,
+        function_or_stream_name: str,
+        **kwargs: LrpcType,
+    ) -> LrpcResponse:
+        return next(self.communicate(service_name, function_or_stream_name, **kwargs))
 
     def _has_response(self, service_name: str, function_or_stream_name: str, *, start_param: bool) -> bool:
         function = self._lrpc_def.function(service_name, function_or_stream_name)

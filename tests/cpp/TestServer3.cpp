@@ -67,7 +67,7 @@ TEST_F(TestServer3, decodeI0AndI5)
     EXPECT_EQ("040000BB050508CCDD", transmitted);
 }
 
-using meta = srv3::LrpcMeta_service;
+namespace meta = srv3::lrpc_meta_version;
 static_assert(meta::DefinitionVersion.empty(), "");
 static_assert(std::is_same<decltype(meta::DefinitionVersion), const etl::string_view>::value, "");
 
@@ -79,7 +79,7 @@ static_assert(std::is_same<decltype(meta::LrpcVersion), const etl::string_view>:
 
 TEST_F(TestServer3, versionInfo)
 {
-    const auto version = meta().version();
+    const auto version = srv3::LrpcMeta_service().version();
     EXPECT_TRUE(std::get<0>(version).empty());
     EXPECT_EQ(std::get<1>(version).size(), 20);
     EXPECT_FALSE(std::get<2>(version).empty());

@@ -270,9 +270,10 @@ class TestLrpcClient:
         assert isinstance(r["p1"], int)
         assert r["p1"] == 0x0201
 
-    def make_version_response(self, def_version: str, def_hash: str, lrpc_version: str) -> bytes:
+    @staticmethod
+    def make_version_response(def_version: str, def_hash: str, lrpc_version: str) -> bytes:
         message_length = 3 + len(def_version) + 1 + len(def_hash) + 1 + len(lrpc_version) + 1
-        msg_len = message_length.to_bytes()
+        msg_len = message_length.to_bytes(length=1, byteorder="little")
 
         return (
             msg_len

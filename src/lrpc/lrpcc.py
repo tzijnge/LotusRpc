@@ -226,7 +226,7 @@ class Lrpcc:
 
     def run(self) -> None:
         cli = ClientCliVisitor(self._command_handler)
-        self.lrpc_def.accept(cli)
+        self.lrpc_def.accept(cli, visit_meta_service=False)
         cli.root()
 
 

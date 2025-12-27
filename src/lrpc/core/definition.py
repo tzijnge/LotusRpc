@@ -126,7 +126,7 @@ class LrpcDef:
             None if definition_hash_length == 0 else raw["definition_hash"][:definition_hash_length]
         )
 
-    def accept(self, visitor: LrpcVisitor) -> None:
+    def accept(self, visitor: LrpcVisitor, *, visit_meta_service: bool = True) -> None:
         visitor.visit_lrpc_def(self)
 
         if len(self.constants()) != 0:
@@ -144,7 +144,8 @@ class LrpcDef:
         for service in self.services():
             service.accept(visitor)
 
-        self.__meta_service.accept(visitor)
+        if visit_meta_service:
+            self.__meta_service.accept(visitor)
 
         visitor.visit_lrpc_def_end()
 

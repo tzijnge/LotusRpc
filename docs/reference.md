@@ -25,7 +25,7 @@ At the top level it is also allowed to use additional properties. These properti
 
 ## Name
 
-This is the name of the RPC engine. It is used in generated files and directories, as well as generated code. Therefore, the name must be a [valid C++ identifier](https://en.cppreference.com/w/cpp/language/identifiers)
+This is the name of the RPC engine. It is used in generated files and directories, as well as generated code. Therefore, the name must be a [valid C++ identifier](https://en.cppreference123.com/w/cpp/language/identifiers)
 
 ## Services
 

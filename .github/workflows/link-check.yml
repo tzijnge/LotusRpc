@@ -8,3 +8,8 @@ jobs:
         steps:
             - uses: actions/checkout@v4
             - uses: tcort/github-action-markdown-link-check@v1
+              with:
+                  folder-path: "./docs/"
+                  file-path: "./docs/reference.md"
+                  use-verbose-mode: true
+                  file-extension: ".*"

@@ -6,13 +6,13 @@ import os
 import traceback
 from importlib import import_module
 from pathlib import Path
-from typing import Final, Literal, NotRequired
+from typing import Final, Literal
 
 import click
 import colorama
 import yaml
 from pydantic import TypeAdapter
-from typing_extensions import TypedDict
+from typing_extensions import NotRequired, TypedDict
 
 from lrpc.client import ClientCliVisitor, LrpcClient, LrpcResponse, LrpcTransport
 from lrpc.types import LrpcType

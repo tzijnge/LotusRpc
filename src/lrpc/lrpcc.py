@@ -6,28 +6,19 @@ import os
 import traceback
 from importlib import import_module
 from pathlib import Path
-from typing import Any
+from typing import Final, Literal
 
 import click
 import colorama
 import yaml
+from pydantic import TypeAdapter
+from typing_extensions import NotRequired, TypedDict
 
 from lrpc.client import ClientCliVisitor, LrpcClient, LrpcResponse, LrpcTransport
 from lrpc.types import LrpcType
 from lrpc.utils import load_lrpc_def_from_url
 
 colorama.init(autoreset=True)
-
-logging.basicConfig(format="[LRPCC] %(levelname)-8s: %(message)s", level=logging.INFO)
-log = logging.getLogger("LRPCC")
-
-LRPCC_CONFIG_ENV_VAR = "LRPCC_CONFIG"
-LRPCC_CONFIG_YAML = "lrpcc.config.yaml"
-DEFINITION_URL = "definition_url"
-TRANSPORT_TYPE = "transport_type"
-TRANSPORT_PARAMS = "transport_params"
-LOG_LEVEL = "log_level"
-CHECK_SERVER_VERSION = "check_server_version"
 
 log_level_map = {
     "CRITICAL": logging.CRITICAL,
@@ -40,21 +31,46 @@ log_level_map = {
     "NOTSET": logging.NOTSET,
 }
 
+logging.basicConfig(format="[LRPCC] %(levelname)-8s: %(message)s", level=log_level_map["INFO"])
+log = logging.getLogger("LRPCC")
 
-def _config_path() -> Path:
+TransportParamsType = dict[str, str | int | bool | float]
+
+
+class LrpccConfigDict(TypedDict):
+    definition_url: str
+    transport_type: str
+    transport_params: NotRequired[TransportParamsType]
+    log_level: NotRequired[Literal["CRITICAL", "FATAL", "ERROR", "WARN", "WARNING", "INFO", "DEBUG", "NOTSET"]]
+    check_server_version: NotRequired[bool]
+
+
+# pylint: disable=invalid-name
+LrpccConfigValidator = TypeAdapter(LrpccConfigDict)
+
+LRPCC_CONFIG_ENV_VAR: Final = "LRPCC_CONFIG"
+LRPCC_CONFIG_YAML: Final = "lrpcc.config.yaml"
+DEFINITION_URL: Final = "definition_url"
+TRANSPORT_TYPE: Final = "transport_type"
+TRANSPORT_PARAMS: Final = "transport_params"
+LOG_LEVEL: Final = "log_level"
+CHECK_SERVER_VERSION: Final = "check_server_version"
+
+
+def find_config() -> Path:
     configs = Path.cwd().rglob(pattern=f"**/{LRPCC_CONFIG_YAML}")
     config_path = next(configs, None)
     if config_path is None:
         if LRPCC_CONFIG_ENV_VAR in os.environ:
             env_var_value = os.environ[LRPCC_CONFIG_ENV_VAR]
             if not Path(env_var_value).exists():
-                raise ValueError(
-                    f"No configuration file found in location {env_var_value} "
+                raise FileNotFoundError(
+                    f"No configuration file found in location '{env_var_value}' "
                     f"(environment variable {LRPCC_CONFIG_ENV_VAR})",
                 )
-            config_path = Path(env_var_value).resolve()
+            config_path = Path(env_var_value)
         else:
-            raise ValueError(
+            raise FileNotFoundError(
                 f"No lrpcc configuration ({LRPCC_CONFIG_YAML}) in current working directory "
                 f"(recursive) or environment variable {LRPCC_CONFIG_ENV_VAR}",
             )
@@ -62,27 +78,12 @@ def _config_path() -> Path:
     return config_path.resolve()
 
 
-def _load_config() -> dict[str, Any]:
-    config_path = _config_path()
-    log.debug("Using configuration file %s", config_path)
-
+def load_config(config_path: Path) -> LrpccConfigDict:
     with config_path.open(encoding="utf-8") as config_file:
-        config = yaml.safe_load(config_file)
-        if not isinstance(config, dict):
-            raise TypeError(f"Invalid YAML input for {config_file}")
+        config: LrpccConfigDict = yaml.safe_load(config_file)
+        LrpccConfigValidator.validate_python(config, strict=True, extra="forbid")
 
-    if DEFINITION_URL not in config:
-        raise ValueError(f"Missing field `{DEFINITION_URL}` in {config_path}")
-
-    if TRANSPORT_TYPE not in config:
-        raise ValueError(f"Missing field `{TRANSPORT_TYPE}` in {config_path}")
-
-    if TRANSPORT_PARAMS not in config:
-        raise ValueError(f"Missing field `{TRANSPORT_PARAMS}` in {config_path}")
-
-    if not Path(config[DEFINITION_URL]).is_absolute():
-        config[DEFINITION_URL] = config_path.parent.joinpath(config[DEFINITION_URL])
-
+    log.debug("Using configuration file %s", config_path)
     return config
 
 
@@ -126,13 +127,13 @@ def run_lrpcc_config_creator() -> None:
 )
 def create(definition_url: str, transport_type: str) -> None:
     """Create a new lrpcc configuration file template"""
-    transport_params = {}
+    transport_params: TransportParamsType = {}
 
     if transport_type == "serial":
         transport_params["port"] = "<PORT>"
         transport_params["baudrate"] = "<BAUDRATE>"
 
-    lrpcc_config = {
+    lrpcc_config: LrpccConfigDict = {
         DEFINITION_URL: definition_url,
         TRANSPORT_TYPE: transport_type,
         TRANSPORT_PARAMS: transport_params,
@@ -145,13 +146,13 @@ def create(definition_url: str, transport_type: str) -> None:
 
 # pylint: disable = too-few-public-methods
 class Lrpcc:
-    def __init__(self, config: dict[str, Any]) -> None:
+    def __init__(self, config: LrpccConfigDict) -> None:
         self.__set_log_level(config.get(LOG_LEVEL, "INFO"))
 
-        def_url = Path(config[DEFINITION_URL])
+        def_url = Path(config[DEFINITION_URL]).resolve()
         self.lrpc_def = load_lrpc_def_from_url(def_url, warnings_as_errors=True)
 
-        transport = self._make_transport(config[TRANSPORT_TYPE], config[TRANSPORT_PARAMS])
+        transport = self._make_transport(config[TRANSPORT_TYPE], config.get(TRANSPORT_PARAMS, {}))
         self.client = LrpcClient(self.lrpc_def, transport)
 
         if config.get(CHECK_SERVER_VERSION, False):
@@ -160,7 +161,7 @@ class Lrpcc:
                 log.info(
                     "Use the '%s' setting in the config file (%s) to disable the version check",
                     CHECK_SERVER_VERSION,
-                    _config_path(),
+                    find_config(),
                 )
 
     @classmethod
@@ -171,7 +172,7 @@ class Lrpcc:
             log.setLevel(log_level_map[log_level])
 
     @staticmethod
-    def _make_transport(transport_type: str, transport_params: dict[str, Any]) -> LrpcTransport:
+    def _make_transport(transport_type: str, transport_params: TransportParamsType) -> LrpcTransport:
         transport_plugin = Path.cwd().joinpath(f"lrpcc_{transport_type}.py")
         if transport_plugin.exists():
             spec = importlib.util.spec_from_file_location(
@@ -232,7 +233,8 @@ class Lrpcc:
 
 def run_cli() -> None:
     try:
-        config = _load_config()
+        config_path = find_config()
+        config = load_config(config_path)
 
     # catching general exception here is considered ok, because application will terminate
     # pylint: disable=broad-exception-caught

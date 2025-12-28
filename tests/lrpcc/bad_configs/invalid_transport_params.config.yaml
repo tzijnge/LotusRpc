@@ -1,0 +1,6 @@
+definition_url: test123.lrpc.yaml
+transport_params:
+  file_url: [1 2 3 5]
+transport_type: file
+log_level: INFO
+check_server_version: false

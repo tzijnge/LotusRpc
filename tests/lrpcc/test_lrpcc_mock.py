@@ -4,7 +4,7 @@ from collections.abc import Generator
 
 import pytest
 
-from lrpc.lrpcc import Lrpcc
+from lrpc.lrpcc import Lrpcc, LrpccConfigDict
 
 # pylint: disable=protected-access
 # ruff: noqa: SLF001
@@ -26,10 +26,10 @@ def make_lrpcc(definition_url: str, response: bytes = b"", *, check_server_versi
     # dummy version response with all fields set to empty string
     meta_version_response = b"\x06\xff\x01\x00\x00\x00" if check_server_version else b""
 
-    lrpcc_config = {
+    lrpcc_config: LrpccConfigDict = {
         "definition_url": definition_url,
         "transport_type": "mock",
-        "transport_params": {"response": meta_version_response + response},
+        "transport_params": {"response": meta_version_response + response},  # type: ignore[dict-item]
         "check_server_version": check_server_version,
     }
     return Lrpcc(lrpcc_config)

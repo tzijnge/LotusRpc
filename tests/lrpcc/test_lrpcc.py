@@ -32,6 +32,13 @@ def lrpcc_config_env_var(config_path: Path) -> Generator[None, None, None]:
         os.environ.update(old_environ)
 
 
+@pytest.fixture(autouse=True)
+def change_test_dir(request: pytest.FixtureRequest) -> Generator[None, None, None]:
+    os.chdir(request.fspath.dirname)  # type: ignore[attr-defined]
+    yield
+    os.chdir(request.config.invocation_params.dir)
+
+
 def test_find_config_in_cwd() -> None:
     with TemporaryDirectory() as td, working_directory(Path(td)):
         Path(td).joinpath("lrpcc.config.yaml").touch()
@@ -152,7 +159,7 @@ def test_bad_config_missing_transport_type() -> None:
 
 
 def test_load_config() -> None:
-    config = load_config(Path("tests/lrpcc/lrpcc.config.yaml"))
+    config = load_config(Path("lrpcc.config.yaml"))
     assert config["definition_url"] == "../testdata/TestServer1.lrpc.yaml"
     assert config["transport_type"] == "file"
     assert "transport_params" in config

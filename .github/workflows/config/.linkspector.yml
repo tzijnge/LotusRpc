@@ -1,0 +1,6 @@
+dirs:
+    - docs
+    - changes
+files:
+    - README.md
+    - CHANGES.md

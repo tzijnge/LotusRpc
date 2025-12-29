@@ -13,6 +13,14 @@ jobs:
         run: |
           pip install -r requirements/dev.txt
           pip install -r requirements/package.txt
+      - name: Linkspector
+        uses: umbrelladocs/action-linkspector@652f85bc57bb1e7d4327260decc10aa68f7694c3
+        with:
+          github_token: ${{ secrets.github_token }}
+          reporter: github-pr-review
+          fail_level: any
+          fail_on_error: true
+          config_file: .github/workflows/config/.linkspector.yml
       - name: Ruff
         uses: benny123tw/action-ruff@226d241bdf7205e6e048f1407d21bd69a64b7298
         with:

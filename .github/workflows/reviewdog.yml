@@ -13,6 +13,13 @@ jobs:
         run: |
           pip install -r requirements/dev.txt
           pip install -r requirements/package.txt
+      - name: Linkspector
+        uses: umbrelladocs/action-linkspector@652f85bc57bb1e7d4327260decc10aa68f7694c3
+        with:
+          github_token: ${{ secrets.github_token }}
+          reporter: github-pr-review
+          fail_level: any
+          fail_on_error: true
       - name: markdown-link-check
         uses: tcort/github-action-markdown-link-check@v1.1.1
         with:

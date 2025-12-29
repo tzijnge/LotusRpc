@@ -25,7 +25,7 @@ At the top level it is also allowed to use additional properties. These properti
 
 ## Name
 
-This is the name of the RPC engine. It is used in generated files and directories, as well as generated code. Therefore, the name must be a [valid C++ identifier](https://en.cppreference123.com/w/cpp/language/identifiers)
+This is the name of the RPC engine. It is used in generated files and directories, as well as generated code. Therefore, the name must be a [valid C++ identifier](https://en.cppreference.com/w/cpp/language/identifiers)
 
 ## Services
 
@@ -48,7 +48,7 @@ Although [`functions`](#functions) and [`streams`](#streams) are both optional, 
 Every LRPC service has an identifier that is needed for proper transfer of information between two endpoints. If the service identifier is not specified, LRPC will generate one. When starting out with a fresh RPC, it's usually not necessary to specify service IDs. Later on it may be useful to explicitly specify a service ID for backwards compatibility.
 > **_NOTE:_**  The most efficient code is generated when service IDs are contiguous and start at 0. This is the default when no IDs are specified.
 
-The service ID is [encoded](binary.md#uintx_t) in an 8-bit field and ID 255 is reserved for the [LotusRPC meta service](meta.md). This means that a user service can have any ID in the range of 0 to 254.
+The service ID is [encoded](binary.md#sintx_t) in an 8-bit field and ID 255 is reserved for the [LotusRPC meta service](meta.md). This means that a user service can have any ID in the range of 0 to 254.
 
 ### Functions
 

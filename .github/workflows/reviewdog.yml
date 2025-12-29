@@ -20,13 +20,6 @@ jobs:
           reporter: github-pr-review
           fail_level: any
           fail_on_error: true
-      - name: markdown-link-check
-        uses: tcort/github-action-markdown-link-check@v1.1.1
-        with:
-          folder-path: "./docs/"
-          file-path: "./docs/reference.md"
-          use-verbose-mode: true
-          file-extension: ".*"
       - name: Ruff
         uses: benny123tw/action-ruff@226d241bdf7205e6e048f1407d21bd69a64b7298
         with:

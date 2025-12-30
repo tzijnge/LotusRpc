@@ -6,7 +6,7 @@ import os
 import traceback
 from importlib import import_module
 from pathlib import Path
-from typing import Final, Literal
+from typing import Final, Literal, cast
 
 import click
 import colorama
@@ -15,8 +15,11 @@ from pydantic import TypeAdapter
 from typing_extensions import NotRequired, TypedDict
 
 from lrpc.client import ClientCliVisitor, LrpcClient, LrpcResponse, LrpcTransport
+from lrpc.core.meta import MetaErrorResponseDict
 from lrpc.types import LrpcType
 from lrpc.utils import load_lrpc_def_from_url
+
+# ruff: noqa: T201
 
 colorama.init(autoreset=True)
 
@@ -206,24 +209,56 @@ class Lrpcc:
 
     def _command_handler(self, service_name: str, function_or_stream_name: str, **kwargs: LrpcType) -> None:
         for index, response in enumerate(self.client.communicate(service_name, function_or_stream_name, **kwargs)):
-            if self.lrpc_def.stream(service_name, function_or_stream_name) is not None:
-                print(colorama.Fore.CYAN + f"[#{index}]")  # noqa: T201
-            self._print_response(response)
+            self._print_response(response, index)
 
     @staticmethod
-    def _print_response(response: LrpcResponse) -> None:
-        max_response_name_width = 0
-        if len(response) != 0:
-            max_response_name_width = max(len(k) for k in response)
+    def _print_response(response: LrpcResponse, index: int) -> None:
+        if response.is_error_response:
+            error_payload = cast(MetaErrorResponseDict, response.payload)
+            Lrpcc._print_error_response(error_payload)
+            return
 
-        for name, value in response.items():
+        if response.is_stream_response:
+            print(colorama.Fore.CYAN + f"[#{index}]")
+
+        payload = response.payload
+        max_response_name_width = 0
+        if len(payload) != 0:
+            max_response_name_width = max(len(k) for k in payload)
+
+        for name, value in payload.items():
             name_text = colorama.Fore.GREEN + name.ljust(max_response_name_width) + colorama.Style.RESET_ALL
             hex_repr = (
                 colorama.Style.BRIGHT + colorama.Fore.LIGHTBLACK_EX + f" ({hex(value)})"
                 if (isinstance(value, int) and not isinstance(value, bool))
                 else ""
             )
-            print(f"{name_text}: {value}{hex_repr}")  # noqa: T201
+            print(f"{name_text}: {value}{hex_repr}")
+
+    @staticmethod
+    def _print_error_line(line: str) -> None:
+        print(colorama.Fore.RED + line + colorama.Fore.RESET)
+
+    @staticmethod
+    def _print_error_response(response: MetaErrorResponseDict) -> None:
+        if response["type"] == "UnknownService":
+            Lrpcc._print_error_line(
+                f"Server reported call to unknown service with ID {response['p1']}. "
+                f"Function or stream ID is {response['p2']}",
+            )
+        elif response["type"] == "UnknownFunctionOrStream":
+            Lrpcc._print_error_line(
+                f"Server reported call to unknown function or stream with ID "
+                f"{response['p2']} in service with ID {response['p1']}",
+            )
+        else:
+            Lrpcc._print_error_line(
+                f"Server reported an unknown error (type='{response['type']}') with the following properties:",
+            )
+            Lrpcc._print_error_line(f"p1={response['p1']}")
+            Lrpcc._print_error_line(f"p2={response['p2']}")
+            Lrpcc._print_error_line(f"p3={response['p3']}")
+            Lrpcc._print_error_line(f"message='{response['message']}'")
 
     def run(self) -> None:
         cli = ClientCliVisitor(self._command_handler)

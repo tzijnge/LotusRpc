@@ -24,7 +24,7 @@ def escape_ansi(line: str) -> str:
 
 def make_lrpcc(definition_url: str, response: bytes = b"", *, check_server_version: bool = False) -> Lrpcc:
     # dummy version response with all fields set to empty string
-    meta_version_response = b"\x06\xff\x01\x00\x00\x00" if check_server_version else b""
+    meta_version_response = b"\x06\xff\x80\x00\x00\x00" if check_server_version else b""
 
     lrpcc_config: LrpccConfigDict = {
         "definition_url": definition_url,
@@ -154,3 +154,32 @@ def test_server_finite_stop(capsys: pytest.CaptureFixture[str]) -> None:
     lrpcc._command_handler("srv1", "server_finite", start=False)
 
     assert escape_ansi(capsys.readouterr().out) == ""
+
+
+def test_error_response_unknown_service(capsys: pytest.CaptureFixture[str], caplog: pytest.LogCaptureFixture) -> None:
+    response = b"\x0b\xff\x00\x00\x44\x55\x00\x00\x00\x00\x00"
+    lrpcc = make_lrpcc("../testdata/TestServer1.lrpc.yaml", response, check_server_version=False)
+    lrpcc._command_handler("s0", "f13")
+
+    expected_log = "Server reported error 'UnknownService' for call to s0.f13"
+    expected_print = "Server reported call to unknown service with ID 68. Function or stream ID is 85"
+
+    assert len(caplog.messages) == 1
+    assert caplog.messages[0] == expected_log
+    assert escape_ansi(capsys.readouterr().out.strip()) == expected_print
+
+
+def test_error_response_unknown_function_or_stream(
+    capsys: pytest.CaptureFixture[str],
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    response = b"\x0b\xff\x00\x01\x44\x55\x00\x00\x00\x00\x00"
+    lrpcc = make_lrpcc("../testdata/TestServer1.lrpc.yaml", response, check_server_version=False)
+    lrpcc._command_handler("s0", "f13")
+
+    expected_log = "Server reported error 'UnknownFunctionOrStream' for call to s0.f13"
+    expected_print = "Server reported call to unknown function or stream with ID 85 in service with ID 68"
+
+    assert len(caplog.messages) == 1
+    assert caplog.messages[0] == expected_log
+    assert escape_ansi(capsys.readouterr().out.strip()) == expected_print

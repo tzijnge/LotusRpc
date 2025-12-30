@@ -14,6 +14,7 @@ services:
           - { name: message, type: string }
     functions:
       - name: version
+        id: 128
         returns:
           - { name: definition, type: string }
           - { name: definition_hash, type: string }

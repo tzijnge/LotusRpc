@@ -40,13 +40,14 @@ class TestLrpcClient:
         # client: send encoded to server
 
         # server: copy service ID and function ID and append return value
-        response = b"\x04" + encoded[1:2] + encoded[2:3] + struct.pack("<B", encoded[3] + 5)
+        response_bytes = b"\x04" + encoded[1:2] + encoded[2:3] + struct.pack("<B", encoded[3] + 5)
 
         # client: receive bytes and decode
-        received = self.client().decode(response)
+        response = self.client().decode(response_bytes)
+        payload = response.payload
 
-        assert "r0" in received
-        assert received["r0"] == 128
+        assert "r0" in payload
+        assert payload["r0"] == 128
 
     def test_encode_function_nested_struct(self) -> None:
         assert (
@@ -106,9 +107,11 @@ class TestLrpcClient:
         assert encoded == b"\x04\x02\x03\x00"
 
     def test_decode_stream_client_infinite_request_stop(self) -> None:
-        decoded = self.client().decode(b"\x03\x02\x00")
-        assert isinstance(decoded, dict)
-        assert len(decoded.items()) == 0
+        response = self.client().decode(b"\x03\x02\x00")
+        payload = response.payload
+
+        assert isinstance(payload, dict)
+        assert len(payload.items()) == 0
 
     def test_decode_stream_client_infinite_invalid(self) -> None:
         # In a client stream, the server can only send a stop request
@@ -117,9 +120,11 @@ class TestLrpcClient:
             self.client().decode(b"\x04\x02\x00\x00")
 
     def test_decode_stream_client_finite_request_stop(self) -> None:
-        decoded = self.client().decode(b"\x03\x02\x01")
-        assert isinstance(decoded, dict)
-        assert len(decoded.items()) == 0
+        response = self.client().decode(b"\x03\x02\x01")
+        payload = response.payload
+
+        assert isinstance(payload, dict)
+        assert len(payload.items()) == 0
 
     def test_decode_stream_client_finite_invalid(self) -> None:
         # In a client stream, the server can only send a stop request
@@ -128,24 +133,28 @@ class TestLrpcClient:
             self.client().decode(b"\x05\x02\x01\xff\x66")
 
     def test_decode_stream_server_infinite(self) -> None:
-        decoded = self.client().decode(b"\x06\x02\x02\x45\x67\x89")
-        assert isinstance(decoded, dict)
-        assert len(decoded.items()) == 2
-        assert "p0" in decoded
-        assert decoded.get("p0") == 0x45
-        assert "p1" in decoded
-        assert decoded.get("p1") == 0x8967
+        response = self.client().decode(b"\x06\x02\x02\x45\x67\x89")
+        payload = response.payload
+
+        assert isinstance(payload, dict)
+        assert len(payload.items()) == 2
+        assert "p0" in payload
+        assert payload.get("p0") == 0x45
+        assert "p1" in payload
+        assert payload.get("p1") == 0x8967
 
     def test_decode_stream_server_finite(self) -> None:
-        decoded = self.client().decode(b"\x07\x02\x03\x45\x67\x89\x00")
-        assert isinstance(decoded, dict)
-        assert len(decoded.items()) == 3
-        assert "p0" in decoded
-        assert decoded.get("p0") == 0x45
-        assert "p1" in decoded
-        assert decoded.get("p1") == 0x8967
-        assert "final" in decoded
-        assert decoded.get("final") is False
+        response = self.client().decode(b"\x07\x02\x03\x45\x67\x89\x00")
+        payload = response.payload
+
+        assert isinstance(payload, dict)
+        assert len(payload.items()) == 3
+        assert "p0" in payload
+        assert payload.get("p0") == 0x45
+        assert "p1" in payload
+        assert payload.get("p1") == 0x8967
+        assert "final" in payload
+        assert payload.get("final") is False
 
     def test_decode_invalid_service_id(self) -> None:
         encoded = b"\x04\xaa\x00\x02"
@@ -180,48 +189,109 @@ class TestLrpcClient:
         with pytest.raises(ValueError, match=re.escape("Incorrect message size. Expected 4 but got 3")):
             self.client().decode(b"\x04\x00\x00")
 
+    def test_error_response(self) -> None:
+        # unknown service
+        response = self.client().decode(b"\x0b\xff\x00\x00\x55\x66\x00\x00\x00\x77\x00")
+
+        assert response.is_error_response
+        assert not response.is_expected_response
+        assert not response.is_function_response
+        assert response.is_stream_response
+        assert response.service_name == "LrpcMeta"
+        assert response.function_or_stream_name == "error"
+
     def test_decode_error_response_unknown_service(self) -> None:
-        decoded = self.client().decode(b"\x0b\xff\x00\x00\x55\x66\x00\x00\x00\x77\x00")
-        assert "type" in decoded
-        assert decoded["type"] == "UnknownService"
-        assert "p1" in decoded
-        assert decoded["p1"] == 0x55
-        assert "p2" in decoded
-        assert decoded["p2"] == 0x66
-        assert "p3" in decoded
-        assert decoded["p3"] == 0x77000000
-        assert "message" in decoded
-        assert decoded["message"] == ""
+        response = self.client().decode(b"\x0b\xff\x00\x00\x55\x66\x00\x00\x00\x77\x00")
+        payload = response.payload
+
+        assert "type" in payload
+        assert payload["type"] == "UnknownService"
+        assert "p1" in payload
+        assert payload["p1"] == 0x55
+        assert "p2" in payload
+        assert payload["p2"] == 0x66
+        assert "p3" in payload
+        assert payload["p3"] == 0x77000000
+        assert "message" in payload
+        assert payload["message"] == ""
 
     def test_decode_error_response_unknown_function_or_stream(self) -> None:
-        decoded = self.client().decode(b"\x0f\xff\x00\x01\x22\x33\x44\x00\x00\x00\x74\x65\x73\x74\x00")
-        assert "type" in decoded
-        assert decoded["type"] == "UnknownFunctionOrStream"
-        assert "p1" in decoded
-        assert decoded["p1"] == 0x22
-        assert "p2" in decoded
-        assert decoded["p2"] == 0x33
-        assert "p3" in decoded
-        assert decoded["p3"] == 0x44
-        assert "message" in decoded
-        assert decoded["message"] == "test"
+        response = self.client().decode(b"\x0f\xff\x00\x01\x22\x33\x44\x00\x00\x00\x74\x65\x73\x74\x00")
+        payload = response.payload
+
+        assert "type" in payload
+        assert payload["type"] == "UnknownFunctionOrStream"
+        assert "p1" in payload
+        assert payload["p1"] == 0x22
+        assert "p2" in payload
+        assert payload["p2"] == 0x33
+        assert "p3" in payload
+        assert payload["p3"] == 0x44
+        assert "message" in payload
+        assert payload["message"] == "test"
+
+    def test_decode_error_response_invalid_type(self) -> None:
+        with pytest.raises(ValueError, match=re.escape("Value 255 (0xff) is not valid for enum LrpcMetaError")):
+            self.client().decode(b"\x0f\xff\x00\xff\x22\x33\x44\x00\x00\x00\x74\x65\x73\x74\x00")
 
     def test_decode_void_function(self) -> None:
         # srv0.f0
-        decoded = self.client().decode(b"\x03\x00\x00")
-        assert isinstance(decoded, dict)
-        assert len(decoded.items()) == 0
+        response = self.client().decode(b"\x03\x00\x00")
+        payload = response.payload
+        assert isinstance(payload, dict)
+        assert len(payload.items()) == 0
 
     def test_remaining_bytes_after_decode(self) -> None:
         with pytest.raises(ValueError, match=re.escape("2 remaining bytes after decoding srv0.f0")):
             self.client().decode(b"\x05\x00\x00\xab\xcd")
 
     def test_communicate_function(self) -> None:
-        response = b"\x04\x01\x00\xcd"
-        r = self.client(response).communicate_single("srv1", "add5", p0=0xAB)
-        assert "r0" in r
-        assert isinstance(r["r0"], int)
-        assert r["r0"] == 0xCD
+        response_bytes = b"\x04\x01\x00\xcd"
+        response = self.client(response_bytes).communicate_single("srv1", "add5", p0=0xAB)
+        payload = response.payload
+
+        assert "r0" in payload
+        assert isinstance(payload["r0"], int)
+        assert payload["r0"] == 0xCD
+
+        assert response.is_error_response is False
+        assert response.is_expected_response
+        assert response.is_function_response
+        assert response.is_stream_response is False
+        assert response.service_name == "srv1"
+        assert response.function_or_stream_name == "add5"
+
+    def test_communicate_function_wrong_response(self, caplog: pytest.LogCaptureFixture) -> None:
+        # response belongs to srv0.f0
+        response_bytes = b"\x03\x00\x00"
+        response = self.client(response_bytes).communicate_single("srv1", "add5", p0=0xAB)
+        payload = response.payload
+
+        assert len(payload.items()) == 0
+
+        assert response.is_error_response is False
+        assert response.is_expected_response is False
+        assert response.is_function_response is True
+        assert response.is_stream_response is False
+        assert response.service_name == "srv0"
+        assert response.function_or_stream_name == "f0"
+
+        assert len(caplog.messages) == 1
+        assert caplog.messages[0] == "Unexpected response. Expected srv1.add5, but got srv0.f0"
+
+    def test_communicate_function_error_response(self, caplog: pytest.LogCaptureFixture) -> None:
+        response_bytes = b"\x0b\xff\x00\x00\x55\x66\x00\x00\x00\x77\x00"
+        response = self.client(response_bytes).communicate_single("srv1", "add5", p0=0xAB)
+
+        assert response.is_error_response
+        assert response.is_expected_response is False
+        assert response.is_function_response is False
+        assert response.is_stream_response is True
+        assert response.service_name == "LrpcMeta"
+        assert response.function_or_stream_name == "error"
+
+        assert len(caplog.messages) == 1
+        assert caplog.messages[0] == "Server reported error 'UnknownService' for call to srv1.add5"
 
     def test_communicate_stream_client_infinite(self) -> None:
         communicator = self.client().communicate("srv2", "client_infinite", p0=0xAB, p1=0xCDEF)
@@ -247,28 +317,45 @@ class TestLrpcClient:
         response_bytes = b"\x06\x02\x02\xcd\x01\x02"
         response_generator = self.client(response_bytes).communicate("srv2", "server_infinite", start=True)
         response = next(response_generator)
+        payload = response.payload
 
-        assert "p0" in response
-        assert isinstance(response["p0"], int)
-        assert response["p0"] == 0xCD
+        assert "p0" in payload
+        assert isinstance(payload["p0"], int)
+        assert payload["p0"] == 0xCD
 
-        assert "p1" in response
-        assert isinstance(response["p1"], int)
-        assert response["p1"] == 0x0201
+        assert "p1" in payload
+        assert isinstance(payload["p1"], int)
+        assert payload["p1"] == 0x0201
+
+        assert response.is_error_response is False
+        assert response.is_expected_response
+        assert response.is_function_response is False
+        assert response.is_stream_response
+        assert response.service_name == "srv2"
+        assert response.function_or_stream_name == "server_infinite"
 
         with pytest.raises(TimeoutError, match="Timeout waiting for response"):
             next(response_generator)
 
     def test_communicate_stream_server_finite_start(self) -> None:
-        response = b"\x07\x02\x03\xcd\x01\x02\x01"
-        r = self.client(response).communicate_single("srv2", "server_finite", start=True)
-        assert "p0" in r
-        assert isinstance(r["p0"], int)
-        assert r["p0"] == 0xCD
+        response_bytes = b"\x07\x02\x03\xcd\x01\x02\x01"
+        response = self.client(response_bytes).communicate_single("srv2", "server_finite", start=True)
+        payload = response.payload
 
-        assert "p1" in r
-        assert isinstance(r["p1"], int)
-        assert r["p1"] == 0x0201
+        assert "p0" in payload
+        assert isinstance(payload["p0"], int)
+        assert payload["p0"] == 0xCD
+
+        assert "p1" in payload
+        assert isinstance(payload["p1"], int)
+        assert payload["p1"] == 0x0201
+
+        assert response.is_error_response is False
+        assert response.is_expected_response
+        assert response.is_function_response is False
+        assert response.is_stream_response
+        assert response.service_name == "srv2"
+        assert response.function_or_stream_name == "server_finite"
 
     @staticmethod
     def make_version_response(def_version: str, def_hash: str, lrpc_version: str) -> bytes:
@@ -277,7 +364,7 @@ class TestLrpcClient:
 
         return (
             msg_len
-            + b"\xff\x01"
+            + b"\xff\x80"
             + def_version.encode("utf-8")
             + b"\x00"
             + def_hash.encode("utf-8")
@@ -345,3 +432,5 @@ class TestLrpcClient:
         assert f"LotusRPC version: {lrpc_version} vs {lrpc_version}" in caplog.messages
         assert "Definition version: [disabled] vs [wrong version]" in caplog.messages
         assert "Definition hash: 1e63f37cfb4c9aa9... vs 1e63f37cfb4c9aa9..." in caplog.messages
+
+    # def test_

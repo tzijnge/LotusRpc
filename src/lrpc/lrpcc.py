@@ -236,23 +236,29 @@ class Lrpcc:
             print(f"{name_text}: {value}{hex_repr}")
 
     @staticmethod
+    def _print_error_line(line: str) -> None:
+        print(colorama.Fore.RED + line + colorama.Fore.RESET)
+
+    @staticmethod
     def _print_error_response(response: MetaErrorResponseDict) -> None:
         if response["type"] == "UnknownService":
-            print(
+            Lrpcc._print_error_line(
                 f"Server reported call to unknown service with ID {response['p1']}. "
                 f"Function or stream ID is {response['p2']}",
             )
         elif response["type"] == "UnknownFunctionOrStream":
-            print(
+            Lrpcc._print_error_line(
                 f"Server reported call to unknown function or stream with ID "
-                f"{response['p2']} in service {response['p1']}",
+                f"{response['p2']} in service with ID {response['p1']}",
             )
         else:
-            print(f"Server reported an unknown error (type='{response['type']}') with the following properties")
-            print(f"p1={response['p1']}")
-            print(f"p2={response['p2']}")
-            print(f"p3={response['p3']}")
-            print(f"message='{response['message']}'")
+            Lrpcc._print_error_line(
+                f"Server reported an unknown error (type='{response['type']}') with the following properties:",
+            )
+            Lrpcc._print_error_line(f"p1={response['p1']}")
+            Lrpcc._print_error_line(f"p2={response['p2']}")
+            Lrpcc._print_error_line(f"p3={response['p3']}")
+            Lrpcc._print_error_line(f"message='{response['message']}'")
 
     def run(self) -> None:
         cli = ClientCliVisitor(self._command_handler)

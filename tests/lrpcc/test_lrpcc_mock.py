@@ -178,7 +178,7 @@ def test_error_response_unknown_function_or_stream(
     lrpcc._command_handler("s0", "f13")
 
     expected_log = "Server reported error 'UnknownFunctionOrStream' for call to s0.f13"
-    expected_print = "Server reported call to unknown function or stream with ID 85 in service 68"
+    expected_print = "Server reported call to unknown function or stream with ID 85 in service with ID 68"
 
     assert len(caplog.messages) == 1
     assert caplog.messages[0] == expected_log

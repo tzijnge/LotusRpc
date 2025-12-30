@@ -25,11 +25,11 @@ packet
 +8: "Payload"
 ```
 
-| Field name              | Size (bytes) | Comment |
-| ----------              | ------------ | ------- |
-| Packet size             | 1            | Total packet size (including this field) |
-| Service ID              | 1            | ID of the current service |
-| Function ID / Stream ID | 1            | ID of the current function or stream |
+| Field name              | Size (bytes) | Comment                                   |
+|-------------------------|--------------|-------------------------------------------|
+| Packet size             | 1            | Total packet size (including this field)  |
+| Service ID              | 1            | ID of the current service                 |
+| Function ID / Stream ID | 1            | ID of the current function or stream      |
 | Payload                 | 0-252        | Any number of parameters or return values |
 
 ## Function payload encoding

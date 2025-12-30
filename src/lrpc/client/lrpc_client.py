@@ -1,6 +1,7 @@
 import logging
 import struct
 from collections.abc import Generator
+from dataclasses import dataclass
 from importlib.metadata import version
 from typing import cast
 
@@ -13,7 +14,18 @@ from .decoder import LrpcDecoder
 from .encoder import lrpc_encode
 from .transport import LrpcTransport
 
-LrpcResponse = dict[str, LrpcType]
+LrpcResponsePayload = dict[str, LrpcType]
+
+
+@dataclass
+class LrpcResponse:
+    service_name: str
+    function_or_stream_name: str
+    is_function_response: bool
+    is_stream_response: bool
+    is_error_response: bool
+    is_expected_response: bool
+    payload: LrpcResponsePayload
 
 
 class LrpcClient:
@@ -28,6 +40,8 @@ class LrpcClient:
         self._transport = transport
         self._lrpc_def = lrpc_def
         self._receive_buffer = b""
+        self._current_service: str = ""
+        self._current_function_or_stream: str = ""
         self._log = logging.getLogger(self.__class__.__name__)
 
     def check_server_version(self) -> bool:
@@ -37,7 +51,7 @@ class LrpcClient:
         client_side_def_version = self._lrpc_def.version() or disabled
 
         def get_server_version() -> MetaVersionResponseDict:
-            version_response = self.communicate_single("LrpcMeta", "version")
+            version_response = self.communicate_single("LrpcMeta", "version").payload
             MetaVersionResponseValidator.validate_python(version_response, strict=True, extra="forbid")
             return cast(MetaVersionResponseDict, version_response)
 
@@ -60,6 +74,51 @@ class LrpcClient:
 
         return True
 
+    def _is_error_response(self, service: LrpcService, function_or_stream: LrpcFun | LrpcStream) -> bool:
+        return (service.name() == self._lrpc_def.meta_service().name()) and (function_or_stream.name() == "error")
+
+    def _is_expected_response(self, service: LrpcService, function_or_stream: LrpcFun | LrpcStream) -> bool:
+        return (service.name() == self._current_service) and (
+            function_or_stream.name() == self._current_function_or_stream
+        )
+
+    def _make_response(
+        self,
+        service: LrpcService,
+        function_or_stream: LrpcFun | LrpcStream,
+        payload: LrpcResponsePayload,
+    ) -> LrpcResponse:
+        is_expected = False
+        is_error = self._is_error_response(service, function_or_stream)
+
+        if is_error:
+            self._log.warning(
+                "Server reported error '%s' for call to %s.%s",
+                payload["type"],
+                self._current_service,
+                self._current_function_or_stream,
+            )
+        else:
+            is_expected = self._is_expected_response(service, function_or_stream)
+            if not is_expected:
+                self._log.warning(
+                    "Unexpected response. Expected %s.%s, but got %s.%s",
+                    self._current_service,
+                    self._current_function_or_stream,
+                    service.name(),
+                    function_or_stream.name(),
+                )
+
+        return LrpcResponse(
+            service_name=service.name(),
+            function_or_stream_name=function_or_stream.name(),
+            is_function_response=isinstance(function_or_stream, LrpcFun),
+            is_stream_response=isinstance(function_or_stream, LrpcStream),
+            is_error_response=is_error,
+            is_expected_response=is_expected,
+            payload=payload,
+        )
+
     def decode(self, encoded: bytes) -> LrpcResponse:
         if len(encoded) < self.LRPC_MESSAGE_MIN_LENGTH:
             raise ValueError(f"Unable to decode message from {encoded!r}: an LRPC message has at least 3 bytes")
@@ -81,10 +140,12 @@ class LrpcClient:
         decoder = LrpcDecoder(encoded[3:], self._lrpc_def)
 
         if function:
-            return self._decode_variables(function.returns(), decoder, f"{service.name()}.{function.name()}")
+            payload = self._decode_variables(function.returns(), decoder, f"{service.name()}.{function.name()}")
+            return self._make_response(service, function, payload)
 
         if stream:
-            return self._decode_variables(stream.returns(), decoder, f"{service.name()}.{stream.name()}")
+            payload = self._decode_variables(stream.returns(), decoder, f"{service.name()}.{stream.name()}")
+            return self._make_response(service, stream, payload)
 
         raise ValueError(f"No function or stream with ID {function_or_stream_id} found in service {service.name()}")
 
@@ -109,6 +170,9 @@ class LrpcClient:
         function_or_stream_name: str,
         **kwargs: LrpcType,
     ) -> Generator[LrpcResponse, None, None]:
+        self._current_service = service_name
+        self._current_function_or_stream = function_or_stream_name
+
         encoded = self.encode(service_name, function_or_stream_name, **kwargs)
         self._transport.write(encoded)
 
@@ -127,8 +191,8 @@ class LrpcClient:
                         f"{service_name}.{function_or_stream_name} is not recognized as function or stream",
                     )
                 if stream.is_finite():
-                    receive_more = response["final"] is False
-                    response.pop("final")
+                    receive_more = response.payload["final"] is False
+                    response.payload.pop("final")
 
             yield response
 
@@ -191,7 +255,7 @@ class LrpcClient:
                 return response
 
     @staticmethod
-    def _decode_variables(variables: list[LrpcVar], decoder: LrpcDecoder, name: str) -> LrpcResponse:
+    def _decode_variables(variables: list[LrpcVar], decoder: LrpcDecoder, name: str) -> LrpcResponsePayload:
         ret = {}
 
         for r in variables:

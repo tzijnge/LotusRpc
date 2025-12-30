@@ -40,10 +40,10 @@ class TestLrpcClient:
         # client: send encoded to server
 
         # server: copy service ID and function ID and append return value
-        response = b"\x04" + encoded[1:2] + encoded[2:3] + struct.pack("<B", encoded[3] + 5)
+        response_bytes = b"\x04" + encoded[1:2] + encoded[2:3] + struct.pack("<B", encoded[3] + 5)
 
         # client: receive bytes and decode
-        response = self.client().decode(response)
+        response = self.client().decode(response_bytes)
         payload = response.payload
 
         assert "r0" in payload

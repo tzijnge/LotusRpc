@@ -432,5 +432,3 @@ class TestLrpcClient:
         assert f"LotusRPC version: {lrpc_version} vs {lrpc_version}" in caplog.messages
         assert "Definition version: [disabled] vs [wrong version]" in caplog.messages
         assert "Definition hash: 1e63f37cfb4c9aa9... vs 1e63f37cfb4c9aa9..." in caplog.messages
-
-    # def test_

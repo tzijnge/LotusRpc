@@ -902,3 +902,38 @@ def test_validation_wrong_type_rx_buffer_size() -> None:
 
     with pytest.raises(ValidationError, match=re.escape("Input should be a valid integer")):
         LrpcDef(d)  # type: ignore[arg-type]
+
+
+def test_embed_definition_default_false() -> None:
+    def_str = """name: test
+services:
+  - name: s1
+    functions:
+      - name: f1
+"""
+    lrpc_def = load_lrpc_def(def_str)
+    assert lrpc_def.embed_definition() is False
+
+
+def test_embed_definition_false() -> None:
+    def_str = """name: test
+embed_definition: false
+services:
+  - name: s1
+    functions:
+      - name: f1
+"""
+    lrpc_def = load_lrpc_def(def_str)
+    assert lrpc_def.embed_definition() is False
+
+
+def test_embed_definition_true() -> None:
+    def_str = """name: test
+embed_definition: true
+services:
+  - name: s1
+    functions:
+      - name: f1
+"""
+    lrpc_def = load_lrpc_def(def_str)
+    assert lrpc_def.embed_definition() is True

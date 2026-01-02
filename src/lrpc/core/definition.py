@@ -1,5 +1,8 @@
+import hashlib
+import lzma
 from typing import cast
 
+import yaml
 from pydantic import TypeAdapter
 from typing_extensions import NotRequired, TypedDict
 
@@ -17,8 +20,8 @@ from .var import LrpcVarDict
 class LrpcDefDict(TypedDict):
     name: str
     version: NotRequired[str]
-    definition_hash: str
     definition_hash_length: NotRequired[int]
+    embed_definition: NotRequired[bool]
     services: list[LrpcServiceOptionalIdDict]
     namespace: NotRequired[str]
     rx_buffer_size: NotRequired[int]
@@ -36,8 +39,14 @@ LrpcDefValidator = TypeAdapter(LrpcDefDict)
 class LrpcDef:
     META_SERVICE_ID = 255
 
+    @staticmethod
+    def decompress(compressed: bytes) -> "LrpcDef":
+        definition_yaml = lzma.decompress(compressed).decode("utf-8")
+        return LrpcDef(yaml.safe_load(definition_yaml))
+
     def __init__(self, raw: LrpcDefDict) -> None:
         LrpcDefValidator.validate_python(raw, strict=True, extra="allow")
+        self._definition_yaml = yaml.dump(raw, sort_keys=False)
 
         struct_names = []
         if "structs" in raw:
@@ -54,6 +63,7 @@ class LrpcDef:
 
         self.__name = raw["name"]
         self.__version = raw.get("version", None)
+        self.__embed_definition = raw.get("embed_definition", False)
 
         self.__services = [LrpcService(cast(LrpcServiceDict, s)) for s in raw["services"]]
         self.__namespace = raw.get("namespace", None)
@@ -120,11 +130,9 @@ class LrpcDef:
                 s["id"] = last_service_id
 
     def __init_definition_hash(self, raw: LrpcDefDict) -> None:
-        full_sha3_256_hash_length = 64
-        definition_hash_length = raw.get("definition_hash_length", full_sha3_256_hash_length)
-        self.__definition_hash = (
-            None if definition_hash_length == 0 else raw["definition_hash"][:definition_hash_length]
-        )
+        definition_hash = hashlib.sha3_256(self._definition_yaml.encode(encoding="utf-8")).hexdigest()
+        definition_hash_length = raw.get("definition_hash_length", len(definition_hash))
+        self.__definition_hash = None if definition_hash_length == 0 else definition_hash[:definition_hash_length]
 
     def accept(self, visitor: LrpcVisitor, *, visit_meta_service: bool = True) -> None:
         visitor.visit_lrpc_def(self)
@@ -157,6 +165,12 @@ class LrpcDef:
 
     def definition_hash(self) -> str | None:
         return self.__definition_hash
+
+    def embed_definition(self) -> bool:
+        return self.__embed_definition
+
+    def compressed_definition(self) -> bytes:
+        return lzma.compress(self._definition_yaml.encode(encoding="utf-8"))
 
     def namespace(self) -> str | None:
         return self.__namespace

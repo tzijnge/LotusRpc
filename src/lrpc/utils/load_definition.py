@@ -74,11 +74,9 @@ def __load_meta_def() -> LrpcDefDict:
 def load_lrpc_def_from_dict(
     user_def: LrpcDefDict,
     meta_def: LrpcDefDict,
-    definition_hash: str,
     *,
     warnings_as_errors: bool,
 ) -> LrpcDef:
-    user_def["definition_hash"] = definition_hash
     user_def["services"].extend(meta_def["services"])
 
     if "enums" not in meta_def:
@@ -99,10 +97,9 @@ def load_lrpc_def_from_dict(
 
 
 def load_lrpc_def_from_str(def_str: str, *, warnings_as_errors: bool) -> LrpcDef:
-    definition_hash = hashlib.sha3_256(def_str.encode()).hexdigest()
     user_def = __yaml_safe_load(def_str)
     meta_def = __load_meta_def()
-    return load_lrpc_def_from_dict(user_def, meta_def, definition_hash, warnings_as_errors=warnings_as_errors)
+    return load_lrpc_def_from_dict(user_def, meta_def, warnings_as_errors=warnings_as_errors)
 
 
 def load_lrpc_def_from_url(def_url: Path, *, warnings_as_errors: bool) -> LrpcDef:
@@ -111,7 +108,6 @@ def load_lrpc_def_from_url(def_url: Path, *, warnings_as_errors: bool) -> LrpcDe
 
 
 def load_lrpc_def_from_file(def_file: TextIO, *, warnings_as_errors: bool) -> LrpcDef:
-    definition_hash = get_hash(Path(def_file.name))
     user_def = __yaml_safe_load(def_file)
     meta_def = __load_meta_def()
-    return load_lrpc_def_from_dict(user_def, meta_def, definition_hash, warnings_as_errors=warnings_as_errors)
+    return load_lrpc_def_from_dict(user_def, meta_def, warnings_as_errors=warnings_as_errors)

@@ -399,7 +399,7 @@ class TestLrpcClient:
         assert "Server mismatch detected. Details client vs server:" in caplog.messages
         assert f"LotusRPC version: {lrpc_version} vs {lrpc_version}" in caplog.messages
         assert "Definition version: [disabled] vs [disabled]" in caplog.messages
-        assert "Definition hash: 1e63f37cfb4c9aa9... vs [wrong hash]..." in caplog.messages
+        assert "Definition hash: 686d3ba44ae73e14... vs [wrong hash]..." in caplog.messages
 
     def test_check_server_version_mismatch_lrpc_version(self, caplog: pytest.LogCaptureFixture) -> None:
         def_version = lrpc_def.version() or ""
@@ -415,7 +415,7 @@ class TestLrpcClient:
         assert "Server mismatch detected. Details client vs server:" in caplog.messages
         assert f"LotusRPC version: {version('lotusrpc')} vs [wrong version]" in caplog.messages
         assert "Definition version: [disabled] vs [disabled]" in caplog.messages
-        assert "Definition hash: 1e63f37cfb4c9aa9... vs 1e63f37cfb4c9aa9..." in caplog.messages
+        assert "Definition hash: 686d3ba44ae73e14... vs 686d3ba44ae73e14..." in caplog.messages
 
     def test_check_server_version_mismatch_def_version(self, caplog: pytest.LogCaptureFixture) -> None:
         def_version = "[wrong version]"
@@ -431,4 +431,4 @@ class TestLrpcClient:
         assert "Server mismatch detected. Details client vs server:" in caplog.messages
         assert f"LotusRPC version: {lrpc_version} vs {lrpc_version}" in caplog.messages
         assert "Definition version: [disabled] vs [wrong version]" in caplog.messages
-        assert "Definition hash: 1e63f37cfb4c9aa9... vs 1e63f37cfb4c9aa9..." in caplog.messages
+        assert "Definition hash: 686d3ba44ae73e14... vs 686d3ba44ae73e14..." in caplog.messages

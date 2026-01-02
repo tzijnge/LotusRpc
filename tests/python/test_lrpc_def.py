@@ -937,3 +937,38 @@ services:
 """
     lrpc_def = load_lrpc_def(def_str)
     assert lrpc_def.embed_definition() is True
+
+
+def test_compress_decompress() -> None:
+    def_str = """name: test
+services:
+  - name: bbb
+    functions:
+      - name: f1
+  - name: aaa
+    functions:
+      - name: f1
+"""
+    lrpc_def1 = load_lrpc_def(def_str)
+    compressed = lrpc_def1.compressed_definition()
+
+    assert len(compressed) == 368
+
+    lrpc_def2 = LrpcDef.decompress(compressed)
+
+    assert lrpc_def1.name() == lrpc_def2.name()
+    assert lrpc_def1.compressed_definition() == lrpc_def2.compressed_definition()
+    assert lrpc_def1.definition_hash() == lrpc_def2.definition_hash()
+
+    services1 = lrpc_def1.services()
+    services2 = lrpc_def2.services()
+    assert len(services1) == 2
+    assert services1[0].name() == "bbb"
+    assert services1[0].id() == 0
+    assert services1[1].name() == "aaa"
+    assert services1[1].id() == 1
+
+    assert services2[0].name() == "bbb"
+    assert services2[0].id() == 0
+    assert services2[1].name() == "aaa"
+    assert services2[1].id() == 1

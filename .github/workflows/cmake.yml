@@ -65,7 +65,7 @@ jobs:
           submodules: true
 
       - name: SonarQube Install
-        uses: SonarSource/sonarqube-scan-action/install-build-wrapper@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602
+        uses: SonarSource/sonarqube-scan-action/install-build-wrapper@a31c9398be7ace6bbfaf30c0bd5d415f843d45e9
 
       - name: Install Python requirements
         run: pip install -r requirements/dev.txt
@@ -131,7 +131,7 @@ jobs:
           files: "testresults/*.xml"
 
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602
+        uses: SonarSource/sonarqube-scan-action@a31c9398be7ace6bbfaf30c0bd5d415f843d45e9
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_ROOT_CERT: ${{ secrets.SONAR_ROOT_CERT }}

@@ -6,15 +6,15 @@ using ::testing::Return;
 class MockS01Service : public s01_shim
 {
 public:
-    MOCK_METHOD(void, f0, (const etl::span<const etl::string_view> &p0), (override));
-    MOCK_METHOD((etl::array<etl::string<2>, 2>), f1, (), (override));
-    MOCK_METHOD(void, f2, (const etl::optional<etl::string_view> &p01), (override));
-    MOCK_METHOD(void, f3, (const etl::optional<etl::string_view> &p01), (override));
-    MOCK_METHOD((etl::optional<etl::string<2>>), f4, (), (override));
+    MOCK_METHOD(void, f0, (etl::span<const etl::string_view> p0), (override));
+    MOCK_METHOD((etl::array<etl::string_view, 2>), f1, (), (override));
+    MOCK_METHOD(void, f2, (etl::optional<etl::string_view> p01), (override));
+    MOCK_METHOD(void, f3, (etl::optional<etl::string_view> p01), (override));
+    MOCK_METHOD((etl::optional<etl::string_view>), f4, (), (override));
     MOCK_METHOD(void, f5, (const StringStruct &a), (override));
     MOCK_METHOD(StringStruct, f6, (), (override));
-    MOCK_METHOD((etl::string<5>), f7, (const etl::string_view &p0), (override));
-    MOCK_METHOD(void, f8, (const etl::span<const etl::string_view> &p0), (override));
+    MOCK_METHOD((etl::string_view), f7, (etl::string_view p0), (override));
+    MOCK_METHOD(void, f8, (etl::span<const etl::string_view> p0), (override));
     MOCK_METHOD(void, f9, (const StringStruct2 &a), (override));
     MOCK_METHOD(StringStruct2, f10, (), (override));
 };
@@ -43,7 +43,7 @@ TEST_F(TestServer2_s1, decodeF0WithStringShorterThanMax)
 // Decode function that returns array of strings
 TEST_F(TestServer2_s1, decodeF1)
 {
-    etl::array<etl::string<2>, 2> retVal{"T1", "T2"};
+    etl::array<etl::string_view, 2> retVal{"T1", "T2"};
     EXPECT_CALL(service, f1()).WillOnce(Return(retVal));
     const auto response = receive("030101");
     EXPECT_EQ("090101543100543200", response);
@@ -72,7 +72,7 @@ TEST_F(TestServer2_s1, decodeF3)
 // Decode function that returns optional string
 TEST_F(TestServer2_s1, decodeF4)
 {
-    etl::optional<etl::string<2>> expected{"T1"};
+    etl::optional<etl::string_view> expected{"T1"};
     EXPECT_CALL(service, f4()).WillOnce(Return(expected));
     const auto response = receive("030104");
     EXPECT_EQ("07010401543100", response);
@@ -107,9 +107,8 @@ TEST_F(TestServer2_s1, decodeF6)
 // Decode function that takes auto string argument and returns fixed size string
 TEST_F(TestServer2_s1, decodeF7)
 {
-    etl::string<5> retVal{"T1234"};
     etl::string_view expected{"T0"};
-    EXPECT_CALL(service, f7(expected)).WillOnce(Return(retVal));
+    EXPECT_CALL(service, f7(expected)).WillOnce(Return("T1234"));
     const auto response = receive("060107543000");
     EXPECT_EQ("090107543132333400", response);
 }

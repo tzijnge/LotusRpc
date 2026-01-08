@@ -132,7 +132,7 @@ class ServiceShimVisitor(LrpcVisitor):
                 self._file.write(f"writeHeader(w, {stream.id()});")
 
                 for r in stream.returns():
-                    self._file.write(f"lrpc::write_unchecked<{r.write_type()}>(w, {r.name()});")
+                    self._file.write(f"lrpc::write_unchecked<{r.rw_type()}>(w, {r.name()});")
 
                 self._file.write("updateHeader(w);")
                 self._file.write("server->transmit(w);")
@@ -205,8 +205,11 @@ class ServiceShimVisitor(LrpcVisitor):
 
         for p in function.params():
             n = p.name()
-            t = p.read_type()
-            self._file.write(f"const auto {n} = lrpc::read_unchecked<{t}>(r);")
+            t = p.rw_type()
+            if p.is_fixed_size_string():
+                self._file.write(f"const auto {n} = lrpc::read_unchecked<{t}>(r, {p.string_size()});")
+            else:
+                self._file.write(f"const auto {n} = lrpc::read_unchecked<{t}>(r);")
 
         param_list = ", ".join(function.param_names())
 
@@ -215,17 +218,23 @@ class ServiceShimVisitor(LrpcVisitor):
 
         returns = function.returns()
         if len(returns) == 1:
-            t = returns[0].write_type()
-            self._file.write(f"lrpc::write_unchecked<{t}>(w, response);")
+            t = returns[0].rw_type()
+            if returns[0].is_fixed_size_string():
+                self._file.write(f"lrpc::write_unchecked<{t}>(w, response, {returns[0].string_size()});")
+            else:
+                self._file.write(f"lrpc::write_unchecked<{t}>(w, response);")
         else:
             for i, r in enumerate(returns):
-                t = r.write_type()
-                self._file.write(f"lrpc::write_unchecked<{t}>(w, std::get<{i}>(response));")
+                t = r.rw_type()
+                if r.is_fixed_size_string():
+                    self._file.write(f"lrpc::write_unchecked<{t}>(w, std::get<{i}>(response), {r.string_size()});")
+                else:
+                    self._file.write(f"lrpc::write_unchecked<{t}>(w, std::get<{i}>(response));")
 
     def __write_stream_shim_body(self, stream: LrpcStream) -> None:
         for p in stream.params():
             n = p.name()
-            t = p.read_type()
+            t = p.rw_type()
             self._file.write(f"const auto {n} = lrpc::read_unchecked<{t}>(r);")
 
         param_list = ", ".join(stream.param_names())

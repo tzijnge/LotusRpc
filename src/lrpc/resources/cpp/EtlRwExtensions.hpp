@@ -8,6 +8,9 @@ namespace lrpc
     struct string_auto;
     struct string_n;
 
+    template <typename T, size_t N>
+    struct array_n;
+
     template <typename T>
     struct is_etl_optional : public etl::false_type
     {
@@ -29,12 +32,12 @@ namespace lrpc
     };
 
     template <typename T>
-    struct is_etl_array : public etl::false_type
+    struct is_array_n : public etl::false_type
     {
     };
 
     template <typename T, size_t N>
-    struct is_etl_array<etl::array<T, N>> : public etl::true_type
+    struct is_array_n<array_n<T, N>> : public etl::true_type
     {
     };
 
@@ -50,31 +53,31 @@ namespace lrpc
     };
 
     template <typename T>
-    struct etl_array_type
+    struct array_n_type
     {
     };
 
     template <typename T, size_t N>
-    struct etl_array_type<etl::array<T, N>>
+    struct array_n_type<array_n<T, N>>
     {
         using type = T;
     };
 
     template <typename T>
-    struct etl_array_size
+    struct array_n_size
     {
     };
 
     template <typename T, size_t N>
-    struct etl_array_size<etl::array<T, N>> : public etl::integral_constant<size_t, N>
+    struct array_n_size<array_n<T, N>> : public etl::integral_constant<size_t, N>
     {
     };
 
     template <typename T>
-    using etl_array_type_is_string_n = etl::is_same<typename etl_array_type<T>::type, string_n>;
+    using array_n_type_is_string_n = etl::is_same<typename array_n_type<T>::type, string_n>;
 
     template <typename T>
-    using etl_array_type_is_string_auto = etl::is_same<typename etl_array_type<T>::type, string_auto>;
+    using array_n_type_is_string_auto = etl::is_same<typename array_n_type<T>::type, string_auto>;
 
     template <typename T>
     using etl_optional_type_is_string_n = etl::is_same<typename etl_optional_type<T>::type, string_n>;
@@ -87,7 +90,7 @@ namespace lrpc
     typename etl::enable_if<(!etl::is_arithmetic<T>::value) &&
                                 (!etl::is_enum<T>::value) &&
                                 (!is_etl_optional<T>::value) &&
-                                (!is_etl_array<T>::value) &&
+                                (!is_array_n<T>::value) &&
                                 (!etl::is_same<T, string_auto>::value) &&
                                 (!etl::is_same<T, string_n>::value),
                             T>::type
@@ -198,9 +201,6 @@ namespace lrpc
     template <typename T>
     using enable_for_optional_string_n = etl::enable_if<is_etl_optional<T>::value && (etl_optional_type_is_string_n<T>::value), etl::optional<etl::string_view>>;
 
-    // template <typename T>
-    // using optional_string_size = etl_string_size<typename etl_optional_type<T>::type>;
-
     template <typename T>
     typename enable_for_optional_string_n<T>::type
     read_unchecked(etl::byte_stream_reader &stream, size_t definitionStringSize)
@@ -233,60 +233,57 @@ namespace lrpc
 
     // Array, but not of string (fixed size or auto)
     template <typename T>
-    using enable_for_array = etl::enable_if<is_etl_array<T>::value && (!etl_array_type_is_string_n<T>::value) && (!etl_array_type_is_string_auto<T>::value), T>;
+    using enable_for_array = etl::enable_if<is_array_n<T>::value &&
+                                                (!array_n_type_is_string_n<T>::value) &&
+                                                (!array_n_type_is_string_auto<T>::value),
+                                            void>;
 
     template <typename T>
     typename enable_for_array<T>::type
-    read_unchecked(etl::byte_stream_reader &stream)
+    read_unchecked(etl::byte_stream_reader &stream, etl::span<typename array_n_type<T>::type> dest)
     {
-        T arr;
-        for (auto &el : arr)
+        const auto s = etl::min(dest.size(), array_n_size<T>::value);
+        for (auto i{0}; i < s; ++i)
         {
-            el = lrpc::read_unchecked<typename etl_array_type<T>::type>(stream);
+            dest.at(i) = lrpc::read_unchecked<typename array_n_type<T>::type>(stream);
         }
-
-        return arr;
     };
 
     // Array of auto string. Read as an array of etl::string_view
     template <typename T>
-    using enable_for_array_of_string_auto = etl::enable_if<is_etl_array<T>::value && etl_array_type_is_string_auto<T>::value, etl::array<etl::string_view, etl_array_size<T>::value>>;
+    using enable_for_array_of_string_auto = etl::enable_if<is_array_n<T>::value && array_n_type_is_string_auto<T>::value, void>;
 
     template <typename T>
     typename enable_for_array_of_string_auto<T>::type
-    read_unchecked(etl::byte_stream_reader &stream)
+    read_unchecked(etl::byte_stream_reader &stream, etl::span<etl::string_view> dest)
     {
-        etl::array<etl::string_view, etl_array_size<T>::value> arr;
-        for (auto &el : arr)
+        const auto s = etl::min(dest.size(), array_n_size<T>::value);
+        for (auto i{0}; i < s; ++i)
         {
-            el = lrpc::read_unchecked<string_auto>(stream);
+            dest.at(i) = lrpc::read_unchecked<string_auto>(stream);
         }
-
-        return arr;
     };
 
     // Array of fixed size string. Read as an array of etl::string_view
     template <typename T>
-    using enable_for_array_of_string_n = etl::enable_if<is_etl_array<T>::value && etl_array_type_is_string_n<T>::value, etl::array<etl::string_view, etl_array_size<T>::value>>;
+    using enable_for_array_of_string_n = etl::enable_if<is_array_n<T>::value && array_n_type_is_string_n<T>::value, void>;
 
     template <typename T>
     typename enable_for_array_of_string_n<T>::type
-    read_unchecked(etl::byte_stream_reader &stream, size_t definitionStringSize)
+    read_unchecked(etl::byte_stream_reader &stream, etl::span<etl::string_view> dest, size_t definitionStringSize)
     {
-        etl::array<etl::string_view, etl_array_size<T>::value> arr;
-        for (auto &el : arr)
+        const auto s = etl::min(dest.size(), array_n_size<T>::value);
+        for (auto i{0}; i < s; ++i)
         {
-            el = lrpc::read_unchecked<string_n>(stream, definitionStringSize);
+            dest.at(i) = lrpc::read_unchecked<string_n>(stream, definitionStringSize);
         }
-
-        return arr;
     };
 
     // deleted write function to allow specializations for custom structs
     template <typename T, typename etl::enable_if<(!etl::is_arithmetic<T>::value) &&
                                                       (!etl::is_enum<T>::value) &&
                                                       (!is_etl_optional<T>::value) &&
-                                                      (!is_etl_array<T>::value) &&
+                                                      (!is_array_n<T>::value) &&
                                                       (!etl::is_same<T, string_auto>::value) &&
                                                       (!etl::is_same<T, string_n>::value),
                                                   bool>::type = true>
@@ -372,32 +369,38 @@ namespace lrpc
     };
 
     // array but not of string (fixed size or auto)
-    template <typename ARR, typename etl::enable_if<is_etl_array<ARR>::value && (!etl_array_type_is_string_n<ARR>::value) && (!etl_array_type_is_string_auto<ARR>::value), bool>::type = true>
-    void write_unchecked(etl::byte_stream_writer &stream, const ARR &value)
+    template <typename ARR, typename etl::enable_if<is_array_n<ARR>::value &&
+                                                        (!array_n_type_is_string_n<ARR>::value) &&
+                                                        (!array_n_type_is_string_auto<ARR>::value),
+                                                    bool>::type = true>
+    void write_unchecked(etl::byte_stream_writer &stream, etl::span<const typename array_n_type<ARR>::type> value)
     {
-        for (const auto &el : value)
+        const auto s = etl::min(value.size(), array_n_size<ARR>::value);
+        for (auto i{0}; i < s; ++i)
         {
-            lrpc::write_unchecked<typename etl_array_type<ARR>::type>(stream, el);
+            lrpc::write_unchecked<typename array_n_type<ARR>::type>(stream, value.at(i));
         }
     };
 
     // array of auto string
-    template <typename ARR, typename etl::enable_if<is_etl_array<ARR>::value && etl_array_type_is_string_auto<ARR>::value, bool>::type = true>
+    template <typename ARR, typename etl::enable_if<is_array_n<ARR>::value && array_n_type_is_string_auto<ARR>::value, bool>::type = true>
     void write_unchecked(etl::byte_stream_writer &stream, etl::span<const etl::string_view> value)
     {
-        for (const auto &el : value)
+        const auto s = etl::min(value.size(), array_n_size<ARR>::value);
+        for (auto i{0}; i < s; ++i)
         {
-            lrpc::write_unchecked<lrpc::string_auto>(stream, el);
+            lrpc::write_unchecked<string_auto>(stream, value.at(i));
         }
     };
 
     // array of fixed size string
-    template <typename ARR, typename etl::enable_if<is_etl_array<ARR>::value && etl_array_type_is_string_n<ARR>::value, bool>::type = true>
+    template <typename ARR, typename etl::enable_if<is_array_n<ARR>::value && array_n_type_is_string_n<ARR>::value, bool>::type = true>
     void write_unchecked(etl::byte_stream_writer &stream, etl::span<const etl::string_view> value, size_t definitionStringSize)
     {
-        for (const auto &el : value)
+        const auto s = etl::min(value.size(), array_n_size<ARR>::value);
+        for (auto i{0}; i < s; ++i)
         {
-            lrpc::write_unchecked<lrpc::string_n>(stream, el, definitionStringSize);
+            lrpc::write_unchecked<string_n>(stream, value.at(i), definitionStringSize);
         }
     };
 }

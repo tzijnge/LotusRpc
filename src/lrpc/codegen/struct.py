@@ -142,7 +142,12 @@ class StructFileVisitor(LrpcVisitor):
         self.__file(f"{self.__name()} obj;")
 
         for f in self.__descriptor.fields():
-            if f.is_fixed_size_string():
+            if f.is_array():
+                if f.is_fixed_size_string():
+                    self.__file(f"lrpc::read_unchecked<{f.rw_type()}>(reader, obj.{f.name()}, {f.string_size()});")
+                else:
+                    self.__file(f"lrpc::read_unchecked<{f.rw_type()}>(reader, obj.{f.name()});")
+            elif f.is_fixed_size_string():
                 self.__file(f"obj.{f.name()} = lrpc::read_unchecked<{f.rw_type()}>(reader, {f.string_size()});")
             elif f.base_type_is_custom():
                 self.__file(f"obj.{f.name()} = lrpc::read_unchecked<{ns_prefix}{f.rw_type()}>(reader);")

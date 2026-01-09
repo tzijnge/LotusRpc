@@ -206,7 +206,13 @@ class ServiceShimVisitor(LrpcVisitor):
         for p in function.params():
             n = p.name()
             t = p.rw_type()
-            if p.is_fixed_size_string():
+            if p.is_array():
+                self._file.write(f"{p.field_type()} {n};")
+                if p.is_fixed_size_string():
+                    self._file(f"lrpc::read_unchecked<{p.rw_type()}>(r, {n}, {p.string_size()});")
+                else:
+                    self._file(f"lrpc::read_unchecked<{p.rw_type()}>(r, {n});")
+            elif p.is_fixed_size_string():
                 self._file.write(f"const auto {n} = lrpc::read_unchecked<{t}>(r, {p.string_size()});")
             else:
                 self._file.write(f"const auto {n} = lrpc::read_unchecked<{t}>(r);")

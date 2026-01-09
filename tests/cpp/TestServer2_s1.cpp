@@ -7,7 +7,7 @@ class MockS01Service : public s01_shim
 {
 public:
     MOCK_METHOD(void, f0, (etl::span<const etl::string_view> p0), (override));
-    MOCK_METHOD((etl::array<etl::string_view, 2>), f1, (), (override));
+    MOCK_METHOD((etl::span<const etl::string_view>), f1, (), (override));
     MOCK_METHOD(void, f2, (etl::optional<etl::string_view> p01), (override));
     MOCK_METHOD(void, f3, (etl::optional<etl::string_view> p01), (override));
     MOCK_METHOD((etl::optional<etl::string_view>), f4, (), (override));

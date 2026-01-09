@@ -22,19 +22,19 @@ namespace
         MOCK_METHOD(uint8_t, f12, (), (override));
         MOCK_METHOD(uint16_t, f13, (), (override));
         MOCK_METHOD(float, f14, (), (override));
-        MOCK_METHOD((etl::array<uint16_t, 2>), f15, (), (override));
+        MOCK_METHOD((etl::span<const uint16_t>), f15, (), (override));
         MOCK_METHOD(etl::string_view, f16, (), (override));
         MOCK_METHOD(ts1::CompositeData, f17, (), (override));
         MOCK_METHOD(ts1::MyEnum, f18, (), (override));
-        MOCK_METHOD((etl::array<ts1::CompositeData2, 2>), f19, (), (override));
+        MOCK_METHOD((etl::span<const ts1::CompositeData2>), f19, (), (override));
         MOCK_METHOD(ts1::CompositeData3, f20, (), (override));
         MOCK_METHOD((std::tuple<uint8_t, uint8_t>), f21, (), (override));
         MOCK_METHOD((std::tuple<etl::string_view, etl::string_view>), f22, (etl::string_view s1, etl::string_view s2), (override));
         MOCK_METHOD(etl::string_view, f23, (), (override));
         MOCK_METHOD((std::tuple<etl::string_view, etl::string_view>), f24, (), (override));
         MOCK_METHOD((etl::optional<etl::string_view>), f25, (), (override));
-        MOCK_METHOD((etl::array<etl::string_view, 3>), f26, (), (override));
-        MOCK_METHOD((std::tuple<etl::array<uint8_t, 2>, etl::array<etl::string_view, 2>, etl::array<etl::string_view, 2>>), f27, (), (override));
+        MOCK_METHOD((etl::span<const etl::string_view>), f26, (), (override));
+        MOCK_METHOD((std::tuple<etl::span<const uint8_t>, etl::span<const etl::string_view>, etl::span<const etl::string_view>>), f27, (), (override));
     };
 }
 

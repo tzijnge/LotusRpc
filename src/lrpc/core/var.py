@@ -57,7 +57,15 @@ class LrpcVar:
         return self.__type
 
     def field_type(self) -> str:
-        return self.return_type()
+        t = LrpcVar.ETL_STRING_VIEW if self.base_type_is_string() else self.base_type()
+
+        if self.is_optional():
+            return f"etl::optional<{t}>"
+
+        if self.is_array():
+            return f"etl::array<{t}, {self.array_size()}>"
+
+        return t
 
     def return_type(self) -> str:
         t = LrpcVar.ETL_STRING_VIEW if self.base_type_is_string() else self.base_type()
@@ -66,7 +74,7 @@ class LrpcVar:
             return f"etl::optional<{t}>"
 
         if self.is_array():
-            return f"etl::array<{t}, {self.array_size()}>"
+            return f"etl::span<const {t}>"
 
         return t
 

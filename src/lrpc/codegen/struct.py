@@ -144,9 +144,11 @@ class StructFileVisitor(LrpcVisitor):
         for f in self.__descriptor.fields():
             if f.is_array():
                 if f.is_fixed_size_string():
-                    self.__file(f"lrpc::read_unchecked<{f.rw_type()}>(reader, obj.{f.name()}, {f.string_size()});")
+                    self.__file(
+                        f"lrpc::read_unchecked<{f.rw_type()}>(reader, obj.{f.name()}, {f.array_size()}, {f.string_size()});",
+                    )
                 else:
-                    self.__file(f"lrpc::read_unchecked<{f.rw_type()}>(reader, obj.{f.name()});")
+                    self.__file(f"lrpc::read_unchecked<{f.rw_type()}>(reader, obj.{f.name()}, {f.array_size()});")
             elif f.is_fixed_size_string():
                 self.__file(f"obj.{f.name()} = lrpc::read_unchecked<{f.rw_type()}>(reader, {f.string_size()});")
             elif f.base_type_is_custom():
@@ -160,7 +162,14 @@ class StructFileVisitor(LrpcVisitor):
         ns_prefix = f"{self.__namespace}::" if self.__namespace else ""
 
         for f in self.__descriptor.fields():
-            if f.is_fixed_size_string():
+            if f.is_array():
+                if f.is_fixed_size_string():
+                    self.__file(
+                        f"lrpc::write_unchecked<{f.rw_type()}>(writer, obj.{f.name()}, {f.array_size()}, {f.string_size()});"
+                    )
+                else:
+                    self.__file(f"lrpc::write_unchecked<{f.rw_type()}>(writer, obj.{f.name()}, {f.array_size()});")
+            elif f.is_fixed_size_string():
                 self.__file(f"lrpc::write_unchecked<{f.rw_type()}>(writer, obj.{f.name()}, {f.string_size()});")
             elif f.base_type_is_custom():
                 self.__file(f"lrpc::write_unchecked<{ns_prefix}{f.rw_type()}>(writer, obj.{f.name()});")

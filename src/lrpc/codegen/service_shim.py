@@ -209,9 +209,9 @@ class ServiceShimVisitor(LrpcVisitor):
             if p.is_array():
                 self._file.write(f"{p.field_type()} {n};")
                 if p.is_fixed_size_string():
-                    self._file(f"lrpc::read_unchecked<{p.rw_type()}>(r, {n}, {p.string_size()});")
+                    self._file(f"lrpc::read_unchecked<{p.rw_type()}>(r, {n}, {p.array_size()}, {p.string_size()});")
                 else:
-                    self._file(f"lrpc::read_unchecked<{p.rw_type()}>(r, {n});")
+                    self._file(f"lrpc::read_unchecked<{p.rw_type()}>(r, {n}, {p.array_size()});")
             elif p.is_fixed_size_string():
                 self._file.write(f"const auto {n} = lrpc::read_unchecked<{t}>(r, {p.string_size()});")
             else:
@@ -225,14 +225,28 @@ class ServiceShimVisitor(LrpcVisitor):
         returns = function.returns()
         if len(returns) == 1:
             t = returns[0].rw_type()
-            if returns[0].is_fixed_size_string():
+            if returns[0].is_array():
+                if returns[0].is_fixed_size_string():
+                    self._file.write(
+                        f"lrpc::write_unchecked<{t}>(w, response, {returns[0].array_size()}, {returns[0].string_size()});",
+                    )
+                else:
+                    self._file.write(f"lrpc::write_unchecked<{t}>(w, response, {returns[0].array_size()});")
+            elif returns[0].is_fixed_size_string():
                 self._file.write(f"lrpc::write_unchecked<{t}>(w, response, {returns[0].string_size()});")
             else:
                 self._file.write(f"lrpc::write_unchecked<{t}>(w, response);")
         else:
             for i, r in enumerate(returns):
                 t = r.rw_type()
-                if r.is_fixed_size_string():
+                if r.is_array():
+                    if r.is_fixed_size_string():
+                        self._file.write(
+                            f"lrpc::write_unchecked<{t}>(w, std::get<{i}>(response), {r.array_size()}, {r.string_size()});",
+                        )
+                    else:
+                        self._file.write(f"lrpc::write_unchecked<{t}>(w, std::get<{i}>(response), {r.array_size()});")
+                elif r.is_fixed_size_string():
                     self._file.write(f"lrpc::write_unchecked<{t}>(w, std::get<{i}>(response), {r.string_size()});")
                 else:
                     self._file.write(f"lrpc::write_unchecked<{t}>(w, std::get<{i}>(response));")

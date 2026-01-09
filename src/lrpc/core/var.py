@@ -91,7 +91,7 @@ class LrpcVar:
             t = self.base_type()
 
         if self.is_array():
-            return f"lrpc::array_n<{t}, {self.array_size()}>"
+            return f"lrpc::array_n<{t}>"
 
         if self.is_optional():
             return f"etl::optional<{t}>"

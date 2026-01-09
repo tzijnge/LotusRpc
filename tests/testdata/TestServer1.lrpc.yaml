@@ -99,8 +99,7 @@ services:
             type: string_4
       - name: f23
         returns:
-          - name: r0
-            type: string
+          - { name: r0, type: string }
       - name: f24
         returns:
           - { name: r0, type: string }
@@ -111,6 +110,11 @@ services:
       - name: f26
         returns:
           - { name: r0, type: string, count: 3 }
+      - name: f27
+        returns:
+          - { name: r0, type: uint8_t, count: 2 }
+          - { name: r1, type: string, count: 2 }
+          - { name: r2, type: string_2, count: 2 }
 structs:
   - name: CompositeData
     fields:

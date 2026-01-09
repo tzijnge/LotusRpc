@@ -8,7 +8,7 @@ namespace lrpc
     struct string_auto;
     struct string_n;
 
-    template <typename T, size_t N>
+    template <typename T>
     struct array_n;
 
     template <typename T>
@@ -36,8 +36,8 @@ namespace lrpc
     {
     };
 
-    template <typename T, size_t N>
-    struct is_array_n<array_n<T, N>> : public etl::true_type
+    template <typename T>
+    struct is_array_n<array_n<T>> : public etl::true_type
     {
     };
 
@@ -57,20 +57,10 @@ namespace lrpc
     {
     };
 
-    template <typename T, size_t N>
-    struct array_n_type<array_n<T, N>>
+    template <typename T>
+    struct array_n_type<array_n<T>>
     {
         using type = T;
-    };
-
-    template <typename T>
-    struct array_n_size
-    {
-    };
-
-    template <typename T, size_t N>
-    struct array_n_size<array_n<T, N>> : public etl::integral_constant<size_t, N>
-    {
     };
 
     template <typename T>
@@ -240,12 +230,23 @@ namespace lrpc
 
     template <typename T>
     typename enable_for_array<T>::type
-    read_unchecked(etl::byte_stream_reader &stream, etl::span<typename array_n_type<T>::type> dest)
+    read_unchecked(etl::byte_stream_reader &stream, etl::span<typename array_n_type<T>::type> dest, size_t definitionArraySize)
     {
-        const auto s = etl::min(dest.size(), array_n_size<T>::value);
-        for (auto i{0}; i < s; ++i)
+        const auto s = etl::min(dest.size(), definitionArraySize);
+        for (size_t i{0}; i < s; ++i)
         {
             dest.at(i) = lrpc::read_unchecked<typename array_n_type<T>::type>(stream);
+        }
+
+        if (s >= definitionArraySize)
+        {
+            return;
+        }
+
+        for (size_t i{0}; i < (definitionArraySize - s); ++i)
+        {
+            // discard elements that dont fit in the destination
+            (void)lrpc::read_unchecked<typename array_n_type<T>::type>(stream);
         }
     };
 
@@ -255,12 +256,23 @@ namespace lrpc
 
     template <typename T>
     typename enable_for_array_of_string_auto<T>::type
-    read_unchecked(etl::byte_stream_reader &stream, etl::span<etl::string_view> dest)
+    read_unchecked(etl::byte_stream_reader &stream, etl::span<etl::string_view> dest, size_t definitionArraySize)
     {
-        const auto s = etl::min(dest.size(), array_n_size<T>::value);
-        for (auto i{0}; i < s; ++i)
+        const auto s = etl::min(dest.size(), definitionArraySize);
+        for (size_t i{0}; i < s; ++i)
         {
             dest.at(i) = lrpc::read_unchecked<string_auto>(stream);
+        }
+
+        if (s >= definitionArraySize)
+        {
+            return;
+        }
+
+        for (size_t i{0}; i < (definitionArraySize - s); ++i)
+        {
+            // discard elements that dont fit in the destination
+            (void)lrpc::read_unchecked<string_auto>(stream);
         }
     };
 
@@ -270,12 +282,17 @@ namespace lrpc
 
     template <typename T>
     typename enable_for_array_of_string_n<T>::type
-    read_unchecked(etl::byte_stream_reader &stream, etl::span<etl::string_view> dest, size_t definitionStringSize)
+    read_unchecked(etl::byte_stream_reader &stream, etl::span<etl::string_view> dest, size_t definitionArraySize, size_t definitionStringSize)
     {
-        const auto s = etl::min(dest.size(), array_n_size<T>::value);
-        for (auto i{0}; i < s; ++i)
+        const auto s = etl::min(dest.size(), definitionArraySize);
+        for (size_t i{0}; i < s; ++i)
         {
             dest.at(i) = lrpc::read_unchecked<string_n>(stream, definitionStringSize);
+        }
+
+        if (s < definitionArraySize)
+        {
+            stream.skip<uint8_t>((definitionArraySize - s) * (definitionStringSize + 1));
         }
     };
 
@@ -373,34 +390,64 @@ namespace lrpc
                                                         (!array_n_type_is_string_n<ARR>::value) &&
                                                         (!array_n_type_is_string_auto<ARR>::value),
                                                     bool>::type = true>
-    void write_unchecked(etl::byte_stream_writer &stream, etl::span<const typename array_n_type<ARR>::type> value)
+    void write_unchecked(etl::byte_stream_writer &stream, etl::span<const typename array_n_type<ARR>::type> value, size_t definitionArraySize)
     {
-        const auto s = etl::min(value.size(), array_n_size<ARR>::value);
-        for (auto i{0}; i < s; ++i)
+        const auto s = etl::min(value.size(), definitionArraySize);
+        for (size_t i{0}; i < s; ++i)
         {
             lrpc::write_unchecked<typename array_n_type<ARR>::type>(stream, value.at(i));
+        }
+
+        if (s >= definitionArraySize)
+        {
+            return;
+        }
+
+        for (size_t i{0}; i < (definitionArraySize - s); ++i)
+        {
+            lrpc::write_unchecked<typename array_n_type<ARR>::type>(stream, {});
         }
     };
 
     // array of auto string
     template <typename ARR, typename etl::enable_if<is_array_n<ARR>::value && array_n_type_is_string_auto<ARR>::value, bool>::type = true>
-    void write_unchecked(etl::byte_stream_writer &stream, etl::span<const etl::string_view> value)
+    void write_unchecked(etl::byte_stream_writer &stream, etl::span<const etl::string_view> value, size_t definitionArraySize)
     {
-        const auto s = etl::min(value.size(), array_n_size<ARR>::value);
-        for (auto i{0}; i < s; ++i)
+        const auto s = etl::min(value.size(), definitionArraySize);
+        for (size_t i{0}; i < s; ++i)
         {
             lrpc::write_unchecked<string_auto>(stream, value.at(i));
+        }
+
+        if (s >= definitionArraySize)
+        {
+            return;
+        }
+
+        for (size_t i{0}; i < (definitionArraySize - s); ++i)
+        {
+            lrpc::write_unchecked<string_auto>(stream, {});
         }
     };
 
     // array of fixed size string
     template <typename ARR, typename etl::enable_if<is_array_n<ARR>::value && array_n_type_is_string_n<ARR>::value, bool>::type = true>
-    void write_unchecked(etl::byte_stream_writer &stream, etl::span<const etl::string_view> value, size_t definitionStringSize)
+    void write_unchecked(etl::byte_stream_writer &stream, etl::span<const etl::string_view> value, size_t definitionArraySize, size_t definitionStringSize)
     {
-        const auto s = etl::min(value.size(), array_n_size<ARR>::value);
-        for (auto i{0}; i < s; ++i)
+        const auto s = etl::min(value.size(), definitionArraySize);
+        for (size_t i{0}; i < s; ++i)
         {
             lrpc::write_unchecked<string_n>(stream, value.at(i), definitionStringSize);
+        }
+
+        if (s >= definitionArraySize)
+        {
+            return;
+        }
+
+        for (size_t i{0}; i < (definitionArraySize - s); ++i)
+        {
+            lrpc::write_unchecked<string_n>(stream, {}, definitionStringSize);
         }
     };
 }

@@ -34,6 +34,7 @@ namespace
         MOCK_METHOD((std::tuple<etl::string_view, etl::string_view>), f24, (), (override));
         MOCK_METHOD((etl::optional<etl::string_view>), f25, (), (override));
         MOCK_METHOD((etl::array<etl::string_view, 3>), f26, (), (override));
+        MOCK_METHOD((std::tuple<etl::array<uint8_t, 2>, etl::array<etl::string_view, 2>, etl::array<etl::string_view, 2>>), f27, (), (override));
     };
 }
 
@@ -286,4 +287,16 @@ TEST_F(TestServer1, decodef26)
     EXPECT_CALL(service, f26()).WillOnce(Return(etl::array<etl::string_view, 3>{"Test1", "T2", "T3"}));
     const auto response = receive("03001A");
     EXPECT_EQ("0F001A546573743100543200543300", response);
+}
+
+// Decode function that returns array of int, array of auto string and array of fixed size string
+TEST_F(TestServer1, decodef27)
+{
+    const etl::array<uint8_t, 2> r0{0x01, 0x02};
+    const etl::array<etl::string_view, 2> r1{"t1", "t2"};
+    const etl::array<etl::string_view, 2> r2{"t3", "t4"};
+    const std::tuple<etl::array<uint8_t, 2>, etl::array<etl::string_view, 2>, etl::array<etl::string_view, 2>> r{r0, r1, r2};
+    EXPECT_CALL(service, f27()).WillOnce(Return(r));
+    const auto response = receive("03001B");
+    EXPECT_EQ("11001B0102743100743200743300743400", response);
 }

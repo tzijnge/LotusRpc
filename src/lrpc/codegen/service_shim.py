@@ -200,56 +200,60 @@ class ServiceShimVisitor(LrpcVisitor):
 
             self._file.write("return shims.at(functionId);")
 
-    def __write_function_shim_body(self, function: LrpcFun) -> None:
-        self._file.write(f"writeHeader(w, {function.id()});")
+    def __write_param_readers(self, function: LrpcFun) -> None:
+        def read_params(var: LrpcVar) -> str:
+            params = ["r"]
+            if var.is_array():
+                params.append(f"{var.name()}")
+                params.append(f"{var.array_size()}")
+            if var.is_fixed_size_string():
+                params.append(f"{var.string_size()}")
+
+            return ", ".join(params)
 
         for p in function.params():
-            n = p.name()
-            t = p.rw_type()
             if p.is_array():
-                self._file.write(f"{p.field_type()} {n};")
-                if p.is_fixed_size_string():
-                    self._file(f"lrpc::read_unchecked<{p.rw_type()}>(r, {n}, {p.array_size()}, {p.string_size()});")
-                else:
-                    self._file(f"lrpc::read_unchecked<{p.rw_type()}>(r, {n}, {p.array_size()});")
-            elif p.is_fixed_size_string():
-                self._file.write(f"const auto {n} = lrpc::read_unchecked<{t}>(r, {p.string_size()});")
+                self._file.write(f"{p.field_type()} {p.name()};")
+                assignment = ""
             else:
-                self._file.write(f"const auto {n} = lrpc::read_unchecked<{t}>(r);")
+                assignment = f"const auto {p.name()} = "
 
+            self._file.write(f"{assignment}lrpc::read_unchecked<{p.rw_type()}>({read_params(p)});")
+
+    def __write_invocation(self, function: LrpcFun) -> None:
         param_list = ", ".join(function.param_names())
 
         response = "const auto response = " if len(function.returns()) != 0 else ""
         self._file.write(f"{response}{function.name()}({param_list});")
 
-        returns = function.returns()
-        if len(returns) == 1:
-            t = returns[0].rw_type()
-            if returns[0].is_array():
-                if returns[0].is_fixed_size_string():
-                    self._file.write(
-                        f"lrpc::write_unchecked<{t}>(w, response, {returns[0].array_size()}, {returns[0].string_size()});",
-                    )
-                else:
-                    self._file.write(f"lrpc::write_unchecked<{t}>(w, response, {returns[0].array_size()});")
-            elif returns[0].is_fixed_size_string():
-                self._file.write(f"lrpc::write_unchecked<{t}>(w, response, {returns[0].string_size()});")
+    def __write_return_writers(self, function: LrpcFun) -> None:
+        def write_params(var: LrpcVar, index: int | None) -> str:
+            params = ["w"]
+            if index is None:
+                params.append("response")
             else:
-                self._file.write(f"lrpc::write_unchecked<{t}>(w, response);")
-        else:
-            for i, r in enumerate(returns):
-                t = r.rw_type()
-                if r.is_array():
-                    if r.is_fixed_size_string():
-                        self._file.write(
-                            f"lrpc::write_unchecked<{t}>(w, std::get<{i}>(response), {r.array_size()}, {r.string_size()});",
-                        )
-                    else:
-                        self._file.write(f"lrpc::write_unchecked<{t}>(w, std::get<{i}>(response), {r.array_size()});")
-                elif r.is_fixed_size_string():
-                    self._file.write(f"lrpc::write_unchecked<{t}>(w, std::get<{i}>(response), {r.string_size()});")
-                else:
-                    self._file.write(f"lrpc::write_unchecked<{t}>(w, std::get<{i}>(response));")
+                params.append(f"std::get<{index}>(response)")
+
+            if var.is_array():
+                params.append(f"{var.array_size()}")
+            if var.is_fixed_size_string():
+                params.append(f"{var.string_size()}")
+
+            return ", ".join(params)
+
+        returns = function.returns()
+        for i, r in enumerate(returns):
+            bla = None if len(returns) == 1 else i
+            self._file.write(
+                f"lrpc::write_unchecked<{r.rw_type()}>({write_params(r, bla)});",
+            )
+
+    def __write_function_shim_body(self, function: LrpcFun) -> None:
+        self._file.write(f"writeHeader(w, {function.id()});")
+
+        self.__write_param_readers(function)
+        self.__write_invocation(function)
+        self.__write_return_writers(function)
 
     def __write_stream_shim_body(self, stream: LrpcStream) -> None:
         for p in stream.params():

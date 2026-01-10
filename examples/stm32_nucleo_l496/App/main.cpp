@@ -55,7 +55,7 @@ public:
         return {123, 456};
     }
 
-    etl::array<uint8_t, 20> f10() override
+    etl::span<const uint8_t> f10() override
     {
         return {};
     }

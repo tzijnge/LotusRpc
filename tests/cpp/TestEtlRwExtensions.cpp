@@ -91,7 +91,7 @@ TEST(TestEtlRwExtensions, readOptional)
     etl::vector<uint8_t, 10> storage{0x00, 0x01, 0x02};
     etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
 
-    auto o1 = lrpc::read_unchecked<etl::optional<int>>(reader);
+    const auto o1 = lrpc::read_unchecked<etl::optional<uint8_t>>(reader);
     EXPECT_FALSE(o1.has_value());
     auto o2 = lrpc::read_unchecked<etl::optional<uint8_t>>(reader);
     EXPECT_TRUE(o2.has_value());
@@ -103,7 +103,7 @@ TEST(TestEtlRwExtensions, readOptionalAutoString)
     etl::vector<uint8_t, 10> storage{0x00, 0x01, 'T', '1', '\0'};
     etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
 
-    auto o1 = lrpc::read_unchecked<etl::optional<lrpc::string_auto>>(reader);
+    const auto o1 = lrpc::read_unchecked<etl::optional<lrpc::string_auto>>(reader);
     EXPECT_FALSE(o1.has_value());
     auto o2 = lrpc::read_unchecked<etl::optional<lrpc::string_auto>>(reader);
     EXPECT_TRUE(o2.has_value());
@@ -115,7 +115,7 @@ TEST(TestEtlRwExtensions, readOptionalFixedSizeString)
     etl::vector<uint8_t, 10> storage{0x00, 0x01, 'T', '1', '\0'};
     etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
 
-    auto o1 = lrpc::read_unchecked<etl::optional<lrpc::string_n>>(reader, 2);
+    const auto o1 = lrpc::read_unchecked<etl::optional<lrpc::string_n>>(reader, 2);
     EXPECT_FALSE(o1.has_value());
     auto o2 = lrpc::read_unchecked<etl::optional<lrpc::string_n>>(reader, 2);
     EXPECT_TRUE(o2.has_value());
@@ -419,8 +419,8 @@ TEST(TestEtlRwExtensions, writeOptionalFixedSizeString)
     etl::array<uint8_t, 10> storage;
     etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
 
-    etl::optional<etl::string_view> a{"T1"};
-    etl::optional<etl::string_view> b{};
+    const etl::optional<etl::string_view> a{"T1"};
+    const etl::optional<etl::string_view> b{};
     lrpc::write_unchecked<etl::optional<lrpc::string_n>>(writer, a, 3);
     lrpc::write_unchecked<etl::optional<lrpc::string_n>>(writer, b, 5);
 
@@ -439,8 +439,8 @@ TEST(TestEtlRwExtensions, writeOptionalAutoString)
     etl::array<uint8_t, 10> storage;
     etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
 
-    etl::optional<etl::string_view> a{"T1"};
-    etl::optional<etl::string_view> b{};
+    const etl::optional<etl::string_view> a{"T1"};
+    const etl::optional<etl::string_view> b{};
     lrpc::write_unchecked<etl::optional<lrpc::string_auto>>(writer, a);
     lrpc::write_unchecked<etl::optional<lrpc::string_auto>>(writer, b);
 

@@ -3,6 +3,7 @@ from pathlib import Path
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 
 from lrpc.codegen.common import write_file_banner
+from lrpc.codegen.function_shim_writer import FunctionShimWriter
 from lrpc.codegen.utils import optionally_in_namespace
 from lrpc.core import LrpcDef, LrpcFun, LrpcService, LrpcStream, LrpcVar
 from lrpc.visitors import LrpcVisitor
@@ -99,13 +100,9 @@ class ServiceShimVisitor(LrpcVisitor):
         if len(functions) != 0:
             self._file.write("// Function shims")
 
+        writer = FunctionShimWriter(self._file)
         for function in functions:
-            params = self.__params_string(function.params())
-            reader_param_name = " r" if len(params) != 0 else ""
-
-            with self._file.block(f"void {function.name()}_shim(Reader&{reader_param_name}, Writer& w)"):
-                self.__write_function_shim_body(function)
-
+            writer.write_function_shim(function)
             self._file.newline()
 
     def __write_client_stream_shims(self, client_streams: list[LrpcStream]) -> None:
@@ -199,61 +196,6 @@ class ServiceShimVisitor(LrpcVisitor):
             self._file.newline()
 
             self._file.write("return shims.at(functionId);")
-
-    def __write_param_readers(self, function: LrpcFun) -> None:
-        def read_params(var: LrpcVar) -> str:
-            params = ["r"]
-            if var.is_array():
-                params.append(f"{var.name()}")
-                params.append(f"{var.array_size()}")
-            if var.is_fixed_size_string():
-                params.append(f"{var.string_size()}")
-
-            return ", ".join(params)
-
-        for p in function.params():
-            if p.is_array():
-                self._file.write(f"{p.field_type()} {p.name()};")
-                assignment = ""
-            else:
-                assignment = f"const auto {p.name()} = "
-
-            self._file.write(f"{assignment}lrpc::read_unchecked<{p.rw_type()}>({read_params(p)});")
-
-    def __write_invocation(self, function: LrpcFun) -> None:
-        param_list = ", ".join(function.param_names())
-
-        response = "const auto response = " if len(function.returns()) != 0 else ""
-        self._file.write(f"{response}{function.name()}({param_list});")
-
-    def __write_return_writers(self, function: LrpcFun) -> None:
-        def write_params(var: LrpcVar, index: int | None) -> str:
-            params = ["w"]
-            if index is None:
-                params.append("response")
-            else:
-                params.append(f"std::get<{index}>(response)")
-
-            if var.is_array():
-                params.append(f"{var.array_size()}")
-            if var.is_fixed_size_string():
-                params.append(f"{var.string_size()}")
-
-            return ", ".join(params)
-
-        returns = function.returns()
-        for i, r in enumerate(returns):
-            bla = None if len(returns) == 1 else i
-            self._file.write(
-                f"lrpc::write_unchecked<{r.rw_type()}>({write_params(r, bla)});",
-            )
-
-    def __write_function_shim_body(self, function: LrpcFun) -> None:
-        self._file.write(f"writeHeader(w, {function.id()});")
-
-        self.__write_param_readers(function)
-        self.__write_invocation(function)
-        self.__write_return_writers(function)
 
     def __write_stream_shim_body(self, stream: LrpcStream) -> None:
         for p in stream.params():

@@ -3,6 +3,7 @@ from code_generation.code_generator import CppFile  # type: ignore[import-untype
 from lrpc.core import LrpcFun, LrpcVar
 
 
+# pylint: disable = too-few-public-methods
 class FunctionShimWriter:
     def __init__(self, file: CppFile) -> None:
         self._file = file

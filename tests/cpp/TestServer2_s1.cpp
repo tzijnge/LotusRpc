@@ -25,7 +25,7 @@ using TestServer2_s1 = testutils::TestServerBase<Server2, MockS01Service>;
 TEST_F(TestServer2_s1, decodeF0)
 {
     using sv = etl::string_view;
-    std::vector<sv> expected{sv("T1"), sv("T2")};
+    const std::vector<sv> expected{sv("T1"), sv("T2")};
     EXPECT_CALL(service, f0(testutils::SPAN_EQ(expected)));
     const auto response = receive("090100543100543200");
     EXPECT_EQ("030100", response);
@@ -34,7 +34,7 @@ TEST_F(TestServer2_s1, decodeF0)
 TEST_F(TestServer2_s1, decodeF0WithStringShorterThanMax)
 {
     using sv = etl::string_view;
-    std::vector<sv> expected{sv("1"), sv("2")};
+    const std::vector<sv> expected{sv("1"), sv("2")};
     EXPECT_CALL(service, f0(testutils::SPAN_EQ(expected)));
     const auto response = receive("07010031003200");
     EXPECT_EQ("030100", response);
@@ -43,7 +43,7 @@ TEST_F(TestServer2_s1, decodeF0WithStringShorterThanMax)
 // Decode function that returns array of strings
 TEST_F(TestServer2_s1, decodeF1)
 {
-    etl::array<etl::string_view, 2> retVal{"T1", "T2"};
+    const etl::array<etl::string_view, 2> retVal{"T1", "T2"};
     EXPECT_CALL(service, f1()).WillOnce(Return(retVal));
     const auto response = receive("030101");
     EXPECT_EQ("090101543100543200", response);
@@ -53,7 +53,7 @@ TEST_F(TestServer2_s1, decodeF1)
 TEST_F(TestServer2_s1, decodeF2)
 {
     using sv = etl::string_view;
-    etl::optional<sv> expected{"T1"};
+    const etl::optional<sv> expected{"T1"};
     EXPECT_CALL(service, f2(expected));
     const auto response = receive("07010201543100");
     EXPECT_EQ("030102", response);
@@ -63,7 +63,7 @@ TEST_F(TestServer2_s1, decodeF2)
 TEST_F(TestServer2_s1, decodeF3)
 {
     using sv = etl::string_view;
-    etl::optional<sv> expected{"T1"};
+    const etl::optional<sv> expected{"T1"};
     EXPECT_CALL(service, f3(expected));
     const auto response = receive("07010301543100");
     EXPECT_EQ("030103", response);
@@ -72,7 +72,7 @@ TEST_F(TestServer2_s1, decodeF3)
 // Decode function that returns optional string
 TEST_F(TestServer2_s1, decodeF4)
 {
-    etl::optional<etl::string_view> expected{"T1"};
+    const etl::optional<etl::string_view> expected{"T1"};
     EXPECT_CALL(service, f4()).WillOnce(Return(expected));
     const auto response = receive("030104");
     EXPECT_EQ("07010401543100", response);
@@ -107,7 +107,7 @@ TEST_F(TestServer2_s1, decodeF6)
 // Decode function that takes auto string argument and returns fixed size string
 TEST_F(TestServer2_s1, decodeF7)
 {
-    etl::string_view expected{"T0"};
+    const etl::string_view expected{"T0"};
     EXPECT_CALL(service, f7(expected)).WillOnce(Return("T1234"));
     const auto response = receive("060107543000");
     EXPECT_EQ("090107543132333400", response);
@@ -117,7 +117,7 @@ TEST_F(TestServer2_s1, decodeF7)
 TEST_F(TestServer2_s1, decodeF8)
 {
     using sv = etl::string_view;
-    std::vector<sv> expected{sv("T1"), sv("T2")};
+    const std::vector<sv> expected{sv("T1"), sv("T2")};
     EXPECT_CALL(service, f8(testutils::SPAN_EQ(expected)));
     const auto response = receive("090108543100543200");
     EXPECT_EQ("030108", response);

@@ -3,56 +3,10 @@ from pathlib import Path
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 
 from lrpc.codegen.common import lrpc_var_includes, write_file_banner
+from lrpc.codegen.struct_codec_writer import StructCodecWriter
 from lrpc.codegen.utils import optionally_in_namespace
 from lrpc.core import LrpcDef, LrpcStruct, LrpcVar
 from lrpc.visitors import LrpcVisitor
-
-
-class StructCodecWriter:
-    def __init__(self, file: CppFile) -> None:
-        self._file = file
-
-    def write_encoder_body(self, descriptor: LrpcStruct, namespace: str | None) -> None:
-        for f in descriptor.fields():
-            t = f.rw_type(namespace)
-            p = StructCodecWriter._write_params(f)
-            self._file.write(f"lrpc::write_unchecked<{t}>({p});")
-
-    def write_decoder_body(self, descriptor: LrpcStruct, name: str, namespace: str | None) -> None:
-        self._file(f"{name} obj;")
-
-        for f in descriptor.fields():
-            assignment = StructCodecWriter._read_assignment(f)
-            t = f.rw_type(namespace)
-            p = StructCodecWriter._read_params(f)
-            self._file.write(f"{assignment}lrpc::read_unchecked<{t}>({p});")
-
-        self._file("return obj;")
-
-    @staticmethod
-    def _write_params(var: LrpcVar) -> str:
-        params = ["writer", f"obj.{var.name()}"]
-        if var.is_array():
-            params.append(f"{var.array_size()}")
-        if var.is_fixed_size_string():
-            params.append(f"{var.string_size()}")
-
-        return ", ".join(params)
-
-    @staticmethod
-    def _read_params(var: LrpcVar) -> str:
-        params = ["reader"]
-        if var.is_array():
-            params.append(f"obj.{var.name()}")
-            params.append(f"{var.array_size()}")
-        if var.is_fixed_size_string():
-            params.append(f"{var.string_size()}")
-
-        return ", ".join(params)
-
-    @staticmethod
-    def _read_assignment(var: LrpcVar) -> str:
-        return "" if var.is_array() else f"obj.{var.name()} = "
 
 
 class StructFileVisitor(LrpcVisitor):
@@ -169,20 +123,11 @@ class StructFileVisitor(LrpcVisitor):
                 self.__file("return !(*this == other);")
 
     def __write_codec(self) -> None:
-        codec_writer = StructCodecWriter(self.__file)
+        codec_writer = StructCodecWriter(self.__file, self.__descriptor, self.__namespace)
         with self.__file.block("namespace lrpc"):
-            name = self.__name()
-            self.__file("template<>")
-            with self.__file.block(f"inline {name} read_unchecked<{name}>(etl::byte_stream_reader& reader)"):
-                codec_writer.write_decoder_body(self.__descriptor, name, self.__namespace)
-
+            codec_writer.write_decoder()
             self.__file.newline()
-
-            self.__file("template<>")
-            with self.__file.block(
-                f"inline void write_unchecked<{name}>(etl::byte_stream_writer& writer, const {name}& obj)",
-            ):
-                codec_writer.write_encoder_body(self.__descriptor, self.__namespace)
+            codec_writer.write_encoder()
 
     def __write_struct_field(self, f: LrpcVar) -> None:
         self.__file(f"{f.field_type()} {f.name()};")

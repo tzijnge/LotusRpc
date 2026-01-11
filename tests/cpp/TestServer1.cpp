@@ -301,3 +301,16 @@ TEST_F(TestServer1, decodef27)
     const auto response = receive("03001B");
     EXPECT_EQ("11001B0102743100743200743300743400", response);
 }
+
+// Decode function f28 with CompositeData4 arg
+TEST_F(TestServer1, decodeF28)
+{
+    const ts1::CompositeData4 expected{
+        etl::array<ts1::CompositeData2, 2>{
+            ts1::CompositeData2{0xAA, 0xBB},
+            ts1::CompositeData2{0xCC, 0xDD}},
+        ts1::CompositeData2{0xEE, 0xFF}};
+    EXPECT_CALL(service, f28(expected));
+    const auto response = receive("0A001CAABBCCDD01EEFF");
+    EXPECT_EQ("03001C", response);
+}

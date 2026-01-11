@@ -3,6 +3,7 @@ from pathlib import Path
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 
 from lrpc.codegen.common import lrpc_var_includes, write_file_banner
+from lrpc.codegen.struct_codec_writer import StructCodecWriter
 from lrpc.codegen.utils import optionally_in_namespace
 from lrpc.core import LrpcDef, LrpcStruct, LrpcVar
 from lrpc.visitors import LrpcVisitor
@@ -122,44 +123,11 @@ class StructFileVisitor(LrpcVisitor):
                 self.__file("return !(*this == other);")
 
     def __write_codec(self) -> None:
+        codec_writer = StructCodecWriter(self.__file, self.__descriptor, self.__namespace)
         with self.__file.block("namespace lrpc"):
-            name = self.__name()
-            self.__file("template<>")
-            with self.__file.block(f"inline {name} read_unchecked<{name}>(etl::byte_stream_reader& reader)"):
-                self.__write_decoder_body()
-
+            codec_writer.write_decoder()
             self.__file.newline()
-
-            self.__file("template<>")
-            with self.__file.block(
-                f"inline void write_unchecked<{name}>(etl::byte_stream_writer& writer, const {name}& obj)",
-            ):
-                self.__write_encoder_body()
-
-    def __write_decoder_body(self) -> None:
-        ns_prefix = f"{self.__namespace}::" if self.__namespace else ""
-
-        self.__file(f"{self.__name()} obj;")
-
-        for f in self.__descriptor.fields():
-            if f.is_fixed_size_string():
-                self.__file(f"const auto {f.name()} = lrpc::read_unchecked<{f.read_type()}>(reader);")
-                self.__file(f"lrpc::copy<{f.read_type()}>({f.name()}, obj.{f.name()});")
-            elif f.base_type_is_custom():
-                self.__file(f"obj.{f.name()} = lrpc::read_unchecked<{ns_prefix}{f.read_type()}>(reader);")
-            else:
-                self.__file(f"obj.{f.name()} = lrpc::read_unchecked<{f.read_type()}>(reader);")
-
-        self.__file("return obj;")
-
-    def __write_encoder_body(self) -> None:
-        ns_prefix = f"{self.__namespace}::" if self.__namespace else ""
-
-        for f in self.__descriptor.fields():
-            if f.base_type_is_custom():
-                self.__file(f"lrpc::write_unchecked<{ns_prefix}{f.write_type()}>(writer, obj.{f.name()});")
-            else:
-                self.__file(f"lrpc::write_unchecked<{f.write_type()}>(writer, obj.{f.name()});")
+            codec_writer.write_encoder()
 
     def __write_struct_field(self, f: LrpcVar) -> None:
         self.__file(f"{f.field_type()} {f.name()};")

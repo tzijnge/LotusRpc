@@ -6,9 +6,9 @@ using ::testing::Return;
 class MockS00Service : public s00_shim
 {
 public:
-    MOCK_METHOD(void, f0, (bool p0, const etl::string_view &p1), (override));
-    MOCK_METHOD(void, f1, (const etl::string_view &p0, bool p1), (override));
-    MOCK_METHOD(void, f2, (const etl::string_view &p0, const etl::string_view &p1), (override));
+    MOCK_METHOD(void, f0, (bool p0, etl::string_view p1), (override));
+    MOCK_METHOD(void, f1, (etl::string_view p0, bool p1), (override));
+    MOCK_METHOD(void, f2, (etl::string_view p0, etl::string_view p1), (override));
 };
 
 using TestServer2 = testutils::TestServerBase<Server2, MockS00Service>;

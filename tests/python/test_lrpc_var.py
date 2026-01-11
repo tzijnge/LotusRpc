@@ -229,3 +229,63 @@ def test_validation_additional_fields() -> None:
 
     with pytest.raises(ValidationError, match=re.escape("Extra inputs are not permitted")):
         LrpcVar(v)  # type: ignore[arg-type]
+
+
+def test_rw_type_intrinsic() -> None:
+    v: LrpcVarDict = {"name": "v1", "type": "uint8_t"}
+
+    assert LrpcVar(v).rw_type() == "uint8_t"
+
+
+def test_rw_type_fixed_size_string() -> None:
+    v: LrpcVarDict = {"name": "v1", "type": "string_2"}
+
+    assert LrpcVar(v).rw_type() == "lrpc::string_n"
+
+
+def test_rw_type_auto_string() -> None:
+    v: LrpcVarDict = {"name": "v1", "type": "string"}
+
+    assert LrpcVar(v).rw_type() == "lrpc::string_auto"
+
+
+def test_rw_type_array_of_intrinsic() -> None:
+    v: LrpcVarDict = {"name": "v1", "type": "bool", "count": 2}
+
+    assert LrpcVar(v).rw_type() == "lrpc::array_n<bool>"
+
+
+def test_rw_type_optional_of_intrinsic() -> None:
+    v: LrpcVarDict = {"name": "v1", "type": "float", "count": "?"}
+
+    assert LrpcVar(v).rw_type() == "etl::optional<float>"
+
+
+def test_rw_type_custom() -> None:
+    v: LrpcVarDict = {"name": "v1", "type": "@MyType"}
+
+    assert LrpcVar(v).rw_type() == "MyType"
+
+
+def test_rw_type_intrinsic_with_namespace() -> None:
+    v: LrpcVarDict = {"name": "v1", "type": "int64_t"}
+
+    assert LrpcVar(v).rw_type("my_namespace") == "int64_t"
+
+
+def test_rw_type_custom_with_namespace() -> None:
+    v: LrpcVarDict = {"name": "v1", "type": "@MyType"}
+
+    assert LrpcVar(v).rw_type("my_namespace") == "my_namespace::MyType"
+
+
+def test_rw_type_array_of_custom_with_namespace() -> None:
+    v: LrpcVarDict = {"name": "v1", "type": "@MyType", "count": 2}
+
+    assert LrpcVar(v).rw_type("my_namespace") == "lrpc::array_n<my_namespace::MyType>"
+
+
+def test_rw_type_optional_of_custom_with_namespace() -> None:
+    v: LrpcVarDict = {"name": "v1", "type": "@MyType", "count": "?"}
+
+    assert LrpcVar(v).rw_type("my_namespace") == "etl::optional<my_namespace::MyType>"

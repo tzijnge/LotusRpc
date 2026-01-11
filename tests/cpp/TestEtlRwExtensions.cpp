@@ -3,6 +3,7 @@
 #include <string>
 #include <array>
 #include <etl/vector.h>
+#include <etl/string.h>
 
 TEST(TestEtlRwExtensions, is_etl_optional)
 {
@@ -12,18 +13,20 @@ TEST(TestEtlRwExtensions, is_etl_optional)
 
 TEST(TestEtlRwExtensions, is_etl_string)
 {
-    EXPECT_FALSE(lrpc::is_etl_string<int>::value);
-    EXPECT_FALSE(lrpc::is_etl_string<std::string>::value);
-    EXPECT_FALSE(lrpc::is_etl_string<etl::string_view>::value);
-    EXPECT_FALSE(lrpc::is_etl_string<etl::string_ext>::value);
-    EXPECT_TRUE(lrpc::is_etl_string<etl::string<10>>::value);
+    EXPECT_FALSE(lrpc::is_string_n<int>::value);
+    EXPECT_FALSE(lrpc::is_string_n<std::string>::value);
+    EXPECT_FALSE(lrpc::is_string_n<etl::string_view>::value);
+    EXPECT_FALSE(lrpc::is_string_n<etl::string_ext>::value);
+    EXPECT_FALSE(lrpc::is_string_n<etl::string<10>>::value);
+    EXPECT_TRUE(lrpc::is_string_n<lrpc::string_n>::value);
 }
 
-TEST(TestEtlRwExtensions, is_etl_array)
+TEST(TestEtlRwExtensions, is_array_n)
 {
-    EXPECT_FALSE(lrpc::is_etl_array<int>::value);
-    EXPECT_FALSE((lrpc::is_etl_array<std::array<int, 4>>::value));
-    EXPECT_TRUE((lrpc::is_etl_array<etl::array<int, 4>>::value));
+    EXPECT_FALSE(lrpc::is_array_n<int>::value);
+    EXPECT_FALSE((lrpc::is_array_n<std::array<int, 4>>::value));
+    EXPECT_FALSE((lrpc::is_array_n<etl::array<int, 4>>::value));
+    EXPECT_TRUE((lrpc::is_array_n<lrpc::array_n<int>>::value));
 }
 
 TEST(TestEtlRwExtensions, etl_optional_type)
@@ -32,22 +35,10 @@ TEST(TestEtlRwExtensions, etl_optional_type)
     EXPECT_EQ(typeid(uint16_t), typeid(lrpc::etl_optional_type<etl::optional<uint16_t>>::type));
 }
 
-TEST(TestEtlRwExtensions, etl_array_type)
+TEST(TestEtlRwExtensions, array_n_type)
 {
-    EXPECT_NE(typeid(uint16_t), typeid(lrpc::etl_array_type<etl::array<uint32_t, 2>>::type));
-    EXPECT_EQ(typeid(uint16_t), typeid(lrpc::etl_array_type<etl::array<uint16_t, 2>>::type));
-}
-
-TEST(TestEtlRwExtensions, etl_array_size)
-{
-    EXPECT_NE(2, (lrpc::etl_array_size<etl::array<uint16_t, 3>>::value));
-    EXPECT_EQ(2, (lrpc::etl_array_size<etl::array<uint16_t, 2>>::value));
-}
-
-TEST(TestEtlRwExtensions, etl_string_size)
-{
-    EXPECT_NE(2, (lrpc::etl_string_size<etl::string<3>>::value));
-    EXPECT_EQ(2, (lrpc::etl_string_size<etl::string<2>>::value));
+    EXPECT_NE(typeid(uint16_t), typeid(lrpc::array_n_type<lrpc::array_n<uint32_t>>::type));
+    EXPECT_EQ(typeid(uint16_t), typeid(lrpc::array_n_type<lrpc::array_n<uint16_t>>::type));
 }
 
 TEST(TestEtlRwExtensions, readArithmetic)
@@ -80,7 +71,7 @@ TEST(TestEtlRwExtensions, readAutoString)
     etl::vector<char, 10> storage{'T', 'e', 's', 't', '\0'};
     etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
 
-    EXPECT_EQ("Test", lrpc::read_unchecked<etl::string_view>(reader));
+    EXPECT_EQ("Test", lrpc::read_unchecked<lrpc::string_auto>(reader));
 }
 
 TEST(TestEtlRwExtensions, readFixedSizeString)
@@ -88,11 +79,11 @@ TEST(TestEtlRwExtensions, readFixedSizeString)
     etl::vector<char, 10> storage{'T', 'e', 's', 't', '\0'};
     etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
 
-    EXPECT_EQ("Tes", lrpc::read_unchecked<etl::string<3>>(reader));
+    EXPECT_EQ("Tes", lrpc::read_unchecked<lrpc::string_n>(reader, 3));
     reader.restart();
-    EXPECT_EQ("Test", lrpc::read_unchecked<etl::string<4>>(reader));
+    EXPECT_EQ("Test", lrpc::read_unchecked<lrpc::string_n>(reader, 4));
     reader.restart();
-    EXPECT_EQ("Test", lrpc::read_unchecked<etl::string<5>>(reader));
+    EXPECT_EQ("Test", lrpc::read_unchecked<lrpc::string_n>(reader, 5));
 }
 
 TEST(TestEtlRwExtensions, readOptional)
@@ -100,7 +91,7 @@ TEST(TestEtlRwExtensions, readOptional)
     etl::vector<uint8_t, 10> storage{0x00, 0x01, 0x02};
     etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
 
-    auto o1 = lrpc::read_unchecked<etl::optional<int>>(reader);
+    const auto o1 = lrpc::read_unchecked<etl::optional<uint8_t>>(reader);
     EXPECT_FALSE(o1.has_value());
     auto o2 = lrpc::read_unchecked<etl::optional<uint8_t>>(reader);
     EXPECT_TRUE(o2.has_value());
@@ -112,9 +103,9 @@ TEST(TestEtlRwExtensions, readOptionalAutoString)
     etl::vector<uint8_t, 10> storage{0x00, 0x01, 'T', '1', '\0'};
     etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
 
-    auto o1 = lrpc::read_unchecked<etl::optional<etl::string_view>>(reader);
+    const auto o1 = lrpc::read_unchecked<etl::optional<lrpc::string_auto>>(reader);
     EXPECT_FALSE(o1.has_value());
-    auto o2 = lrpc::read_unchecked<etl::optional<etl::string_view>>(reader);
+    auto o2 = lrpc::read_unchecked<etl::optional<lrpc::string_auto>>(reader);
     EXPECT_TRUE(o2.has_value());
     EXPECT_EQ("T1", o2.value());
 }
@@ -124,78 +115,89 @@ TEST(TestEtlRwExtensions, readOptionalFixedSizeString)
     etl::vector<uint8_t, 10> storage{0x00, 0x01, 'T', '1', '\0'};
     etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
 
-    auto o1 = lrpc::read_unchecked<etl::optional<etl::string<2>>>(reader);
+    const auto o1 = lrpc::read_unchecked<etl::optional<lrpc::string_n>>(reader, 2);
     EXPECT_FALSE(o1.has_value());
-    auto o2 = lrpc::read_unchecked<etl::optional<etl::string<2>>>(reader);
+    auto o2 = lrpc::read_unchecked<etl::optional<lrpc::string_n>>(reader, 2);
     EXPECT_TRUE(o2.has_value());
     EXPECT_EQ("T1", o2.value());
 }
 
 TEST(TestEtlRwExtensions, readArray)
 {
-    etl::vector<uint8_t, 10> storage{0x00, 0x01, 0x02};
+    etl::vector<uint8_t, 10> storage{0x00, 0x01, 0x02, 0x00};
     etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
 
-    auto a = lrpc::read_unchecked<etl::array<uint8_t, 3>>(reader);
-    ASSERT_EQ(3, a.size());
-    EXPECT_EQ(0x00, a.at(0));
-    EXPECT_EQ(0x01, a.at(1));
-    EXPECT_EQ(0x02, a.at(2));
+    etl::array<uint8_t, 4> dest{0xFF, 0xFF, 0xFF, 0xFF};
+    lrpc::read_unchecked<lrpc::array_n<uint8_t>>(reader, dest, 3);
+    EXPECT_EQ(0x00, dest.at(0));
+    EXPECT_EQ(0x01, dest.at(1));
+    EXPECT_EQ(0x02, dest.at(2));
+    EXPECT_EQ(0xFF, dest.at(3));
 }
 
-TEST(TestEtlRwExtensions, readArrayOfString)
+TEST(TestEtlRwExtensions, readArrayToInsufficientStorage)
+{
+    etl::vector<uint8_t, 10> storage{0x00, 0x01, 0x02, 0xAB};
+    etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
+
+    // Read of array size 3 is requested, but storage is only 2
+    etl::array<uint8_t, 2> dest{0xFF, 0xFF};
+    lrpc::read_unchecked<lrpc::array_n<uint8_t>>(reader, dest, 3);
+    EXPECT_EQ(0x00, dest.at(0));
+    EXPECT_EQ(0x01, dest.at(1));
+    EXPECT_EQ(0xAB, lrpc::read_unchecked<uint8_t>(reader));
+}
+
+TEST(TestEtlRwExtensions, readArrayOfFixedSizeString)
 {
     etl::vector<char, 10> storage{'t', '1', '\0', 't', '2', '\0', 't', '3', '\0'};
     etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
 
-    auto a = lrpc::read_unchecked<etl::array<etl::string<2>, 3>>(reader);
-    ASSERT_EQ(3, a.size());
-    EXPECT_EQ("t1", a.at(0));
-    EXPECT_EQ("t2", a.at(1));
-    EXPECT_EQ("t3", a.at(2));
+    etl::array<etl::string_view, 4> dest{"o1", "o2", "o3", "o4"};
+    lrpc::read_unchecked<lrpc::array_n<lrpc::string_n>>(reader, dest, 3, 2);
+    EXPECT_EQ("t1", dest.at(0));
+    EXPECT_EQ("t2", dest.at(1));
+    EXPECT_EQ("t3", dest.at(2));
+    EXPECT_EQ("o4", dest.at(3));
 }
 
-TEST(TestEtlRwExtensions, copyString)
+TEST(TestEtlRwExtensions, readArrayOfFixedSizeStringToInsufficientStorage)
 {
-    etl::string_view source{"test"};
-    etl::string<4> dest4;
-    lrpc::copy<etl::string<4>>(source, dest4);
-    EXPECT_EQ("test", dest4);
+    etl::vector<char, 10> storage{'t', '1', '\0', 't', '2', '\0', 't', '3', '\0', static_cast<char>(0xAB)};
+    etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
 
-    etl::string<2> dest2;
-    lrpc::copy<etl::string<2>>(source, dest2);
-    EXPECT_EQ("te", dest2);
-
-    etl::string<6> dest6;
-    lrpc::copy<etl::string<6>>(source, dest6);
-    EXPECT_EQ("test", dest6);
+    // Read of array size 3 is requested, but storage is only 2
+    etl::array<etl::string_view, 2> dest{"o1", "o2"};
+    lrpc::read_unchecked<lrpc::array_n<lrpc::string_n>>(reader, dest, 3, 2);
+    EXPECT_EQ("t1", dest.at(0));
+    EXPECT_EQ("t2", dest.at(1));
+    EXPECT_EQ(0xAB, lrpc::read_unchecked<uint8_t>(reader));
 }
 
-TEST(TestEtlRwExtensions, copyArrayOfString)
+TEST(TestEtlRwExtensions, readArrayOfAutoString)
 {
-    etl::array<etl::string_view, 2> source{"T1", "T2"};
-    etl::array<etl::string<2>, 2> dest;
-    lrpc::copy<etl::array<etl::string<2>, 2>>(source, dest);
-    EXPECT_EQ("T1", dest[0]);
-    EXPECT_EQ("T2", dest[1]);
+    etl::vector<char, 12> storage{'t', '1', '\0', 't', '2', '\0', 't', '3', '4', '5', '\0'};
+    etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
+
+    etl::array<etl::string_view, 4> dest{"o1", "o2", "o3", "o4"};
+    lrpc::read_unchecked<lrpc::array_n<lrpc::string_auto>>(reader, dest, 3);
+    EXPECT_EQ("t1", dest.at(0));
+    EXPECT_EQ("t2", dest.at(1));
+    EXPECT_EQ("t345", dest.at(2));
+    EXPECT_EQ("o4", dest.at(3));
 }
 
-TEST(TestEtlRwExtensions, copyOptionalString)
+TEST(TestEtlRwExtensions, readArrayOfAutoStringToInsufficientStorage)
 {
-    etl::optional<etl::string_view> source1{"T1"};
-    etl::optional<etl::string<2>> dest1;
-    lrpc::copy<etl::optional<etl::string<2>>>(source1, dest1);
-    ASSERT_TRUE(dest1.has_value());
-    EXPECT_EQ("T1", dest1.value());
+    etl::vector<char, 13> storage{'t', '1', '\0', 't', '2', '\0', 't', '3', '4', '5', '\0', static_cast<char>(0xAB)};
+    etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
 
-    etl::optional<etl::string<2>> dest2{"~~"};
-    lrpc::copy<etl::optional<etl::string<2>>>(source1, dest2);
-    ASSERT_TRUE(dest2.has_value());
-    EXPECT_EQ("T1", dest2.value());
-
-    etl::optional<etl::string_view> source2;
-    lrpc::copy<etl::optional<etl::string<2>>>(source2, dest2);
-    EXPECT_FALSE(dest2.has_value());
+    // Read of array size 3 is requested, but storage is only 2
+    etl::array<etl::string_view, 2> dest{"o1", "o2"};
+    lrpc::read_unchecked<lrpc::array_n<lrpc::string_auto>>(reader, dest, 3);
+    EXPECT_EQ("t1", dest.at(0));
+    EXPECT_EQ("t2", dest.at(1));
+    EXPECT_EQ(0xAB, lrpc::read_unchecked<uint8_t>(reader));
 }
 
 TEST(TestEtlRwExtensions, writeArithmetic)
@@ -258,9 +260,9 @@ TEST(TestEtlRwExtensions, writeString)
     etl::array<uint8_t, 10> storage;
     etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
 
-    lrpc::write_unchecked<etl::string<4>>(writer, "T1");
-    const etl::string<2> t2("T2");
-    lrpc::write_unchecked<etl::string<2>>(writer, t2);
+    lrpc::write_unchecked<lrpc::string_n>(writer, "T1", 4);
+    const etl::string_view t2("T2");
+    lrpc::write_unchecked<lrpc::string_n>(writer, t2, 2);
 
     const auto written = writer.used_data();
     ASSERT_EQ(8, written.size());
@@ -279,9 +281,9 @@ TEST(TestEtlRwExtensions, writeAutoString)
     etl::array<uint8_t, 10> storage;
     etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
 
-    lrpc::write_unchecked<etl::string_view>(writer, "T1");
+    lrpc::write_unchecked<lrpc::string_auto>(writer, "T1");
     const etl::string_view t2("T2");
-    lrpc::write_unchecked<etl::string_view>(writer, t2);
+    lrpc::write_unchecked<lrpc::string_auto>(writer, t2);
 
     const auto written = writer.used_data();
     ASSERT_EQ(6, written.size());
@@ -298,8 +300,8 @@ TEST(TestEtlRwExtensions, writeArray)
     etl::array<uint8_t, 10> storage;
     etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
 
-    etl::array<uint8_t, 2> t2{0x01, 0x02};
-    lrpc::write_unchecked<etl::array<uint8_t, 2>>(writer, t2);
+    etl::array<uint8_t, 3> t2{0x01, 0x02, 0x03};
+    lrpc::write_unchecked<lrpc::array_n<uint8_t>>(writer, t2, 2);
 
     const auto written = writer.used_data();
     ASSERT_EQ(2, written.size());
@@ -307,33 +309,140 @@ TEST(TestEtlRwExtensions, writeArray)
     EXPECT_EQ(0x02, written[1]);
 }
 
-TEST(TestEtlRwExtensions, writeArrayOfString)
+TEST(TestEtlRwExtensions, writeArrayFromInsufficientStorage)
 {
     etl::array<uint8_t, 10> storage;
     etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
 
-    etl::array<etl::string<2>, 2> a{"T1", "T2"};
-    lrpc::write_unchecked<etl::array<etl::string<2>, 2>>(writer, a);
+    // request to write 3, but only 2 available. Fill remaining with default values
+    etl::array<uint8_t, 2> t2{0x01, 0x02};
+    lrpc::write_unchecked<lrpc::array_n<uint8_t>>(writer, t2, 3);
 
     const auto written = writer.used_data();
-    ASSERT_EQ(6, written.size());
+    ASSERT_EQ(3, written.size());
+    EXPECT_EQ(0x01, written[0]);
+    EXPECT_EQ(0x02, written[1]);
+    EXPECT_EQ(0x00, written[2]);
+}
+
+TEST(TestEtlRwExtensions, writeArrayOfFixedSizeString)
+{
+    etl::array<uint8_t, 10> storage;
+    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+
+    etl::array<etl::string_view, 2> a{"T1", "T22"};
+    lrpc::write_unchecked<lrpc::array_n<lrpc::string_n>>(writer, a, 2, 3);
+
+    const auto written = writer.used_data();
+    ASSERT_EQ(8, written.size());
+    EXPECT_EQ('T', written[0]);
+    EXPECT_EQ('1', written[1]);
+    EXPECT_EQ('\0', written[2]);
+    EXPECT_EQ('\0', written[3]);
+    EXPECT_EQ('T', written[4]);
+    EXPECT_EQ('2', written[5]);
+    EXPECT_EQ('2', written[6]);
+    EXPECT_EQ('\0', written[7]);
+}
+
+TEST(TestEtlRwExtensions, writeArrayOfFixedSizeStringFromInsufficientStorage)
+{
+    etl::array<uint8_t, 12> storage;
+    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+
+    // request to write 3, but only 2 available. Fill remaining with default values
+    etl::array<etl::string_view, 2> a{"T1", "T22"};
+    lrpc::write_unchecked<lrpc::array_n<lrpc::string_n>>(writer, a, 3, 3);
+
+    const auto written = writer.used_data();
+    ASSERT_EQ(12, written.size());
+    EXPECT_EQ('T', written[0]);
+    EXPECT_EQ('1', written[1]);
+    EXPECT_EQ('\0', written[2]);
+    EXPECT_EQ('\0', written[3]);
+    EXPECT_EQ('T', written[4]);
+    EXPECT_EQ('2', written[5]);
+    EXPECT_EQ('2', written[6]);
+    EXPECT_EQ('\0', written[7]);
+    EXPECT_EQ('\0', written[8]);
+    EXPECT_EQ('\0', written[9]);
+    EXPECT_EQ('\0', written[10]);
+    EXPECT_EQ('\0', written[11]);
+}
+
+TEST(TestEtlRwExtensions, writeArrayOfAutoString)
+{
+    etl::array<uint8_t, 10> storage;
+    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+
+    etl::array<etl::string_view, 2> a{"T1", "T1234"};
+    lrpc::write_unchecked<lrpc::array_n<lrpc::string_auto>>(writer, a, 2);
+
+    const auto written = writer.used_data();
+    ASSERT_EQ(9, written.size());
     EXPECT_EQ('T', written[0]);
     EXPECT_EQ('1', written[1]);
     EXPECT_EQ('\0', written[2]);
     EXPECT_EQ('T', written[3]);
-    EXPECT_EQ('2', written[4]);
-    EXPECT_EQ('\0', written[5]);
+    EXPECT_EQ('1', written[4]);
+    EXPECT_EQ('2', written[5]);
+    EXPECT_EQ('3', written[6]);
+    EXPECT_EQ('4', written[7]);
+    EXPECT_EQ('\0', written[8]);
 }
 
-TEST(TestEtlRwExtensions, writeOptionalString)
+TEST(TestEtlRwExtensions, writeArrayOfAutoStringFromInsufficientStorage)
 {
     etl::array<uint8_t, 10> storage;
     etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
 
-    etl::optional<etl::string<2>> a{"T1"};
-    etl::optional<etl::string<5>> b{};
-    lrpc::write_unchecked<etl::optional<etl::string<2>>>(writer, a);
-    lrpc::write_unchecked<etl::optional<etl::string<5>>>(writer, b);
+    // request to write 3, but only 2 available. Fill remaining with default values
+    etl::array<etl::string_view, 2> a{"T1", "T1234"};
+    lrpc::write_unchecked<lrpc::array_n<lrpc::string_auto>>(writer, a, 3);
+
+    const auto written = writer.used_data();
+    ASSERT_EQ(10, written.size());
+    EXPECT_EQ('T', written[0]);
+    EXPECT_EQ('1', written[1]);
+    EXPECT_EQ('\0', written[2]);
+    EXPECT_EQ('T', written[3]);
+    EXPECT_EQ('1', written[4]);
+    EXPECT_EQ('2', written[5]);
+    EXPECT_EQ('3', written[6]);
+    EXPECT_EQ('4', written[7]);
+    EXPECT_EQ('\0', written[8]);
+    EXPECT_EQ('\0', written[9]);
+}
+
+TEST(TestEtlRwExtensions, writeOptionalFixedSizeString)
+{
+    etl::array<uint8_t, 10> storage;
+    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+
+    const etl::optional<etl::string_view> a{"T1"};
+    const etl::optional<etl::string_view> b{};
+    lrpc::write_unchecked<etl::optional<lrpc::string_n>>(writer, a, 3);
+    lrpc::write_unchecked<etl::optional<lrpc::string_n>>(writer, b, 5);
+
+    const auto written = writer.used_data();
+    ASSERT_EQ(6, written.size());
+    EXPECT_EQ(0x01, written[0]);
+    EXPECT_EQ('T', written[1]);
+    EXPECT_EQ('1', written[2]);
+    EXPECT_EQ('\0', written[3]);
+    EXPECT_EQ('\0', written[4]);
+    EXPECT_EQ(0x00, written[5]);
+}
+
+TEST(TestEtlRwExtensions, writeOptionalAutoString)
+{
+    etl::array<uint8_t, 10> storage;
+    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+
+    const etl::optional<etl::string_view> a{"T1"};
+    const etl::optional<etl::string_view> b{};
+    lrpc::write_unchecked<etl::optional<lrpc::string_auto>>(writer, a);
+    lrpc::write_unchecked<etl::optional<lrpc::string_auto>>(writer, b);
 
     const auto written = writer.used_data();
     ASSERT_EQ(5, written.size());

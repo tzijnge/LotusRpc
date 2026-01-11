@@ -3,6 +3,7 @@ from pathlib import Path
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 
 from lrpc.codegen.common import write_file_banner
+from lrpc.codegen.function_shim_writer import FunctionShimWriter
 from lrpc.codegen.utils import optionally_in_namespace
 from lrpc.core import LrpcDef, LrpcFun, LrpcService, LrpcStream, LrpcVar
 from lrpc.visitors import LrpcVisitor
@@ -99,13 +100,9 @@ class ServiceShimVisitor(LrpcVisitor):
         if len(functions) != 0:
             self._file.write("// Function shims")
 
+        writer = FunctionShimWriter(self._file)
         for function in functions:
-            params = self.__params_string(function.params())
-            reader_param_name = " r" if len(params) != 0 else ""
-
-            with self._file.block(f"void {function.name()}_shim(Reader&{reader_param_name}, Writer& w)"):
-                self.__write_function_shim_body(function)
-
+            writer.write_function_shim(function)
             self._file.newline()
 
     def __write_client_stream_shims(self, client_streams: list[LrpcStream]) -> None:
@@ -132,7 +129,7 @@ class ServiceShimVisitor(LrpcVisitor):
                 self._file.write(f"writeHeader(w, {stream.id()});")
 
                 for r in stream.returns():
-                    self._file.write(f"lrpc::write_unchecked<{r.write_type()}>(w, {r.name()});")
+                    self._file.write(f"lrpc::write_unchecked<{r.rw_type()}>(w, {r.name()});")
 
                 self._file.write("updateHeader(w);")
                 self._file.write("server->transmit(w);")
@@ -200,32 +197,10 @@ class ServiceShimVisitor(LrpcVisitor):
 
             self._file.write("return shims.at(functionId);")
 
-    def __write_function_shim_body(self, function: LrpcFun) -> None:
-        self._file.write(f"writeHeader(w, {function.id()});")
-
-        for p in function.params():
-            n = p.name()
-            t = p.read_type()
-            self._file.write(f"const auto {n} = lrpc::read_unchecked<{t}>(r);")
-
-        param_list = ", ".join(function.param_names())
-
-        response = "const auto response = " if len(function.returns()) != 0 else ""
-        self._file.write(f"{response}{function.name()}({param_list});")
-
-        returns = function.returns()
-        if len(returns) == 1:
-            t = returns[0].write_type()
-            self._file.write(f"lrpc::write_unchecked<{t}>(w, response);")
-        else:
-            for i, r in enumerate(returns):
-                t = r.write_type()
-                self._file.write(f"lrpc::write_unchecked<{t}>(w, std::get<{i}>(response));")
-
     def __write_stream_shim_body(self, stream: LrpcStream) -> None:
         for p in stream.params():
             n = p.name()
-            t = p.read_type()
+            t = p.rw_type()
             self._file.write(f"const auto {n} = lrpc::read_unchecked<{t}>(r);")
 
         param_list = ", ".join(stream.param_names())

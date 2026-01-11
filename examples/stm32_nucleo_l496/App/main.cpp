@@ -55,27 +55,27 @@ public:
         return {123, 456};
     }
 
-    etl::array<uint8_t, 20> f10() override
+    etl::span<const uint8_t> f10() override
     {
         return {};
     }
 
-    void f11(const etl::span<const uint8_t> &) override
+    void f11(etl::span<const uint8_t>) override
     {
     }
 
-    void f12(const etl::optional<uint8_t> &) override
+    void f12(etl::optional<uint8_t>) override
     {
     }
 
-    uint32_t f13(const etl::string_view &p1) override
+    uint32_t f13(etl::string_view p1) override
     {
         return p1.size();
     }
 
-    etl::string<20> f14(const etl::string_view &p1) override
+    etl::string_view f14(etl::string_view p1) override
     {
-        return {p1.begin(), p1.end()};
+        return p1;
     }
 };
 
@@ -119,11 +119,11 @@ public:
         s1StopCalled = true;
     }
 
-    void s2(uint16_t, const etl::string_view &, bool)
+    void s2(uint16_t, etl::string_view, bool) override
     {
     }
 
-    void s3(const etl::string_view &, int16_t)
+    void s3(etl::string_view, int16_t) override
     {
     }
 

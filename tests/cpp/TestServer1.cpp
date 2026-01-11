@@ -35,6 +35,7 @@ namespace
         MOCK_METHOD((etl::optional<etl::string_view>), f25, (), (override));
         MOCK_METHOD((etl::span<const etl::string_view>), f26, (), (override));
         MOCK_METHOD((std::tuple<etl::span<const uint8_t>, etl::span<const etl::string_view>, etl::span<const etl::string_view>>), f27, (), (override));
+        MOCK_METHOD(void, f28, (const ts1::CompositeData4 &p0), (override));
     };
 }
 

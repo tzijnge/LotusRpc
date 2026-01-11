@@ -92,9 +92,11 @@ class LrpcVar:
 
         return t
 
-    def rw_type(self) -> str:
+    def rw_type(self, namespace: str | None = None) -> str:
         if self.base_type_is_string():
             t = "lrpc::string_n" if self.is_fixed_size_string() else "lrpc::string_auto"
+        elif self.base_type_is_custom() and namespace is not None:
+            t = f"{namespace}::{self.base_type()}"
         else:
             t = self.base_type()
 

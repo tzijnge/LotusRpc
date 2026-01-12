@@ -50,6 +50,33 @@ services:
       - name: f0
         params:
           - { name: p1, type: "@DoorState" }
+  # No unit tests for this service. Just there to make sure it compiles
+  - name: srv3
+    streams:
+      - name: client_infinite
+        origin: client
+        finite: false
+        params:
+          - { name: p1, type: uint8_t, count: 2 }
+          - { name: p2, type: string_3, count: 2 }
+      - name: client_finite
+        origin: client
+        finite: true
+        params:
+          - { name: p1, type: uint8_t, count: 2 }
+          - { name: p2, type: string_3, count: 2 }
+      - name: server_infinite
+        origin: server
+        finite: false
+        params:
+          - { name: p1, type: uint8_t, count: 2 }
+          - { name: p2, type: string_3, count: 2 }
+      - name: server_finite
+        origin: server
+        finite: true
+        params:
+          - { name: p1, type: uint8_t, count: 2 }
+          - { name: p2, type: string_3, count: 2 }
 
 enums:
   - name: DoorState

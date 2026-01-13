@@ -98,12 +98,17 @@
                 "float",
                 "double",
                 "bool",
-                "string"
+                "string",
+                "bytearray"
               ]
             },
             {
               "type": "string",
               "pattern": "^string_(0*[1-9][0-9]*)$"
+            },
+            {
+              "type": "string",
+              "pattern": "^bytearray_(0*[1-9][0-9]*)$"
             },
             {
               "type": "string",

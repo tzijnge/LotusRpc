@@ -289,3 +289,95 @@ def test_rw_type_optional_of_custom_with_namespace() -> None:
     v: LrpcVarDict = {"name": "v1", "type": "@MyType", "count": "?"}
 
     assert LrpcVar(v).rw_type("my_namespace") == "etl::optional<my_namespace::MyType>"
+
+
+class TestLrpcVarByteArray:
+    def test_bytearray(self) -> None:
+        var_dict: LrpcVarDict = {"name": "v1", "type": "bytearray"}
+        v = LrpcVar(var_dict)
+
+        assert v.name() == "v1"
+        assert v.base_type() == "bytearray"
+        assert v.field_type() == "etl::span<uint8_t>"
+        assert v.return_type() == "etl::span<uint8_t>"
+        assert v.param_type() == "etl::span<uint8_t>"
+        assert v.rw_type() == "lrpc::bytearray"
+        assert not v.base_type_is_custom()
+        assert not v.base_type_is_struct()
+        assert not v.base_type_is_enum()
+        assert not v.base_type_is_integral()
+        assert not v.base_type_is_float()
+        assert not v.base_type_is_bool()
+        assert not v.base_type_is_string()
+        assert v.base_type_is_bytearray()
+        assert not v.is_struct()
+        assert not v.is_optional()
+        assert not v.is_array()
+        assert not v.is_array_of_strings()
+        assert not v.is_string()
+        assert not v.is_auto_string()
+        assert not v.is_fixed_size_string()
+        assert v.string_size() == -1
+        assert v.array_size() == 1
+        with pytest.raises(TypeError, match="Pack type is not defined for LrpcVar of type bytearray"):
+            v.pack_type()
+
+    def test_array_of_bytearray(self) -> None:
+        var_dict: LrpcVarDict = {"name": "v1", "type": "bytearray", "count": 2}
+        v = LrpcVar(var_dict)
+
+        assert v.name() == "v1"
+        assert v.base_type() == "bytearray"
+        assert v.field_type() == "etl::array<etl::span<uint8_t>, 2>"
+        assert v.return_type() == "etl::span<const etl::span<uint8_t>>"
+        assert v.param_type() == "etl::span<const etl::span<uint8_t>>"
+        assert v.rw_type() == "lrpc::array_n<lrpc::bytearray>"
+        assert not v.base_type_is_custom()
+        assert not v.base_type_is_struct()
+        assert not v.base_type_is_enum()
+        assert not v.base_type_is_integral()
+        assert not v.base_type_is_float()
+        assert not v.base_type_is_bool()
+        assert not v.base_type_is_string()
+        assert v.base_type_is_bytearray()
+        assert not v.is_struct()
+        assert not v.is_optional()
+        assert v.is_array()
+        assert not v.is_array_of_strings()
+        assert not v.is_string()
+        assert not v.is_auto_string()
+        assert not v.is_fixed_size_string()
+        assert v.string_size() == -1
+        assert v.array_size() == 2
+        with pytest.raises(TypeError, match="Pack type is not defined for LrpcVar of type bytearray"):
+            v.pack_type()
+
+    def test_optional_of_bytearray(self) -> None:
+        var_dict: LrpcVarDict = {"name": "v1", "type": "bytearray", "count": "?"}
+        v = LrpcVar(var_dict)
+
+        assert v.name() == "v1"
+        assert v.base_type() == "bytearray"
+        assert v.field_type() == "etl::optional<etl::span<uint8_t>>"
+        assert v.return_type() == "etl::optional<etl::span<uint8_t>>"
+        assert v.param_type() == "etl::optional<etl::span<uint8_t>>"
+        assert v.rw_type() == "etl::optional<lrpc::bytearray>"
+        assert not v.base_type_is_custom()
+        assert not v.base_type_is_struct()
+        assert not v.base_type_is_enum()
+        assert not v.base_type_is_integral()
+        assert not v.base_type_is_float()
+        assert not v.base_type_is_bool()
+        assert not v.base_type_is_string()
+        assert v.base_type_is_bytearray()
+        assert not v.is_struct()
+        assert v.is_optional()
+        assert not v.is_array()
+        assert not v.is_array_of_strings()
+        assert not v.is_string()
+        assert not v.is_auto_string()
+        assert not v.is_fixed_size_string()
+        assert v.string_size() == -1
+        assert v.array_size() == -1
+        with pytest.raises(TypeError, match="Pack type is not defined for LrpcVar of type optional"):
+            v.pack_type()

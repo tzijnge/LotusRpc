@@ -4,6 +4,14 @@ set(CMAKE_CXX_STANDARD 11)
 set(BUILD_GMOCK ON)
 set(gtest_force_shared_crt on)
 
+if(MSVC)
+  add_compile_options(/fsanitize=address /Zi)
+add_link_options(/fsanitize=address)
+else()
+  add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+add_link_options(-fsanitize=address)
+endif()
+
 include(GoogleTest)
 mark_as_advanced(
     BUILD_GMOCK BUILD_GTEST

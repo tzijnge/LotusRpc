@@ -76,7 +76,7 @@ class LrpcVar:
         if self.base_type_is_string():
             t = LrpcVar.ETL_STRING_VIEW
         elif self.base_type_is_bytearray():
-            t = "etl::span<uint8_t>"
+            t = "etl::span<const uint8_t>"
         else:
             t = self.base_type()
 
@@ -92,7 +92,7 @@ class LrpcVar:
         if self.base_type_is_string():
             t = LrpcVar.ETL_STRING_VIEW
         elif self.base_type_is_bytearray():
-            t = "etl::span<uint8_t>"
+            t = "etl::span<const uint8_t>"
         else:
             t = self.base_type()
 

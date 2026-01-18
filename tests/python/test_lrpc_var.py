@@ -298,7 +298,7 @@ class TestLrpcVarByteArray:
 
         assert v.name() == "v1"
         assert v.base_type() == "bytearray"
-        assert v.field_type() == "etl::span<uint8_t>"
+        assert v.field_type() == "etl::span<const uint8_t>"
         assert v.return_type() == "etl::span<const uint8_t>"
         assert v.param_type() == "etl::span<const uint8_t>"
         assert v.rw_type() == "lrpc::bytearray"
@@ -328,7 +328,7 @@ class TestLrpcVarByteArray:
 
         assert v.name() == "v1"
         assert v.base_type() == "bytearray"
-        assert v.field_type() == "etl::array<etl::span<uint8_t>, 2>"
+        assert v.field_type() == "etl::array<etl::span<const uint8_t>, 2>"
         assert v.return_type() == "etl::span<const etl::span<const uint8_t>>"
         assert v.param_type() == "etl::span<const etl::span<const uint8_t>>"
         assert v.rw_type() == "lrpc::array_n<lrpc::bytearray>"
@@ -358,7 +358,7 @@ class TestLrpcVarByteArray:
 
         assert v.name() == "v1"
         assert v.base_type() == "bytearray"
-        assert v.field_type() == "etl::optional<etl::span<uint8_t>>"
+        assert v.field_type() == "etl::optional<etl::span<const uint8_t>>"
         assert v.return_type() == "etl::optional<etl::span<const uint8_t>>"
         assert v.param_type() == "etl::optional<etl::span<const uint8_t>>"
         assert v.rw_type() == "etl::optional<lrpc::bytearray>"

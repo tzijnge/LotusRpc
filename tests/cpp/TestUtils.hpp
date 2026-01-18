@@ -10,91 +10,114 @@ namespace testutils
 {
 
 #ifdef _MSC_VER
-# pragma warning(push)
-# pragma warning(disable:4100)
+#pragma warning(push)
+#pragma warning(disable : 4100)
 #endif
 
-MATCHER_P(SPAN_EQ, e, "Equality matcher for etl::span")
-{
-    if (e.size() != arg.size())
+    MATCHER_P(SPAN_EQ, e, "Equality matcher for etl::span")
     {
-        return false;
-    }
-
-    const auto size = e.size();
-    for (size_t i = 0; i < size; ++i)
-    {
-        if (e[i] != arg[i])
+        if (e.size() != arg.size())
         {
             return false;
         }
+
+        const auto size = e.size();
+        for (size_t i = 0; i < size; ++i)
+        {
+            if (e[i] != arg[i])
+            {
+                return false;
+            }
+        }
+        return true;
     }
-    return true;
-}
+
+    MATCHER_P(OPT_SPAN_EQ, e, "Equality matcher for etl::optional of etl::span")
+    {
+        if (e.has_value() != arg.has_value())
+        {
+            return false;
+        }
+
+        if (!e.has_value())
+        {
+            return true;
+        }
+
+        const auto size = e.value().size();
+        for (size_t i = 0; i < size; ++i)
+        {
+            if (e.value().at(i) != arg.value().at(i))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
 
 #ifdef _MSC_VER
-# pragma warning(pop)
+#pragma warning(pop)
 #endif
 
-inline std::vector<uint8_t> hexToBytes(const etl::string_view hex)
-{
-    if ((hex.size() % 2) != 0)
+    inline std::vector<uint8_t> hexToBytes(const etl::string_view hex)
     {
-        return {};
+        if ((hex.size() % 2) != 0)
+        {
+            return {};
+        }
+
+        const auto numberBytes = hex.size() / 2;
+
+        std::vector<uint8_t> bytes;
+
+        for (auto i = 0U; i < numberBytes; i += 1)
+        {
+            bytes.emplace_back(etl::to_arithmetic<uint8_t>(hex.substr(i * 2, 2), etl::hex));
+        }
+
+        return bytes;
     }
 
-    const auto numberBytes = hex.size() / 2;
-
-    std::vector<uint8_t> bytes;
-
-    for (auto i = 0U; i < numberBytes; i += 1)
+    inline std::string bytesToHex(const etl::span<const uint8_t> bytes)
     {
-        bytes.emplace_back(etl::to_arithmetic<uint8_t>(hex.substr(i * 2, 2), etl::hex));
+        std::stringstream ss;
+        ss << std::hex << std::setfill('0') << std::uppercase;
+
+        for (const auto b : bytes)
+        {
+            ss << std::setw(2) << static_cast<uint32_t>(b);
+        }
+
+        return ss.str();
     }
 
-    return bytes;
-}
-
-inline std::string bytesToHex(const etl::span<const uint8_t> bytes)
-{
-    std::stringstream ss;
-    ss << std::hex << std::setfill('0') << std::uppercase;
-
-    for (const auto b : bytes)
+    template <typename Server, typename Service>
+    class TestServerBase : public Server, public ::testing::Test
     {
-        ss << std::setw(2) << static_cast<uint32_t>(b);
-    }
+    public:
+        void SetUp() final
+        {
+            Server::registerService(service);
+        }
 
-    return ss.str();
-}
+        void lrpcTransmit(etl::span<const uint8_t> bytes) override
+        {
+            responseBuffer = bytes;
+        }
 
-template <typename Server, typename Service>
-class TestServerBase : public Server, public ::testing::Test
-{
-public:
-    void SetUp() final
-    {
-        Server::registerService(service);
-    }
+        std::string receive(const etl::string_view hex)
+        {
+            Server::lrpcReceive(testutils::hexToBytes(hex));
+            return response();
+        }
 
-    void lrpcTransmit(etl::span<const uint8_t> bytes) override
-    {
-        responseBuffer = bytes;
-    }
+        std::string response() const
+        {
+            return testutils::bytesToHex(responseBuffer);
+        }
 
-    std::string receive(const etl::string_view hex)
-    {
-        Server::lrpcReceive(testutils::hexToBytes(hex));
-        return response();
-    }
+        etl::span<const uint8_t> responseBuffer;
 
-    std::string response() const
-    {
-        return testutils::bytesToHex(responseBuffer);
-    }
-
-    etl::span<const uint8_t> responseBuffer;
-
-    Service service;
-};
+        Service service;
+    };
 }

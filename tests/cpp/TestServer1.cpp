@@ -41,7 +41,7 @@ namespace
 
 using TestServer1 = testutils::TestServerBase<ts1::Server1, Mockservice>;
 
-static_assert(std::is_same<ts1::Server1, lrpc::Server<0, ts1::LrpcMeta_service, 100, 200>>::value, "RX and/or TX buffer size are unequal to the definition file");
+static_assert(std::is_same<ts1::Server1, lrpc::Server<1, ts1::LrpcMeta_service, 100, 200>>::value, "RX and/or TX buffer size are unequal to the definition file");
 
 // Decode void function f0. Make sure f1 is not called
 TEST_F(TestServer1, decodeF0)
@@ -132,7 +132,7 @@ TEST_F(TestServer1, decodeF8)
 // Decode function f9 with array of custom type
 TEST_F(TestServer1, decodeF9)
 {
-    std::vector<ts1::CompositeData2> expected{
+    const std::vector<ts1::CompositeData2> expected{
         ts1::CompositeData2{0xAA, 0xBB},
         ts1::CompositeData2{0xCC, 0xDD}};
     EXPECT_CALL(service, f9(testutils::SPAN_EQ(expected)));
@@ -143,7 +143,7 @@ TEST_F(TestServer1, decodeF9)
 // Decode function f10 with nested custom types
 TEST_F(TestServer1, decodeF10)
 {
-    ts1::CompositeData3 expected{{0xAA, 0xBB}, ts1::MyEnum::V1};
+    const ts1::CompositeData3 expected{{0xAA, 0xBB}, ts1::MyEnum::V1};
     EXPECT_CALL(service, f10(expected));
     const auto response = receive("06000AAABB01");
     EXPECT_EQ("03000A", response);
@@ -313,4 +313,109 @@ TEST_F(TestServer1, decodeF28)
     EXPECT_CALL(service, f28(expected));
     const auto response = receive("0A001CAABBCCDD01EEFF");
     EXPECT_EQ("03001C", response);
+}
+
+namespace
+{
+    class Bytearrayservice : public ts1::bytearray_shim
+    {
+    public:
+        MOCK_METHOD((etl::span<const uint8_t>), param_return, (etl::span<const uint8_t>), (override));
+        MOCK_METHOD((std::tuple<etl::span<const uint8_t>, etl::span<const uint8_t>>), param_return_multiple, (etl::span<const uint8_t> p0, etl::span<const uint8_t>), (override));
+        MOCK_METHOD((etl::optional<etl::span<const uint8_t>>), optional, (etl::optional<etl::span<const uint8_t>>), (override));
+        MOCK_METHOD((etl::span<const etl::span<const uint8_t>>), array, (etl::span<const etl::span<const uint8_t>>), (override));
+        MOCK_METHOD(ts1::BytearrayStruct, custom, (const ts1::BytearrayStruct &), (override));
+    };
+}
+
+using TestServer1_bytearray = testutils::TestServerBase<ts1::Server1, Bytearrayservice>;
+
+TEST_F(TestServer1_bytearray, param_return)
+{
+    const std::vector<uint8_t> p0{0x11, 0x22, 0x33};
+    const std::vector<uint8_t> r0{0x44, 0x55, 0x66};
+    EXPECT_CALL(service, param_return(testutils::SPAN_EQ(p0))).WillOnce(Return(r0));
+    const auto response = receive("07010003112233");
+    EXPECT_EQ("07010003445566", response);
+}
+
+TEST_F(TestServer1_bytearray, param_return_multiple)
+{
+    const std::vector<uint8_t> p0{0x11, 0x22, 0x33};
+    const std::vector<uint8_t> p1{0x44, 0x55};
+    const std::vector<uint8_t> r0{0x66, 0x77, 0x88};
+    const std::vector<uint8_t> r1{0x99, 0xAA};
+    EXPECT_CALL(service,
+                param_return_multiple(testutils::SPAN_EQ(p0), testutils::SPAN_EQ(p1)))
+        .WillOnce(Return(std::tuple<etl::span<const uint8_t>, etl::span<const uint8_t>>{r0, r1}));
+    const auto response = receive("0A010103112233024455");
+    EXPECT_EQ("0A0101036677880299AA", response);
+}
+
+TEST_F(TestServer1_bytearray, optional)
+{
+    etl::array<uint8_t, 3> data0{0x11, 0x22, 0x33};
+    const etl::optional<etl::span<const uint8_t>> p0{data0};
+    etl::array<uint8_t, 3> data1{0x44, 0x55, 0x66};
+    const etl::optional<etl::span<const uint8_t>> r0{data1};
+    EXPECT_CALL(service, optional(testutils::OPT_SPAN_EQ(p0))).WillOnce(Return(r0));
+    const auto response = receive("0801020103112233");
+    EXPECT_EQ("0801020103445566", response);
+}
+
+TEST_F(TestServer1_bytearray, array)
+{
+    etl::array<uint8_t, 2> ba0{0xA1, 0xA2};
+    etl::array<uint8_t, 3> ba1{0xA3, 0xA4, 0xA5};
+    etl::array<etl::span<const uint8_t>, 2> r0{ba0, ba1};
+
+    const auto handler = [&](etl::span<const etl::span<const uint8_t>> ba)
+    {
+        EXPECT_EQ(2, ba.size());
+        EXPECT_EQ(3, ba.at(0).size());
+        EXPECT_EQ(0x11, ba.at(0).at(0));
+        EXPECT_EQ(0x22, ba.at(0).at(1));
+        EXPECT_EQ(0x33, ba.at(0).at(2));
+        EXPECT_EQ(2, ba.at(1).size());
+        EXPECT_EQ(0x44, ba.at(1).at(0));
+        EXPECT_EQ(0x55, ba.at(1).at(1));
+
+        return r0;
+        // return etl::span<const etl::span<const uint8_t>>{ba0, ba1};
+    };
+
+    EXPECT_CALL(service, array(testing::_)).WillOnce(testing::Invoke(handler));
+    const auto response = receive("0A010303112233024455");
+    EXPECT_EQ("0A010302A1A203A3A4A5", response);
+}
+
+TEST_F(TestServer1_bytearray, custom)
+{
+    etl::array<uint8_t, 3> ba4{0xA1, 0xA2, 0xA3};
+    etl::array<uint8_t, 2> ba5{0xA4, 0xA5};
+    etl::array<uint8_t, 2> ba6{0xA6, 0xA7};
+    etl::array<uint8_t, 1> ba7{0xA8};
+
+    const auto handler = [&](const ts1::BytearrayStruct &bas)
+    {
+        EXPECT_EQ(2, bas.f0.size());
+        EXPECT_EQ(0x11, bas.f0.at(0));
+        EXPECT_EQ(0x22, bas.f0.at(1));
+        EXPECT_TRUE(bas.f1.has_value());
+        EXPECT_EQ(0x33, bas.f1.value().at(0));
+        EXPECT_EQ(0x44, bas.f1.value().at(1));
+        EXPECT_EQ(0x55, bas.f1.value().at(2));
+        EXPECT_EQ(2, bas.f2.size());
+        EXPECT_EQ(1, bas.f2.at(0).size());
+        EXPECT_EQ(0x66, bas.f2.at(0).at(0));
+        EXPECT_EQ(2, bas.f2.at(1).size());
+        EXPECT_EQ(0x77, bas.f2.at(1).at(0));
+        EXPECT_EQ(0x88, bas.f2.at(1).at(1));
+
+        return ts1::BytearrayStruct{ba4, ba5, {ba6, ba7}};
+    };
+
+    EXPECT_CALL(service, custom(testing::_)).WillOnce(testing::Invoke(handler));
+    const auto response = receive("10010402112201033344550166027788");
+    EXPECT_EQ("10010403A1A2A30102A4A502A6A701A8", response);
 }

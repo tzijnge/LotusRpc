@@ -2,79 +2,13 @@ from pathlib import Path
 
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 
+from lrpc.codegen.client_stream_shim_writer import ClientStreamShimWriter
 from lrpc.codegen.common import write_file_banner
 from lrpc.codegen.function_shim_writer import FunctionShimWriter
+from lrpc.codegen.server_stream_response_writer import ServerStreamResponseWriter
 from lrpc.codegen.utils import optionally_in_namespace
 from lrpc.core import LrpcDef, LrpcFun, LrpcService, LrpcStream, LrpcVar
 from lrpc.visitors import LrpcVisitor
-
-
-class ClientStreamShimWriter:
-    def __init__(self, file: CppFile) -> None:
-        self._file = file
-
-    def write_shim(self, stream: LrpcStream) -> None:
-        with self._file.block(f"void {stream.name()}_shim(Reader& r, Writer&)"):
-            for p in stream.params():
-                self._write_param_readers(p)
-
-            param_list = ", ".join(stream.param_names())
-            self._file.write(f"{stream.name()}({param_list});")
-
-    def _write_param_readers(self, param: LrpcVar) -> None:
-        if param.is_array():
-            self._file.write(f"{param.field_type()} {param.name()};")
-            assignment = ""
-        else:
-            assignment = f"const auto {param.name()} = "
-
-        self._file.write(f"{assignment}lrpc::read_unchecked<{param.rw_type()}>({self._read_params(param)});")
-
-    @staticmethod
-    def _read_params(var: LrpcVar) -> str:
-        params = ["r"]
-        if var.is_array():
-            params.append(f"{var.name()}")
-            params.append(f"{var.array_size()}")
-        if var.is_fixed_size_string():
-            params.append(f"{var.string_size()}")
-
-        return ", ".join(params)
-
-
-class ServerStreamResponseWriter:
-    def __init__(self, file: CppFile) -> None:
-        self._file = file
-
-    def write_response(self, stream: LrpcStream) -> None:
-        returns = stream.returns()
-
-        with self._file.block(f"void {stream.name()}_response({self._response_params(returns)})"):
-            self._file.write("if (server == nullptr) { return; }")
-            self._file.newline()
-            self._file.write("auto w = server->getWriter();")
-            self._file.write(f"writeHeader(w, {stream.id()});")
-
-            for r in returns:
-                self._file.write(f"lrpc::write_unchecked<{r.rw_type()}>({self._write_params(r)});")
-
-            self._file.write("updateHeader(w);")
-            self._file.write("server->transmit(w);")
-
-    @staticmethod
-    def _write_params(var: LrpcVar) -> str:
-        params = ["w", var.name()]
-
-        if var.is_array():
-            params.append(f"{var.array_size()}")
-        if var.is_fixed_size_string():
-            params.append(f"{var.string_size()}")
-
-        return ", ".join(params)
-
-    @staticmethod
-    def _response_params(params: list[LrpcVar]) -> str:
-        return ", ".join([f"{p.param_type()} {p.name()}" for p in params])
 
 
 class ServiceShimVisitor(LrpcVisitor):

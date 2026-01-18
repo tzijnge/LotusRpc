@@ -2,8 +2,10 @@ from pathlib import Path
 
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
 
+from lrpc.codegen.client_stream_shim_writer import ClientStreamShimWriter
 from lrpc.codegen.common import write_file_banner
 from lrpc.codegen.function_shim_writer import FunctionShimWriter
+from lrpc.codegen.server_stream_response_writer import ServerStreamResponseWriter
 from lrpc.codegen.utils import optionally_in_namespace
 from lrpc.core import LrpcDef, LrpcFun, LrpcService, LrpcStream, LrpcVar
 from lrpc.visitors import LrpcVisitor
@@ -106,34 +108,23 @@ class ServiceShimVisitor(LrpcVisitor):
             self._file.newline()
 
     def __write_client_stream_shims(self, client_streams: list[LrpcStream]) -> None:
+        writer = ClientStreamShimWriter(self._file)
+
         if len(client_streams) != 0:
             self._file.write("// client stream shims")
 
         for stream in client_streams:
-            with self._file.block(f"void {stream.name()}_shim(Reader& r, Writer&)"):
-                self.__write_stream_shim_body(stream)
-
+            writer.write_shim(stream)
             self._file.newline()
 
     def __write_server_stream_responses(self, server_streams: list[LrpcStream]) -> None:
+        writer = ServerStreamResponseWriter(self._file)
+
         if len(server_streams) != 0:
             self._file.write("// Server stream responses")
 
         for stream in server_streams:
-            returns = stream.returns()
-
-            with self._file.block(f"void {stream.name()}_response({self.__params_string(returns)})"):
-                self._file.write("if (server == nullptr) { return; }")
-                self._file.newline()
-                self._file.write("auto w = server->getWriter();")
-                self._file.write(f"writeHeader(w, {stream.id()});")
-
-                for r in stream.returns():
-                    self._file.write(f"lrpc::write_unchecked<{r.rw_type()}>(w, {r.name()});")
-
-                self._file.write("updateHeader(w);")
-                self._file.write("server->transmit(w);")
-
+            writer.write_response(stream)
             self._file.newline()
 
     def __write_server_stream_stop_request_shims(self, server_streams: list[LrpcStream]) -> None:
@@ -196,16 +187,6 @@ class ServiceShimVisitor(LrpcVisitor):
             self._file.newline()
 
             self._file.write("return shims.at(functionId);")
-
-    def __write_stream_shim_body(self, stream: LrpcStream) -> None:
-        for p in stream.params():
-            n = p.name()
-            t = p.rw_type()
-            self._file.write(f"const auto {n} = lrpc::read_unchecked<{t}>(r);")
-
-        param_list = ", ".join(stream.param_names())
-
-        self._file.write(f"{stream.name()}({param_list});")
 
     @staticmethod
     def __params_string(params: list[LrpcVar]) -> str:

@@ -27,13 +27,24 @@ namespace ts5
         MOCK_METHOD(void, server_infinite_stop, (), (override));
         MOCK_METHOD(void, f0, (DoorState), (override));
     };
+
+    class MockService3 : public srv3_shim
+    {
+    public:
+        MOCK_METHOD(void, client_infinite, (etl::span<const uint8_t>, etl::span<const etl::string_view>), (override));
+        MOCK_METHOD(void, client_finite, (etl::span<const uint8_t>, etl::span<const etl::string_view>, bool), (override));
+        MOCK_METHOD(void, server_infinite, (), (override));
+        MOCK_METHOD(void, server_infinite_stop, (), (override));
+        MOCK_METHOD(void, server_finite, (), (override));
+        MOCK_METHOD(void, server_finite_stop, (), (override));
+    };
 }
 
 using TestServer5Srv0 = testutils::TestServerBase<Server5, ts5::MockService0>;
 using TestServer5Srv1 = testutils::TestServerBase<Server5, ts5::MockService1>;
 using TestServer5Srv2 = testutils::TestServerBase<Server5, ts5::MockService2>;
 
-static_assert(std::is_same<Server5, lrpc::Server<67, LrpcMeta_service>>::value, "RX and/or TX buffer size are unequal to the definition file");
+static_assert(std::is_same<Server5, lrpc::Server<68, LrpcMeta_service>>::value, "RX and/or TX buffer size are unequal to the definition file");
 
 TEST_F(TestServer5Srv0, client_infinite)
 {

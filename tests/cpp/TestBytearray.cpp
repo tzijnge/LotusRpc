@@ -13,6 +13,25 @@ namespace
         MOCK_METHOD((etl::optional<etl::span<const uint8_t>>), optional, (etl::optional<etl::span<const uint8_t>>), (override));
         MOCK_METHOD((etl::span<const etl::span<const uint8_t>>), array, (etl::span<const etl::span<const uint8_t>>), (override));
         MOCK_METHOD(test_ba::BytearrayStruct, custom, (const test_ba::BytearrayStruct &), (override));
+
+        // client streams
+        MOCK_METHOD(void, client_single, (etl::span<const uint8_t>), (override));
+        MOCK_METHOD(void, client_multiple, (etl::span<const uint8_t>, etl::span<const uint8_t>), (override));
+        MOCK_METHOD(void, client_optional, (etl::optional<etl::span<const uint8_t>>), (override));
+        MOCK_METHOD(void, client_array, (etl::span<const etl::span<const uint8_t>>), (override));
+        MOCK_METHOD(void, client_custom, (const test_ba::BytearrayStruct &), (override));
+
+        // server streams
+        MOCK_METHOD(void, server_single, (), (override));
+        MOCK_METHOD(void, server_single_stop, (), (override));
+        MOCK_METHOD(void, server_multiple, (), (override));
+        MOCK_METHOD(void, server_multiple_stop, (), (override));
+        MOCK_METHOD(void, server_optional, (), (override));
+        MOCK_METHOD(void, server_optional_stop, (), (override));
+        MOCK_METHOD(void, server_array, (), (override));
+        MOCK_METHOD(void, server_array_stop, (), (override));
+        MOCK_METHOD(void, server_custom, (), (override));
+        MOCK_METHOD(void, server_custom_stop, (), (override));
     };
 }
 
@@ -105,4 +124,117 @@ TEST_F(TestBytearray, custom)
     EXPECT_CALL(service, custom(testing::_)).WillOnce(testing::Invoke(handler));
     const auto response = receive("10000402112201033344550166027788");
     EXPECT_EQ("10000403A1A2A30102A4A502A6A701A8", response);
+}
+
+TEST_F(TestBytearray, client_single)
+{
+    const std::vector<uint8_t> p0{0x11, 0x22, 0x33};
+    EXPECT_CALL(service, client_single(testutils::SPAN_EQ(p0)));
+
+    const auto response = receive("07000503112233");
+    EXPECT_EQ("", response);
+}
+
+TEST_F(TestBytearray, client_multiple)
+{
+    const std::vector<uint8_t> p0{0x11, 0x22, 0x33};
+    const std::vector<uint8_t> p1{0x44, 0x55};
+    EXPECT_CALL(service, client_multiple(testutils::SPAN_EQ(p0), testutils::SPAN_EQ(p1)));
+
+    const auto response = receive("0A000603112233024455");
+    EXPECT_EQ("", response);
+}
+
+TEST_F(TestBytearray, client_optional)
+{
+    etl::array<uint8_t, 3> data0{0x11, 0x22, 0x33};
+    const etl::optional<etl::span<const uint8_t>> p0{data0};
+    EXPECT_CALL(service, client_optional(testutils::OPT_SPAN_EQ(p0)));
+    const auto response = receive("0800070103112233");
+    EXPECT_EQ("", response);
+}
+
+TEST_F(TestBytearray, client_array)
+{
+    const auto handler = [&](etl::span<const etl::span<const uint8_t>> ba)
+    {
+        EXPECT_EQ(2, ba.size());
+        EXPECT_EQ(3, ba.at(0).size());
+        EXPECT_EQ(0x11, ba.at(0).at(0));
+        EXPECT_EQ(0x22, ba.at(0).at(1));
+        EXPECT_EQ(0x33, ba.at(0).at(2));
+        EXPECT_EQ(2, ba.at(1).size());
+        EXPECT_EQ(0x44, ba.at(1).at(0));
+        EXPECT_EQ(0x55, ba.at(1).at(1));
+    };
+
+    EXPECT_CALL(service, client_array(testing::_)).WillOnce(testing::Invoke(handler));
+    const auto response = receive("0A000803112233024455");
+    EXPECT_EQ("", response);
+}
+
+TEST_F(TestBytearray, client_custom)
+{
+    const auto handler = [&](const test_ba::BytearrayStruct &bas)
+    {
+        EXPECT_EQ(2, bas.f0.size());
+        EXPECT_EQ(0x11, bas.f0.at(0));
+        EXPECT_EQ(0x22, bas.f0.at(1));
+        EXPECT_TRUE(bas.f1.has_value());
+        EXPECT_EQ(0x33, bas.f1.value().at(0));
+        EXPECT_EQ(0x44, bas.f1.value().at(1));
+        EXPECT_EQ(0x55, bas.f1.value().at(2));
+        EXPECT_EQ(2, bas.f2.size());
+        EXPECT_EQ(1, bas.f2.at(0).size());
+        EXPECT_EQ(0x66, bas.f2.at(0).at(0));
+        EXPECT_EQ(2, bas.f2.at(1).size());
+        EXPECT_EQ(0x77, bas.f2.at(1).at(0));
+        EXPECT_EQ(0x88, bas.f2.at(1).at(1));
+    };
+
+    EXPECT_CALL(service, client_custom(testing::_)).WillOnce(testing::Invoke(handler));
+    const auto response = receive("10000902112201033344550166027788");
+    EXPECT_EQ("", response);
+}
+
+TEST_F(TestBytearray, server_single)
+{
+    const std::vector<uint8_t> p0{0x11, 0x22, 0x33};
+    service.server_single_response(p0);
+    EXPECT_EQ("07000A03112233", response());
+}
+
+TEST_F(TestBytearray, server_multiple)
+{
+    const std::vector<uint8_t> p0{0x11, 0x22, 0x33};
+    const std::vector<uint8_t> p1{0x44, 0x55};
+    service.server_multiple_response(p0, p1);
+    EXPECT_EQ("0A000B03112233024455", response());
+}
+
+TEST_F(TestBytearray, server_optional)
+{
+    const std::vector<uint8_t> p0{0x11, 0x22, 0x33};
+    service.server_optional_response({p0});
+    EXPECT_EQ("08000C0103112233", response());
+}
+
+TEST_F(TestBytearray, server_array)
+{
+    const std::vector<uint8_t> a0{0x11, 0x22, 0x33};
+    const std::vector<uint8_t> a1{0x44, 0x55};
+    const std::vector<etl::span<const uint8_t>> p0{a0, a1};
+    service.server_array_response(p0);
+    EXPECT_EQ("0A000D03112233024455", response());
+}
+
+TEST_F(TestBytearray, server_custom)
+{
+    etl::array<uint8_t, 3> ba4{0xA1, 0xA2, 0xA3};
+    etl::array<uint8_t, 2> ba5{0xA4, 0xA5};
+    etl::array<uint8_t, 2> ba6{0xA6, 0xA7};
+    etl::array<uint8_t, 1> ba7{0xA8};
+
+    service.server_custom_response(test_ba::BytearrayStruct{ba4, ba5, {ba6, ba7}});
+    EXPECT_EQ("10000E03A1A2A30102A4A502A6A701A8", response());
 }

@@ -56,23 +56,19 @@ generate_lrpc(Server2)
 generate_lrpc(Server3)
 generate_lrpc(Server4)
 generate_lrpc(Server5)
+generate_lrpc(Bytearray)
 
 set_directory_properties(PROPERTIES ADDITIONAL_CLEAN_FILES ${CMAKE_CURRENT_SOURCE_DIR}/generated)
 
 add_executable(UnitTests
-                TestEtlRwExtensions.cpp
-                TestServer1.cpp
-                TestServer2_s0.cpp
+                TestEtlRwExtensions.cpp ${CMAKE_CURRENT_SOURCE_DIR}/generated/core/lrpccore/EtlRwExtensions.hpp
+                TestServer1.cpp         ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server1/Server1.hpp
+                TestServer2_s0.cpp      ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server2/Server2.hpp
                 TestServer2_s1.cpp
-                TestServer3.cpp
-                TestServer4.cpp
-                TestServer5.cpp
-                ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server1/Server1.hpp
-                ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server2/Server2.hpp
-                ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server3/Server3.hpp
-                ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server4/Server4.hpp
-                ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server5/Server5.hpp
-                ${CMAKE_CURRENT_SOURCE_DIR}/generated/core/lrpccore/EtlRwExtensions.hpp
+                TestServer3.cpp         ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server3/Server3.hpp
+                TestServer4.cpp         ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server4/Server4.hpp
+                TestServer5.cpp         ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server5/Server5.hpp
+                TestBytearray.cpp       ${CMAKE_CURRENT_SOURCE_DIR}/generated/Bytearray/Bytearray.hpp
                 TestServerErrors.cpp)
 
 target_include_directories(UnitTests PRIVATE .)

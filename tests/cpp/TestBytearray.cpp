@@ -1,0 +1,108 @@
+#include "generated/Bytearray/Bytearray.hpp"
+#include "TestUtils.hpp"
+
+using ::testing::Return;
+
+namespace
+{
+    class Bytearrayservice : public test_ba::bytearray_shim
+    {
+    public:
+        MOCK_METHOD((etl::span<const uint8_t>), param_return, (etl::span<const uint8_t>), (override));
+        MOCK_METHOD((std::tuple<etl::span<const uint8_t>, etl::span<const uint8_t>>), param_return_multiple, (etl::span<const uint8_t> p0, etl::span<const uint8_t>), (override));
+        MOCK_METHOD((etl::optional<etl::span<const uint8_t>>), optional, (etl::optional<etl::span<const uint8_t>>), (override));
+        MOCK_METHOD((etl::span<const etl::span<const uint8_t>>), array, (etl::span<const etl::span<const uint8_t>>), (override));
+        MOCK_METHOD(test_ba::BytearrayStruct, custom, (const test_ba::BytearrayStruct &), (override));
+    };
+}
+
+using TestBytearray = testutils::TestServerBase<test_ba::Bytearray, Bytearrayservice>;
+
+TEST_F(TestBytearray, param_return)
+{
+    const std::vector<uint8_t> p0{0x11, 0x22, 0x33};
+    const std::vector<uint8_t> r0{0x44, 0x55, 0x66};
+    EXPECT_CALL(service, param_return(testutils::SPAN_EQ(p0))).WillOnce(Return(r0));
+    const auto response = receive("07000003112233");
+    EXPECT_EQ("07000003445566", response);
+}
+
+TEST_F(TestBytearray, param_return_multiple)
+{
+    const std::vector<uint8_t> p0{0x11, 0x22, 0x33};
+    const std::vector<uint8_t> p1{0x44, 0x55};
+    const std::vector<uint8_t> r0{0x66, 0x77, 0x88};
+    const std::vector<uint8_t> r1{0x99, 0xAA};
+    EXPECT_CALL(service,
+                param_return_multiple(testutils::SPAN_EQ(p0), testutils::SPAN_EQ(p1)))
+        .WillOnce(Return(std::tuple<etl::span<const uint8_t>, etl::span<const uint8_t>>{r0, r1}));
+    const auto response = receive("0A000103112233024455");
+    EXPECT_EQ("0A0001036677880299AA", response);
+}
+
+TEST_F(TestBytearray, optional)
+{
+    etl::array<uint8_t, 3> data0{0x11, 0x22, 0x33};
+    const etl::optional<etl::span<const uint8_t>> p0{data0};
+    etl::array<uint8_t, 3> data1{0x44, 0x55, 0x66};
+    const etl::optional<etl::span<const uint8_t>> r0{data1};
+    EXPECT_CALL(service, optional(testutils::OPT_SPAN_EQ(p0))).WillOnce(Return(r0));
+    const auto response = receive("0800020103112233");
+    EXPECT_EQ("0800020103445566", response);
+}
+
+TEST_F(TestBytearray, array)
+{
+    etl::array<uint8_t, 2> ba0{0xA1, 0xA2};
+    etl::array<uint8_t, 3> ba1{0xA3, 0xA4, 0xA5};
+    etl::array<etl::span<const uint8_t>, 2> r0{ba0, ba1};
+
+    const auto handler = [&](etl::span<const etl::span<const uint8_t>> ba)
+    {
+        EXPECT_EQ(2, ba.size());
+        EXPECT_EQ(3, ba.at(0).size());
+        EXPECT_EQ(0x11, ba.at(0).at(0));
+        EXPECT_EQ(0x22, ba.at(0).at(1));
+        EXPECT_EQ(0x33, ba.at(0).at(2));
+        EXPECT_EQ(2, ba.at(1).size());
+        EXPECT_EQ(0x44, ba.at(1).at(0));
+        EXPECT_EQ(0x55, ba.at(1).at(1));
+
+        return r0;
+    };
+
+    EXPECT_CALL(service, array(testing::_)).WillOnce(testing::Invoke(handler));
+    const auto response = receive("0A000303112233024455");
+    EXPECT_EQ("0A000302A1A203A3A4A5", response);
+}
+
+TEST_F(TestBytearray, custom)
+{
+    etl::array<uint8_t, 3> ba4{0xA1, 0xA2, 0xA3};
+    etl::array<uint8_t, 2> ba5{0xA4, 0xA5};
+    etl::array<uint8_t, 2> ba6{0xA6, 0xA7};
+    etl::array<uint8_t, 1> ba7{0xA8};
+
+    const auto handler = [&](const test_ba::BytearrayStruct &bas)
+    {
+        EXPECT_EQ(2, bas.f0.size());
+        EXPECT_EQ(0x11, bas.f0.at(0));
+        EXPECT_EQ(0x22, bas.f0.at(1));
+        EXPECT_TRUE(bas.f1.has_value());
+        EXPECT_EQ(0x33, bas.f1.value().at(0));
+        EXPECT_EQ(0x44, bas.f1.value().at(1));
+        EXPECT_EQ(0x55, bas.f1.value().at(2));
+        EXPECT_EQ(2, bas.f2.size());
+        EXPECT_EQ(1, bas.f2.at(0).size());
+        EXPECT_EQ(0x66, bas.f2.at(0).at(0));
+        EXPECT_EQ(2, bas.f2.at(1).size());
+        EXPECT_EQ(0x77, bas.f2.at(1).at(0));
+        EXPECT_EQ(0x88, bas.f2.at(1).at(1));
+
+        return test_ba::BytearrayStruct{ba4, ba5, {ba6, ba7}};
+    };
+
+    EXPECT_CALL(service, custom(testing::_)).WillOnce(testing::Invoke(handler));
+    const auto response = receive("10000402112201033344550166027788");
+    EXPECT_EQ("10000403A1A2A30102A4A502A6A701A8", response);
+}

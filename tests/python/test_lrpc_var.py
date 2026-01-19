@@ -298,10 +298,10 @@ class TestLrpcVarByteArray:
 
         assert v.name() == "v1"
         assert v.base_type() == "bytearray"
-        assert v.field_type() == "etl::span<const uint8_t>"
-        assert v.return_type() == "etl::span<const uint8_t>"
-        assert v.param_type() == "etl::span<const uint8_t>"
-        assert v.rw_type() == "lrpc::bytearray"
+        assert v.field_type() == "lrpc::bytearray_t"
+        assert v.return_type() == "lrpc::bytearray_t"
+        assert v.param_type() == "lrpc::bytearray_t"
+        assert v.rw_type() == "lrpc::tags::bytearray_auto"
         assert not v.base_type_is_custom()
         assert not v.base_type_is_struct()
         assert not v.base_type_is_enum()
@@ -328,10 +328,10 @@ class TestLrpcVarByteArray:
 
         assert v.name() == "v1"
         assert v.base_type() == "bytearray"
-        assert v.field_type() == "etl::array<etl::span<const uint8_t>, 2>"
-        assert v.return_type() == "etl::span<const etl::span<const uint8_t>>"
-        assert v.param_type() == "etl::span<const etl::span<const uint8_t>>"
-        assert v.rw_type() == "lrpc::tags::array_n<lrpc::bytearray>"
+        assert v.field_type() == "etl::array<lrpc::bytearray_t, 2>"
+        assert v.return_type() == "etl::span<const lrpc::bytearray_t>"
+        assert v.param_type() == "etl::span<const lrpc::bytearray_t>"
+        assert v.rw_type() == "lrpc::tags::array_n<lrpc::tags::bytearray_auto>"
         assert not v.base_type_is_custom()
         assert not v.base_type_is_struct()
         assert not v.base_type_is_enum()
@@ -358,10 +358,10 @@ class TestLrpcVarByteArray:
 
         assert v.name() == "v1"
         assert v.base_type() == "bytearray"
-        assert v.field_type() == "etl::optional<etl::span<const uint8_t>>"
-        assert v.return_type() == "etl::optional<etl::span<const uint8_t>>"
-        assert v.param_type() == "etl::optional<etl::span<const uint8_t>>"
-        assert v.rw_type() == "etl::optional<lrpc::bytearray>"
+        assert v.field_type() == "etl::optional<lrpc::bytearray_t>"
+        assert v.return_type() == "etl::optional<lrpc::bytearray_t>"
+        assert v.param_type() == "etl::optional<lrpc::bytearray_t>"
+        assert v.rw_type() == "etl::optional<lrpc::tags::bytearray_auto>"
         assert not v.base_type_is_custom()
         assert not v.base_type_is_struct()
         assert not v.base_type_is_enum()

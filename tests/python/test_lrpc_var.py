@@ -240,19 +240,19 @@ def test_rw_type_intrinsic() -> None:
 def test_rw_type_fixed_size_string() -> None:
     v: LrpcVarDict = {"name": "v1", "type": "string_2"}
 
-    assert LrpcVar(v).rw_type() == "lrpc::string_n"
+    assert LrpcVar(v).rw_type() == "lrpc::tags::string_n"
 
 
 def test_rw_type_auto_string() -> None:
     v: LrpcVarDict = {"name": "v1", "type": "string"}
 
-    assert LrpcVar(v).rw_type() == "lrpc::string_auto"
+    assert LrpcVar(v).rw_type() == "lrpc::tags::string_auto"
 
 
 def test_rw_type_array_of_intrinsic() -> None:
     v: LrpcVarDict = {"name": "v1", "type": "bool", "count": 2}
 
-    assert LrpcVar(v).rw_type() == "lrpc::array_n<bool>"
+    assert LrpcVar(v).rw_type() == "lrpc::tags::array_n<bool>"
 
 
 def test_rw_type_optional_of_intrinsic() -> None:
@@ -282,7 +282,7 @@ def test_rw_type_custom_with_namespace() -> None:
 def test_rw_type_array_of_custom_with_namespace() -> None:
     v: LrpcVarDict = {"name": "v1", "type": "@MyType", "count": 2}
 
-    assert LrpcVar(v).rw_type("my_namespace") == "lrpc::array_n<my_namespace::MyType>"
+    assert LrpcVar(v).rw_type("my_namespace") == "lrpc::tags::array_n<my_namespace::MyType>"
 
 
 def test_rw_type_optional_of_custom_with_namespace() -> None:
@@ -331,7 +331,7 @@ class TestLrpcVarByteArray:
         assert v.field_type() == "etl::array<etl::span<const uint8_t>, 2>"
         assert v.return_type() == "etl::span<const etl::span<const uint8_t>>"
         assert v.param_type() == "etl::span<const etl::span<const uint8_t>>"
-        assert v.rw_type() == "lrpc::array_n<lrpc::bytearray>"
+        assert v.rw_type() == "lrpc::tags::array_n<lrpc::bytearray>"
         assert not v.base_type_is_custom()
         assert not v.base_type_is_struct()
         assert not v.base_type_is_enum()

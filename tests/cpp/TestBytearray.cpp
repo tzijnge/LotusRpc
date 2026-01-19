@@ -8,17 +8,17 @@ namespace
     class Bytearrayservice : public test_ba::bytearray_shim
     {
     public:
-        MOCK_METHOD((etl::span<const uint8_t>), param_return, (etl::span<const uint8_t>), (override));
-        MOCK_METHOD((std::tuple<etl::span<const uint8_t>, etl::span<const uint8_t>>), param_return_multiple, (etl::span<const uint8_t> p0, etl::span<const uint8_t>), (override));
-        MOCK_METHOD((etl::optional<etl::span<const uint8_t>>), optional, (etl::optional<etl::span<const uint8_t>>), (override));
-        MOCK_METHOD((etl::span<const etl::span<const uint8_t>>), array, (etl::span<const etl::span<const uint8_t>>), (override));
+        MOCK_METHOD((lrpc::bytearray_t), param_return, (lrpc::bytearray_t), (override));
+        MOCK_METHOD((std::tuple<lrpc::bytearray_t, lrpc::bytearray_t>), param_return_multiple, (lrpc::bytearray_t p0, lrpc::bytearray_t), (override));
+        MOCK_METHOD((etl::optional<lrpc::bytearray_t>), optional, (etl::optional<lrpc::bytearray_t>), (override));
+        MOCK_METHOD((etl::span<const lrpc::bytearray_t>), array, (etl::span<const lrpc::bytearray_t>), (override));
         MOCK_METHOD(test_ba::BytearrayStruct, custom, (const test_ba::BytearrayStruct &), (override));
 
         // client streams
-        MOCK_METHOD(void, client_single, (etl::span<const uint8_t>), (override));
-        MOCK_METHOD(void, client_multiple, (etl::span<const uint8_t>, etl::span<const uint8_t>), (override));
-        MOCK_METHOD(void, client_optional, (etl::optional<etl::span<const uint8_t>>), (override));
-        MOCK_METHOD(void, client_array, (etl::span<const etl::span<const uint8_t>>), (override));
+        MOCK_METHOD(void, client_single, (lrpc::bytearray_t), (override));
+        MOCK_METHOD(void, client_multiple, (lrpc::bytearray_t, lrpc::bytearray_t), (override));
+        MOCK_METHOD(void, client_optional, (etl::optional<lrpc::bytearray_t>), (override));
+        MOCK_METHOD(void, client_array, (etl::span<const lrpc::bytearray_t>), (override));
         MOCK_METHOD(void, client_custom, (const test_ba::BytearrayStruct &), (override));
 
         // server streams
@@ -54,7 +54,7 @@ TEST_F(TestBytearray, param_return_multiple)
     const std::vector<uint8_t> r1{0x99, 0xAA};
     EXPECT_CALL(service,
                 param_return_multiple(testutils::SPAN_EQ(p0), testutils::SPAN_EQ(p1)))
-        .WillOnce(Return(std::tuple<etl::span<const uint8_t>, etl::span<const uint8_t>>{r0, r1}));
+        .WillOnce(Return(std::tuple<lrpc::bytearray_t, lrpc::bytearray_t>{r0, r1}));
     const auto response = receive("0A000103112233024455");
     EXPECT_EQ("0A0001036677880299AA", response);
 }
@@ -62,9 +62,9 @@ TEST_F(TestBytearray, param_return_multiple)
 TEST_F(TestBytearray, optional)
 {
     etl::array<uint8_t, 3> data0{0x11, 0x22, 0x33};
-    const etl::optional<etl::span<const uint8_t>> p0{data0};
+    const etl::optional<lrpc::bytearray_t> p0{data0};
     etl::array<uint8_t, 3> data1{0x44, 0x55, 0x66};
-    const etl::optional<etl::span<const uint8_t>> r0{data1};
+    const etl::optional<lrpc::bytearray_t> r0{data1};
     EXPECT_CALL(service, optional(testutils::OPT_SPAN_EQ(p0))).WillOnce(Return(r0));
     const auto response = receive("0800020103112233");
     EXPECT_EQ("0800020103445566", response);
@@ -74,9 +74,9 @@ TEST_F(TestBytearray, array)
 {
     etl::array<uint8_t, 2> ba0{0xA1, 0xA2};
     etl::array<uint8_t, 3> ba1{0xA3, 0xA4, 0xA5};
-    etl::array<etl::span<const uint8_t>, 2> r0{ba0, ba1};
+    etl::array<lrpc::bytearray_t, 2> r0{ba0, ba1};
 
-    const auto handler = [&](etl::span<const etl::span<const uint8_t>> ba)
+    const auto handler = [&](etl::span<const lrpc::bytearray_t> ba)
     {
         EXPECT_EQ(2, ba.size());
         EXPECT_EQ(3, ba.at(0).size());
@@ -148,7 +148,7 @@ TEST_F(TestBytearray, client_multiple)
 TEST_F(TestBytearray, client_optional)
 {
     etl::array<uint8_t, 3> data0{0x11, 0x22, 0x33};
-    const etl::optional<etl::span<const uint8_t>> p0{data0};
+    const etl::optional<lrpc::bytearray_t> p0{data0};
     EXPECT_CALL(service, client_optional(testutils::OPT_SPAN_EQ(p0)));
     const auto response = receive("0800070103112233");
     EXPECT_EQ("", response);
@@ -156,7 +156,7 @@ TEST_F(TestBytearray, client_optional)
 
 TEST_F(TestBytearray, client_array)
 {
-    const auto handler = [&](etl::span<const etl::span<const uint8_t>> ba)
+    const auto handler = [&](etl::span<const lrpc::bytearray_t> ba)
     {
         EXPECT_EQ(2, ba.size());
         EXPECT_EQ(3, ba.at(0).size());
@@ -223,7 +223,7 @@ TEST_F(TestBytearray, server_array)
 {
     const std::vector<uint8_t> a0{0x11, 0x22, 0x33};
     const std::vector<uint8_t> a1{0x44, 0x55};
-    const std::vector<etl::span<const uint8_t>> p0{a0, a1};
+    const std::vector<lrpc::bytearray_t> p0{a0, a1};
     service.server_array_response(p0);
     EXPECT_EQ("0A000D03112233024455", response());
 }

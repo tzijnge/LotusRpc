@@ -88,7 +88,7 @@ def test_array_param() -> None:
 \t
 \tauto w = server->getWriter();
 \twriteHeader(w, 42);
-\tlrpc::write_unchecked<lrpc::array_n<uint8_t>>(w, p0, 25);
+\tlrpc::write_unchecked<lrpc::tags::array_n<uint8_t>>(w, p0, 25);
 \tupdateHeader(w);
 \tserver->transmit(w);
 }
@@ -110,7 +110,7 @@ def test_string_n_param() -> None:
 \t
 \tauto w = server->getWriter();
 \twriteHeader(w, 42);
-\tlrpc::write_unchecked<lrpc::string_n>(w, p0, 20);
+\tlrpc::write_unchecked<lrpc::tags::string_n>(w, p0, 20);
 \tupdateHeader(w);
 \tserver->transmit(w);
 }
@@ -132,7 +132,7 @@ def test_array_of_string_n_param() -> None:
 \t
 \tauto w = server->getWriter();
 \twriteHeader(w, 42);
-\tlrpc::write_unchecked<lrpc::array_n<lrpc::string_n>>(w, p0, 7, 5);
+\tlrpc::write_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(w, p0, 7, 5);
 \tupdateHeader(w);
 \tserver->transmit(w);
 }

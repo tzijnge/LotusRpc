@@ -60,7 +60,7 @@ class LrpcVar:
         if self.base_type_is_string():
             t = LrpcVar.ETL_STRING_VIEW
         elif self.base_type_is_bytearray():
-            t = "etl::span<const uint8_t>"
+            t = "lrpc::bytearray_t"
         else:
             t = self.base_type()
 
@@ -76,7 +76,7 @@ class LrpcVar:
         if self.base_type_is_string():
             t = LrpcVar.ETL_STRING_VIEW
         elif self.base_type_is_bytearray():
-            t = "etl::span<const uint8_t>"
+            t = "lrpc::bytearray_t"
         else:
             t = self.base_type()
 
@@ -92,7 +92,7 @@ class LrpcVar:
         if self.base_type_is_string():
             t = LrpcVar.ETL_STRING_VIEW
         elif self.base_type_is_bytearray():
-            t = "etl::span<const uint8_t>"
+            t = "lrpc::bytearray_t"
         else:
             t = self.base_type()
 
@@ -109,16 +109,16 @@ class LrpcVar:
 
     def rw_type(self, namespace: str | None = None) -> str:
         if self.base_type_is_string():
-            t = "lrpc::string_n" if self.is_fixed_size_string() else "lrpc::string_auto"
+            t = "lrpc::tags::string_n" if self.is_fixed_size_string() else "lrpc::tags::string_auto"
         elif self.base_type_is_bytearray():
-            t = "lrpc::bytearray"
+            t = "lrpc::tags::bytearray_auto"
         elif self.base_type_is_custom() and namespace is not None:
             t = f"{namespace}::{self.base_type()}"
         else:
             t = self.base_type()
 
         if self.is_array():
-            return f"lrpc::array_n<{t}>"
+            return f"lrpc::tags::array_n<{t}>"
 
         if self.is_optional():
             return f"etl::optional<{t}>"

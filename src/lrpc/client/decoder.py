@@ -1,5 +1,5 @@
 import struct
-from typing import Any
+from typing import Any, cast
 
 from lrpc.core import LrpcDef, LrpcVar
 from lrpc.types.lrpc_type import LrpcBasicTypeValidator, LrpcType
@@ -18,9 +18,7 @@ class LrpcDecoder:
         if remaining < ba_size:
             raise ValueError(f"Incomplete bytearray: expected {ba_size} bytes but got {remaining}")
 
-        ba = self.encoded[self.start : self.start + ba_size]
-        self.start += ba_size
-        return ba
+        return cast(bytes, self.__unpack(f"{ba_size}s"))
 
     def __decode_string(self, var: LrpcVar) -> str:
         if var.is_auto_string():

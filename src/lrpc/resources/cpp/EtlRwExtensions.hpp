@@ -249,6 +249,24 @@ namespace lrpc
         return s;
     }
 
+    // auto bytearray
+    template <typename T>
+    using enable_for_bytearray = etl::enable_if_t<etl::is_same<T, tags::bytearray_auto>::value, bytearray_t>;
+
+    template <typename T>
+    enable_for_bytearray<T>
+    read_unchecked(etl::byte_stream_reader &stream)
+    {
+        size_t readSize = stream.read_unchecked<uint8_t>();
+        const auto streamSize = stream.available_bytes();
+
+        readSize = etl::min(readSize, streamSize);
+
+        const bytearray_t ba{reinterpret_cast<const uint8_t *>(stream.end()), readSize};
+        (void)stream.skip<uint8_t>(readSize);
+        return ba;
+    };
+
     // Optional, but not of fixed size string
     template <typename T>
     using enable_for_optional = etl::enable_if_t<is_etl_optional<T>::value && (!is_optional_string_n<T>::value), typename etl_optional_pr_type<T>::type>;
@@ -327,24 +345,6 @@ namespace lrpc
         {
             stream.skip<uint8_t>((definitionArraySize - s) * (definitionStringSize + 1));
         }
-    };
-
-    // auto bytearray
-    template <typename T>
-    using enable_for_bytearray = etl::enable_if_t<etl::is_same<T, tags::bytearray_auto>::value, bytearray_t>;
-
-    template <typename T>
-    enable_for_bytearray<T>
-    read_unchecked(etl::byte_stream_reader &stream)
-    {
-        size_t readSize = stream.read_unchecked<uint8_t>();
-        const auto streamSize = stream.available_bytes();
-
-        readSize = etl::min(readSize, streamSize);
-
-        const bytearray_t ba{reinterpret_cast<const uint8_t *>(stream.end()), readSize};
-        (void)stream.skip<uint8_t>(readSize);
-        return ba;
     };
 
     // deleted write function to allow specializations for custom structs

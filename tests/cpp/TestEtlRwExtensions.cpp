@@ -35,6 +35,7 @@ TEST(TestEtlRwExtensions, etl_optional_type)
     EXPECT_FALSE((etl::is_same<uint16_t, lrpc::etl_optional_type<etl::optional<uint32_t>>::type>::value));
     EXPECT_TRUE((etl::is_same<lrpc::tags::string_auto, lrpc::etl_optional_type<etl::optional<lrpc::tags::string_auto>>::type>::value));
     EXPECT_TRUE((etl::is_same<lrpc::tags::string_n, lrpc::etl_optional_type<etl::optional<lrpc::tags::string_n>>::type>::value));
+    EXPECT_TRUE((etl::is_same<lrpc::tags::bytearray_auto, lrpc::etl_optional_type<etl::optional<lrpc::tags::bytearray_auto>>::type>::value));
 }
 
 TEST(TestEtlRwExtensions, etl_optional_pr_type)

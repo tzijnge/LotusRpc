@@ -65,6 +65,20 @@ def test_server1_f29(capsys: pytest.CaptureFixture[str]) -> None:
     assert escape_ansi(capsys.readouterr().out) == expected_response
 
 
+def test_server1_stream0(capsys: pytest.CaptureFixture[str]) -> None:
+    lrpcc = make_lrpcc("../testdata/TestServer1.lrpc.yaml", check_server_version=False)
+    lrpcc._command_handler("s0", "stream0", p0=b"\33\44\55", final=False)
+
+    assert escape_ansi(capsys.readouterr().out) == ""
+
+
+def test_server1_stream0_final(capsys: pytest.CaptureFixture[str]) -> None:
+    lrpcc = make_lrpcc("../testdata/TestServer1.lrpc.yaml", check_server_version=False)
+    lrpcc._command_handler("s0", "stream0", p0=b"\33\44\55", final=True)
+
+    assert escape_ansi(capsys.readouterr().out) == ""
+
+
 def test_client_infinite(capsys: pytest.CaptureFixture[str]) -> None:
     lrpcc = make_lrpcc("../testdata/TestServer5.lrpc.yaml")
     lrpcc._command_handler("srv0", "client_infinite", p0=1234, p1=56)

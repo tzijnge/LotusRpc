@@ -129,7 +129,7 @@ class ClientCliVisitor(LrpcVisitor):
             raise ValueError("Click group initialized without name")
         self.current_function = click.Command(
             name=function.name(),
-            callback=partial(self.__handle_command, self.current_service.name, function.name()),
+            callback=partial(self.__handle_command, self.current_service.name, function.name(), None),
             help=f"Call LRPC function {self.current_service.name}.{function.name()}",
         )
 
@@ -137,13 +137,7 @@ class ClientCliVisitor(LrpcVisitor):
         self.current_service.add_command(self.current_function)
 
     def visit_lrpc_function_param(self, param: LrpcVar) -> None:
-        attributes = {"type": self.__click_type(param), "nargs": param.array_size() if param.is_array() else 1}
-        if param.base_type_is_bytearray():
-            attributes["callback"] = self.__validate_bytearray
-        required = True
-
-        arg = click.Argument([param.name()], required, **attributes)
-        self.current_function.params.append(arg)
+        self.current_function.params.append(self.__make_arg(param))
 
     def visit_lrpc_stream(self, stream: LrpcStream) -> None:
         if self.current_service.name is None:
@@ -159,44 +153,59 @@ class ClientCliVisitor(LrpcVisitor):
 
         self.current_stream = click.Command(
             name=stream.name(),
-            callback=partial(self.__handle_command, self.current_service.name, stream.name()),
+            callback=partial(
+                self.__handle_command,
+                self.current_service.name,
+                stream.name(),
+                self.current_stream_origin,
+            ),
             help=command_help,
         )
 
         self.current_service.add_command(self.current_stream)
 
     def visit_lrpc_stream_param(self, param: LrpcVar) -> None:
-        click_param: click.Parameter
-
         if self.current_stream_origin == LrpcStream.Origin.SERVER:
             if param.name() != "start":
                 raise ValueError("Server stream takes a single parameter named 'start'")
-            click_param = click.Option(
-                ["--start/--stop"],
-                is_flag=True,
-                default=True,
-                show_default=True,
-                required=False,
-                help="Start or stop the stream",
-            )
+            self.current_stream.params.append(self.__make_stream_start_stop_option())
         elif self.current_stream_is_finite and (param.name() == "final"):
-            click_param = click.Option(
-                ["--final"],
-                is_flag=True,
-                default=False,
-                show_default=True,
-                required=False,
-                help="Indicate the final message in the stream",
-            )
+            self.current_stream.params.append(self.__make_stream_final_option())
         else:
-            attributes = {"type": self.__click_type(param), "nargs": param.array_size() if param.is_array() else 1}
-            click_param = click.Argument([param.name()], required=True, **attributes)
-
-        self.current_stream.params.append(click_param)
+            self.current_stream.params.append(self.__make_arg(param))
 
     def visit_lrpc_stream_end(self) -> None:
         if self.current_stream_origin == LrpcStream.Origin.CLIENT:
             self.current_service.add_command(self.current_stream)
+
+    def __make_arg(self, param: LrpcVar) -> click.Parameter:
+        return click.Argument(
+            [param.name()],
+            required=True,
+            type=self.__click_type(param),
+            nargs=param.array_size() if param.is_array() else 1,
+            callback=self.__validate_bytearray if param.base_type_is_bytearray() else None,
+        )
+
+    def __make_stream_final_option(self) -> click.Option:
+        return click.Option(
+            ["--final"],
+            is_flag=True,
+            default=False,
+            show_default=True,
+            required=False,
+            help="Indicate the final message in the stream",
+        )
+
+    def __make_stream_start_stop_option(self) -> click.Option:
+        return click.Option(
+            ["--start/--stop"],
+            is_flag=True,
+            default=True,
+            show_default=True,
+            required=False,
+            help="Start or stop the stream",
+        )
 
     @staticmethod
     def __validate_bytearray(ctx: click.Context, param: click.Parameter, value: str) -> bytes:
@@ -236,11 +245,25 @@ class ClientCliVisitor(LrpcVisitor):
 
         return t
 
-    def __handle_command(self, service: str, function: str, **kwargs: Any) -> None:
+    def __handle_command(
+        self,
+        service: str,
+        function_or_stream: str,
+        origin: LrpcStream.Origin | None = None,
+        **kwargs: Any,
+    ) -> None:
+        # click does not always pass the 'start' and 'final' options in the same
+        # order as they were added to the command. Hence they need to be moved to
+        # the end of the parameters dictionary
+        if origin == LrpcStream.Origin.SERVER and "start" in kwargs:
+            kwargs.update({"start": kwargs.pop("start")})
+        elif "final" in kwargs:
+            kwargs.update({"final": kwargs.pop("final")})
+
         for a, v in kwargs.items():
             if v == NONE_ARG:
                 kwargs[a] = None
         try:
-            self.callback(service, function, **kwargs)
+            self.callback(service, function_or_stream, **kwargs)
         except Exception as e:
             raise click.ClickException(str(e)) from e

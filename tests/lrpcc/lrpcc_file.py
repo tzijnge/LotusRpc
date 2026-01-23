@@ -22,3 +22,6 @@ class Transport:
         for a in self.server:
             if data == bytes.fromhex(a["write"]):
                 self.current_message = bytes.fromhex(a["read"])
+                return
+
+        raise ValueError(f"Received unexpected data of length {len(data)}: {data!r}")

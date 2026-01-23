@@ -123,6 +123,12 @@ services:
           - { name: p0, type: "bytearray" }
         returns:
           - { name: r0, type: "bytearray" }
+    streams:
+      - name: stream0
+        origin: client
+        finite: true
+        params:
+          - { name: p0, type: bytearray }
 structs:
   - name: CompositeData
     fields:

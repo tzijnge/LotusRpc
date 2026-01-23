@@ -118,6 +118,11 @@ services:
       - name: f28
         params:
           - { name: p0, type: "@CompositeData4" }
+      - name: f29
+        params:
+          - { name: p0, type: "bytearray" }
+        returns:
+          - { name: r0, type: "bytearray" }
 structs:
   - name: CompositeData
     fields:

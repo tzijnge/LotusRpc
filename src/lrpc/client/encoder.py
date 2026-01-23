@@ -2,6 +2,14 @@ import struct
 
 from lrpc.core import LrpcDef, LrpcVar
 from lrpc.types import LrpcBasicType, LrpcType
+from lrpc.types.lrpc_type import LrpcBuffer
+
+
+def __check_bytearray(value: LrpcType, var: LrpcVar) -> memoryview:
+    if not isinstance(value, LrpcBuffer):
+        raise TypeError(f"Type error for {var.name()}: expected bytearray, but got {type(value)}")
+
+    return memoryview(value)
 
 
 def __check_string(value: LrpcType, var: LrpcVar) -> str:
@@ -9,6 +17,10 @@ def __check_string(value: LrpcType, var: LrpcVar) -> str:
         raise TypeError(f"Type error for {var.name()}: expected string, but got {type(value)}")
 
     return value
+
+
+def __encode_bytearray(ba: memoryview) -> bytes:
+    return struct.pack("<B", ba.nbytes) + ba.tobytes()
 
 
 def __encode_string(s: str, var: LrpcVar) -> bytes:
@@ -100,6 +112,10 @@ def lrpc_encode(value: LrpcType, var: LrpcVar, lrpc_def: LrpcDef) -> bytes:
 
     if var.is_optional():
         return __encode_optional(value, var, lrpc_def)
+
+    if var.base_type_is_bytearray():
+        value = __check_bytearray(value, var)
+        return __encode_bytearray(value)
 
     if var.base_type_is_string():
         value = __check_string(value, var)

@@ -44,3 +44,7 @@
   write: "03001A"
   read: "10001A49276D00206120007472656500"
   response: 'r0: ["I''m", '' a '', ''tree'']'
+- cli: 'lrpcc s0 f29 "1a 2B3C"'
+  write: "07001D031A2B3C"
+  read: "07001D03334455"
+  response: "r0: [33 44 55]"

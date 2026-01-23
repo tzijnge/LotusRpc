@@ -138,6 +138,8 @@ class ClientCliVisitor(LrpcVisitor):
 
     def visit_lrpc_function_param(self, param: LrpcVar) -> None:
         attributes = {"type": self.__click_type(param), "nargs": param.array_size() if param.is_array() else 1}
+        if param.base_type_is_bytearray():
+            attributes["callback"] = self.__validate_bytearray
         required = True
 
         arg = click.Argument([param.name()], required, **attributes)
@@ -196,13 +198,24 @@ class ClientCliVisitor(LrpcVisitor):
         if self.current_stream_origin == LrpcStream.Origin.CLIENT:
             self.current_service.add_command(self.current_stream)
 
+    @staticmethod
+    def __validate_bytearray(ctx: click.Context, param: click.Parameter, value: str) -> bytes:
+        try:
+            return bytes.fromhex(value)
+        except ValueError as e:
+            raise click.BadParameter(
+                "Parameter must contain an even number of case-insensitive hex digits, possibly whitespace separated",
+                ctx=ctx,
+                param=param,
+            ) from e
+
     def __click_type(self, param: LrpcVar) -> click.ParamType:
         t: click.ParamType = click.UNPROCESSED
 
         if param.base_type_is_integral():
             t = click.INT
 
-        if param.base_type_is_string():
+        if param.base_type_is_string() or param.base_type_is_bytearray():
             t = click.STRING
 
         if param.base_type_is_float():

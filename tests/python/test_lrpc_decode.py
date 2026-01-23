@@ -125,7 +125,7 @@ def test_decode_bool() -> None:
     assert lrpc_decode(b"\xff", var, lrpc_def)
 
 
-def test_decode_string() -> None:
+def test_decode_auto_string() -> None:
     var = LrpcVar({"name": "v1", "type": "string"})
 
     assert lrpc_decode(b"test123\x00", var, lrpc_def) == "test123"
@@ -165,6 +165,16 @@ def test_decode_fixed_size_string() -> None:
     # too long
     with pytest.raises(ValueError, match=re.escape("String not terminated: b'01234567890\\x00'")):
         lrpc_decode(b"01234567890\x00", var, lrpc_def)
+
+
+def test_decode_auto_bytearray() -> None:
+    var = LrpcVar({"name": "v1", "type": "bytearray"})
+
+    assert lrpc_decode(b"\x07test123", var, lrpc_def) == b"test123"
+    assert lrpc_decode(b"\x02test123", var, lrpc_def) == b"te"
+
+    with pytest.raises(ValueError, match="Incomplete bytearray: expected 8 bytes but got 7"):
+        lrpc_decode(b"\x08test123", var, lrpc_def)
 
 
 def test_decode_array() -> None:
@@ -222,6 +232,20 @@ def test_decode_array_of_auto_string() -> None:
         lrpc_decode(b"ab\x00cd\x00", var, lrpc_def)
 
 
+def test_decode_array_of_auto_bytearray() -> None:
+    var = LrpcVar({"name": "v1", "type": "bytearray", "count": 3})
+
+    assert lrpc_decode(b"\x04abcd\x02ef\x00", var, lrpc_def) == [b"abcd", b"ef", b""]
+    assert lrpc_decode(b"\x03ab1\x04cd23\x04ef45\x04gh67", var, lrpc_def) == [
+        b"ab1",
+        b"cd23",
+        b"ef45",
+    ]
+
+    with pytest.raises(ValueError, match="Incomplete bytearray: expected 1 bytes but got 0"):
+        lrpc_decode(b"\x02cd\x01", var, lrpc_def)
+
+
 def test_decode_optional() -> None:
     var = LrpcVar({"name": "v1", "type": "uint8_t", "count": "?"})
 
@@ -264,6 +288,19 @@ def test_decode_optional_auto_string() -> None:
 
     with pytest.raises(ValueError, match=re.escape("String not terminated: b'\\x01ab'")):
         lrpc_decode(b"\x01ab", var, lrpc_def)
+
+
+def test_decode_optional_auto_bytearray() -> None:
+    var = LrpcVar({"name": "v1", "type": "bytearray", "count": "?"})
+
+    assert lrpc_decode(b"\x00", var, lrpc_def) is None
+    assert lrpc_decode(b"\x01\x02ab", var, lrpc_def) == b"ab"
+
+    # trailing bytes
+    assert lrpc_decode(b"\x01\x02ab\x00\x00", var, lrpc_def) == b"ab"
+
+    with pytest.raises(ValueError, match="Incomplete bytearray: expected 3 bytes but got 2"):
+        lrpc_decode(b"\x01\x03ab", var, lrpc_def)
 
 
 def test_decode_struct_not_in_def() -> None:

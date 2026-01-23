@@ -111,7 +111,7 @@ class LrpcDecoder:
         return LrpcBasicTypeValidator.validate_python(unpacked[0])
 
     # pylint: disable = too-many-return-statements
-    def lrpc_decode(self, var: LrpcVar) -> LrpcType:
+    def lrpc_decode(self, var: LrpcVar) -> LrpcType:  # noqa: PLR0911
         if var.is_array_of_strings():
             return self.__decode_array_of_strings(var)
 

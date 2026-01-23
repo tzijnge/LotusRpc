@@ -31,17 +31,43 @@ TEST(TestEtlRwExtensions, is_array_n)
 
 TEST(TestEtlRwExtensions, etl_optional_type)
 {
-    EXPECT_NE(typeid(uint32_t), typeid(lrpc::etl_optional_type<etl::optional<uint16_t>>::type));
-    EXPECT_EQ(typeid(uint16_t), typeid(lrpc::etl_optional_type<etl::optional<uint16_t>>::type));
+    EXPECT_TRUE((etl::is_same<uint16_t, lrpc::etl_optional_type<etl::optional<uint16_t>>::type>::value));
+    EXPECT_FALSE((etl::is_same<uint16_t, lrpc::etl_optional_type<etl::optional<uint32_t>>::type>::value));
+    EXPECT_TRUE((etl::is_same<lrpc::tags::string_auto, lrpc::etl_optional_type<etl::optional<lrpc::tags::string_auto>>::type>::value));
+    EXPECT_TRUE((etl::is_same<lrpc::tags::string_n, lrpc::etl_optional_type<etl::optional<lrpc::tags::string_n>>::type>::value));
+}
 
-    static_assert(etl::is_same<lrpc::tags::string_auto, lrpc::etl_optional_type<etl::optional<lrpc::tags::string_auto>>::type>::value);
-    static_assert(etl::is_same<lrpc::tags::string_n, lrpc::etl_optional_type<etl::optional<lrpc::tags::string_n>>::type>::value);
+TEST(TestEtlRwExtensions, etl_optional_pr_type)
+{
+    EXPECT_TRUE((etl::is_same<etl::optional<uint16_t>, lrpc::etl_optional_pr_type<etl::optional<uint16_t>>::type>::value));
+    EXPECT_FALSE((etl::is_same<etl::optional<uint16_t>, lrpc::etl_optional_pr_type<etl::optional<uint32_t>>::type>::value));
+    EXPECT_TRUE((etl::is_same<etl::optional<etl::string_view>, lrpc::etl_optional_pr_type<etl::optional<lrpc::tags::string_auto>>::type>::value));
+    EXPECT_TRUE((etl::is_same<etl::optional<etl::string_view>, lrpc::etl_optional_pr_type<etl::optional<lrpc::tags::string_n>>::type>::value));
+    EXPECT_TRUE((etl::is_same<etl::optional<lrpc::bytearray_t>, lrpc::etl_optional_pr_type<etl::optional<lrpc::tags::bytearray_auto>>::type>::value));
 }
 
 TEST(TestEtlRwExtensions, array_n_type)
 {
     EXPECT_NE(typeid(uint16_t), typeid(lrpc::array_n_type<lrpc::tags::array_n<uint32_t>>::type));
     EXPECT_EQ(typeid(uint16_t), typeid(lrpc::array_n_type<lrpc::tags::array_n<uint16_t>>::type));
+}
+
+TEST(TestEtlRwExtensions, array_param_type)
+{
+    EXPECT_TRUE((etl::is_same<etl::span<const uint16_t>, lrpc::array_param_type<lrpc::tags::array_n<uint16_t>>::type>::value));
+    EXPECT_FALSE((etl::is_same<etl::span<const uint16_t>, lrpc::array_param_type<lrpc::tags::array_n<uint32_t>>::type>::value));
+    EXPECT_TRUE((etl::is_same<etl::span<const etl::string_view>, lrpc::array_param_type<lrpc::tags::array_n<lrpc::tags::string_auto>>::type>::value));
+    EXPECT_TRUE((etl::is_same<etl::span<const lrpc::tags::string_n>, lrpc::array_param_type<lrpc::tags::array_n<lrpc::tags::string_n>>::type>::value));
+    EXPECT_TRUE((etl::is_same<etl::span<const lrpc::bytearray_t>, lrpc::array_param_type<lrpc::tags::array_n<lrpc::tags::bytearray_auto>>::type>::value));
+}
+
+TEST(TestEtlRwExtensions, array_out_param_type)
+{
+    EXPECT_TRUE((etl::is_same<etl::span<uint16_t>, lrpc::array_outparam_type<lrpc::tags::array_n<uint16_t>>::type>::value));
+    EXPECT_FALSE((etl::is_same<etl::span<uint16_t>, lrpc::array_outparam_type<lrpc::tags::array_n<uint32_t>>::type>::value));
+    EXPECT_TRUE((etl::is_same<etl::span<etl::string_view>, lrpc::array_outparam_type<lrpc::tags::array_n<lrpc::tags::string_auto>>::type>::value));
+    EXPECT_TRUE((etl::is_same<etl::span<lrpc::tags::string_n>, lrpc::array_outparam_type<lrpc::tags::array_n<lrpc::tags::string_n>>::type>::value));
+    EXPECT_TRUE((etl::is_same<etl::span<lrpc::bytearray_t>, lrpc::array_outparam_type<lrpc::tags::array_n<lrpc::tags::bytearray_auto>>::type>::value));
 }
 
 TEST(TestEtlRwExtensions, readArithmetic)

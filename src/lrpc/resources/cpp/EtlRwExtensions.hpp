@@ -151,9 +151,6 @@ namespace lrpc
     using array_n_type_is_string_n = etl::is_same<typename array_n_type<T>::type, tags::string_n>;
 
     template <typename T>
-    using array_n_type_is_string_auto = etl::is_same<typename array_n_type<T>::type, tags::string_auto>;
-
-    template <typename T>
     using is_optional_string_n = etl::is_same<T, etl::optional<tags::string_n>>;
 
     // deleted read function to allow specializations for custom structs
@@ -173,7 +170,7 @@ namespace lrpc
     using enable_for_arithmetic = etl::enable_if_t<etl::is_arithmetic<T>::value, T>;
 
     template <typename T>
-    typename enable_for_arithmetic<T>
+    enable_for_arithmetic<T>
     read_unchecked(etl::byte_stream_reader &stream)
     {
         return stream.read_unchecked<T>();
@@ -184,7 +181,7 @@ namespace lrpc
     using enable_for_enum = etl::enable_if_t<etl::is_enum<T>::value, T>;
 
     template <typename T>
-    typename enable_for_enum<T>
+    enable_for_enum<T>
     read_unchecked(etl::byte_stream_reader &stream)
     {
         return static_cast<T>(stream.read_unchecked<uint8_t>());
@@ -195,7 +192,7 @@ namespace lrpc
     using enable_for_auto_string = etl::enable_if_t<etl::is_same<T, tags::string_auto>::value, etl::string_view>;
 
     template <typename T>
-    typename enable_for_auto_string<T>
+    enable_for_auto_string<T>
     read_unchecked(etl::byte_stream_reader &stream)
     {
         size_t stringSize{0};
@@ -225,7 +222,7 @@ namespace lrpc
     using enable_for_fixed_size_string = etl::enable_if_t<etl::is_same<T, tags::string_n>::value, etl::string_view>;
 
     template <typename T>
-    typename enable_for_fixed_size_string<T>
+    enable_for_fixed_size_string<T>
     read_unchecked(etl::byte_stream_reader &stream, size_t definitionStringSize)
     {
         size_t actualStringSize{0};
@@ -257,7 +254,7 @@ namespace lrpc
     using enable_for_optional = etl::enable_if_t<is_etl_optional<T>::value && (!is_optional_string_n<T>::value), typename etl_optional_pr_type<T>::type>;
 
     template <typename T>
-    typename enable_for_optional<T>
+    enable_for_optional<T>
     read_unchecked(etl::byte_stream_reader &stream)
     {
         const auto hasValue = etl::read_unchecked<bool>(stream);
@@ -274,7 +271,7 @@ namespace lrpc
     using enable_for_optional_string_n = etl::enable_if_t<is_optional_string_n<T>::value, etl::optional<etl::string_view>>;
 
     template <typename T>
-    typename enable_for_optional_string_n<T>
+    enable_for_optional_string_n<T>
     read_unchecked(etl::byte_stream_reader &stream, size_t definitionStringSize)
     {
         const auto hasValue = etl::read_unchecked<bool>(stream);
@@ -291,7 +288,7 @@ namespace lrpc
     using enable_for_array = etl::enable_if_t<is_array_n<T>::value && (!array_n_type_is_string_n<T>::value), void>;
 
     template <typename T>
-    typename enable_for_array<T>
+    enable_for_array<T>
     read_unchecked(etl::byte_stream_reader &stream, typename array_outparam_type<T>::type dest, size_t definitionArraySize)
     {
         const auto s = etl::min(dest.size(), definitionArraySize);
@@ -317,7 +314,7 @@ namespace lrpc
     using enable_for_array_of_string_n = etl::enable_if_t<is_array_n<T>::value && array_n_type_is_string_n<T>::value, void>;
 
     template <typename T>
-    typename enable_for_array_of_string_n<T>
+    enable_for_array_of_string_n<T>
     read_unchecked(etl::byte_stream_reader &stream, etl::span<etl::string_view> dest, size_t definitionArraySize, size_t definitionStringSize)
     {
         const auto s = etl::min(dest.size(), definitionArraySize);
@@ -337,7 +334,7 @@ namespace lrpc
     using enable_for_bytearray = etl::enable_if_t<etl::is_same<T, tags::bytearray_auto>::value, bytearray_t>;
 
     template <typename T>
-    typename enable_for_bytearray<T>
+    enable_for_bytearray<T>
     read_unchecked(etl::byte_stream_reader &stream)
     {
         size_t readSize = stream.read_unchecked<uint8_t>();

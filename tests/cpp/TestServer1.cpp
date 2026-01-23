@@ -279,7 +279,7 @@ TEST_F(TestServer1, decodef25)
     auto response = receive("030019");
     EXPECT_EQ("07001901543100", response);
 
-    EXPECT_CALL(service, f25()).WillOnce(Return(etl::optional<etl::string_view>{}));
+    EXPECT_CALL(service, f25()).WillOnce(Return(etl::optional<etl::string_view>()));
     response = receive("030019");
     EXPECT_EQ("04001900", response);
 }

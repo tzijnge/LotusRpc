@@ -93,7 +93,7 @@ TEST_F(TEST_BYTEARRAY_CLASS, array)
         EXPECT_EQ(0x44, ba.at(1).at(0));
         EXPECT_EQ(0x55, ba.at(1).at(1));
 
-        return r0;
+        return etl::span<const lrpc::bytearray_t>{r0};
     };
 
     EXPECT_CALL(service, array(testing::_)).WillOnce(testing::Invoke(handler));

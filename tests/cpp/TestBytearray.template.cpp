@@ -78,11 +78,11 @@ TEST_F(TEST_BYTEARRAY_CLASS, optional)
 
 TEST_F(TEST_BYTEARRAY_CLASS, array)
 {
-    static etl::array<LRPC_BYTE_TYPE, 2> ba0{0x71, 0x72};
-    static etl::array<LRPC_BYTE_TYPE, 3> ba1{0x73, 0x74, 0x75};
-    static const etl::array<lrpc::bytearray_t, 2> r0{ba0, ba1};
+    etl::array<LRPC_BYTE_TYPE, 2> ba0{0x71, 0x72};
+    etl::array<LRPC_BYTE_TYPE, 3> ba1{0x73, 0x74, 0x75};
+    const etl::array<lrpc::bytearray_t, 2> r0{ba0, ba1};
 
-    const auto handler = [&](etl::span<const lrpc::bytearray_t> ba)
+    const auto handler = [r0](etl::span<const lrpc::bytearray_t> ba)
     {
         EXPECT_EQ(2, ba.size());
         EXPECT_EQ(3, ba.at(0).size());
@@ -108,7 +108,7 @@ TEST_F(TEST_BYTEARRAY_CLASS, custom)
     etl::array<LRPC_BYTE_TYPE, 2> ba6{0x76, 0x77};
     etl::array<LRPC_BYTE_TYPE, 1> ba7{0x78};
 
-    const auto handler = [&](const test_ba::BytearrayStruct &bas)
+    const auto handler = [ba4, ba5, ba6, ba7](const test_ba::BytearrayStruct &bas)
     {
         EXPECT_EQ(2, bas.f0.size());
         EXPECT_EQ(0x11, bas.f0.at(0));
@@ -162,7 +162,7 @@ TEST_F(TEST_BYTEARRAY_CLASS, client_optional)
 
 TEST_F(TEST_BYTEARRAY_CLASS, client_array)
 {
-    const auto handler = [&](etl::span<const lrpc::bytearray_t> ba)
+    const auto handler = [](etl::span<const lrpc::bytearray_t> ba)
     {
         EXPECT_EQ(2, ba.size());
         EXPECT_EQ(3, ba.at(0).size());
@@ -181,7 +181,7 @@ TEST_F(TEST_BYTEARRAY_CLASS, client_array)
 
 TEST_F(TEST_BYTEARRAY_CLASS, client_custom)
 {
-    const auto handler = [&](const test_ba::BytearrayStruct &bas)
+    const auto handler = [](const test_ba::BytearrayStruct &bas)
     {
         EXPECT_EQ(2, bas.f0.size());
         EXPECT_EQ(0x11, bas.f0.at(0));

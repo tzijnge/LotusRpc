@@ -292,7 +292,8 @@ def test_rw_type_optional_of_custom_with_namespace() -> None:
 
 
 class TestLrpcVarByteArray:
-    def test_bytearray(self) -> None:
+    @staticmethod
+    def test_bytearray() -> None:
         var_dict: LrpcVarDict = {"name": "v1", "type": "bytearray"}
         v = LrpcVar(var_dict)
 
@@ -322,7 +323,8 @@ class TestLrpcVarByteArray:
         with pytest.raises(TypeError, match="Pack type is not defined for LrpcVar of type bytearray"):
             v.pack_type()
 
-    def test_array_of_bytearray(self) -> None:
+    @staticmethod
+    def test_array_of_bytearray() -> None:
         var_dict: LrpcVarDict = {"name": "v1", "type": "bytearray", "count": 2}
         v = LrpcVar(var_dict)
 
@@ -352,7 +354,8 @@ class TestLrpcVarByteArray:
         with pytest.raises(TypeError, match="Pack type is not defined for LrpcVar of type bytearray"):
             v.pack_type()
 
-    def test_optional_of_bytearray(self) -> None:
+    @staticmethod
+    def test_optional_of_bytearray() -> None:
         var_dict: LrpcVarDict = {"name": "v1", "type": "bytearray", "count": "?"}
         v = LrpcVar(var_dict)
 

@@ -397,7 +397,8 @@ TEST(TestEtlRwExtensions, writeByteArray)
     lrpc::write_unchecked<lrpc::tags::bytearray_auto>(writer, a);
     lrpc::write_unchecked<lrpc::tags::bytearray_auto>(writer, b);
     lrpc::write_unchecked<lrpc::tags::bytearray_auto>(writer, {});
-    lrpc::write_unchecked<lrpc::tags::bytearray_auto>(writer, b); // overflows the storage
+    // overflows the storage
+    lrpc::write_unchecked<lrpc::tags::bytearray_auto>(writer, b);
 
     const auto written = writer.used_data();
     ASSERT_EQ(10, written.size());
@@ -583,10 +584,13 @@ TEST(TestEtlRwExtensions, writeOptionalBytearray)
 
     const auto written = writer.used_data();
     ASSERT_EQ(7, written.size());
-    EXPECT_EQ(0x00, written[0]); // optional without value
-    EXPECT_EQ(0x01, written[1]); // optional with empty bytearray
+    // optional without value
+    EXPECT_EQ(0x00, written[0]);
+    // optional with empty bytearray
+    EXPECT_EQ(0x01, written[1]);
     EXPECT_EQ(0x00, written[2]);
-    EXPECT_EQ(0x01, written[3]); // optional with o1
+    // optional with o1
+    EXPECT_EQ(0x01, written[3]);
     EXPECT_EQ(0x02, written[4]);
     EXPECT_EQ(0x11, written[5]);
     EXPECT_EQ(0x22, written[6]);

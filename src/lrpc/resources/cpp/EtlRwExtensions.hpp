@@ -268,8 +268,8 @@ namespace lrpc
 
         readSize = etl::min(readSize, streamSize);
 
-        const bytearray_t ba{reinterpret_cast<const uint8_t *>(stream.end()), readSize};
-        (void)stream.skip<uint8_t>(readSize);
+        const bytearray_t ba{reinterpret_cast<const LRPC_BYTE_TYPE *>(stream.end()), readSize};
+        (void)stream.skip<LRPC_BYTE_TYPE>(readSize);
         return ba;
     };
 
@@ -419,7 +419,7 @@ namespace lrpc
         const size_t writeSize = etl::min(stream.available_bytes(), value.size());
         for (size_t i = 0; i < writeSize; ++i)
         {
-            stream.write_unchecked<uint8_t>(value.at(i));
+            stream.write_unchecked<LRPC_BYTE_TYPE>(value.at(i));
         }
     };
 

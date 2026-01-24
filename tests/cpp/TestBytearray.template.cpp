@@ -5,7 +5,7 @@ using ::testing::Return;
 
 namespace
 {
-    class Bytearrayservice : public test_ba::bytearray_shim
+    class TEST_BYTEARRY_SERVICE : public test_ba::bytearray_shim
     {
     public:
         MOCK_METHOD((lrpc::bytearray_t), param_return, (lrpc::bytearray_t), (override));
@@ -33,48 +33,54 @@ namespace
         MOCK_METHOD(void, server_custom, (), (override));
         MOCK_METHOD(void, server_custom_stop, (), (override));
     };
+
+    template <typename... Ts>
+    std::vector<LRPC_BYTE_TYPE> make_bytes(Ts &&...args) noexcept
+    {
+        return {LRPC_BYTE_TYPE(std::forward<Ts>(args))...};
+    }
 }
 
-using TestBytearray = testutils::TestServerBase<test_ba::Bytearray, Bytearrayservice>;
+using TEST_BYTEARRAY_CLASS = testutils::TestServerBase<test_ba::Bytearray, TEST_BYTEARRY_SERVICE>;
 
-TEST_F(TestBytearray, param_return)
+TEST_F(TEST_BYTEARRAY_CLASS, param_return)
 {
-    const std::vector<uint8_t> p0{0x11, 0x22, 0x33};
-    const std::vector<uint8_t> r0{0x44, 0x55, 0x66};
+    const auto p0 = make_bytes(0x11, 0x22, 0x33);
+    const auto r0 = make_bytes(0x44, 0x55, 0x66);
     EXPECT_CALL(service, param_return(testutils::SPAN_EQ(p0))).WillOnce(Return(r0));
     const auto response = receive("07000003112233");
     EXPECT_EQ("07000003445566", response);
 }
 
-TEST_F(TestBytearray, param_return_multiple)
+TEST_F(TEST_BYTEARRAY_CLASS, param_return_multiple)
 {
-    const std::vector<uint8_t> p0{0x11, 0x22, 0x33};
-    const std::vector<uint8_t> p1{0x44, 0x55};
-    const std::vector<uint8_t> r0{0x66, 0x77, 0x88};
-    const std::vector<uint8_t> r1{0x99, 0xAA};
+    const std::vector<LRPC_BYTE_TYPE> p0{0x11, 0x22, 0x33};
+    const std::vector<LRPC_BYTE_TYPE> p1{0x44, 0x55};
+    const std::vector<LRPC_BYTE_TYPE> r0{0x61, 0x62, 0x63};
+    const std::vector<LRPC_BYTE_TYPE> r1{0x64, 0x65};
     EXPECT_CALL(service,
                 param_return_multiple(testutils::SPAN_EQ(p0), testutils::SPAN_EQ(p1)))
         .WillOnce(Return(std::tuple<lrpc::bytearray_t, lrpc::bytearray_t>{r0, r1}));
     const auto response = receive("0A000103112233024455");
-    EXPECT_EQ("0A0001036677880299AA", response);
+    EXPECT_EQ("0A000103616263026465", response);
 }
 
-TEST_F(TestBytearray, optional)
+TEST_F(TEST_BYTEARRAY_CLASS, optional)
 {
-    etl::array<uint8_t, 3> data0{0x11, 0x22, 0x33};
+    etl::array<LRPC_BYTE_TYPE, 3> data0{0x11, 0x22, 0x33};
     const etl::optional<lrpc::bytearray_t> p0{data0};
-    etl::array<uint8_t, 3> data1{0x44, 0x55, 0x66};
+    etl::array<LRPC_BYTE_TYPE, 3> data1{0x44, 0x55, 0x66};
     const etl::optional<lrpc::bytearray_t> r0{data1};
     EXPECT_CALL(service, optional(testutils::OPT_SPAN_EQ(p0))).WillOnce(Return(r0));
     const auto response = receive("0800020103112233");
     EXPECT_EQ("0800020103445566", response);
 }
 
-TEST_F(TestBytearray, array)
+TEST_F(TEST_BYTEARRAY_CLASS, array)
 {
-    etl::array<uint8_t, 2> ba0{0xA1, 0xA2};
-    etl::array<uint8_t, 3> ba1{0xA3, 0xA4, 0xA5};
-    etl::array<lrpc::bytearray_t, 2> r0{ba0, ba1};
+    etl::array<LRPC_BYTE_TYPE, 2> ba0{0x71, 0x72};
+    etl::array<LRPC_BYTE_TYPE, 3> ba1{0x73, 0x74, 0x75};
+    const etl::array<lrpc::bytearray_t, 2> r0{ba0, ba1};
 
     const auto handler = [&](etl::span<const lrpc::bytearray_t> ba)
     {
@@ -92,15 +98,15 @@ TEST_F(TestBytearray, array)
 
     EXPECT_CALL(service, array(testing::_)).WillOnce(testing::Invoke(handler));
     const auto response = receive("0A000303112233024455");
-    EXPECT_EQ("0A000302A1A203A3A4A5", response);
+    EXPECT_EQ("0A000302717203737475", response);
 }
 
-TEST_F(TestBytearray, custom)
+TEST_F(TEST_BYTEARRAY_CLASS, custom)
 {
-    etl::array<uint8_t, 3> ba4{0xA1, 0xA2, 0xA3};
-    etl::array<uint8_t, 2> ba5{0xA4, 0xA5};
-    etl::array<uint8_t, 2> ba6{0xA6, 0xA7};
-    etl::array<uint8_t, 1> ba7{0xA8};
+    etl::array<LRPC_BYTE_TYPE, 3> ba4{0x71, 0x72, 0x73};
+    etl::array<LRPC_BYTE_TYPE, 2> ba5{0x74, 0x75};
+    etl::array<LRPC_BYTE_TYPE, 2> ba6{0x76, 0x77};
+    etl::array<LRPC_BYTE_TYPE, 1> ba7{0x78};
 
     const auto handler = [&](const test_ba::BytearrayStruct &bas)
     {
@@ -116,45 +122,45 @@ TEST_F(TestBytearray, custom)
         EXPECT_EQ(0x66, bas.f2.at(0).at(0));
         EXPECT_EQ(2, bas.f2.at(1).size());
         EXPECT_EQ(0x77, bas.f2.at(1).at(0));
-        EXPECT_EQ(0x88, bas.f2.at(1).at(1));
+        EXPECT_EQ(0x78, bas.f2.at(1).at(1));
 
         return test_ba::BytearrayStruct{ba4, etl::optional<lrpc::bytearray_t>{ba5}, {ba6, ba7}};
     };
 
     EXPECT_CALL(service, custom(testing::_)).WillOnce(testing::Invoke(handler));
-    const auto response = receive("10000402112201033344550166027788");
-    EXPECT_EQ("10000403A1A2A30102A4A502A6A701A8", response);
+    const auto response = receive("10000402112201033344550166027778");
+    EXPECT_EQ("10000403717273010274750276770178", response);
 }
 
-TEST_F(TestBytearray, client_single)
+TEST_F(TEST_BYTEARRAY_CLASS, client_single)
 {
-    const std::vector<uint8_t> p0{0x11, 0x22, 0x33};
+    const std::vector<LRPC_BYTE_TYPE> p0{0x11, 0x22, 0x33};
     EXPECT_CALL(service, client_single(testutils::SPAN_EQ(p0)));
 
     const auto response = receive("07000503112233");
     EXPECT_EQ("", response);
 }
 
-TEST_F(TestBytearray, client_multiple)
+TEST_F(TEST_BYTEARRAY_CLASS, client_multiple)
 {
-    const std::vector<uint8_t> p0{0x11, 0x22, 0x33};
-    const std::vector<uint8_t> p1{0x44, 0x55};
+    const std::vector<LRPC_BYTE_TYPE> p0{0x11, 0x22, 0x33};
+    const std::vector<LRPC_BYTE_TYPE> p1{0x44, 0x55};
     EXPECT_CALL(service, client_multiple(testutils::SPAN_EQ(p0), testutils::SPAN_EQ(p1)));
 
     const auto response = receive("0A000603112233024455");
     EXPECT_EQ("", response);
 }
 
-TEST_F(TestBytearray, client_optional)
+TEST_F(TEST_BYTEARRAY_CLASS, client_optional)
 {
-    etl::array<uint8_t, 3> data0{0x11, 0x22, 0x33};
+    etl::array<LRPC_BYTE_TYPE, 3> data0{0x11, 0x22, 0x33};
     const etl::optional<lrpc::bytearray_t> p0{data0};
     EXPECT_CALL(service, client_optional(testutils::OPT_SPAN_EQ(p0)));
     const auto response = receive("0800070103112233");
     EXPECT_EQ("", response);
 }
 
-TEST_F(TestBytearray, client_array)
+TEST_F(TEST_BYTEARRAY_CLASS, client_array)
 {
     const auto handler = [&](etl::span<const lrpc::bytearray_t> ba)
     {
@@ -173,7 +179,7 @@ TEST_F(TestBytearray, client_array)
     EXPECT_EQ("", response);
 }
 
-TEST_F(TestBytearray, client_custom)
+TEST_F(TEST_BYTEARRAY_CLASS, client_custom)
 {
     const auto handler = [&](const test_ba::BytearrayStruct &bas)
     {
@@ -189,52 +195,52 @@ TEST_F(TestBytearray, client_custom)
         EXPECT_EQ(0x66, bas.f2.at(0).at(0));
         EXPECT_EQ(2, bas.f2.at(1).size());
         EXPECT_EQ(0x77, bas.f2.at(1).at(0));
-        EXPECT_EQ(0x88, bas.f2.at(1).at(1));
+        EXPECT_EQ(0x78, bas.f2.at(1).at(1));
     };
 
     EXPECT_CALL(service, client_custom(testing::_)).WillOnce(testing::Invoke(handler));
-    const auto response = receive("10000902112201033344550166027788");
+    const auto response = receive("10000902112201033344550166027778");
     EXPECT_EQ("", response);
 }
 
-TEST_F(TestBytearray, server_single)
+TEST_F(TEST_BYTEARRAY_CLASS, server_single)
 {
-    const std::vector<uint8_t> p0{0x11, 0x22, 0x33};
+    const std::vector<LRPC_BYTE_TYPE> p0{0x11, 0x22, 0x33};
     service.server_single_response(p0);
     EXPECT_EQ("07000A03112233", response());
 }
 
-TEST_F(TestBytearray, server_multiple)
+TEST_F(TEST_BYTEARRAY_CLASS, server_multiple)
 {
-    const std::vector<uint8_t> p0{0x11, 0x22, 0x33};
-    const std::vector<uint8_t> p1{0x44, 0x55};
+    const std::vector<LRPC_BYTE_TYPE> p0{0x11, 0x22, 0x33};
+    const std::vector<LRPC_BYTE_TYPE> p1{0x44, 0x55};
     service.server_multiple_response(p0, p1);
     EXPECT_EQ("0A000B03112233024455", response());
 }
 
-TEST_F(TestBytearray, server_optional)
+TEST_F(TEST_BYTEARRAY_CLASS, server_optional)
 {
-    const std::vector<uint8_t> p0{0x11, 0x22, 0x33};
+    const std::vector<LRPC_BYTE_TYPE> p0{0x11, 0x22, 0x33};
     service.server_optional_response({p0});
     EXPECT_EQ("08000C0103112233", response());
 }
 
-TEST_F(TestBytearray, server_array)
+TEST_F(TEST_BYTEARRAY_CLASS, server_array)
 {
-    const std::vector<uint8_t> a0{0x11, 0x22, 0x33};
-    const std::vector<uint8_t> a1{0x44, 0x55};
+    const std::vector<LRPC_BYTE_TYPE> a0{0x11, 0x22, 0x33};
+    const std::vector<LRPC_BYTE_TYPE> a1{0x44, 0x55};
     const std::vector<lrpc::bytearray_t> p0{a0, a1};
     service.server_array_response(p0);
     EXPECT_EQ("0A000D03112233024455", response());
 }
 
-TEST_F(TestBytearray, server_custom)
+TEST_F(TEST_BYTEARRAY_CLASS, server_custom)
 {
-    etl::array<uint8_t, 3> ba4{0xA1, 0xA2, 0xA3};
-    etl::array<uint8_t, 2> ba5{0xA4, 0xA5};
-    etl::array<uint8_t, 2> ba6{0xA6, 0xA7};
-    etl::array<uint8_t, 1> ba7{0xA8};
+    etl::array<LRPC_BYTE_TYPE, 3> ba4{0x71, 0x72, 0x73};
+    etl::array<LRPC_BYTE_TYPE, 2> ba5{0x74, 0x75};
+    etl::array<LRPC_BYTE_TYPE, 2> ba6{0x76, 0x77};
+    etl::array<LRPC_BYTE_TYPE, 1> ba7{0x78};
 
-    service.server_custom_response(test_ba::BytearrayStruct{ba4, ba5, {ba6, ba7}});
-    EXPECT_EQ("10000E03A1A2A30102A4A502A6A701A8", response());
+    service.server_custom_response(test_ba::BytearrayStruct{ba4, etl::optional<lrpc::bytearray_t>{ba5}, {ba6, ba7}});
+    EXPECT_EQ("10000E03717273010274750276770178", response());
 }

@@ -68,7 +68,12 @@ add_executable(UnitTests
                 TestServer3.cpp         ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server3/Server3.hpp
                 TestServer4.cpp         ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server4/Server4.hpp
                 TestServer5.cpp         ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server5/Server5.hpp
-                TestBytearray.cpp       ${CMAKE_CURRENT_SOURCE_DIR}/generated/Bytearray/Bytearray.hpp
+                TestBytearray_char.cpp  ${CMAKE_CURRENT_SOURCE_DIR}/generated/Bytearray/Bytearray.hpp
+                TestBytearray_char8_t.cpp
+                TestBytearray_signed_char.cpp
+                TestBytearray_unsigned_char.cpp
+                TestBytearray_int8_t.cpp
+                TestBytearray_uint8_t.cpp
                 TestServerErrors.cpp)
 
 target_include_directories(UnitTests PRIVATE .)

@@ -78,6 +78,10 @@ TEST_F(TEST_BYTEARRAY_CLASS, optional)
 
 TEST_F(TEST_BYTEARRAY_CLASS, array)
 {
+    static etl::array<LRPC_BYTE_TYPE, 2> ba0{0x71, 0x72};
+    static etl::array<LRPC_BYTE_TYPE, 3> ba1{0x73, 0x74, 0x75};
+    static const etl::array<lrpc::bytearray_t, 2> r0{ba0, ba1};
+
     const auto handler = [&](etl::span<const lrpc::bytearray_t> ba)
     {
         EXPECT_EQ(2, ba.size());
@@ -89,9 +93,7 @@ TEST_F(TEST_BYTEARRAY_CLASS, array)
         EXPECT_EQ(0x44, ba.at(1).at(0));
         EXPECT_EQ(0x55, ba.at(1).at(1));
 
-        static etl::array<LRPC_BYTE_TYPE, 2> ba0{0x71, 0x72};
-        static etl::array<LRPC_BYTE_TYPE, 3> ba1{0x73, 0x74, 0x75};
-        return etl::array<lrpc::bytearray_t, 2>{ba0, ba1};
+        return r0;
     };
 
     EXPECT_CALL(service, array(testing::_)).WillOnce(testing::Invoke(handler));

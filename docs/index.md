@@ -34,7 +34,8 @@ LotusRPC aims to be extensible, although it is not yet as extensible as it could
   * Fixed size: e.g., `string_10` for a maximum size of 10 characters (excluding termination character)
   * Automatic size: `string`. For this type the number of bytes that is transferred is determined by how long the actual string is. This can be different for every RPC function call, contrary to the fixed size string. An auto string is represented in the generated code with `etl::string_view`.
 * bytearray
-This type represents an array of bytes. In Python, a function taking a `bytearray` parameter accepts `bytes`, `bytearray` or `memoryview`. In Python 3.12 any type that implements the `Buffer` protocol is accepted. Functions returning a `bytearray` return always return a `bytes` object. In C++ `bytearray` translates to `etl::span<const uint8_t>`, but the alias `lrpc::bytearray_t` is available and used internally in LotusRPC. It is also possible to change the byte type with a settings in the definition file. Options are `char`, `signed char`, `unsigned char`, `int8_t`, `uint8_t`, `etl::byte` and `std::byte`.
+This type represents an array of bytes. In Python, a function taking a `bytearray` parameter accepts `bytes`, `bytearray` or `memoryview`. In Python 3.12 any type that implements the `Buffer` protocol is accepted. Functions returning a `bytearray` return always return a `bytes` object. In C++ `bytearray` translates to `etl::span<const uint8_t>`, but the alias `lrpc::bytearray_t` is available and used internally in LotusRPC. It is also possible to change the byte type to another single byte type (e.g. `char`, `std::byte`, etc.) by defining `LRPC_BYTE_TYPE` as that type.
+
 This type was added because in the generated C++ code `bytearray` is more efficient than using a plain array of `uint8_t`. In Python it is convenient to have a something that maps to a built-in byte-like type, e.g. for binary blob transfer between client and server.
 
 * array

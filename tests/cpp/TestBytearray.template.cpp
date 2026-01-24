@@ -3,37 +3,37 @@
 
 using ::testing::Return;
 
+class TEST_BYTEARRY_SERVICE : public test_ba::bytearray_shim
+{
+public:
+    MOCK_METHOD((lrpc::bytearray_t), param_return, (lrpc::bytearray_t), (override));
+    MOCK_METHOD((std::tuple<lrpc::bytearray_t, lrpc::bytearray_t>), param_return_multiple, (lrpc::bytearray_t p0, lrpc::bytearray_t), (override));
+    MOCK_METHOD((etl::optional<lrpc::bytearray_t>), optional, (etl::optional<lrpc::bytearray_t>), (override));
+    MOCK_METHOD((etl::span<const lrpc::bytearray_t>), array, (etl::span<const lrpc::bytearray_t>), (override));
+    MOCK_METHOD(test_ba::BytearrayStruct, custom, (const test_ba::BytearrayStruct &), (override));
+
+    // client streams
+    MOCK_METHOD(void, client_single, (lrpc::bytearray_t), (override));
+    MOCK_METHOD(void, client_multiple, (lrpc::bytearray_t, lrpc::bytearray_t), (override));
+    MOCK_METHOD(void, client_optional, (etl::optional<lrpc::bytearray_t>), (override));
+    MOCK_METHOD(void, client_array, (etl::span<const lrpc::bytearray_t>), (override));
+    MOCK_METHOD(void, client_custom, (const test_ba::BytearrayStruct &), (override));
+
+    // server streams
+    MOCK_METHOD(void, server_single, (), (override));
+    MOCK_METHOD(void, server_single_stop, (), (override));
+    MOCK_METHOD(void, server_multiple, (), (override));
+    MOCK_METHOD(void, server_multiple_stop, (), (override));
+    MOCK_METHOD(void, server_optional, (), (override));
+    MOCK_METHOD(void, server_optional_stop, (), (override));
+    MOCK_METHOD(void, server_array, (), (override));
+    MOCK_METHOD(void, server_array_stop, (), (override));
+    MOCK_METHOD(void, server_custom, (), (override));
+    MOCK_METHOD(void, server_custom_stop, (), (override));
+};
+
 namespace
 {
-    class TEST_BYTEARRY_SERVICE : public test_ba::bytearray_shim
-    {
-    public:
-        MOCK_METHOD((lrpc::bytearray_t), param_return, (lrpc::bytearray_t), (override));
-        MOCK_METHOD((std::tuple<lrpc::bytearray_t, lrpc::bytearray_t>), param_return_multiple, (lrpc::bytearray_t p0, lrpc::bytearray_t), (override));
-        MOCK_METHOD((etl::optional<lrpc::bytearray_t>), optional, (etl::optional<lrpc::bytearray_t>), (override));
-        MOCK_METHOD((etl::span<const lrpc::bytearray_t>), array, (etl::span<const lrpc::bytearray_t>), (override));
-        MOCK_METHOD(test_ba::BytearrayStruct, custom, (const test_ba::BytearrayStruct &), (override));
-
-        // client streams
-        MOCK_METHOD(void, client_single, (lrpc::bytearray_t), (override));
-        MOCK_METHOD(void, client_multiple, (lrpc::bytearray_t, lrpc::bytearray_t), (override));
-        MOCK_METHOD(void, client_optional, (etl::optional<lrpc::bytearray_t>), (override));
-        MOCK_METHOD(void, client_array, (etl::span<const lrpc::bytearray_t>), (override));
-        MOCK_METHOD(void, client_custom, (const test_ba::BytearrayStruct &), (override));
-
-        // server streams
-        MOCK_METHOD(void, server_single, (), (override));
-        MOCK_METHOD(void, server_single_stop, (), (override));
-        MOCK_METHOD(void, server_multiple, (), (override));
-        MOCK_METHOD(void, server_multiple_stop, (), (override));
-        MOCK_METHOD(void, server_optional, (), (override));
-        MOCK_METHOD(void, server_optional_stop, (), (override));
-        MOCK_METHOD(void, server_array, (), (override));
-        MOCK_METHOD(void, server_array_stop, (), (override));
-        MOCK_METHOD(void, server_custom, (), (override));
-        MOCK_METHOD(void, server_custom_stop, (), (override));
-    };
-
     template <typename... Ts>
     std::vector<LRPC_BYTE_TYPE> make_bytes(Ts &&...args) noexcept
     {

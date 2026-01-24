@@ -118,7 +118,7 @@ TEST_F(TestBytearray, custom)
         EXPECT_EQ(0x77, bas.f2.at(1).at(0));
         EXPECT_EQ(0x88, bas.f2.at(1).at(1));
 
-        return test_ba::BytearrayStruct{ba4, ba5, {ba6, ba7}};
+        return test_ba::BytearrayStruct{ba4, etl::optional<lrpc::bytearray_t>{ba5}, {ba6, ba7}};
     };
 
     EXPECT_CALL(service, custom(testing::_)).WillOnce(testing::Invoke(handler));

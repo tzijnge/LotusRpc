@@ -37,7 +37,7 @@ namespace
     template <typename... Ts>
     std::vector<LRPC_BYTE_TYPE> make_bytes(Ts &&...args) noexcept
     {
-        return {LRPC_BYTE_TYPE(std::forward<Ts>(args))...};
+        return {(LRPC_BYTE_TYPE)(std::forward<Ts>(args))...};
     }
 }
 

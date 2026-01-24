@@ -17,7 +17,13 @@ namespace lrpc
         struct array_n;
     };
 
-    using bytearray_t = etl::span<const uint8_t>;
+#ifndef LRPC_BYTE_TYPE
+#define LRPC_BYTE_TYPE uint8_t
+#endif
+
+    static_assert(sizeof(LRPC_BYTE_TYPE) == 1);
+
+    using bytearray_t = etl::span<const LRPC_BYTE_TYPE>;
 
     template <typename T>
     struct is_etl_optional : public etl::false_type

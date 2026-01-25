@@ -32,6 +32,7 @@ LrpcVarValidator = TypeAdapter(LrpcVarDict)
 # pylint: disable = too-many-public-methods
 class LrpcVar:
     ETL_STRING_VIEW: Final = "etl::string_view"
+    LRPC_BYTEARRAY_T: Final = "lrpc::bytearray_t"
 
     def __init__(self, raw: LrpcVarDict) -> None:
         LrpcVarValidator.validate_python(raw, strict=True, extra="forbid")
@@ -60,7 +61,7 @@ class LrpcVar:
         if self.base_type_is_string():
             t = LrpcVar.ETL_STRING_VIEW
         elif self.base_type_is_bytearray():
-            t = "lrpc::bytearray_t"
+            t = LrpcVar.LRPC_BYTEARRAY_T
         else:
             t = self.base_type()
 
@@ -76,7 +77,7 @@ class LrpcVar:
         if self.base_type_is_string():
             t = LrpcVar.ETL_STRING_VIEW
         elif self.base_type_is_bytearray():
-            t = "lrpc::bytearray_t"
+            t = LrpcVar.LRPC_BYTEARRAY_T
         else:
             t = self.base_type()
 
@@ -92,7 +93,7 @@ class LrpcVar:
         if self.base_type_is_string():
             t = LrpcVar.ETL_STRING_VIEW
         elif self.base_type_is_bytearray():
-            t = "lrpc::bytearray_t"
+            t = LrpcVar.LRPC_BYTEARRAY_T
         else:
             t = self.base_type()
 

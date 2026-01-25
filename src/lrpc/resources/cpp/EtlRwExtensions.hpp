@@ -21,7 +21,7 @@ namespace lrpc
 #define LRPC_BYTE_TYPE uint8_t
 #endif
 
-    static_assert(sizeof(LRPC_BYTE_TYPE) == 1);
+    static_assert(sizeof(LRPC_BYTE_TYPE) == 1, "sizeof(LRPC_BYTE_TYPE) must be exactly 1");
 
     using bytearray_t = etl::span<const LRPC_BYTE_TYPE>;
 

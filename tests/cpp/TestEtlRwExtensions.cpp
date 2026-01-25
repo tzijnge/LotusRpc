@@ -603,8 +603,8 @@ TEST(TestEtlRwExtensions, writeArrayOfBytearray)
     const etl::array<uint8_t, 3> ba2{0x33, 0x44, 0x55};
     etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
 
-    etl::array<etl::span<const uint8_t>, 2> ba_array{ba1, ba2};
-    lrpc::write_unchecked<lrpc::tags::array_n<lrpc::tags::bytearray_auto>>(writer, ba_array, 2);
+    etl::array<etl::span<const uint8_t>, 2> baArray{ba1, ba2};
+    lrpc::write_unchecked<lrpc::tags::array_n<lrpc::tags::bytearray_auto>>(writer, baArray, 2);
 
     const auto written = writer.used_data();
     ASSERT_EQ(7, written.size());

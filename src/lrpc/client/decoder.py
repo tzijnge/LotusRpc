@@ -13,12 +13,12 @@ class LrpcDecoder:
         self.lrpc_def: LrpcDef = lrpc_def
 
     def __decode_bytearray(self) -> bytes:
-        ba_size = self.__unpack("B")
+        ba_size = self.__unpack_uint8_t()
         remaining = len(self.encoded) - self.start
         if remaining < ba_size:
             raise ValueError(f"Incomplete bytearray: expected {ba_size} bytes but got {remaining}")
 
-        return cast(bytes, self.__unpack(f"{ba_size}s"))
+        return self.__unpack_bytes(ba_size)
 
     def __decode_string(self, var: LrpcVar) -> str:
         if var.is_auto_string():
@@ -69,7 +69,7 @@ class LrpcDecoder:
 
     def __decode_optional(self, var: LrpcVar) -> LrpcType | None:
         has_value = self.__unpack("?")
-        if has_value:
+        if has_value is True:
             return self.lrpc_decode(var.contained())
 
         return None
@@ -95,13 +95,19 @@ class LrpcDecoder:
 
         fields = e.fields()
 
-        identifier = self.__unpack(var.pack_type())
+        identifier = self.__unpack_uint8_t()
 
         for f in fields:
             if f.id() == identifier:
                 return f.name()
 
         raise ValueError(f"Value {identifier} ({hex(identifier)}) is not valid for enum {var.base_type()}")
+
+    def __unpack_bytes(self, size: int) -> bytes:
+        return cast(bytes, self.__unpack(f"{size}s"))
+
+    def __unpack_uint8_t(self) -> int:
+        return cast(int, self.__unpack("B"))
 
     def __unpack(self, pack_format: str) -> LrpcType:
         pack_format = "<" + pack_format

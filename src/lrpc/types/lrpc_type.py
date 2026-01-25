@@ -1,6 +1,9 @@
 """LrpcType can hold any Python type that is understood by LotusRPC"""
 
 import sys
+from collections.abc import Iterable
+
+from pydantic import TypeAdapter
 
 if sys.version_info >= (3, 12):
     from collections.abc import Buffer
@@ -8,10 +11,6 @@ if sys.version_info >= (3, 12):
     LrpcBuffer = Buffer
 else:
     LrpcBuffer = bytes | bytearray | memoryview
-
-from collections.abc import Iterable
-
-from pydantic import TypeAdapter
 
 LrpcBasicType = bool | int | float | str | LrpcBuffer
 LrpcType = LrpcBasicType | Iterable["LrpcType"] | dict[str, "LrpcType"] | None

@@ -101,7 +101,11 @@ jobs:
 
       - name: C++ unit tests
         working-directory: ${{github.workspace}}/cmake_build
-        run: ctest -C ${{env.BUILD_TYPE}} --output-junit ../testresults/cpptestresults.xml --rerun-failed --output-on-failure
+        run: >
+          ctest -C ${{env.BUILD_TYPE}}
+          --output-junit ../testresults/cpptestresults.xml
+          --rerun-failed
+          --output-on-failure
 
       - name: Python unit tests
         run: pytest -v --junitxml=testresults/pytestresults.xml

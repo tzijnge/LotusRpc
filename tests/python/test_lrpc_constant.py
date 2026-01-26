@@ -113,10 +113,10 @@ def test_invalid_implicit_type() -> None:
 
 
 def test_invalid_explicit_type() -> None:
-    c: LrpcConstantDict = {"name": "t", "value": [0x01, 0x02], "cppType": "uint32_t"}
+    c = {"name": "t", "value": [0x01, 0x02], "cppType": "uint32_t"}
 
     with pytest.raises(ValidationError, match="Input should be a valid integer"):
-        LrpcConstant(c)
+        LrpcConstant(c)  # type: ignore[arg-type]
 
 
 def test_invalid_explicit_type_2() -> None:

@@ -58,7 +58,7 @@ class LrpcConstant:
             if isinstance(self.value(), str):
                 return "string"
 
-            raise ValueError(f"Unable to infer cppType for LrpcConstant value: {self.value()}")
+            raise ValueError(f"Unable to infer cppType for LrpcConstant value: {self.value()!s}")
 
         cpp_type = raw["cppType"]
         if cpp_type in CPP_TYPES:

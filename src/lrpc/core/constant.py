@@ -38,7 +38,8 @@ class LrpcConstant:
         self.__value = self.__init_value(raw)
         self.__cpp_type = self.__init_cpp_type(raw)
 
-    def __init_value(self, raw: LrpcConstantDict) -> int | float | bool | str | bytes:
+    @staticmethod
+    def __init_value(raw: LrpcConstantDict) -> int | float | bool | str | bytes:
         value = raw["value"]
         if "cppType" in raw and raw["cppType"] == "bytearray":
             if not isinstance(value, str):

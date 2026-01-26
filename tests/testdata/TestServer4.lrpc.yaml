@@ -64,6 +64,9 @@ constants:
   - name: c21
     value: 444.444
     cppType: string
+  - name: c22
+    value: "AA bb 00 01"
+    cppType: bytearray
 services:
   - name: "s00"
     functions:

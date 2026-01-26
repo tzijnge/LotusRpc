@@ -187,7 +187,8 @@
             "float",
             "double",
             "bool",
-            "string"
+            "string",
+            "bytearray"
           ]
         }
       }

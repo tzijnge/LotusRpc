@@ -1,4 +1,5 @@
 import math
+import re
 
 import pytest
 from pydantic import ValidationError
@@ -86,6 +87,16 @@ def test_explicit_bool() -> None:
     assert constant.cpp_type() == "bool"
 
 
+def test_explicit_bytearray() -> None:
+    c: LrpcConstantDict = {"name": "t", "value": "AABBCC", "cppType": "bytearray"}
+
+    constant = LrpcConstant(c)
+
+    assert constant.name() == "t"
+    assert constant.value() == b"\xaa\xbb\xcc"
+    assert constant.cpp_type() == "bytearray"
+
+
 def test_invalid_type() -> None:
     c: LrpcConstantDict = {"name": "t", "value": True, "cppType": "invalid_type"}
 
@@ -99,3 +110,24 @@ def test_invalid_implicit_type() -> None:
 
     with pytest.raises(ValidationError, match="Input should be a valid integer"):
         LrpcConstant(c)  # type: ignore[arg-type]
+
+
+def test_invalid_explicit_type() -> None:
+    c: LrpcConstantDict = {"name": "t", "value": [0x01, 0x02], "cppType": "uint32_t"}
+
+    with pytest.raises(ValidationError, match="Input should be a valid integer"):
+        LrpcConstant(c)
+
+
+def test_invalid_explicit_type_2() -> None:
+    c: LrpcConstantDict = {"name": "t", "value": 123, "cppType": "bytearray"}
+
+    with pytest.raises(ValueError, match="Constant with cppType 'bytearray' must have a string value"):
+        LrpcConstant(c)
+
+
+def test_invalid_explicit_type_3() -> None:
+    c: LrpcConstantDict = {"name": "t", "value": "hello", "cppType": "bytearray"}
+
+    with pytest.raises(ValueError, match=re.escape("non-hexadecimal number found in fromhex() arg at position 0")):
+        LrpcConstant(c)

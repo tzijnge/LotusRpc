@@ -1,5 +1,6 @@
 """LRPC client CLI"""
 
+import binascii
 import importlib.util
 import logging
 import os
@@ -233,7 +234,10 @@ class Lrpcc:
                 if (isinstance(value, int) and not isinstance(value, bool))
                 else ""
             )
-            print(f"{name_text}: {value}{hex_repr}")
+            if isinstance(value, bytes):
+                print(f"{name_text}: [{binascii.hexlify(value, ' ').decode('utf-8')}]")
+            else:
+                print(f"{name_text}: {value}{hex_repr}")
 
     @staticmethod
     def _print_error_line(line: str) -> None:

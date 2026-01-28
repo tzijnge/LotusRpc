@@ -15,14 +15,14 @@ static_assert(std::is_same<decltype(srv4::c3), const uint16_t>::value, "");
 static_assert(srv4::c4 == -1234, "");
 static_assert(std::is_same<decltype(srv4::c4), const int16_t>::value, "");
 
-static_assert(srv4::c5 == 123456, "");
+static_assert(srv4::c5 == 123'456, "");
 static_assert(std::is_same<decltype(srv4::c5), const uint32_t>::value, "");
-static_assert(srv4::c6 == -123456, "");
+static_assert(srv4::c6 == -123'456, "");
 static_assert(std::is_same<decltype(srv4::c6), const int32_t>::value, "");
 
-static_assert(srv4::c7 == 111222333444, "");
+static_assert(srv4::c7 == 111'222'333'444, "");
 static_assert(std::is_same<decltype(srv4::c7), const uint64_t>::value, "");
-static_assert(srv4::c8 == -111222333444, "");
+static_assert(srv4::c8 == -111'222'333'444, "");
 static_assert(std::is_same<decltype(srv4::c8), const int64_t>::value, "");
 
 constexpr float testc9{111.222F};
@@ -67,6 +67,12 @@ static_assert(std::is_same<decltype(srv4::c20), const etl::string_view>::value, 
 
 static_assert(srv4::c21 == "444.444", "");
 static_assert(std::is_same<decltype(srv4::c21), const etl::string_view>::value, "");
+
+TEST(TestServer4, c22)
+{
+    static_assert(std::is_same<decltype(srv4::c22), const etl::array<LRPC_BYTE_TYPE, 4>>::value, "");
+    EXPECT_EQ(srv4::c22, (etl::array<uint8_t, 4>{0xAA, 0xBB, 0x00, 0x01}));
+}
 
 static_assert(static_cast<int>(srv4::MyEnum::V0) == 0, "");
 static_assert(static_cast<int>(srv4::MyEnum::V1) == 1, "");

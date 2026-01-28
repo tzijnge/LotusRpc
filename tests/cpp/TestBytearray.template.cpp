@@ -3,7 +3,7 @@
 
 using ::testing::Return;
 
-class TEST_BYTEARRY_SERVICE : public test_ba::bytearray_shim
+class TEST_BYTEARRAY_SERVICE : public test_ba::bytearray_shim
 {
 public:
     MOCK_METHOD((lrpc::bytearray_t), param_return, (lrpc::bytearray_t), (override));
@@ -41,7 +41,7 @@ namespace
     }
 }
 
-using TEST_BYTEARRAY_CLASS = testutils::TestServerBase<test_ba::Bytearray, TEST_BYTEARRY_SERVICE>;
+using TEST_BYTEARRAY_CLASS = testutils::TestServerBase<test_ba::Bytearray, TEST_BYTEARRAY_SERVICE>;
 
 TEST_F(TEST_BYTEARRAY_CLASS, param_return)
 {

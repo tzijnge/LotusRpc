@@ -44,6 +44,11 @@ namespace testutils
             return true;
         }
 
+        if (e.value().size() != arg.value().size())
+        {
+            return false;
+        }
+
         const auto size = e.value().size();
         for (size_t i = 0; i < size; ++i)
         {

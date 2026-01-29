@@ -28,7 +28,7 @@ class ConstantsFileVisitor(LrpcVisitor):
         if constant.cpp_type() == "string":
             self.__includes.add("etl/string_view.h")
         if constant.cpp_type() == "bytearray":
-            self.__includes.add("etl/array.h")
+            self.__includes.update({"etl/array.h", "stdint.h"})
 
         self.__constant_definitions.append(self.__constant_definition(constant))
 

@@ -414,6 +414,31 @@ TEST(TestEtlRwExtensions, writeByteArray)
     EXPECT_EQ(0x14, written.at(9));
 }
 
+TEST(TestEtlRwExtensions, writeBytearrayTooBig)
+{
+    // Test that bytearray size is truncated to the max value
+    // of the size field. This does not say anything about whether
+    // or not the value will fit in the transmit buffer
+
+    etl::array<uint8_t, 500> storage{};
+    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+
+    etl::array<uint8_t, 300> a{};
+    std::iota(a.begin(), a.end(), 0);
+    lrpc::write_unchecked<lrpc::tags::bytearray_auto>(writer, a);
+
+    const auto written = writer.used_data();
+    ASSERT_EQ(256, written.size());
+    EXPECT_EQ(0xFF, static_cast<uint8_t>(written.at(0)));
+    EXPECT_EQ(0x00, static_cast<uint8_t>(written.at(1)));
+    EXPECT_EQ(0x01, static_cast<uint8_t>(written.at(2)));
+    EXPECT_EQ(0x02, static_cast<uint8_t>(written.at(3)));
+    // ...
+    EXPECT_EQ(0xFC, static_cast<uint8_t>(written.at(253)));
+    EXPECT_EQ(0xFD, static_cast<uint8_t>(written.at(254)));
+    EXPECT_EQ(0xFE, static_cast<uint8_t>(written.at(255)));
+}
+
 TEST(TestEtlRwExtensions, writeArray)
 {
     etl::array<uint8_t, 10> storage;

@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 env:
-  BUILD_TYPE: Debug
+  BUILD_TYPE: Release
   TOOLS_DIR: $RUNNER_TEMP/lotusrpc-tools
 
 jobs:

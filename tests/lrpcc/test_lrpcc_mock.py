@@ -58,7 +58,7 @@ def test_server1_f13_with_version_check(capsys: pytest.CaptureFixture[str]) -> N
 def test_server1_f29(capsys: pytest.CaptureFixture[str]) -> None:
     response = b"\x07\x00\x1d\x03\x33\x44\x55"
     lrpcc = make_lrpcc("../testdata/TestServer1.lrpc.yaml", response, check_server_version=False)
-    lrpcc._command_handler("s0", "f29", p0=b"\33\44\55")
+    lrpcc._command_handler("s0", "f29", p0=b"\x77\x88\x99")
 
     expected_response = """r0: [33 44 55]
 """
@@ -67,14 +67,14 @@ def test_server1_f29(capsys: pytest.CaptureFixture[str]) -> None:
 
 def test_server1_stream0(capsys: pytest.CaptureFixture[str]) -> None:
     lrpcc = make_lrpcc("../testdata/TestServer1.lrpc.yaml", check_server_version=False)
-    lrpcc._command_handler("s0", "stream0", p0=b"\33\44\55", final=False)
+    lrpcc._command_handler("s0", "stream0", p0=b"\x77\x88\x99", final=False)
 
     assert escape_ansi(capsys.readouterr().out) == ""
 
 
 def test_server1_stream0_final(capsys: pytest.CaptureFixture[str]) -> None:
     lrpcc = make_lrpcc("../testdata/TestServer1.lrpc.yaml", check_server_version=False)
-    lrpcc._command_handler("s0", "stream0", p0=b"\33\44\55", final=True)
+    lrpcc._command_handler("s0", "stream0", p0=b"\x77\x88\x99", final=True)
 
     assert escape_ansi(capsys.readouterr().out) == ""
 

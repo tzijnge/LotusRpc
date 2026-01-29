@@ -1,4 +1,5 @@
 import struct
+from typing import Final
 
 from lrpc.core import LrpcDef, LrpcVar
 from lrpc.types import LrpcBasicType, LrpcType
@@ -6,8 +7,15 @@ from lrpc.types.lrpc_type import LrpcBuffer
 
 
 def __check_bytearray(value: LrpcType, var: LrpcVar) -> memoryview:
+    # Max size that can be expressed in the size field. This does not
+    # mean that a message of this size always fits in the transmit buffer
+    bytearray_max_size: Final = 255
+
     if not isinstance(value, LrpcBuffer):
         raise TypeError(f"Type error for {var.name()}: expected bytearray, but got {type(value)}")
+
+    if len(value) > bytearray_max_size:
+        raise ValueError(f"Bytearray exceeds max length of {bytearray_max_size}")
 
     return memoryview(value)
 

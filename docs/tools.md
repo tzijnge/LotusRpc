@@ -98,9 +98,9 @@ bool:         lrpcc s f4 1
 bool:         lrpcc s f4 yes
 enum:         lrpcc s f5 MONDAY
 bytearray.    lrpcc s f6 "01AABB"
-optional:     lrpcc s f6 _
-optional:     lrpcc s f6 my_string
-array of 4:   lrpcc s f7 1 2 3 4
+optional:     lrpcc s f7 _
+optional:     lrpcc s f7 my_string
+array of 4:   lrpcc s f8 1 2 3 4
 ```
 
 Parameters that have an optional value can be entered the same as the underlying type. If the optional does not have a value use a single underscore

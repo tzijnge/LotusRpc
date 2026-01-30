@@ -77,7 +77,7 @@ check_server_version: true
 
 The field `log_level` is optional with a default value of `INFO`. If used, it should contain a [standard Python log level](https://docs.python.org/3/howto/logging.html#logging-levels)
 
-The field `check_server_version` is optional with a default value of `true`. It determines wether or not to perform a server version check. If there is any detectable mismatch between the server and the client a warning message will be printed (if the `log_level` is `WARNING` or lower). This can help detect issues early, but it also incurs additional communication between client and server that may not fit the application.
+The field `check_server_version` is optional with a default value of `true`. It determines whether or not to perform a server version check. If there is any detectable mismatch between the server and the client a warning message will be printed (if the `log_level` is `WARNING` or lower). This can help detect issues early, but it also incurs additional communication between client and server that may not fit the application.
 
 The fields `definition_url`, `transport_type` and `transport_params` are required. `definition_url` is the path of the LRPC definition file and can be relative to _lrpcc.config.yaml_ or an absolute path. The subfields of `transport_params` are passed as keyword arguments to the transport class. `lrpcc` uses [pyserial](https://pythonhosted.org/pyserial/) for serial communication, so the `transport_params` can be any of the constructor parameters of the [serial.Serial](https://pythonhosted.org/pyserial/pyserial_api.html#serial.Serial) class.
 

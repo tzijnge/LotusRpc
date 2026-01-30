@@ -1,4 +1,6 @@
 #pragma once
+#include <algorithm>
+#include <limits>
 #include <etl/array.h>
 #include <etl/byte_stream.h>
 #include <etl/string_view.h>
@@ -266,7 +268,7 @@ namespace lrpc
         size_t readSize = stream.read_unchecked<uint8_t>();
         const auto streamSize = stream.available_bytes();
 
-        readSize = etl::min(readSize, streamSize);
+        readSize = std::min(readSize, streamSize);
 
         const bytearray_t ba{reinterpret_cast<const LRPC_BYTE_TYPE *>(stream.end()), readSize};
         (void)stream.skip<LRPC_BYTE_TYPE>(readSize);
@@ -315,7 +317,7 @@ namespace lrpc
     enable_for_array<T>
     read_unchecked(etl::byte_stream_reader &stream, typename array_outparam_type<T>::type dest, size_t definitionArraySize)
     {
-        const auto s = etl::min(dest.size(), definitionArraySize);
+        const auto s = std::min(dest.size(), definitionArraySize);
         for (size_t i{0}; i < s; ++i)
         {
             dest.at(i) = lrpc::read_unchecked<typename array_n_type<T>::type>(stream);
@@ -341,7 +343,7 @@ namespace lrpc
     enable_for_array_of_string_n<T>
     read_unchecked(etl::byte_stream_reader &stream, etl::span<etl::string_view> dest, size_t definitionArraySize, size_t definitionStringSize)
     {
-        const auto s = etl::min(dest.size(), definitionArraySize);
+        const auto s = std::min(dest.size(), definitionArraySize);
         for (size_t i{0}; i < s; ++i)
         {
             dest.at(i) = lrpc::read_unchecked<tags::string_n>(stream, definitionStringSize);
@@ -414,9 +416,12 @@ namespace lrpc
     template <typename T, typename etl::enable_if_t<etl::is_same<T, tags::bytearray_auto>::value, bool> = true>
     void write_unchecked(etl::byte_stream_writer &stream, const bytearray_t &value)
     {
-        stream.write_unchecked<uint8_t>(static_cast<uint8_t>(value.size()));
+        constexpr size_t baMaxSize{std::numeric_limits<uint8_t>::max()};
+        const size_t ba_size = std::min<size_t>(baMaxSize, value.size());
 
-        const size_t writeSize = etl::min(stream.available_bytes(), value.size());
+        stream.write_unchecked<uint8_t>(static_cast<uint8_t>(ba_size));
+
+        const size_t writeSize = std::min(stream.available_bytes(), ba_size);
         for (size_t i = 0; i < writeSize; ++i)
         {
             stream.write_unchecked<LRPC_BYTE_TYPE>(value.at(i));
@@ -449,7 +454,7 @@ namespace lrpc
     template <typename ARR, typename etl::enable_if_t<is_array_n<ARR>::value && (!array_n_type_is_string_n<ARR>::value), bool> = true>
     void write_unchecked(etl::byte_stream_writer &stream, typename array_param_type<ARR>::type value, size_t definitionArraySize)
     {
-        const auto s = etl::min(value.size(), definitionArraySize);
+        const auto s = std::min(value.size(), definitionArraySize);
         for (size_t i{0}; i < s; ++i)
         {
             lrpc::write_unchecked<typename array_n_type<ARR>::type>(stream, value.at(i));
@@ -470,7 +475,7 @@ namespace lrpc
     template <typename ARR, typename etl::enable_if_t<is_array_n<ARR>::value && array_n_type_is_string_n<ARR>::value, bool> = true>
     void write_unchecked(etl::byte_stream_writer &stream, etl::span<const etl::string_view> value, size_t definitionArraySize, size_t definitionStringSize)
     {
-        const auto s = etl::min(value.size(), definitionArraySize);
+        const auto s = std::min(value.size(), definitionArraySize);
         for (size_t i{0}; i < s; ++i)
         {
             lrpc::write_unchecked<tags::string_n>(stream, value.at(i), definitionStringSize);

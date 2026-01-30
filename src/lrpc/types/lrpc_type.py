@@ -20,6 +20,6 @@ LrpcResponseType = LrpcResponseBasicType | Iterable["LrpcResponseType"] | dict[s
 
 # pylint: disable=invalid-name
 LrpcResponseBasicTypeValidator: TypeAdapter[LrpcResponseBasicType] = TypeAdapter(
-    LrpcBasicType,
+    LrpcResponseBasicType,
     config={"arbitrary_types_allowed": True},
 )

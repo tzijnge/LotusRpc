@@ -1,0 +1,81 @@
+name: Bytearray
+namespace: test_ba
+services:
+  - name: bytearray
+    functions:
+      - name: param_return
+        params:
+          - { name: p0, type: bytearray }
+        returns:
+          - { name: r0, type: bytearray }
+      - name: param_return_multiple
+        params:
+          - { name: p0, type: bytearray }
+          - { name: p1, type: bytearray }
+        returns:
+          - { name: r0, type: bytearray }
+          - { name: r1, type: bytearray }
+      - name: optional
+        params:
+          - { name: p0, type: bytearray, count: "?" }
+        returns:
+          - { name: r0, type: bytearray, count: "?" }
+      - name: array
+        params:
+          - { name: p0, type: bytearray, count: 2 }
+        returns:
+          - { name: r0, type: bytearray, count: 2 }
+      - name: custom
+        params:
+          - { name: p0, type: "@BytearrayStruct" }
+        returns:
+          - { name: r0, type: "@BytearrayStruct" }
+    streams:
+      - name: client_single
+        origin: client
+        params:
+          - { name: p0, type: bytearray }
+      - name: client_multiple
+        origin: client
+        params:
+          - { name: p0, type: bytearray }
+          - { name: p1, type: bytearray }
+      - name: client_optional
+        origin: client
+        params:
+          - { name: p0, type: bytearray, count: "?" }
+      - name: client_array
+        origin: client
+        params:
+          - { name: p0, type: bytearray, count: 2 }
+      - name: client_custom
+        origin: client
+        params:
+          - { name: p0, type: "@BytearrayStruct" }
+      - name: server_single
+        origin: server
+        params:
+          - { name: p0, type: bytearray }
+      - name: server_multiple
+        origin: server
+        params:
+          - { name: p0, type: bytearray }
+          - { name: p1, type: bytearray }
+      - name: server_optional
+        origin: server
+        params:
+          - { name: p0, type: bytearray, count: "?" }
+      - name: server_array
+        origin: server
+        params:
+          - { name: p0, type: bytearray, count: 2 }
+      - name: server_custom
+        origin: server
+        params:
+          - { name: p0, type: "@BytearrayStruct" }
+structs:
+  - name: BytearrayStruct
+    fields:
+      - { name: f0, type: bytearray }
+      - { name: f1, type: bytearray, count: "?" }
+      - { name: f2, type: bytearray, count: 2 }

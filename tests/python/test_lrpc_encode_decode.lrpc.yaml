@@ -26,6 +26,11 @@ services:
           - name: r0
             type: uint8_t
       - name: f2
+      - name: bytearray
+        params:
+          - { name: p0, type: bytearray }
+        returns:
+          - { name: r0, type: bytearray }
   - name: srv2
     streams:
       - name: client_infinite

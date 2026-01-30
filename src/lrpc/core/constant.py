@@ -16,6 +16,7 @@ CPP_TYPES: list[str] = [
     "double",
     "bool",
     "string",
+    "bytearray",
 ]
 
 
@@ -34,8 +35,18 @@ class LrpcConstant:
         LrpcConstantValidator.validate_python(raw, strict=True, extra="forbid")
 
         self.__name: str = raw["name"]
-        self.__value: int | float | bool | str = raw["value"]
-        self.__cpp_type: str = self.__init_cpp_type(raw)
+        self.__value = self.__init_value(raw)
+        self.__cpp_type = self.__init_cpp_type(raw)
+
+    @staticmethod
+    def __init_value(raw: LrpcConstantDict) -> int | float | bool | str | bytes:
+        value = raw["value"]
+        if "cppType" in raw and raw["cppType"] == "bytearray":
+            if not isinstance(value, str):
+                raise ValueError("Constant with cppType 'bytearray' must have a string value")
+            return bytes.fromhex(value)
+
+        return value
 
     def __init_cpp_type(self, raw: LrpcConstantDict) -> str:
         if "cppType" not in raw:
@@ -48,7 +59,7 @@ class LrpcConstant:
             if isinstance(self.value(), str):
                 return "string"
 
-            raise ValueError(f"Unable to infer cppType for LrpcConstant value: {self.value()}")
+            raise ValueError(f"Unable to infer cppType for LrpcConstant value: {self.value()!s}")
 
         cpp_type = raw["cppType"]
         if cpp_type in CPP_TYPES:
@@ -62,7 +73,7 @@ class LrpcConstant:
     def name(self) -> str:
         return self.__name
 
-    def value(self) -> int | float | bool | str:
+    def value(self) -> int | float | bool | str | bytes:
         return self.__value
 
     def cpp_type(self) -> str:

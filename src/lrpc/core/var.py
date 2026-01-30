@@ -32,6 +32,7 @@ LrpcVarValidator = TypeAdapter(LrpcVarDict)
 # pylint: disable = too-many-public-methods
 class LrpcVar:
     ETL_STRING_VIEW: Final = "etl::string_view"
+    LRPC_BYTEARRAY_T: Final = "lrpc::bytearray_t"
 
     def __init__(self, raw: LrpcVarDict) -> None:
         LrpcVarValidator.validate_python(raw, strict=True, extra="forbid")
@@ -57,7 +58,12 @@ class LrpcVar:
         return self.__type
 
     def field_type(self) -> str:
-        t = LrpcVar.ETL_STRING_VIEW if self.base_type_is_string() else self.base_type()
+        if self.base_type_is_string():
+            t = LrpcVar.ETL_STRING_VIEW
+        elif self.base_type_is_bytearray():
+            t = LrpcVar.LRPC_BYTEARRAY_T
+        else:
+            t = self.base_type()
 
         if self.is_optional():
             return f"etl::optional<{t}>"
@@ -68,7 +74,12 @@ class LrpcVar:
         return t
 
     def return_type(self) -> str:
-        t = LrpcVar.ETL_STRING_VIEW if self.base_type_is_string() else self.base_type()
+        if self.base_type_is_string():
+            t = LrpcVar.ETL_STRING_VIEW
+        elif self.base_type_is_bytearray():
+            t = LrpcVar.LRPC_BYTEARRAY_T
+        else:
+            t = self.base_type()
 
         if self.is_optional():
             return f"etl::optional<{t}>"
@@ -79,7 +90,12 @@ class LrpcVar:
         return t
 
     def param_type(self) -> str:
-        t = LrpcVar.ETL_STRING_VIEW if self.base_type_is_string() else self.base_type()
+        if self.base_type_is_string():
+            t = LrpcVar.ETL_STRING_VIEW
+        elif self.base_type_is_bytearray():
+            t = LrpcVar.LRPC_BYTEARRAY_T
+        else:
+            t = self.base_type()
 
         if self.is_optional():
             return f"etl::optional<{t}>"
@@ -94,14 +110,16 @@ class LrpcVar:
 
     def rw_type(self, namespace: str | None = None) -> str:
         if self.base_type_is_string():
-            t = "lrpc::string_n" if self.is_fixed_size_string() else "lrpc::string_auto"
+            t = "lrpc::tags::string_n" if self.is_fixed_size_string() else "lrpc::tags::string_auto"
+        elif self.base_type_is_bytearray():
+            t = "lrpc::tags::bytearray_auto"
         elif self.base_type_is_custom() and namespace is not None:
             t = f"{namespace}::{self.base_type()}"
         else:
             t = self.base_type()
 
         if self.is_array():
-            return f"lrpc::array_n<{t}>"
+            return f"lrpc::tags::array_n<{t}>"
 
         if self.is_optional():
             return f"etl::optional<{t}>"
@@ -138,6 +156,9 @@ class LrpcVar:
     def base_type_is_string(self) -> bool:
         return self.base_type().startswith("string")
 
+    def base_type_is_bytearray(self) -> bool:
+        return self.base_type() == "bytearray"
+
     def is_struct(self) -> bool:
         if self.is_array():
             return False
@@ -171,7 +192,7 @@ class LrpcVar:
         return self.base_type_is_string() and not self.is_auto_string()
 
     def string_size(self) -> int:
-        if self.is_auto_string():
+        if not self.is_fixed_size_string():
             return -1
 
         return int(self.base_type().strip("string_"))
@@ -183,14 +204,17 @@ class LrpcVar:
         return self._count
 
     def pack_type(self) -> str:
+        message = "Pack type is not defined for LrpcVar of type {}"
         if self.base_type_is_struct():
-            raise TypeError("Pack type is not defined for LrpcVar of type struct")
+            raise TypeError(message.format("struct"))
         if self.is_optional():
-            raise TypeError("Pack type is not defined for LrpcVar of type optional")
+            raise TypeError(message.format("optional"))
         if self.base_type_is_string():
-            raise TypeError("Pack type is not defined for LrpcVar of type string")
+            raise TypeError(message.format("string"))
+        if self.base_type_is_bytearray():
+            raise TypeError(message.format("bytearray"))
         if self.is_array():
-            raise TypeError("Pack type is not defined for LrpcVar of type array")
+            raise TypeError(message.format("array"))
 
         if self.base_type_is_enum():
             return "B"

@@ -1,5 +1,6 @@
 import re
 import struct
+import sys
 from importlib.metadata import version
 from pathlib import Path
 
@@ -7,6 +8,9 @@ import pytest
 
 from lrpc.client import LrpcClient
 from lrpc.utils import load_lrpc_def_from_url
+
+if sys.version_info >= (3, 12):
+    import array
 
 
 class FakeTransport:
@@ -81,6 +85,21 @@ class TestLrpcClient:
     def test_encode_function(self) -> None:
         encoded = self.client().encode("srv1", "add5", p0=0xAB)
         assert encoded == b"\x04\x01\x00\xab"
+
+    def test_encode_function_bytearray(self) -> None:
+        encoded = self.client().encode("srv1", "bytearray", p0=b"\x11\x22")
+        assert encoded == b"\x06\x01\x02\x02\x11\x22"
+
+        encoded = self.client().encode("srv1", "bytearray", p0=bytearray(b"\x11\x22"))
+        assert encoded == b"\x06\x01\x02\x02\x11\x22"
+
+        encoded = self.client().encode("srv1", "bytearray", p0=memoryview(b"\x11\x22"))
+        assert encoded == b"\x06\x01\x02\x02\x11\x22"
+
+        if sys.version_info >= (3, 12):
+            arr = array.array("i", [0x11223344, 0x55667788])
+            encoded = self.client().encode("srv1", "bytearray", p0=arr)
+            assert encoded == b"\x0c\x01\x02\x08\x44\x33\x22\x11\x88\x77\x66\x55"
 
     def test_encode_stream_client_infinite(self) -> None:
         encoded = self.client().encode("srv2", "client_infinite", p0=0xAB, p1=0xCDEF)
@@ -261,6 +280,22 @@ class TestLrpcClient:
         assert response.service_name == "srv1"
         assert response.function_or_stream_name == "add5"
 
+    def test_communicate_function_bytearray(self) -> None:
+        response_bytes = b"\x06\x01\x02\x02\x33\x44"
+        response = self.client(response_bytes).communicate_single("srv1", "bytearray", p0=b"\x11\x22")
+        payload = response.payload
+
+        assert "r0" in payload
+        assert isinstance(payload["r0"], bytes)
+        assert payload["r0"] == b"\x33\x44"
+
+        assert response.is_error_response is False
+        assert response.is_expected_response
+        assert response.is_function_response
+        assert response.is_stream_response is False
+        assert response.service_name == "srv1"
+        assert response.function_or_stream_name == "bytearray"
+
     def test_communicate_function_wrong_response(self, caplog: pytest.LogCaptureFixture) -> None:
         # response belongs to srv0.f0
         response_bytes = b"\x03\x00\x00"
@@ -399,7 +434,7 @@ class TestLrpcClient:
         assert "Server mismatch detected. Details client vs server:" in caplog.messages
         assert f"LotusRPC version: {lrpc_version} vs {lrpc_version}" in caplog.messages
         assert "Definition version: [disabled] vs [disabled]" in caplog.messages
-        assert "Definition hash: 1e63f37cfb4c9aa9... vs [wrong hash]..." in caplog.messages
+        assert "Definition hash: e3617a4673c10b3b... vs [wrong hash]..." in caplog.messages
 
     def test_check_server_version_mismatch_lrpc_version(self, caplog: pytest.LogCaptureFixture) -> None:
         def_version = lrpc_def.version() or ""
@@ -415,7 +450,7 @@ class TestLrpcClient:
         assert "Server mismatch detected. Details client vs server:" in caplog.messages
         assert f"LotusRPC version: {version('lotusrpc')} vs [wrong version]" in caplog.messages
         assert "Definition version: [disabled] vs [disabled]" in caplog.messages
-        assert "Definition hash: 1e63f37cfb4c9aa9... vs 1e63f37cfb4c9aa9..." in caplog.messages
+        assert "Definition hash: e3617a4673c10b3b... vs e3617a4673c10b3b..." in caplog.messages
 
     def test_check_server_version_mismatch_def_version(self, caplog: pytest.LogCaptureFixture) -> None:
         def_version = "[wrong version]"
@@ -431,6 +466,4 @@ class TestLrpcClient:
         assert "Server mismatch detected. Details client vs server:" in caplog.messages
         assert f"LotusRPC version: {lrpc_version} vs {lrpc_version}" in caplog.messages
         assert "Definition version: [disabled] vs [wrong version]" in caplog.messages
-        assert "Definition hash: 1e63f37cfb4c9aa9... vs 1e63f37cfb4c9aa9..." in caplog.messages
-
-    # def test_
+        assert "Definition hash: e3617a4673c10b3b... vs e3617a4673c10b3b..." in caplog.messages

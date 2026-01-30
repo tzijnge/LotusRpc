@@ -9,12 +9,13 @@ from lrpc.core import LrpcFun, LrpcService, LrpcStream, LrpcVar
 from lrpc.core.definition import LrpcDef
 from lrpc.core.meta import MetaVersionResponseDict, MetaVersionResponseValidator
 from lrpc.types import LrpcType
+from lrpc.types.lrpc_type import LrpcResponseType
 
 from .decoder import LrpcDecoder
 from .encoder import lrpc_encode
 from .transport import LrpcTransport
 
-LrpcResponsePayload = dict[str, LrpcType]
+LrpcResponsePayload = dict[str, LrpcResponseType]
 
 
 @dataclass

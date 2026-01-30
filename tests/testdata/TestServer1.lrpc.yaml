@@ -123,6 +123,9 @@ services:
           - { name: p0, type: "bytearray" }
         returns:
           - { name: r0, type: "bytearray" }
+      - name: f30
+        params:
+          - { name: p0, type: "bytearray", count: 2 }
     streams:
       - name: stream0
         origin: client

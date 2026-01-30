@@ -1,4 +1,4 @@
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 from functools import partial
 from importlib import metadata
 from typing import Any
@@ -179,12 +179,20 @@ class ClientCliVisitor(LrpcVisitor):
             self.current_service.add_command(self.current_stream)
 
     def __make_arg(self, param: LrpcVar) -> click.Parameter:
+        cb: (
+            Callable[[click.Context, click.Parameter, str], bytes]
+            | Callable[[click.Context, click.Parameter, tuple[str]], Iterable[bytes]]
+            | None
+        ) = None
+        if param.base_type_is_bytearray():
+            cb = self.__validate_array_of_bytearray if param.is_array() else self.__validate_bytearray
+
         return click.Argument(
             [param.name()],
             required=True,
             type=self.__click_type(param),
             nargs=param.array_size() if param.is_array() else 1,
-            callback=self.__validate_bytearray if param.base_type_is_bytearray() else None,
+            callback=cb,
         )
 
     def __make_stream_final_option(self) -> click.Option:
@@ -208,12 +216,20 @@ class ClientCliVisitor(LrpcVisitor):
         )
 
     @staticmethod
-    def __validate_bytearray(ctx: click.Context, param: click.Parameter, value: str) -> bytes:
+    def __validate_array_of_bytearray(
+        ctx: click.Context,
+        param: click.Parameter,
+        value: tuple[str],
+    ) -> Iterable[bytes]:
+        return [ClientCliVisitor.__validate_bytearray(ctx, param, ba) for ba in value]
+
+    @staticmethod
+    def __validate_bytearray(ctx: click.Context, param: click.Parameter, ba: str) -> bytes:
         try:
-            return bytes.fromhex(value)
+            return bytes.fromhex(ba)
         except ValueError as e:
             raise click.BadParameter(
-                "Parameter must contain an even number of case-insensitive hex digits, possibly whitespace separated",
+                "Parameter must contain an even number of case-insensitive hex digits, possibly whitespace separated.",
                 ctx=ctx,
                 param=param,
             ) from e

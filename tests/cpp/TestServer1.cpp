@@ -37,6 +37,7 @@ namespace
         MOCK_METHOD((std::tuple<etl::span<const uint8_t>, etl::span<const etl::string_view>, etl::span<const etl::string_view>>), f27, (), (override));
         MOCK_METHOD(void, f28, (const ts1::CompositeData4 &), (override));
         MOCK_METHOD(lrpc::bytearray_t, f29, (lrpc::bytearray_t), (override));
+        MOCK_METHOD(void, f30, (etl::span<const lrpc::bytearray_t>), (override));
         MOCK_METHOD(void, stream0, (lrpc::bytearray_t, bool), (override));
     };
 }

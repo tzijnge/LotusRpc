@@ -48,11 +48,15 @@
   write: "07001D031A2B3C"
   read: "07001D03334455"
   response: "r0: [33 44 55]"
+- cli: 'lrpcc s0 f30 "1A2B" "3C4D"'
+  write: "09001E021A2B023C4D"
+  read: "03001E"
+  response: ""
 - cli: 'lrpcc s0 stream0 "1a 2B3C"'
-  write: "08001E031A2B3C00"
+  write: "08001F031A2B3C00"
   read: ""
   response: ""
 - cli: 'lrpcc s0 stream0 "1a 2B3C" --final'
-  write: "08001E031A2B3C01"
+  write: "08001F031A2B3C01"
   read: ""
   response: ""

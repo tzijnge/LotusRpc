@@ -15,8 +15,11 @@ else:
 LrpcBasicType = bool | int | float | str | LrpcBuffer
 LrpcType = LrpcBasicType | Iterable["LrpcType"] | dict[str, "LrpcType"] | None
 
+LrpcResponseBasicType = bool | int | float | str | bytes
+LrpcResponseType = LrpcResponseBasicType | Iterable["LrpcResponseType"] | dict[str, "LrpcResponseType"] | None
+
 # pylint: disable=invalid-name
-LrpcBasicTypeValidator: TypeAdapter[LrpcBasicType] = TypeAdapter(
+LrpcResponseBasicTypeValidator: TypeAdapter[LrpcResponseBasicType] = TypeAdapter(
     LrpcBasicType,
     config={"arbitrary_types_allowed": True},
 )

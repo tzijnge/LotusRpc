@@ -2,7 +2,7 @@ import struct
 from typing import Any, cast
 
 from lrpc.core import LrpcDef, LrpcVar
-from lrpc.types.lrpc_type import LrpcBasicTypeValidator, LrpcType
+from lrpc.types.lrpc_type import LrpcResponseBasicTypeValidator, LrpcResponseType
 
 
 # pylint: disable = too-few-public-methods
@@ -59,7 +59,7 @@ class LrpcDecoder:
 
         return decoded
 
-    def __decode_array(self, var: LrpcVar) -> list[LrpcType]:
+    def __decode_array(self, var: LrpcVar) -> list[LrpcResponseType]:
         decoded = []
         for _ in range(var.array_size()):
             item = self.lrpc_decode(var.contained())
@@ -67,14 +67,14 @@ class LrpcDecoder:
 
         return decoded
 
-    def __decode_optional(self, var: LrpcVar) -> LrpcType | None:
+    def __decode_optional(self, var: LrpcVar) -> LrpcResponseType | None:
         has_value = self.__unpack("?")
         if has_value is True:
             return self.lrpc_decode(var.contained())
 
         return None
 
-    def __decode_struct(self, var: LrpcVar) -> LrpcType:
+    def __decode_struct(self, var: LrpcVar) -> LrpcResponseType:
         decoded = {}
         s = self.lrpc_def.struct(var.base_type())
 
@@ -109,15 +109,15 @@ class LrpcDecoder:
     def __unpack_uint8_t(self) -> int:
         return cast(int, self.__unpack("B"))
 
-    def __unpack(self, pack_format: str) -> LrpcType:
+    def __unpack(self, pack_format: str) -> LrpcResponseType:
         pack_format = "<" + pack_format
         unpacked = struct.unpack_from(pack_format, self.encoded, offset=self.start)
         self.start += struct.calcsize(pack_format)
 
-        return LrpcBasicTypeValidator.validate_python(unpacked[0])
+        return LrpcResponseBasicTypeValidator.validate_python(unpacked[0])
 
     # pylint: disable = too-many-return-statements
-    def lrpc_decode(self, var: LrpcVar) -> LrpcType:  # noqa: PLR0911
+    def lrpc_decode(self, var: LrpcVar) -> LrpcResponseType:  # noqa: PLR0911
         if var.is_array_of_strings():
             return self.__decode_array_of_strings(var)
 

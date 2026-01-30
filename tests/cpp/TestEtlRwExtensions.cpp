@@ -1,7 +1,8 @@
 #include <gtest/gtest.h>
 #include "core/lrpccore/EtlRwExtensions.hpp"
-#include <string>
 #include <array>
+#include <numeric>
+#include <string>
 #include <etl/vector.h>
 #include <etl/string.h>
 

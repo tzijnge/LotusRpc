@@ -83,10 +83,10 @@ namespace testutils
 
         for (auto i = 0U; i < numberBytes; i += 1)
         {
-            const auto r = etl::to_arithmetic<uint8_t>(hex.substr(i * 2, 2));
+            const auto r = etl::to_arithmetic<uint8_t>(hex.substr(i * 2, 2), etl::hex);
             if (r.has_value())
             {
-                bytes.emplace_back(r.value(), etl::hex);
+                bytes.emplace_back(r.value());
             }
             else
             {

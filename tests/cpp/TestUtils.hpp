@@ -9,6 +9,12 @@
 namespace testutils
 {
 
+    class InvalidHexString : public std::runtime_error
+    {
+    public:
+        InvalidHexString() : runtime_error("Invalid hex string") {}
+    };
+
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4100)
@@ -77,7 +83,15 @@ namespace testutils
 
         for (auto i = 0U; i < numberBytes; i += 1)
         {
-            bytes.emplace_back(etl::to_arithmetic<uint8_t>(hex.substr(i * 2, 2), etl::hex));
+            const auto r = etl::to_arithmetic<uint8_t>(hex.substr(i * 2, 2));
+            if (r.has_value())
+            {
+                bytes.emplace_back(r.value(), etl::hex);
+            }
+            else
+            {
+                throw InvalidHexString();
+            }
         }
 
         return bytes;

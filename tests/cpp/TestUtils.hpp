@@ -5,6 +5,7 @@
 #include <etl/to_arithmetic.h>
 #include <etl/array.h>
 #include <etl/span.h>
+#include <vector>
 
 namespace testutils
 {
@@ -121,7 +122,8 @@ namespace testutils
 
         void lrpcTransmit(etl::span<const uint8_t> bytes) override
         {
-            responseBuffer = bytes;
+            responseBuffer.clear();
+            responseBuffer.assign(bytes.begin(), bytes.end());
         }
 
         std::string receive(const etl::string_view hex)
@@ -135,7 +137,7 @@ namespace testutils
             return testutils::bytesToHex(responseBuffer);
         }
 
-        etl::span<const uint8_t> responseBuffer;
+        std::vector<uint8_t> responseBuffer;
 
         Service service;
     };

@@ -14,7 +14,7 @@ def __check_bytearray(value: LrpcType, var: LrpcVar) -> memoryview:
     if not isinstance(value, LrpcBuffer):
         raise TypeError(f"Type error for {var.name()}: expected bytearray, but got {type(value)}")
 
-    if len(value) > bytearray_max_size:
+    if memoryview(value).nbytes > bytearray_max_size:
         raise ValueError(f"Bytearray exceeds max length of {bytearray_max_size}")
 
     return memoryview(value)

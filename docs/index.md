@@ -36,7 +36,7 @@ LotusRPC aims to be extensible, although it is not yet as extensible as it could
 * bytearray
 This type represents an array of bytes. In Python, a function taking a `bytearray` parameter accepts `bytes`, `bytearray` or `memoryview`. In Python 3.12 any type that implements the `Buffer` protocol (`collections.abc.Buffer`) is accepted. Functions returning a `bytearray` always return a `bytes` object. In C++ `bytearray` translates to `etl::span<const uint8_t>`, but the alias `lrpc::bytearray_t` is available and used internally in LotusRPC. It is also possible to change the byte type to another single-byte type (e.g. `char`, `std::byte`, etc.) by defining `LRPC_BYTE_TYPE` as that type.
 
-This type was added because in the generated C++ code `bytearray` is more efficient than using a plain array of `uint8_t`. In Python it is convenient to have a something that maps to a built-in byte-like type, e.g. for binary blob transfer between client and server.
+This type was added because in the generated C++ code `bytearray` is more efficient than using a plain array of `uint8_t`. In Python it is convenient to have something that maps to a built-in byte-like type, e.g. for binary blob transfer between client and server.
 
 * array
   * Array can be any of the other supported types

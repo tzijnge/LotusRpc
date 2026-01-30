@@ -6,6 +6,7 @@
 #include <etl/array.h>
 #include <etl/span.h>
 #include <vector>
+#include <stdexcept>
 
 namespace testutils
 {

@@ -10,5 +10,5 @@ types-setuptools==80.9.0.20250529
 typing_extensions==4.15.0
 coverage==7.13.1
 types-colorama==0.4.15
-yamllint==1.37.1
+yamllint==1.38.0
 towncrier==25.8.0

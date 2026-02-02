@@ -57,13 +57,17 @@ class LrpcVar:
     def base_type(self) -> str:
         return self.__type
 
-    def field_type(self) -> str:
+    def _resolved_base_type(self) -> str:
         if self.base_type_is_string():
-            t = LrpcVar.ETL_STRING_VIEW
-        elif self.base_type_is_bytearray():
-            t = LrpcVar.LRPC_BYTEARRAY_T
-        else:
-            t = self.base_type()
+            return LrpcVar.ETL_STRING_VIEW
+
+        if self.base_type_is_bytearray():
+            return LrpcVar.LRPC_BYTEARRAY_T
+
+        return self.base_type()
+
+    def field_type(self) -> str:
+        t = self._resolved_base_type()
 
         if self.is_optional():
             return f"etl::optional<{t}>"
@@ -74,12 +78,7 @@ class LrpcVar:
         return t
 
     def return_type(self) -> str:
-        if self.base_type_is_string():
-            t = LrpcVar.ETL_STRING_VIEW
-        elif self.base_type_is_bytearray():
-            t = LrpcVar.LRPC_BYTEARRAY_T
-        else:
-            t = self.base_type()
+        t = self._resolved_base_type()
 
         if self.is_optional():
             return f"etl::optional<{t}>"
@@ -90,12 +89,7 @@ class LrpcVar:
         return t
 
     def param_type(self) -> str:
-        if self.base_type_is_string():
-            t = LrpcVar.ETL_STRING_VIEW
-        elif self.base_type_is_bytearray():
-            t = LrpcVar.LRPC_BYTEARRAY_T
-        else:
-            t = self.base_type()
+        t = self._resolved_base_type()
 
         if self.is_optional():
             return f"etl::optional<{t}>"

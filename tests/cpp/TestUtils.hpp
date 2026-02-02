@@ -7,6 +7,9 @@
 #include <etl/span.h>
 #include <vector>
 #include <stdexcept>
+#include <sstream>
+#include <iomanip>
+#include <string>
 
 namespace testutils
 {
@@ -76,7 +79,7 @@ namespace testutils
     {
         if ((hex.size() % 2) != 0)
         {
-            return {};
+            throw InvalidHexString();
         }
 
         const auto numberBytes = hex.size() / 2;

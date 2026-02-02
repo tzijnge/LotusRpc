@@ -97,7 +97,7 @@ packet
 
 ### Bytearray
 
-A bytearray in LotusRPC is a flexible-size collection of single-byte values preceded by a single-byte length field. This means that a bytearray has a maximum length of 255 and a minimum length of 0 (an empty bytearray). The bytearray [0xAB, 0xCD, 0x11] is encoded as follows
+A bytearray in LotusRPC is a flexible-size collection of single-byte values preceded by a single-byte length field. This means that a bytearray has a maximum length of 255 and a minimum length of 0 (an empty bytearray). Note that using the maximum bytearray length in combination with the default maximum packet size of 255 will always result in buffer overflow and hence an unsent message. The bytearray [0xAB, 0xCD, 0x11] is encoded as follows
 
 ``` mermaid
 ---
@@ -112,7 +112,6 @@ packet
 +8: "0xCD"
 +8: "0x11"
 ```
-
 
 ### Array
 
@@ -159,7 +158,7 @@ config:
 ---
 packet
 +8: "State (0x01)"
-+8: "State (0x88)"
++8: "Value (0x88)"
 ```
 
 ### Enum

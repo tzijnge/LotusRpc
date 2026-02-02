@@ -240,7 +240,7 @@ def test_encode_auto_bytearray() -> None:
 def test_encode_auto_bytearray_too_big() -> None:
     var = LrpcVar({"name": "v1", "type": "bytearray"})
 
-    with pytest.raises(ValueError, match="Bytearray exceeds max length of 255"):
+    with pytest.raises(ValueError, match="Bytearray of length 256 exceeds max length of 255"):
         encode_var(b"\x11" * 256, var)
 
 

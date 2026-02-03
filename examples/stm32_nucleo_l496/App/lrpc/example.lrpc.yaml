@@ -65,6 +65,11 @@ services:
           - { name: p1, type: string }
         returns:
           - { name: r1, type: string_20 }
+      - name: f15
+        params:
+          - { name: p1, type: bytearray }
+        returns:
+          - { name: r1, type: bytearray }
   - name: srv2
     functions:
       - name: f1
@@ -98,3 +103,8 @@ services:
         params:
           - { name: p0, type: string }
           - { name: p1, type: int16_t }
+      - name: s4
+        origin: server
+        finite: true
+        params:
+          - { name: p0, type: bytearray }

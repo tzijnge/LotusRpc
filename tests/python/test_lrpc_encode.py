@@ -1,5 +1,6 @@
 import re
 import struct
+import sys
 from pathlib import Path
 
 import pytest
@@ -8,6 +9,9 @@ from lrpc.client import lrpc_encode
 from lrpc.core import LrpcVar
 from lrpc.types import LrpcType
 from lrpc.utils import load_lrpc_def_from_url
+
+if sys.version_info >= (3, 12):
+    import array
 
 definition_file = Path(__file__).resolve().parent.joinpath("test_lrpc_encode_decode.lrpc.yaml")
 lrpc_def = load_lrpc_def_from_url(definition_file, warnings_as_errors=False)
@@ -23,10 +27,10 @@ def test_encode_uint8_t() -> None:
     assert encode_var(0, var) == b"\x00"
     assert encode_var(255, var) == b"\xff"
 
-    with pytest.raises(struct.error, match="ubyte format requires 0 <= number <= 255"):
+    with pytest.raises(struct.error, match="format requires 0 <= number <= 255"):
         encode_var(-1, var)
 
-    with pytest.raises(struct.error, match="ubyte format requires 0 <= number <= 255"):
+    with pytest.raises(struct.error, match="format requires 0 <= number <= 255"):
         encode_var(256, var)
 
     with pytest.raises(TypeError, match="Type error for v1: expected bool, int, float or str, but got <class 'set'>"):
@@ -41,10 +45,10 @@ def test_encode_int8_t() -> None:
     assert encode_var(-1, var) == b"\xff"
     assert encode_var(-128, var) == b"\x80"
 
-    with pytest.raises(struct.error, match="byte format requires -128 <= number <= 127"):
+    with pytest.raises(struct.error, match="format requires -128 <= number <= 127"):
         encode_var(128, var)
 
-    with pytest.raises(struct.error, match="byte format requires -128 <= number <= 127"):
+    with pytest.raises(struct.error, match="format requires -128 <= number <= 127"):
         encode_var(-129, var)
 
     with pytest.raises(TypeError, match="Type error for v1: expected bool, int, float or str, but got <class 'tuple'>"):
@@ -57,8 +61,8 @@ def test_encode_uint16_t() -> None:
     assert encode_var(0, var) == b"\x00\x00"
     assert encode_var(65535, var) == b"\xff\xff"
 
-    message_windows = re.escape("ushort format requires 0 <= number <= 65535")
-    message_linux = re.escape("ushort format requires 0 <= number <= (0x7fff * 2 + 1)")
+    message_windows = re.escape("format requires 0 <= number <= 65535")
+    message_linux = re.escape("format requires 0 <= number <= (0x7fff * 2 + 1)")
     message = message_windows + "|" + message_linux
     with pytest.raises(struct.error, match=message):
         encode_var(-1, var)
@@ -81,8 +85,8 @@ def test_encode_int16_t() -> None:
     assert encode_var(-1, var) == b"\xff\xff"
     assert encode_var(-32768, var) == b"\x00\x80"
 
-    message_windows = re.escape("short format requires -32768 <= number <= 32767")
-    message_linux = re.escape("short format requires (-0x7fff - 1) <= number <= 0x7fff")
+    message_windows = re.escape("format requires -32768 <= number <= 32767")
+    message_linux = re.escape("format requires (-0x7fff - 1) <= number <= 0x7fff")
     message = message_windows + "|" + message_linux
     with pytest.raises(struct.error, match=message):
         encode_var(32768, var)
@@ -191,7 +195,7 @@ def test_encode_bool() -> None:
     assert encode_var(value=True, var=var) == b"\x01"
 
 
-def test_encode_string() -> None:
+def test_encode_auto_string() -> None:
     var = LrpcVar({"name": "v1", "type": "string"})
 
     assert encode_var("test123", var) == b"test123\x00"
@@ -207,6 +211,37 @@ def test_encode_fixed_size_string() -> None:
 
     with pytest.raises(ValueError, match=re.escape("String length error for v1: max length 10, but got 11 ")):
         encode_var("0123456789_", var)
+
+
+def test_encode_auto_bytearray() -> None:
+    var = LrpcVar({"name": "v1", "type": "bytearray"})
+
+    # bytes
+    b = b"\x11\x22\x33"
+    assert encode_var(b, var) == b"\x03\x11\x22\x33"
+
+    # bytearray
+    ba = bytearray(b)
+    assert encode_var(ba, var) == b"\x03\x11\x22\x33"
+
+    # memoryview
+    mv = memoryview(b)
+    assert encode_var(mv, var) == b"\x03\x11\x22\x33"
+
+    if sys.version_info >= (3, 12):
+        # anything that supports the Buffer protocol
+        arr = array.array("i", [0x11223344, 0x55667788])
+        assert encode_var(arr, var) == b"\x08\x44\x33\x22\x11\x88\x77\x66\x55"
+
+    with pytest.raises(TypeError, match=re.escape("Type error for v1: expected bytearray, but got <class 'int'>")):
+        encode_var(3, var)
+
+
+def test_encode_auto_bytearray_too_big() -> None:
+    var = LrpcVar({"name": "v1", "type": "bytearray"})
+
+    with pytest.raises(ValueError, match="Bytearray of length 256 exceeds max length of 255"):
+        encode_var(b"\x11" * 256, var)
 
 
 def test_encode_array() -> None:
@@ -243,6 +278,13 @@ def test_encode_optional_auto_string() -> None:
 
     assert encode_var(None, var) == b"\x00"
     assert encode_var("ab", var) == b"\x01ab\x00"
+
+
+def test_encode_optional_auto_bytearray() -> None:
+    var = LrpcVar({"name": "v1", "type": "bytearray", "count": "?"})
+
+    assert encode_var(None, var) == b"\x00"
+    assert encode_var(b"ab", var) == b"\x01\x02ab"
 
 
 def test_encode_struct() -> None:
@@ -344,3 +386,10 @@ def test_encode_array_of_auto_string() -> None:
 
     assert encode_var(["abcd", "ef", ""], var) == b"abcd\x00ef\x00\x00"
     assert encode_var(["ab1", "cd23", "ef45"], var) == b"ab1\x00cd23\x00ef45\x00"
+
+
+def test_encode_array_of_auto_bytearray() -> None:
+    var = LrpcVar({"name": "v1", "type": "bytearray", "count": 3})
+
+    assert encode_var([b"abcd", b"ef", b""], var) == b"\x04abcd\x02ef\x00"
+    assert encode_var([b"ab1", b"cd23", b"ef45"], var) == b"\x03ab1\x04cd23\x04ef45"

@@ -1,7 +1,8 @@
 import struct
-from typing import Any
+from typing import Any, cast
 
 from lrpc.core import LrpcDef, LrpcVar
+from lrpc.types.lrpc_type import LrpcResponseBasicTypeValidator, LrpcResponseType
 
 
 # pylint: disable = too-few-public-methods
@@ -10,6 +11,14 @@ class LrpcDecoder:
         self.encoded: bytes = encoded
         self.start: int = 0
         self.lrpc_def: LrpcDef = lrpc_def
+
+    def __decode_bytearray(self) -> bytes:
+        ba_size = self.__unpack_uint8_t()
+        remaining = len(self.encoded) - self.start
+        if remaining < ba_size:
+            raise ValueError(f"Incomplete bytearray: expected {ba_size} bytes but got {remaining}")
+
+        return self.__unpack_bytes(ba_size)
 
     def __decode_string(self, var: LrpcVar) -> str:
         if var.is_auto_string():
@@ -50,7 +59,7 @@ class LrpcDecoder:
 
         return decoded
 
-    def __decode_array(self, var: LrpcVar) -> Any:
+    def __decode_array(self, var: LrpcVar) -> list[LrpcResponseType]:
         decoded = []
         for _ in range(var.array_size()):
             item = self.lrpc_decode(var.contained())
@@ -58,14 +67,14 @@ class LrpcDecoder:
 
         return decoded
 
-    def __decode_optional(self, var: LrpcVar) -> Any:
+    def __decode_optional(self, var: LrpcVar) -> LrpcResponseType | None:
         has_value = self.__unpack("?")
-        if has_value:
+        if has_value is True:
             return self.lrpc_decode(var.contained())
 
         return None
 
-    def __decode_struct(self, var: LrpcVar) -> Any:
+    def __decode_struct(self, var: LrpcVar) -> LrpcResponseType:
         decoded = {}
         s = self.lrpc_def.struct(var.base_type())
 
@@ -78,7 +87,7 @@ class LrpcDecoder:
 
         return decoded
 
-    def __decode_enum(self, var: LrpcVar) -> Any:
+    def __decode_enum(self, var: LrpcVar) -> str:
         e = self.lrpc_def.enum(var.base_type())
 
         if not e:
@@ -86,7 +95,7 @@ class LrpcDecoder:
 
         fields = e.fields()
 
-        identifier = self.__unpack("B")
+        identifier = self.__unpack_uint8_t()
 
         for f in fields:
             if f.id() == identifier:
@@ -94,14 +103,21 @@ class LrpcDecoder:
 
         raise ValueError(f"Value {identifier} ({hex(identifier)}) is not valid for enum {var.base_type()}")
 
-    def __unpack(self, pack_format: str) -> Any:
+    def __unpack_bytes(self, size: int) -> bytes:
+        return cast(bytes, self.__unpack(f"{size}s"))
+
+    def __unpack_uint8_t(self) -> int:
+        return cast(int, self.__unpack("B"))
+
+    def __unpack(self, pack_format: str) -> LrpcResponseType:
         pack_format = "<" + pack_format
         unpacked = struct.unpack_from(pack_format, self.encoded, offset=self.start)
         self.start += struct.calcsize(pack_format)
-        return unpacked[0]
+
+        return LrpcResponseBasicTypeValidator.validate_python(unpacked[0])
 
     # pylint: disable = too-many-return-statements
-    def lrpc_decode(self, var: LrpcVar) -> Any:  # noqa: PLR0911
+    def lrpc_decode(self, var: LrpcVar) -> LrpcResponseType:  # noqa: PLR0911
         if var.is_array_of_strings():
             return self.__decode_array_of_strings(var)
 
@@ -110,6 +126,9 @@ class LrpcDecoder:
 
         if var.is_optional():
             return self.__decode_optional(var)
+
+        if var.base_type_is_bytearray():
+            return self.__decode_bytearray()
 
         if var.base_type_is_string():
             return self.__decode_string(var)

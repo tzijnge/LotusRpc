@@ -4,6 +4,14 @@ set(CMAKE_CXX_STANDARD 11)
 set(BUILD_GMOCK ON)
 set(gtest_force_shared_crt on)
 
+if(MSVC)
+  add_compile_options(/fsanitize=address /Zi)
+add_link_options(/fsanitize=address)
+else()
+  add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+add_link_options(-fsanitize=address -static-libasan)
+endif()
+
 include(GoogleTest)
 mark_as_advanced(
     BUILD_GMOCK BUILD_GTEST
@@ -48,23 +56,24 @@ generate_lrpc(Server2)
 generate_lrpc(Server3)
 generate_lrpc(Server4)
 generate_lrpc(Server5)
+generate_lrpc(Bytearray)
 
 set_directory_properties(PROPERTIES ADDITIONAL_CLEAN_FILES ${CMAKE_CURRENT_SOURCE_DIR}/generated)
 
 add_executable(UnitTests
-                TestEtlRwExtensions.cpp
-                TestServer1.cpp
-                TestServer2_s0.cpp
+                TestEtlRwExtensions.cpp ${CMAKE_CURRENT_SOURCE_DIR}/generated/core/lrpccore/EtlRwExtensions.hpp
+                TestServer1.cpp         ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server1/Server1.hpp
+                TestServer2_s0.cpp      ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server2/Server2.hpp
                 TestServer2_s1.cpp
-                TestServer3.cpp
-                TestServer4.cpp
-                TestServer5.cpp
-                ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server1/Server1.hpp
-                ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server2/Server2.hpp
-                ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server3/Server3.hpp
-                ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server4/Server4.hpp
-                ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server5/Server5.hpp
-                ${CMAKE_CURRENT_SOURCE_DIR}/generated/core/lrpccore/EtlRwExtensions.hpp
+                TestServer3.cpp         ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server3/Server3.hpp
+                TestServer4.cpp         ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server4/Server4.hpp
+                TestServer5.cpp         ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server5/Server5.hpp
+                TestBytearray_char.cpp  ${CMAKE_CURRENT_SOURCE_DIR}/generated/Bytearray/Bytearray.hpp
+                TestBytearray_char8_t.cpp
+                TestBytearray_signed_char.cpp
+                TestBytearray_unsigned_char.cpp
+                TestBytearray_int8_t.cpp
+                TestBytearray_uint8_t.cpp
                 TestServerErrors.cpp)
 
 target_include_directories(UnitTests PRIVATE .)

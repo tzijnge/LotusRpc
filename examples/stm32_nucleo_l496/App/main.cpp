@@ -3,6 +3,8 @@
 #include "lrpc/generated/example.hpp"
 #include <etl/array.h>
 #include <etl/algorithm.h>
+#include <algorithm>
+#include <random>
 
 extern "C" void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
@@ -136,7 +138,13 @@ public:
 
     void s4() override
     {
-        while (true)
+        s4StopCalled = false;
+        std::random_device rd;
+        std::mt19937 g(rd());
+        std::shuffle(data.begin(), data.end(), g);
+        s4_remaining = data;
+
+        while (!s4StopCalled)
         {
             const auto sub_size = etl::min<size_t>(s4_remaining.size(), 2);
             const auto sub = s4_remaining.subspan(0, sub_size);
@@ -155,13 +163,15 @@ public:
 
     void s4_stop() override
     {
+        s4StopCalled = true;
     }
 
 private:
     bool s0StopCalled{false};
     bool s1StopCalled{false};
+    bool s4StopCalled{false};
 
-    etl::array<const uint8_t, 7> data{0x00U, 0x01U, 0x02U, 0x03U, 0x04U, 0x05U, 0x06U};
+    etl::array<uint8_t, 7> data{0x00U, 0x01U, 0x02U, 0x03U, 0x04U, 0x05U, 0x06U};
     lrpc::bytearray_t s4_remaining{data};
 };
 

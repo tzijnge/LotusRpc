@@ -1,6 +1,10 @@
 #include "main.h"
 #include "usart.h"
 #include "lrpc/generated/example.hpp"
+#include <etl/array.h>
+#include <etl/algorithm.h>
+#include <algorithm>
+#include <random>
 
 extern "C" void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
@@ -77,6 +81,11 @@ public:
     {
         return p1;
     }
+
+    lrpc::bytearray_t f15(lrpc::bytearray_t p1) override
+    {
+        return p1;
+    }
 };
 
 class Srv2 : public srv2_shim
@@ -127,9 +136,43 @@ public:
     {
     }
 
+    void s4() override
+    {
+        s4StopCalled = false;
+        std::random_device rd;
+        std::mt19937 g(rd());
+        std::shuffle(data.begin(), data.end(), g);
+        s4_remaining = data;
+
+        while (!s4StopCalled)
+        {
+            const auto sub_size = etl::min<size_t>(s4_remaining.size(), 2);
+            const auto sub = s4_remaining.subspan(0, sub_size);
+            const auto final = sub_size != 2;
+            s4_response(sub, final);
+            if (!final)
+            {
+                s4_remaining = s4_remaining.last(s4_remaining.size() - sub_size);
+            }
+            else
+            {
+                return;
+            }
+        }
+    }
+
+    void s4_stop() override
+    {
+        s4StopCalled = true;
+    }
+
 private:
     bool s0StopCalled{false};
     bool s1StopCalled{false};
+    bool s4StopCalled{false};
+
+    etl::array<uint8_t, 7> data{0x00U, 0x01U, 0x02U, 0x03U, 0x04U, 0x05U, 0x06U};
+    lrpc::bytearray_t s4_remaining{data};
 };
 
 class ExampleServer : public example

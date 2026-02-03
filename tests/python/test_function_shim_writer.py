@@ -112,7 +112,7 @@ def test_array_param() -> None:
 {
 \twriteHeader(w, 43);
 \tetl::array<uint8_t, 2> x;
-\tlrpc::read_unchecked<lrpc::array_n<uint8_t>>(r, x, 2);
+\tlrpc::read_unchecked<lrpc::tags::array_n<uint8_t>>(r, x, 2);
 \ttest_func(x);
 }
 """
@@ -129,7 +129,7 @@ def test_fixed_size_string_param() -> None:
     expected = """void test_func_shim(Reader& r, Writer& w)
 {
 \twriteHeader(w, 43);
-\tconst auto x = lrpc::read_unchecked<lrpc::string_n>(r, 2);
+\tconst auto x = lrpc::read_unchecked<lrpc::tags::string_n>(r, 2);
 \ttest_func(x);
 }
 """
@@ -147,7 +147,7 @@ def test_array_of_fixed_size_string_param() -> None:
 {
 \twriteHeader(w, 43);
 \tetl::array<etl::string_view, 3> x;
-\tlrpc::read_unchecked<lrpc::array_n<lrpc::string_n>>(r, x, 3, 2);
+\tlrpc::read_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(r, x, 3, 2);
 \ttest_func(x);
 }
 """
@@ -165,7 +165,7 @@ def test_array_return() -> None:
 {
 \twriteHeader(w, 43);
 \tconst auto response = test_func();
-\tlrpc::write_unchecked<lrpc::array_n<uint8_t>>(w, response, 2);
+\tlrpc::write_unchecked<lrpc::tags::array_n<uint8_t>>(w, response, 2);
 }
 """
 
@@ -182,7 +182,7 @@ def test_fixed_size_string_return() -> None:
 {
 \twriteHeader(w, 43);
 \tconst auto response = test_func();
-\tlrpc::write_unchecked<lrpc::string_n>(w, response, 2);
+\tlrpc::write_unchecked<lrpc::tags::string_n>(w, response, 2);
 }
 """
 
@@ -199,7 +199,7 @@ def test_array_of_fixed_size_string_return() -> None:
 {
 \twriteHeader(w, 43);
 \tconst auto response = test_func();
-\tlrpc::write_unchecked<lrpc::array_n<lrpc::string_n>>(w, response, 3, 2);
+\tlrpc::write_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(w, response, 3, 2);
 }
 """
 
@@ -226,13 +226,13 @@ def test_many_params_and_returns() -> None:
 \twriteHeader(w, 43);
 \tconst auto p0 = lrpc::read_unchecked<uint8_t>(r);
 \tetl::array<uint8_t, 2> p1;
-\tlrpc::read_unchecked<lrpc::array_n<uint8_t>>(r, p1, 2);
+\tlrpc::read_unchecked<lrpc::tags::array_n<uint8_t>>(r, p1, 2);
 \tetl::array<etl::string_view, 3> p2;
-\tlrpc::read_unchecked<lrpc::array_n<lrpc::string_n>>(r, p2, 3, 10);
+\tlrpc::read_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(r, p2, 3, 10);
 \tconst auto response = test_func(p0, p1, p2);
 \tlrpc::write_unchecked<uint8_t>(w, std::get<0>(response));
-\tlrpc::write_unchecked<lrpc::array_n<uint8_t>>(w, std::get<1>(response), 4);
-\tlrpc::write_unchecked<lrpc::array_n<lrpc::string_n>>(w, std::get<2>(response), 5, 20);
+\tlrpc::write_unchecked<lrpc::tags::array_n<uint8_t>>(w, std::get<1>(response), 4);
+\tlrpc::write_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(w, std::get<2>(response), 5, 20);
 }
 """
 

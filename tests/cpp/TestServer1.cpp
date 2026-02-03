@@ -35,7 +35,10 @@ namespace
         MOCK_METHOD((etl::optional<etl::string_view>), f25, (), (override));
         MOCK_METHOD((etl::span<const etl::string_view>), f26, (), (override));
         MOCK_METHOD((std::tuple<etl::span<const uint8_t>, etl::span<const etl::string_view>, etl::span<const etl::string_view>>), f27, (), (override));
-        MOCK_METHOD(void, f28, (const ts1::CompositeData4 &p0), (override));
+        MOCK_METHOD(void, f28, (const ts1::CompositeData4 &), (override));
+        MOCK_METHOD(lrpc::bytearray_t, f29, (lrpc::bytearray_t), (override));
+        MOCK_METHOD(void, f30, (etl::span<const lrpc::bytearray_t>), (override));
+        MOCK_METHOD(void, stream0, (lrpc::bytearray_t, bool), (override));
     };
 }
 
@@ -132,7 +135,7 @@ TEST_F(TestServer1, decodeF8)
 // Decode function f9 with array of custom type
 TEST_F(TestServer1, decodeF9)
 {
-    std::vector<ts1::CompositeData2> expected{
+    const std::vector<ts1::CompositeData2> expected{
         ts1::CompositeData2{0xAA, 0xBB},
         ts1::CompositeData2{0xCC, 0xDD}};
     EXPECT_CALL(service, f9(testutils::SPAN_EQ(expected)));
@@ -143,7 +146,7 @@ TEST_F(TestServer1, decodeF9)
 // Decode function f10 with nested custom types
 TEST_F(TestServer1, decodeF10)
 {
-    ts1::CompositeData3 expected{{0xAA, 0xBB}, ts1::MyEnum::V1};
+    const ts1::CompositeData3 expected{{0xAA, 0xBB}, ts1::MyEnum::V1};
     EXPECT_CALL(service, f10(expected));
     const auto response = receive("06000AAABB01");
     EXPECT_EQ("03000A", response);
@@ -277,7 +280,7 @@ TEST_F(TestServer1, decodef25)
     auto response = receive("030019");
     EXPECT_EQ("07001901543100", response);
 
-    EXPECT_CALL(service, f25()).WillOnce(Return(etl::optional<etl::string_view>{}));
+    EXPECT_CALL(service, f25()).WillOnce(Return(etl::nullopt));
     response = receive("030019");
     EXPECT_EQ("04001900", response);
 }

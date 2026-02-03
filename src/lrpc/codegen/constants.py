@@ -1,3 +1,4 @@
+import typing
 from pathlib import Path
 
 from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
@@ -26,6 +27,8 @@ class ConstantsFileVisitor(LrpcVisitor):
             self.__includes.add("stdint.h")
         if constant.cpp_type() == "string":
             self.__includes.add("etl/string_view.h")
+        if constant.cpp_type() == "bytearray":
+            self.__includes.update({"etl/array.h", "stdint.h"})
 
         self.__constant_definitions.append(self.__constant_definition(constant))
 
@@ -53,8 +56,13 @@ class ConstantsFileVisitor(LrpcVisitor):
         literal = "f" if constant.cpp_type() == "float" else ""
 
         if constant.cpp_type() == "string":
+            str_value = typing.cast(str, constant.value())
             t = "etl::string_view"
-            v = f'"{constant.value()}"'
+            v = f'"{str_value}"'
+        elif constant.cpp_type() == "bytearray":
+            ba_value = typing.cast(bytes, constant.value())
+            t = f"etl::array<uint8_t, {len(ba_value)}>"
+            v = ", ".join(hex(b) for b in ba_value)
         else:
             t = constant.cpp_type()
             v = str(constant.value()).lower()

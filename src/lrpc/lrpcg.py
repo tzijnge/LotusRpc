@@ -16,7 +16,7 @@ from lrpc.codegen import (
     StructFileVisitor,
 )
 from lrpc.core import LrpcDef
-from lrpc.resources.cpp import export_to
+from lrpc.resources.cpp import export_to as export_resources_to
 from lrpc.schema import export_lrpc_schema
 from lrpc.utils import load_lrpc_def_from_file
 from lrpc.visitors import PlantUmlVisitor
@@ -29,15 +29,11 @@ def create_dir_if_not_exists(target_dir: Path) -> None:
     target_dir.mkdir(parents=True, exist_ok=True)
 
 
-def copy_resources(output: Path) -> None:
-    export_to(output)
-
-
 def generate_rpc(lrpc_def: LrpcDef, output: Path, *, generate_core: bool) -> None:
     create_dir_if_not_exists(output)
 
     if generate_core:
-        copy_resources(output)
+        export_resources_to(output)
 
     lrpc_def.accept(ServerIncludeVisitor(output))
     lrpc_def.accept(ServiceIncludeVisitor(output))
@@ -105,7 +101,7 @@ def cppcore(output: os.PathLike[str]) -> None:
     """Generate C++ server core files. Generating these files separately from the rest of the server
     allows for having multiple servers in a single project without conflicting and/or duplicate files.
     Use in combination with the 'cpp' command and the '--no-core' option"""
-    copy_resources(Path(output))
+    export_resources_to(Path(output))
     log.info("Generated LRPC core code in %s", output)
 
 

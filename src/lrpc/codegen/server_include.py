@@ -33,8 +33,9 @@ class ServerIncludeVisitor(LrpcVisitor):
         self.__file.write('#include "LrpcMeta_service.hpp"')
 
     def visit_lrpc_service(self, service: LrpcService) -> None:
-        self.__file.write(f'#include "{service.name()}_includes.hpp"')
-        self.__file.write(f'#include "{service.name()}_shim.hpp"')
+        if service.name() != "LrpcMeta":
+            self.__file.write(f'#include "{service.name()}_includes.hpp"')
+            self.__file.write(f'#include "{service.name()}_shim.hpp"')
 
     def visit_lrpc_def_end(self) -> None:
         self.__file.newline()

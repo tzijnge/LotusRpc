@@ -12,6 +12,11 @@ services:
           - { name: p2, type: uint8_t }
           - { name: p3, type: int32_t }
           - { name: message, type: string }
+      - name: definition
+        origin: server
+        finite: true
+        params:
+          - { name: chunk, type: bytearray }
     functions:
       - name: version
         id: 128

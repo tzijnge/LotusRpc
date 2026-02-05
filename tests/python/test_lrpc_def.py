@@ -827,6 +827,8 @@ services:
         "-function[version+128]-return[definition]-return[definition_hash]-return[lrpc]-return_end-param_end-function_end"
         "-stream[error+0+server]"
         "-param[start]-param_end-return[type]-return[p1]-return[p2]-return[p3]-return[message]-return_end-stream_end"
+        "-stream[definition+1+server]"
+        "-param[start]-param_end-return[chunk]-return[final]-return_end-stream_end"
         "-service_end" in v.result
     )
 
@@ -952,7 +954,7 @@ services:
     lrpc_def1 = load_lrpc_def(def_str)
     compressed = lrpc_def1.compressed_definition()
 
-    assert len(compressed) == 368
+    assert len(compressed) == 388
 
     lrpc_def2 = LrpcDef.decompress(compressed)
 

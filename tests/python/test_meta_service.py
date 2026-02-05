@@ -25,9 +25,11 @@ def test_meta_service_properties() -> None:
     assert meta_service.name() == "LrpcMeta"
 
     meta_streams = meta_service.streams()
-    assert len(meta_streams) == 1
+    assert len(meta_streams) == 2
     assert meta_streams[0].id() == 0
     assert meta_streams[0].name() == "error"
+    assert meta_streams[1].id() == 1
+    assert meta_streams[1].name() == "definition"
 
     meta_functions = meta_service.functions()
     assert len(meta_functions) == 1

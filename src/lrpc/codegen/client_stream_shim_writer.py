@@ -9,7 +9,7 @@ class ClientStreamShimWriter:
         self._file = file
 
     def write_shim(self, stream: LrpcStream) -> None:
-        with self._file.block(f"void {stream.name()}_shim(Reader& r, Writer&)"):
+        with self._file.block(f"void {stream.name()}_shim(Reader& r)"):
             for p in stream.params():
                 self._write_param_readers(p)
 

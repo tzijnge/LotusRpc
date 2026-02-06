@@ -317,3 +317,9 @@ TEST_F(TestServer1, decodeF28)
     const auto response = receive("0A001CAABBCCDD01EEFF");
     EXPECT_EQ("03001C", response);
 }
+
+TEST_F(TestServer1, retrieveDefinition)
+{
+    const auto response = receive("03FF01");
+    EXPECT_EQ("05FF010001", response);
+}

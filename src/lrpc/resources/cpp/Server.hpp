@@ -8,17 +8,16 @@ namespace lrpc
     template <size_t MAX_SERVICE_ID, typename META_SERVICE, size_t RX_SIZE = 256, size_t TX_SIZE = RX_SIZE>
     class Server : public IServer
     {
-    private:
         class ServiceNotFoundService : public Service
         {
         public:
             uint8_t id() const override { return 0; };
-            void invoke(Service::Reader &r, Service::Writer &) override
+            void invoke(Service::Reader &reader) override
             {
-                const auto data = r.data();
+                const auto data = reader.data();
                 const auto serviceId = data.at(1);
                 const auto functionOrStreamId = data.at(2);
-                server->error(LrpcMetaError::UnknownService, serviceId, functionOrStreamId);
+                server().error(LrpcMetaError::UnknownService, serviceId, functionOrStreamId);
             };
         };
 
@@ -30,13 +29,20 @@ namespace lrpc
             registerService(metaService);
         }
 
-        Writer getWriter() override
+        void transmit(const uint8_t serviceId, const uint8_t functionOrStreamId) override
         {
-            return Writer{sendBuffer.begin(), sendBuffer.end(), etl::endian::little};
+            static const auto cb = [](Writer &) {};
+            transmit(serviceId, functionOrStreamId, cb);
         }
 
-        void transmit(const Writer &w) override
+        void transmit(const uint8_t serviceId, const uint8_t functionOrStreamId, const ParamWriter writeParams) override
         {
+            auto w = Writer{sendBuffer.begin(), sendBuffer.end(), etl::endian::little};
+
+            createHeader(w, serviceId, functionOrStreamId);
+            writeParams(w);
+            updateHeaderMessageSize(w);
+
             const auto b = reinterpret_cast<const uint8_t *>(w.cbegin());
             const auto e = reinterpret_cast<const uint8_t *>(w.cend());
             lrpcTransmit({b, e});
@@ -107,15 +113,28 @@ namespace lrpc
         void invokeService()
         {
             Reader reader{receiveBuffer.begin(), receiveBuffer.end(), etl::endian::little};
-            Writer writer{sendBuffer.begin(), sendBuffer.end(), etl::endian::little};
 
             reader.skip<uint8_t>(1); // message size
 
             const auto serviceId = reader.read_unchecked<uint8_t>();
 
-            service(serviceId)->invoke(reader, writer);
+            service(serviceId)->invoke(reader);
+        }
 
-            transmit(writer);
+        static void createHeader(Writer &w, const uint8_t serviceId, const uint8_t functionOrStreamId)
+        {
+            w.write_unchecked<uint8_t>(0);         // placeholder for message size
+            w.write_unchecked<uint8_t>(serviceId); // service ID
+            w.write_unchecked<uint8_t>(functionOrStreamId);
+        }
+
+        static void updateHeaderMessageSize(Writer &w)
+        {
+            const auto s = w.size_bytes();
+            if (s != 0)
+            {
+                *w.begin() = static_cast<uint8_t>(s);
+            }
         }
     };
 

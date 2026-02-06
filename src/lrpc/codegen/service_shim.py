@@ -45,11 +45,10 @@ class ServiceShimVisitor(LrpcVisitor):
             self._file(f"uint8_t id() const override {{ return {self.__service_id()}; }}")
             self._file.newline()
 
-            with self._file.block("void invoke(Reader &r, Writer &w) override"):
+            with self._file.block("void invoke(Reader &r) override"):
                 self._file("const auto functionOrStreamId = r.read_unchecked<uint8_t>();")
                 self._file("const auto functionOrStreamShim = shim(functionOrStreamId);")
-                self._file("((this)->*(functionOrStreamShim))(r, w);")
-                self._file("updateHeader(w);")
+                self._file("((this)->*(functionOrStreamShim))(r);")
 
             self._file.newline()
             self.__write_server_stream_responses(server_streams)
@@ -132,7 +131,7 @@ class ServiceShimVisitor(LrpcVisitor):
             self._file.write("// Server stream start/stop shims")
 
         for stream in server_streams:
-            with self._file.block(f"void {stream.name()}_start_stop_shim(Reader& r, Writer&)"):
+            with self._file.block(f"void {stream.name()}_start_stop_shim(Reader& r)"):
                 self._file.write("const auto start = r.read_unchecked<bool>();")
                 with self._file.block("if (start)"):
                     self._file.write(f"{stream.name()}();")
@@ -159,11 +158,11 @@ class ServiceShimVisitor(LrpcVisitor):
     ) -> None:
         max_function_or_stream_id = self.__max_function_or_stream_id(functions, client_streams, server_streams)
 
-        self._file.write(f"using ShimType = void ({self.__class_name()}::*)(Reader &, Writer &);")
-        with self._file.block("void missingFunction_shim(Reader& r, Writer&)"):
+        self._file.write(f"using ShimType = void ({self.__class_name()}::*)(Reader &);")
+        with self._file.block("void missingFunction_shim(Reader& r)"):
             self._file.write("const auto data = r.data();")
             self._file.write("const auto functionOrStreamId = data.at(2);")
-            self._file.write("server->error(LrpcMetaError::UnknownFunctionOrStream, id(), functionOrStreamId);")
+            self._file.write("server().error(LrpcMetaError::UnknownFunctionOrStream, id(), functionOrStreamId);")
         self._file.newline()
 
         with self._file.block("static ShimType shim(const size_t functionId)"):

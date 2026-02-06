@@ -1,0 +1,8 @@
+name: RetrieveDefinition
+namespace: test_rd
+tx_buffer_size: 47
+embed_definition: true
+services:
+  - name: s0
+    functions:
+      - name: f0

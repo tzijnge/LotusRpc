@@ -60,7 +60,7 @@ class MetaConstantsWriter:
         self._file.newline()
 
         with self._file.block(
-            f"static constexpr etl::array<uint8_t, {comp_def_size}> CompressedDefinition = ",
+            f"static constexpr etl::array<uint8_t, {comp_def_size}> CompressedDefinition =",
             ";",
         ):
             if comp_def_size == 0:

@@ -1,1 +1,1 @@
-from .load import load_meta_def as load_meta_def
+from .load import meta_def_file as meta_def_file

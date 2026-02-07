@@ -7,7 +7,7 @@ import jsonschema
 import yaml
 
 from lrpc.core import LrpcDef, LrpcDefDict
-from lrpc.resources.meta import load_meta_def
+from lrpc.resources.meta import meta_def_file
 from lrpc.schema import load_lrpc_schema
 from lrpc.validation import SemanticAnalyzer
 
@@ -64,11 +64,15 @@ def __yaml_safe_load(def_str: str | TextIO) -> LrpcDefDict:
     return def_dict
 
 
-def __load_meta_def() -> LrpcDefDict:
-    with load_meta_def() as meta_def, meta_def.open(encoding="utf-8") as meta_def_file:
-        meta_def_dict = __yaml_safe_load(meta_def_file)
+def __load_meta_def_dict() -> LrpcDefDict:
+    with meta_def_file() as mdf, mdf.open(encoding="utf-8") as meta_def:
+        meta_def_dict = __yaml_safe_load(meta_def)
         jsonschema.validate(meta_def_dict, load_lrpc_schema())
         return meta_def_dict
+
+
+def load_meta_def() -> LrpcDef:
+    return LrpcDef(__load_meta_def_dict())
 
 
 def load_lrpc_def_from_dict(
@@ -98,7 +102,7 @@ def load_lrpc_def_from_dict(
 
 def load_lrpc_def_from_str(def_str: str, *, warnings_as_errors: bool) -> LrpcDef:
     user_def = __yaml_safe_load(def_str)
-    meta_def = __load_meta_def()
+    meta_def = __load_meta_def_dict()
     return load_lrpc_def_from_dict(user_def, meta_def, warnings_as_errors=warnings_as_errors)
 
 
@@ -109,5 +113,5 @@ def load_lrpc_def_from_url(def_url: Path, *, warnings_as_errors: bool) -> LrpcDe
 
 def load_lrpc_def_from_file(def_file: TextIO, *, warnings_as_errors: bool) -> LrpcDef:
     user_def = __yaml_safe_load(def_file)
-    meta_def = __load_meta_def()
+    meta_def = __load_meta_def_dict()
     return load_lrpc_def_from_dict(user_def, meta_def, warnings_as_errors=warnings_as_errors)

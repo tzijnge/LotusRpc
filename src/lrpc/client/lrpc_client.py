@@ -10,6 +10,7 @@ from lrpc.core.definition import LrpcDef
 from lrpc.core.meta import MetaVersionResponseDict, MetaVersionResponseValidator
 from lrpc.types import LrpcType
 from lrpc.types.lrpc_type import LrpcResponseType
+from lrpc.utils.load_definition import load_meta_def
 
 from .decoder import LrpcDecoder
 from .encoder import lrpc_encode
@@ -44,6 +45,18 @@ class LrpcClient:
         self._current_service: str = ""
         self._current_function_or_stream: str = ""
         self._log = logging.getLogger(self.__class__.__name__)
+
+    @staticmethod
+    def from_server(transport: LrpcTransport) -> "LrpcClient":
+        meta_def = load_meta_def()
+        meta_client = LrpcClient(meta_def, transport)
+        # pylint: disable = protected-access
+        full_def = meta_client._retrieve_definition()
+
+        if full_def is not None:
+            return LrpcClient(full_def, transport)
+
+        raise ValueError("No embedded definition found on server")
 
     def check_server_version(self) -> bool:
         disabled = "[disabled]"
@@ -294,6 +307,19 @@ class LrpcClient:
             encoded += lrpc_encode(param_value, param, self._lrpc_def)
 
         return encoded
+
+    def _retrieve_definition(self) -> LrpcDef | None:
+        compressed_definition = b""
+        for response in self.communicate("LrpcMeta", "definition", start=True):
+            chunk = response.payload.get("chunk", 0)
+            if not isinstance(chunk, bytes):
+                raise TypeError("Invalid response while retrieving definition from server")
+            compressed_definition += chunk
+
+        if len(compressed_definition) == 0:
+            return None
+
+        return LrpcDef.decompress(compressed_definition)
 
     @staticmethod
     def _add_message_length(encoded: bytes) -> bytes:

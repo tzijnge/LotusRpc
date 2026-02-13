@@ -55,7 +55,8 @@ def test_minimal_config_definition_from_server() -> None:
     config = LrpccConfig(config_dict)
     assert config.transport_type() == "my_transport"
     assert config.transport_params() == {}
-    assert config.definition_url() == Path()
+    with pytest.raises(AssertionError, match="Function should not be called when definition_from_server is 'always'"):
+        config.definition_url()
     assert config.check_server_version() is True
     assert config.definition_from_server() == "always"
     assert config.log_level() == "INFO"
@@ -134,3 +135,13 @@ def test_create_and_load_serial() -> None:
         assert config.check_server_version() is True
         assert config.definition_from_server() == "once"
         assert config.log_level() == "INFO"
+
+
+def test_load_empty() -> None:
+    with tempfile.TemporaryDirectory() as temp_dir:
+        config_path = Path(temp_dir).joinpath("test.lrpc.yaml")
+        with (
+            config_path.open("wt+", encoding="utf-8") as config,
+            pytest.raises(ValueError, match=re.escape(f"Configuration file {config_path} is empty")),
+        ):
+            LrpccConfig.load(config_path)

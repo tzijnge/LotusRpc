@@ -31,10 +31,13 @@ LrpccConfigValidator = TypeAdapter(LrpccConfigDict)
 
 class LrpccConfig:
     def __init__(self, raw: LrpccConfigDict) -> None:
+        self._invalid_definition_url = Path("lrpcc_config_invalid_definition_url")
         LrpccConfigValidator.validate_python(raw, strict=True, extra="forbid")
 
         definition_url_not_provided = DEFINITION_URL not in raw
-        self._definition_url = Path() if definition_url_not_provided else Path(raw[DEFINITION_URL]).resolve()
+        self._definition_url = (
+            self._invalid_definition_url if definition_url_not_provided else Path(raw[DEFINITION_URL]).resolve()
+        )
         self._definition_from_server = raw.get(DEFINITION_FROM_SERVER, "never")
 
         if self._definition_from_server == "never":
@@ -67,6 +70,8 @@ class LrpccConfig:
     def load(path: Path) -> "LrpccConfig":
         with path.open(encoding="utf-8") as config_file:
             config: LrpccConfigDict = yaml.safe_load(config_file)
+            if config is None:
+                raise ValueError(f"Configuration file {path} is empty")
             return LrpccConfig(config)
 
     @staticmethod
@@ -88,6 +93,8 @@ class LrpccConfig:
             yaml.safe_dump(config_dict, lrpcc_config_file)
 
     def definition_url(self) -> Path:
+        if self._definition_url == self._invalid_definition_url:
+            raise AssertionError(f"Function should not be called when {DEFINITION_FROM_SERVER} is 'always'")
         return self._definition_url
 
     def definition_from_server(self) -> str:

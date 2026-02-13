@@ -20,12 +20,6 @@ namespace testutils
         InvalidHexString() : runtime_error("Invalid hex string") {}
     };
 
-    class InsertionError : public std::runtime_error
-    {
-    public:
-        InsertionError() : runtime_error("Failed to insert data") {}
-    };
-
 #ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4100)
@@ -136,11 +130,7 @@ namespace testutils
             {
                 responseBuffer.clear();
             }
-            const auto inserted = responseBuffer.insert(responseBuffer.end(), bytes.begin(), bytes.end());
-            if (inserted == responseBuffer.end())
-            {
-                throw InsertionError();
-            }
+            (void)responseBuffer.insert(responseBuffer.end(), bytes.begin(), bytes.end());
         }
 
         std::string receive(const etl::string_view hex)

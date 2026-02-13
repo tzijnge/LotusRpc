@@ -1,6 +1,6 @@
 class Transport:
-    def __init__(self, response: bytes) -> None:
-        self._response = response
+    def __init__(self, response: str) -> None:
+        self._response = bytes.fromhex(response)
 
     def read(self, size: int = 1) -> bytes:
         data = self._response[0:size]

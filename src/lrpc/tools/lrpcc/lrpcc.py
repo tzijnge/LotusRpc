@@ -259,7 +259,7 @@ def run_cli() -> None:
     # catching general exception here is considered ok, because application will terminate
     # pylint: disable=broad-exception-caught
     except Exception:
-        log.exception("Error running lrpcc for %s", config.definition_url() or "[No definition provided]")
+        log.exception("Error running lrpcc for %s", config.definition_url())
         log.info(traceback.format_exc())
 
 

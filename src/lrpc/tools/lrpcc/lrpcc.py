@@ -112,14 +112,15 @@ class Lrpcc:
 
         transport = self._make_transport(config)
         from_server = config.definition_from_server()
-        def_url = config.definition_url()
 
         if from_server == "always":
             self.client = LrpcClient.from_server(transport)
         elif from_server == "never":
+            def_url = config.definition_url()
             lrpc_def = load_lrpc_def_from_url(def_url, warnings_as_errors=True)
             self.client = LrpcClient(lrpc_def, transport)
         elif from_server == "once":
+            def_url = config.definition_url()
             if def_url.exists():
                 lrpc_def = load_lrpc_def_from_url(def_url, warnings_as_errors=True, include_meta_def=False)
                 self.client = LrpcClient(lrpc_def, transport)

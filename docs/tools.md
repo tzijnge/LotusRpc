@@ -87,20 +87,20 @@ The fields `definition_url`, `transport_type` and `transport_params` are require
 
 Sending function parameters with LRPC is easy, just add every parameter on the command line. Here's a cheat sheet:
 
-``` cheat sheet
-int:          lrpcc s f0 123
-float/double: lrpcc s f1 123.456
-signed int:   lrpcc s f2 -123
-string:       lrpcc s f3 my_string
-string        lrpcc s f3 "my string with spaces"
-bool:         lrpcc s f4 false
-bool:         lrpcc s f4 1
-bool:         lrpcc s f4 yes
-enum:         lrpcc s f5 MONDAY
-bytearray.    lrpcc s f6 "01AABB"
-optional:     lrpcc s f7 _
-optional:     lrpcc s f7 my_string
-array of 4:   lrpcc s f8 1 2 3 4
+``` bash
+lrpcc s f0 123                     #int
+lrpcc s f1 123.456                 #float/double
+lrpcc s f2 -123                    #signed int
+lrpcc s f3 my_string               #string
+lrpcc s f3 "my string with spaces" #string
+lrpcc s f4 false                   #bool
+lrpcc s f4 1                       #bool
+lrpcc s f4 yes                     #bool
+lrpcc s f5 MONDAY                  #enum
+lrpcc s f6 "01AABB"                #bytearray
+lrpcc s f7 _                       #optional
+lrpcc s f7 my_string               #optional
+lrpcc s f8 1 2 3 4                 #array of 4
 ```
 
 Parameters that have an optional value can be entered the same as the underlying type. If the optional does not have a value use a single underscore

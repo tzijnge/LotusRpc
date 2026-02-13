@@ -1,9 +1,9 @@
 from pathlib import Path
-from typing import Final, Literal, NotRequired
+from typing import Final, Literal
 
 import yaml
 from pydantic import TypeAdapter
-from typing_extensions import TypedDict
+from typing_extensions import NotRequired, TypedDict
 
 TransportParamsType = dict[str, str | int | bool | float | bytes]
 

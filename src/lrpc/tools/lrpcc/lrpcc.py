@@ -7,18 +7,16 @@ import os
 import traceback
 from importlib import import_module
 from pathlib import Path
-from typing import Final, Literal, cast
+from typing import Final, cast
 
 import click
 import colorama
-import yaml
-from pydantic import TypeAdapter
-from typing_extensions import NotRequired, TypedDict
 
 from lrpc.client import ClientCliVisitor, LrpcClient, LrpcResponse, LrpcTransport
 from lrpc.core.meta import MetaErrorResponseDict
+from lrpc.tools.lrpcc.lrpcc_config import CHECK_SERVER_VERSION, LrpccConfig
 from lrpc.types import LrpcType
-from lrpc.utils import load_lrpc_def_from_url
+from lrpc.utils.load_definition import load_lrpc_def_from_url
 
 # ruff: noqa: T201
 
@@ -38,27 +36,8 @@ log_level_map = {
 logging.basicConfig(format="[LRPCC] %(levelname)-8s: %(message)s", level=log_level_map["INFO"])
 log = logging.getLogger("LRPCC")
 
-TransportParamsType = dict[str, str | int | bool | float]
-
-
-class LrpccConfigDict(TypedDict):
-    definition_url: str
-    transport_type: str
-    transport_params: NotRequired[TransportParamsType]
-    log_level: NotRequired[Literal["CRITICAL", "FATAL", "ERROR", "WARN", "WARNING", "INFO", "DEBUG", "NOTSET"]]
-    check_server_version: NotRequired[bool]
-
-
-# pylint: disable=invalid-name
-LrpccConfigValidator = TypeAdapter(LrpccConfigDict)
-
 LRPCC_CONFIG_ENV_VAR: Final = "LRPCC_CONFIG"
 LRPCC_CONFIG_YAML: Final = "lrpcc.config.yaml"
-DEFINITION_URL: Final = "definition_url"
-TRANSPORT_TYPE: Final = "transport_type"
-TRANSPORT_PARAMS: Final = "transport_params"
-LOG_LEVEL: Final = "log_level"
-CHECK_SERVER_VERSION: Final = "check_server_version"
 
 
 def find_config() -> Path:
@@ -80,15 +59,6 @@ def find_config() -> Path:
             )
 
     return config_path.resolve()
-
-
-def load_config(config_path: Path) -> LrpccConfigDict:
-    with config_path.open(encoding="utf-8") as config_file:
-        config: LrpccConfigDict = yaml.safe_load(config_file)
-        LrpccConfigValidator.validate_python(config, strict=True, extra="forbid")
-
-    log.debug("Using configuration file %s", config_path)
-    return config
 
 
 @click.group()
@@ -131,35 +101,32 @@ def run_lrpcc_config_creator() -> None:
 )
 def create(definition_url: str, transport_type: str) -> None:
     """Create a new lrpcc configuration file template"""
-    transport_params: TransportParamsType = {}
-
-    if transport_type == "serial":
-        transport_params["port"] = "<PORT>"
-        transport_params["baudrate"] = "<BAUDRATE>"
-
-    lrpcc_config: LrpccConfigDict = {
-        DEFINITION_URL: definition_url,
-        TRANSPORT_TYPE: transport_type,
-        TRANSPORT_PARAMS: transport_params,
-    }
-    with Path(LRPCC_CONFIG_YAML).open(mode="w", encoding="utf-8") as lrpcc_config_file:
-        yaml.safe_dump(lrpcc_config, lrpcc_config_file)
-
+    LrpccConfig.create(Path(LRPCC_CONFIG_YAML), definition_url, transport_type)
     log.info("Created file %s", LRPCC_CONFIG_YAML)
 
 
 # pylint: disable = too-few-public-methods
 class Lrpcc:
-    def __init__(self, config: LrpccConfigDict) -> None:
-        self.__set_log_level(config.get(LOG_LEVEL, "INFO"))
+    def __init__(self, config: LrpccConfig) -> None:
+        self._set_log_level(config.log_level())
 
-        def_url = Path(config[DEFINITION_URL]).resolve()
-        self.lrpc_def = load_lrpc_def_from_url(def_url, warnings_as_errors=True)
+        transport = self._make_transport(config)
+        from_server = config.definition_from_server()
+        def_url = config.definition_url()
 
-        transport = self._make_transport(config[TRANSPORT_TYPE], config.get(TRANSPORT_PARAMS, {}))
-        self.client = LrpcClient(self.lrpc_def, transport)
+        if from_server == "always":
+            self.client = LrpcClient.from_server(transport)
+        elif from_server == "never":
+            lrpc_def = load_lrpc_def_from_url(def_url, warnings_as_errors=True)
+            self.client = LrpcClient(lrpc_def, transport)
+        elif from_server == "once":
+            if def_url.exists():
+                lrpc_def = load_lrpc_def_from_url(def_url, warnings_as_errors=True, include_meta_def=False)
+                self.client = LrpcClient(lrpc_def, transport)
+            else:
+                self.client = LrpcClient.from_server(transport, save_to=def_url)
 
-        if config.get(CHECK_SERVER_VERSION, False):
+        if config.check_server_version():
             version_ok = self.client.check_server_version()
             if not version_ok:
                 log.info(
@@ -169,14 +136,17 @@ class Lrpcc:
                 )
 
     @classmethod
-    def __set_log_level(cls, log_level: str) -> None:
+    def _set_log_level(cls, log_level: str) -> None:
         if log_level not in log_level_map:
             log.info("Invalid log level: %s. Using log level INFO", log_level)
         else:
             log.setLevel(log_level_map[log_level])
 
     @staticmethod
-    def _make_transport(transport_type: str, transport_params: TransportParamsType) -> LrpcTransport:
+    def _make_transport(config: LrpccConfig) -> LrpcTransport:
+        transport_type = config.transport_type()
+        transport_params = config.transport_params()
+
         transport_plugin = Path.cwd().joinpath(f"lrpcc_{transport_type}.py")
         if transport_plugin.exists():
             spec = importlib.util.spec_from_file_location(
@@ -266,14 +236,14 @@ class Lrpcc:
 
     def run(self) -> None:
         cli = ClientCliVisitor(self._command_handler)
-        self.lrpc_def.accept(cli, visit_meta_service=False)
+        self.client.definition().accept(cli, visit_meta_service=False)
         cli.root()
 
 
 def run_cli() -> None:
     try:
         config_path = find_config()
-        config = load_config(config_path)
+        config = LrpccConfig.load(config_path)
 
     # catching general exception here is considered ok, because application will terminate
     # pylint: disable=broad-exception-caught
@@ -289,7 +259,7 @@ def run_cli() -> None:
     # catching general exception here is considered ok, because application will terminate
     # pylint: disable=broad-exception-caught
     except Exception:
-        log.exception("Error running lrpcc for %s", config[DEFINITION_URL])
+        log.exception("Error running lrpcc for %s", config.definition_url() or "[No definition provided]")
         log.info(traceback.format_exc())
 
 

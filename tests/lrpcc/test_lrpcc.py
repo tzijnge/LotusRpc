@@ -8,7 +8,8 @@ from tempfile import TemporaryDirectory
 import pydantic
 import pytest
 
-from lrpc.lrpcc import LRPCC_CONFIG_ENV_VAR, find_config, load_config
+from lrpc.tools.lrpcc import LrpccConfig
+from lrpc.tools.lrpcc.lrpcc import LRPCC_CONFIG_ENV_VAR, find_config
 
 
 @contextlib.contextmanager
@@ -115,7 +116,7 @@ def test_find_config_in_cwd_file_not_found() -> None:
 
 def test_bad_config_additional_entry() -> None:
     with pytest.raises(pydantic.ValidationError, match="Extra inputs are not permitted"):
-        load_config(Path("bad_configs/additional_entry.config.yaml"))
+        LrpccConfig.load(Path("bad_configs/additional_entry.config.yaml"))
 
 
 def test_bad_config_invalid_log_level() -> None:
@@ -123,7 +124,7 @@ def test_bad_config_invalid_log_level() -> None:
         pydantic.ValidationError,
         match="Input should be 'CRITICAL', 'FATAL', 'ERROR', 'WARN', 'WARNING', 'INFO', 'DEBUG' or 'NOTSET'",
     ):
-        load_config(Path("bad_configs/invalid_log_level.config.yaml"))
+        LrpccConfig.load(Path("bad_configs/invalid_log_level.config.yaml"))
 
 
 def test_bad_config_invalid_transport_params() -> None:
@@ -131,7 +132,7 @@ def test_bad_config_invalid_transport_params() -> None:
         pydantic.ValidationError,
         match="Input should be a valid string",
     ):
-        load_config(Path("bad_configs/invalid_transport_params.config.yaml"))
+        LrpccConfig.load(Path("bad_configs/invalid_transport_params.config.yaml"))
 
 
 def test_bad_config_invalid_type() -> None:
@@ -139,15 +140,15 @@ def test_bad_config_invalid_type() -> None:
         pydantic.ValidationError,
         match="Input should be a valid string",
     ):
-        load_config(Path("bad_configs/invalid_type.config.yaml"))
+        LrpccConfig.load(Path("bad_configs/invalid_type.config.yaml"))
 
 
 def test_bad_config_missing_def_url() -> None:
     with pytest.raises(
-        pydantic.ValidationError,
-        match="validation error for LrpccConfigDict\ndefinition_url\n  Field required",
+        ValueError,
+        match=re.escape("'definition_url' must be specified when 'definition_from_server' is never (default)"),
     ):
-        load_config(Path("bad_configs/missing_def_url.config.yaml"))
+        LrpccConfig.load(Path("bad_configs/missing_def_url.config.yaml"))
 
 
 def test_bad_config_missing_transport_type() -> None:
@@ -155,16 +156,14 @@ def test_bad_config_missing_transport_type() -> None:
         pydantic.ValidationError,
         match="validation error for LrpccConfigDict\ntransport_type\n  Field required",
     ):
-        load_config(Path("bad_configs/missing_transport_type.config.yaml"))
+        LrpccConfig.load(Path("bad_configs/missing_transport_type.config.yaml"))
 
 
 def test_load_config() -> None:
-    config = load_config(Path("lrpcc.config.yaml"))
-    assert config["definition_url"] == "../testdata/TestServer1.lrpc.yaml"
-    assert config["transport_type"] == "file"
-    assert "transport_params" in config
-    assert config["transport_params"] == {"file_url": "server.yaml"}
-    assert "log_level" in config
-    assert config["log_level"] == "INFO"
-    assert "check_server_version" in config
-    assert config["check_server_version"] is False
+    config = LrpccConfig.load(Path("lrpcc.config.yaml"))
+    assert config.definition_url() == Path("../testdata/TestServer1.lrpc.yaml").resolve()
+    assert config.definition_from_server() == "never"
+    assert config.transport_type() == "file"
+    assert config.transport_params() == {"file_url": "server.yaml"}
+    assert config.log_level() == "INFO"
+    assert config.check_server_version() is False

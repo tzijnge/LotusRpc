@@ -47,8 +47,8 @@ homepage = "https://github.com/tzijnge/LotusRpc"
 "Source Code" = "https://github.com/tzijnge/LotusRpc"
 
 [project.scripts]
-lrpcg = "lrpc.lrpcg:run_cli"
-lrpcc = "lrpc.lrpcc:run_cli"
+lrpcg = "lrpc.tools.lrpcg.lrpcg:run_cli"
+lrpcc = "lrpc.tools.lrpcc.lrpcc:run_cli"
 
 [tool.setuptools.package-data]
 "lrpc.schema" = ["lotusrpc-schema.json"]

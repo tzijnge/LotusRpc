@@ -4,7 +4,7 @@ from collections.abc import Generator
 
 import pytest
 
-from lrpc.lrpcc import Lrpcc, LrpccConfigDict
+from lrpc.tools.lrpcc import Lrpcc, LrpccConfig, LrpccConfigDict
 
 # pylint: disable=protected-access
 # ruff: noqa: SLF001
@@ -32,7 +32,7 @@ def make_lrpcc(definition_url: str, response: bytes = b"", *, check_server_versi
         "transport_params": {"response": meta_version_response + response},  # type: ignore[dict-item]
         "check_server_version": check_server_version,
     }
-    return Lrpcc(lrpcc_config)
+    return Lrpcc(LrpccConfig(lrpcc_config))
 
 
 def test_server1_f13(capsys: pytest.CaptureFixture[str]) -> None:

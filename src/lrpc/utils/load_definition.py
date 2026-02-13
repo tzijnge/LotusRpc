@@ -1,4 +1,3 @@
-import hashlib
 from collections.abc import Hashable
 from pathlib import Path
 from typing import Any, TextIO
@@ -10,19 +9,6 @@ from lrpc.core import LrpcDef, LrpcDefDict
 from lrpc.resources.meta import meta_def_file
 from lrpc.schema import load_lrpc_schema
 from lrpc.validation import SemanticAnalyzer
-
-
-def get_hash(file: Path) -> str:
-    h = hashlib.sha3_256()
-
-    with file.open("rb") as f:
-        while True:
-            data = f.read(64 * 1024)
-            if not data:
-                break
-            h.update(data)
-
-    return h.hexdigest()
 
 
 # pylint: disable = too-many-ancestors
@@ -71,16 +57,7 @@ def __load_meta_def_dict() -> LrpcDefDict:
         return meta_def_dict
 
 
-def load_meta_def() -> LrpcDef:
-    return LrpcDef(__load_meta_def_dict())
-
-
-def load_lrpc_def_from_dict(
-    user_def: LrpcDefDict,
-    meta_def: LrpcDefDict,
-    *,
-    warnings_as_errors: bool,
-) -> LrpcDef:
+def __merge_user_and_meta_def(user_def: LrpcDefDict, meta_def: LrpcDefDict) -> LrpcDefDict:
     user_def["services"].extend(meta_def["services"])
 
     if "enums" not in meta_def:
@@ -91,9 +68,17 @@ def load_lrpc_def_from_dict(
     else:
         user_def["enums"] = meta_def["enums"]
 
-    jsonschema.validate(user_def, load_lrpc_schema())
+    return user_def
 
-    lrpc_def = LrpcDef(user_def)
+
+def load_meta_def() -> LrpcDef:
+    return LrpcDef(__load_meta_def_dict())
+
+
+def load_lrpc_def_from_dict(def_dict: LrpcDefDict, *, warnings_as_errors: bool) -> LrpcDef:
+    jsonschema.validate(def_dict, load_lrpc_schema())
+
+    lrpc_def = LrpcDef(def_dict)
     sa = SemanticAnalyzer(lrpc_def)
     sa.analyze(warnings_as_errors=warnings_as_errors)
 
@@ -102,16 +87,21 @@ def load_lrpc_def_from_dict(
 
 def load_lrpc_def_from_str(def_str: str, *, warnings_as_errors: bool) -> LrpcDef:
     user_def = __yaml_safe_load(def_str)
-    meta_def = __load_meta_def_dict()
-    return load_lrpc_def_from_dict(user_def, meta_def, warnings_as_errors=warnings_as_errors)
+    user_def = __merge_user_and_meta_def(user_def, __load_meta_def_dict())
+    return load_lrpc_def_from_dict(user_def, warnings_as_errors=warnings_as_errors)
 
 
-def load_lrpc_def_from_url(def_url: Path, *, warnings_as_errors: bool) -> LrpcDef:
+def load_lrpc_def_from_url(def_url: Path, *, warnings_as_errors: bool, include_meta_def: bool = True) -> LrpcDef:
     with def_url.open(encoding="utf-8") as def_file:
-        return load_lrpc_def_from_file(def_file, warnings_as_errors=warnings_as_errors)
+        return load_lrpc_def_from_file(
+            def_file,
+            warnings_as_errors=warnings_as_errors,
+            include_meta_def=include_meta_def,
+        )
 
 
-def load_lrpc_def_from_file(def_file: TextIO, *, warnings_as_errors: bool) -> LrpcDef:
+def load_lrpc_def_from_file(def_file: TextIO, *, warnings_as_errors: bool, include_meta_def: bool = True) -> LrpcDef:
     user_def = __yaml_safe_load(def_file)
-    meta_def = __load_meta_def_dict()
-    return load_lrpc_def_from_dict(user_def, meta_def, warnings_as_errors=warnings_as_errors)
+    if include_meta_def:
+        user_def = __merge_user_and_meta_def(user_def, __load_meta_def_dict())
+    return load_lrpc_def_from_dict(user_def, warnings_as_errors=warnings_as_errors)

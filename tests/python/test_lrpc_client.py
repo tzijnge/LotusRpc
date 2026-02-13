@@ -512,8 +512,7 @@ class TestLrpcClient:
 
         client = LrpcClient.from_server(transport)
 
-        # pylint: disable = protected-access
-        definition = client._lrpc_def  # noqa: SLF001
+        definition = client.definition()
 
         assert definition.name() == "RetrieveDefinition"
         assert definition.namespace() == "test_rd"

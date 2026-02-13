@@ -1,5 +1,6 @@
 import hashlib
 import lzma
+from pathlib import Path
 from typing import cast
 
 import yaml
@@ -43,6 +44,12 @@ class LrpcDef:
     def decompress(compressed: bytes) -> "LrpcDef":
         definition_yaml = lzma.decompress(compressed).decode("utf-8")
         return LrpcDef(yaml.safe_load(definition_yaml))
+
+    @staticmethod
+    def save_to(compressed: bytes, destination: Path) -> None:
+        definition_yaml = lzma.decompress(compressed).decode("utf-8")
+        with destination.open("wt+") as dest:
+            dest.write(definition_yaml)
 
     def __init__(self, raw: LrpcDefDict) -> None:
         LrpcDefValidator.validate_python(raw, strict=True, extra="allow")

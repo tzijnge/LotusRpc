@@ -3,6 +3,7 @@ import struct
 from collections.abc import Generator
 from dataclasses import dataclass
 from importlib.metadata import version
+from pathlib import Path
 from typing import cast
 
 from lrpc.core import LrpcFun, LrpcService, LrpcStream, LrpcVar
@@ -47,16 +48,19 @@ class LrpcClient:
         self._log = logging.getLogger(self.__class__.__name__)
 
     @staticmethod
-    def from_server(transport: LrpcTransport) -> "LrpcClient":
+    def from_server(transport: LrpcTransport, save_to: Path | None = None) -> "LrpcClient":
         meta_def = load_meta_def()
         meta_client = LrpcClient(meta_def, transport)
         # pylint: disable = protected-access
-        full_def = meta_client._retrieve_definition()
+        full_def = meta_client._retrieve_definition(save_to)
 
         if full_def is not None:
             return LrpcClient(full_def, transport)
 
         raise ValueError("No embedded definition found on server")
+
+    def definition(self) -> LrpcDef:
+        return self._lrpc_def
 
     def check_server_version(self) -> bool:
         disabled = "[disabled]"
@@ -308,7 +312,7 @@ class LrpcClient:
 
         return encoded
 
-    def _retrieve_definition(self) -> LrpcDef | None:
+    def _retrieve_definition(self, save_to: Path | None = None) -> LrpcDef | None:
         compressed_definition = b""
         for response in self.communicate("LrpcMeta", "definition", start=True):
             chunk = response.payload.get("chunk", 0)
@@ -318,6 +322,9 @@ class LrpcClient:
 
         if len(compressed_definition) == 0:
             return None
+
+        if save_to is not None:
+            LrpcDef.save_to(compressed_definition, save_to)
 
         return LrpcDef.decompress(compressed_definition)
 

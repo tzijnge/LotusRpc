@@ -14,6 +14,8 @@ class MetaConstantsWriter:
         self._compressed_definition = b""
         self._definition_stream_chunk_size: int = 0
 
+    # pylint: disable = too-many-arguments
+    # pylint: disable = too-many-positional-arguments
     def write_constants(
         self,
         definition_version: str | None,

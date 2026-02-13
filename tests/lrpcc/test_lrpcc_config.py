@@ -69,7 +69,6 @@ def test_full_config() -> None:
             "p2": "yes",
             "p3": 77,
             "p4": 33.44,
-            "p5": b"\x00\x01",
         },
         "definition_url": "tests/testdata/TestServer1.lrpc.yaml",
         "check_server_version": False,
@@ -84,7 +83,6 @@ def test_full_config() -> None:
         "p2": "yes",
         "p3": 77,
         "p4": 33.44,
-        "p5": b"\x00\x01",
     }
     assert config.definition_url() == Path("tests/testdata/TestServer1.lrpc.yaml").resolve()
     assert config.check_server_version() is False

@@ -8,18 +8,18 @@ namespace
     public:
         MOCK_METHOD(void, f0, (), (override));
     };
+
+    constexpr size_t TxBufferSize{47};
+    constexpr size_t DefStreamPacketOverhead{5};
+    constexpr size_t CompressedDefSize{test_rd::lrpc_meta::CompressedDefinition.size()};
+    constexpr size_t HexDigitsPerByte{2};
+    constexpr size_t TxBufferSizeHex{TxBufferSize * HexDigitsPerByte};
+
+    static_assert(std::is_same<test_rd::RetrieveDefinition, lrpc::Server<0, test_rd::LrpcMeta_service, 256, TxBufferSize>>::value, "Definition not as expected");
+    static_assert(CompressedDefSize == 420);
+
+    constexpr size_t NumberDefStreamPackets{CompressedDefSize / (TxBufferSize - DefStreamPacketOverhead)};
 }
-
-static constexpr size_t TxBufferSize{47};
-static constexpr size_t DefStreamPacketOverhead{5};
-static constexpr size_t CompressedDefSize{test_rd::lrpc_meta::CompressedDefinition.size()};
-static constexpr size_t HexDigitsPerByte{2};
-static constexpr size_t TxBufferSizeHex{TxBufferSize * HexDigitsPerByte};
-
-static_assert(std::is_same<test_rd::RetrieveDefinition, lrpc::Server<0, test_rd::LrpcMeta_service, 256, TxBufferSize>>::value, "Definition not as expected");
-static_assert(CompressedDefSize == 420);
-
-static constexpr size_t NumberDefStreamPackets{CompressedDefSize / (TxBufferSize - DefStreamPacketOverhead)};
 
 using TestRetrieveDefinition = testutils::TestServerBase<test_rd::RetrieveDefinition, Mockservice, false>;
 
@@ -50,7 +50,7 @@ TEST_F(TestRetrieveDefinition, retrieveDefinition)
         EXPECT_EQ("2A", message.substr(6, 2));
 
         // final parameter
-        if (i == NumberDefStreamPackets - 1)
+        if (i == (NumberDefStreamPackets - 1))
         {
             EXPECT_EQ("01", message.substr(TxBufferSizeHex - HexDigitsPerByte, HexDigitsPerByte));
         }

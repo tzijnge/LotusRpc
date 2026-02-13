@@ -37,6 +37,7 @@ LrpcDefValidator = TypeAdapter(LrpcDefDict)
 
 
 # pylint: disable = too-many-instance-attributes
+# pylint: disable = too-many-public-methods
 class LrpcDef:
     META_SERVICE_ID = 255
 

@@ -5,7 +5,7 @@ import yaml
 from pydantic import TypeAdapter
 from typing_extensions import NotRequired, TypedDict
 
-TransportParamsType = dict[str, str | int | bool | float | bytes]
+TransportParamsType = dict[str, str | int | bool | float]
 
 
 DEFINITION_URL: Final = "definition_url"

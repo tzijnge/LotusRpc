@@ -115,6 +115,7 @@ def __encode_basic_type(pack_type: str, value: LrpcBasicType) -> bytes:
     return struct.pack(f"<{pack_type}", value)
 
 
+# pylint: disable = too-many-return-statements
 def lrpc_encode(value: LrpcType, var: LrpcVar, lrpc_def: LrpcDef) -> bytes:
     if var.is_array():
         value = __check_array(value, var)

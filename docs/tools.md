@@ -66,7 +66,7 @@ Here is an example _lrpcc.config.yaml_ file
 
 ``` yaml
 definition_url: '../example.lrpc.yaml'
-definition_from_server: always
+definition_from_server: once
 transport_type: serial
 transport_params:
   port: COM30

@@ -54,3 +54,9 @@ The `version` function allows the client to retrieve version information from th
 * `lrpc`. Type: string. This is the version of LotusRPC that was used to generate the server code.
 
 Together, these version items can help identify a mismatch between the client and the server. The version information can be retrieved from a Python client with the `check_server_version` function of the [LrpcClient](https://github.com/tzijnge/LotusRpc/blob/main/src/lrpc/client/lrpc_client.py) class. The server version is checked by [lrpcc](tools.md#lrpcc) when not disable in the configuration file.
+
+### Definition
+
+The `definition` stream (finite, origin: server) in the meta service returns the embedded definition in chunks as big as possible with the current [tx_buffer_size](reference.md#tx_buffer_size) setting. Each chunk is of type [bytearray](index.md#supported-data-types).
+
+For more info on embedding the definition in the server, see the [reference](reference.md#embed_definition) page.

@@ -141,7 +141,7 @@ def test_load_empty() -> None:
     with tempfile.TemporaryDirectory() as temp_dir:
         config_path = Path(temp_dir).joinpath("test.lrpc.yaml")
         with (
-            config_path.open("wt+", encoding="utf-8") as config,
+            config_path.open("wt+", encoding="utf-8"),
             pytest.raises(ValueError, match=re.escape(f"Configuration file {config_path} is empty")),
         ):
             LrpccConfig.load(config_path)

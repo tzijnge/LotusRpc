@@ -116,11 +116,11 @@ jobs:
         working-directory: src
         run: |
           set -ex
-          coverage run -a -m lrpc.lrpcg cpp -w -d ../tests/testdata/TestServer1.lrpc.yaml -o cov_out
-          coverage run -a -m lrpc.lrpcg cpp -w -d ../tests/testdata/TestServer2.lrpc.yaml -o cov_out
-          coverage run -a -m lrpc.lrpcg cpp -w -d ../tests/testdata/TestServer3.lrpc.yaml -o cov_out
-          coverage run -a -m lrpc.lrpcg cpp -w -d ../tests/testdata/TestServer4.lrpc.yaml -o cov_out
-          coverage run -a -m lrpc.lrpcg cpp -w -d ../tests/testdata/TestServer5.lrpc.yaml -o cov_out
+          coverage run -a -m lrpc.tools.lrpcg.lrpcg cpp -w -d ../tests/testdata/TestServer1.lrpc.yaml -o cov_out
+          coverage run -a -m lrpc.tools.lrpcg.lrpcg cpp -w -d ../tests/testdata/TestServer2.lrpc.yaml -o cov_out
+          coverage run -a -m lrpc.tools.lrpcg.lrpcg cpp -w -d ../tests/testdata/TestServer3.lrpc.yaml -o cov_out
+          coverage run -a -m lrpc.tools.lrpcg.lrpcg cpp -w -d ../tests/testdata/TestServer4.lrpc.yaml -o cov_out
+          coverage run -a -m lrpc.tools.lrpcg.lrpcg cpp -w -d ../tests/testdata/TestServer5.lrpc.yaml -o cov_out
 
       - name: Code coverage on unit tests
         run: |

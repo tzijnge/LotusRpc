@@ -66,6 +66,7 @@ Here is an example _lrpcc.config.yaml_ file
 
 ``` yaml
 definition_url: '../example.lrpc.yaml'
+definition_from_server: always
 transport_type: serial
 transport_params:
   port: COM30
@@ -79,13 +80,19 @@ The field `log_level` is optional with a default value of `INFO`. If used, it sh
 
 The field `check_server_version` is optional with a default value of `true`. It determines whether or not to perform a server version check. If there is any detectable mismatch between the server and the client a warning message will be printed (if the `log_level` is `WARNING` or lower). This can help detect issues early, but it also incurs additional communication between client and server that may not fit the application.
 
+The field `definition_from_server` is optional with allowed values `never` (default), `always` and `once`. Here's what these value mean:
+
+* `never`: `lrpcc` will not retrieve an embedded definition from the server. Definition must be specified in `definition_url`
+* `always`: `lrpcc` will always retrieve the embedded definition from the server. Field `definition_url` is ignored
+* `once`: `lrpcc` will look for a definition file in the location specified by `definition_url`. If it is not found, it retrieves the embedded definition from the server and saves it in the location specified by `definition_url`. This option can be convenient when it takes long to retrieve the definition from the server, but must not be used in combination with the [definition hash](meta.md#version) and `check_server_version=true`. This is because the file hash of the definition retrieved from the server will be different than the hash computed during generation of the server code, even if the content is logically the same.
+
 The fields `definition_url`, `transport_type` and `transport_params` are required. `definition_url` is the path of the LRPC definition file and can be relative to _lrpcc.config.yaml_ or an absolute path. The subfields of `transport_params` are passed as keyword arguments to the transport class. `lrpcc` uses [pyserial](https://pythonhosted.org/pyserial/) for serial communication, so the `transport_params` can be any of the constructor parameters of the [serial.Serial](https://pythonhosted.org/pyserial/pyserial_api.html#serial.Serial) class.
 
 `lrpcc` currently only supports the serial transport type, but it's easy to write your own transport. See [Extending LRPC](extending_lrpc.md).
 
 ### Sending parameters with LRPCC
 
-Sending function parameters with LRPC is easy, just add every parameter on the command line. Here's a cheat sheet:
+Sending function parameters with `lrpcc` is easy, just add every parameter on the command line. Here's a cheat sheet:
 
 ``` bash
 lrpcc s f0 123                     #int

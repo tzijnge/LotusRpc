@@ -17,6 +17,7 @@ namespace
 
     static_assert(std::is_same<test_rd::RetrieveDefinition, lrpc::Server<0, test_rd::LrpcMeta_service, 256, TxBufferSize>>::value, "Definition not as expected");
     static_assert(CompressedDefSize == 420);
+    static_assert((CompressedDefSize % (TxBufferSize - DefStreamPacketOverhead)) == 0);
 
     constexpr size_t NumberDefStreamPackets{CompressedDefSize / (TxBufferSize - DefStreamPacketOverhead)};
 }

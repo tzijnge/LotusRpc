@@ -42,15 +42,18 @@ class LrpcDef:
     META_SERVICE_ID = 255
 
     @staticmethod
+    def _decompressed(compressed: bytes) -> str:
+        return lzma.decompress(compressed).decode("utf-8")
+
+    @staticmethod
     def decompress(compressed: bytes) -> "LrpcDef":
-        definition_yaml = lzma.decompress(compressed).decode("utf-8")
+        definition_yaml = LrpcDef._decompressed(compressed)
         return LrpcDef(yaml.safe_load(definition_yaml))
 
     @staticmethod
     def save_to(compressed: bytes, destination: Path) -> None:
-        definition_yaml = lzma.decompress(compressed).decode("utf-8")
         with destination.open("wt+") as dest:
-            dest.write(definition_yaml)
+            dest.write(LrpcDef._decompressed(compressed))
 
     def __init__(self, raw: LrpcDefDict) -> None:
         LrpcDefValidator.validate_python(raw, strict=True, extra="allow")

@@ -5,9 +5,14 @@
 
 namespace lrpc
 {
-    template <size_t MAX_SERVICE_ID, typename META_SERVICE, size_t RX_SIZE = 256, size_t TX_SIZE = RX_SIZE>
+    constexpr size_t RxTxSizeMax{256};
+
+    template <size_t MAX_SERVICE_ID, typename META_SERVICE, size_t RX_SIZE = RxTxSizeMax, size_t TX_SIZE = RX_SIZE>
     class Server : public IServer
     {
+        static_assert(RX_SIZE <= RxTxSizeMax, "Rx buffer size must not exceed 256 bytes");
+        static_assert(TX_SIZE <= RxTxSizeMax, "Tx buffer size must not exceed 256 bytes");
+
         class ServiceNotFoundService : public Service
         {
         public:

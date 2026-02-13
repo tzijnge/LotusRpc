@@ -315,7 +315,7 @@ class LrpcClient:
     def _retrieve_definition(self, save_to: Path | None = None) -> LrpcDef | None:
         compressed_definition = b""
         for response in self.communicate("LrpcMeta", "definition", start=True):
-            chunk = response.payload.get("chunk", 0)
+            chunk = response.payload.get("chunk")
             if not isinstance(chunk, bytes):
                 raise TypeError("Invalid response while retrieving definition from server")
             compressed_definition += chunk

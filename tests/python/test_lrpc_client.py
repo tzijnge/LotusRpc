@@ -468,8 +468,11 @@ class TestLrpcClient:
         assert "Definition version: [disabled] vs [wrong version]" in caplog.messages
         assert "Definition hash: 03fca218c9a57417... vs 03fca218c9a57417..." in caplog.messages
 
-    def test_from_server_when_not_embedded(self) -> None:
+    @staticmethod
+    def test_from_server_when_not_embedded() -> None:
         # meta.definition message with empty bytearray chunk param. final=True
+        # binary blob is generated in LrpcMeta_constants.hpp after running the definition file
+        # through lrpcg
         definition_response = b"\x05\xff\x01\x00\x01"
 
         transport = FakeTransport(definition_response)
@@ -477,8 +480,11 @@ class TestLrpcClient:
         with pytest.raises(ValueError, match="No embedded definition found on server"):
             LrpcClient.from_server(transport)
 
-    def test_from_server(self) -> None:
+    @staticmethod
+    def test_from_server() -> None:
         # meta.definition message with definition from TestRetrieveDefinition.lrpc.yaml
+        # binary blob is generated in LrpcMeta_constants.hpp after running the definition file
+        # through lrpcg
         definition_response = b""
         definition_response += b"\x15\xff\x01\x10\xfd\x37\x7a\x58\x5a\x00\x00\x04\xe6\xd6\xb4\x46\x02\x00\x21\x01\x00"
         definition_response += b"\x15\xff\x01\x10\x16\x00\x00\x00\x74\x2f\xe5\xa3\xe0\x03\x98\x01\x64\x5d\x00\x37\x00"

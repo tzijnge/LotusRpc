@@ -119,7 +119,7 @@ class Lrpcc:
             def_url = config.definition_url()
             lrpc_def = load_lrpc_def_from_url(def_url, warnings_as_errors=True)
             self.client = LrpcClient(lrpc_def, transport)
-        elif from_server == "once":
+        else:  # once
             def_url = config.definition_url()
             if def_url.exists():
                 lrpc_def = load_lrpc_def_from_url(def_url, warnings_as_errors=True, include_meta_def=False)

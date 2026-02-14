@@ -1,11 +1,20 @@
+import os
 import re
 import tempfile
+from collections.abc import Generator
 from pathlib import Path
 
 import pydantic
 import pytest
 
 from lrpc.tools.lrpcc import LrpccConfig, LrpccConfigDict
+
+
+@pytest.fixture(autouse=True)
+def change_test_dir(request: pytest.FixtureRequest) -> Generator[None, None, None]:
+    os.chdir(request.fspath.dirname)  # type: ignore[attr-defined]
+    yield
+    os.chdir(request.config.invocation_params.dir)
 
 
 def test_minimal_config() -> None:
@@ -35,13 +44,13 @@ def test_minimal_config_non_existing_definition_url() -> None:
 def test_minimal_config_valid_definition_url() -> None:
     config_dict: LrpccConfigDict = {
         "transport_type": "my_transport",
-        "definition_url": "tests/testdata/TestServer1.lrpc.yaml",
+        "definition_url": "../testdata/TestServer1.lrpc.yaml",
     }
 
     config = LrpccConfig(config_dict)
     assert config.transport_type() == "my_transport"
     assert config.transport_params() == {}
-    assert config.definition_url() == Path("tests/testdata/TestServer1.lrpc.yaml").resolve()
+    assert config.definition_url() == Path("../testdata/TestServer1.lrpc.yaml").resolve()
     assert config.check_server_version() is True
     assert config.definition_from_server() == "never"
     assert config.log_level() == "INFO"

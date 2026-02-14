@@ -31,13 +31,6 @@ def lrpcc_config_env_var(config_path: Path) -> Generator[None, None, None]:
         os.environ.update(old_environ)
 
 
-@pytest.fixture(autouse=True)
-def change_test_dir(request: pytest.FixtureRequest) -> Generator[None, None, None]:
-    os.chdir(request.fspath.dirname)  # type: ignore[attr-defined]
-    yield
-    os.chdir(request.config.invocation_params.dir)
-
-
 def test_find_config_in_cwd() -> None:
     with TemporaryDirectory() as td, working_directory(Path(td)):
         Path(td).joinpath("lrpcc.config.yaml").touch()

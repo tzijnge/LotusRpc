@@ -1,10 +1,13 @@
 import math
 import re
+import tempfile
+from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
 
 from lrpc.core import LrpcDef, LrpcFun, LrpcStream
+from lrpc.core.definition import LrpcDefDict
 from lrpc.utils import load_lrpc_def_from_str
 
 from .utilities import StringifyVisitor
@@ -974,3 +977,23 @@ services:
     assert services2[0].id() == 0
     assert services2[1].name() == "aaa"
     assert services2[1].id() == 1
+
+
+def test_save_to() -> None:
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_file = Path(temp_dir).joinpath("temp_file.txt")
+        assert not temp_file.exists()
+
+        encoded = b"\xfd7zXZ\x00\x00\x04\xe6\xd6\xb4F\x02\x00!\x01\x16\x00\x00\x00t/\xe5\xa3\x01\x00\x0btest_save_to\x00\xff\x8f4aP5v\xf3\x00\x01$\x0c\xa6\x18\xd8\xd8\x1f\xb6\xf3}\x01\x00\x00\x00\x00\x04YZ"
+
+        LrpcDef.save_to(encoded, temp_file)
+
+        assert temp_file.exists()
+        with temp_file.open("rt", encoding="utf-8") as f:
+            assert f.read() == "test_save_to"
+
+
+def test_construct_without_meta_service() -> None:
+    raw: LrpcDefDict = {"name": "test", "services": []}
+    with pytest.raises(ValueError, match="No meta service found in definition"):
+        LrpcDef(raw)

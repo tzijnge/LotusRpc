@@ -121,6 +121,8 @@ jobs:
           coverage run -a -m lrpc.tools.lrpcg.lrpcg cpp -w -d ../tests/testdata/TestServer3.lrpc.yaml -o cov_out
           coverage run -a -m lrpc.tools.lrpcg.lrpcg cpp -w -d ../tests/testdata/TestServer4.lrpc.yaml -o cov_out
           coverage run -a -m lrpc.tools.lrpcg.lrpcg cpp -w -d ../tests/testdata/TestServer5.lrpc.yaml -o cov_out
+          coverage run -a -m lrpc.tools.lrpcg.lrpcg cpp -w -d ../tests/testdata/TestBytearray.lrpc.yaml -o cov_out
+          coverage run -a -m lrpc.tools.lrpcg.lrpcg cpp -w -d ../tests/testdata/TestRetrieveDefinition.lrpc.yaml -o cov_out
 
       - name: Code coverage on unit tests
         run: |

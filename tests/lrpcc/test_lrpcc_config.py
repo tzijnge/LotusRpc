@@ -2,6 +2,7 @@ import re
 import tempfile
 from pathlib import Path
 
+import pydantic
 import pytest
 
 from lrpc.tools.lrpcc import LrpccConfig, LrpccConfigDict
@@ -143,3 +144,58 @@ def test_load_empty() -> None:
         config_path.touch()
         with pytest.raises(ValueError, match=re.escape(f"Configuration file {config_path} is empty")):
             LrpccConfig.load(config_path)
+
+
+def test_bad_config_additional_entry() -> None:
+    with pytest.raises(pydantic.ValidationError, match="Extra inputs are not permitted"):
+        LrpccConfig.load(Path("bad_configs/additional_entry.config.yaml"))
+
+
+def test_bad_config_invalid_log_level() -> None:
+    with pytest.raises(
+        pydantic.ValidationError,
+        match="Input should be 'CRITICAL', 'FATAL', 'ERROR', 'WARN', 'WARNING', 'INFO', 'DEBUG' or 'NOTSET'",
+    ):
+        LrpccConfig.load(Path("bad_configs/invalid_log_level.config.yaml"))
+
+
+def test_bad_config_invalid_transport_params() -> None:
+    with pytest.raises(
+        pydantic.ValidationError,
+        match="Input should be a valid string",
+    ):
+        LrpccConfig.load(Path("bad_configs/invalid_transport_params.config.yaml"))
+
+
+def test_bad_config_invalid_type() -> None:
+    with pytest.raises(
+        pydantic.ValidationError,
+        match="Input should be a valid string",
+    ):
+        LrpccConfig.load(Path("bad_configs/invalid_type.config.yaml"))
+
+
+def test_bad_config_missing_def_url() -> None:
+    with pytest.raises(
+        ValueError,
+        match=re.escape("'definition_url' must be specified when 'definition_from_server' is never (default)"),
+    ):
+        LrpccConfig.load(Path("bad_configs/missing_def_url.config.yaml"))
+
+
+def test_bad_config_missing_transport_type() -> None:
+    with pytest.raises(
+        pydantic.ValidationError,
+        match="validation error for LrpccConfigDict\ntransport_type\n  Field required",
+    ):
+        LrpccConfig.load(Path("bad_configs/missing_transport_type.config.yaml"))
+
+
+def test_load_config() -> None:
+    config = LrpccConfig.load(Path("lrpcc.config.yaml"))
+    assert config.definition_url() == Path("../testdata/TestServer1.lrpc.yaml").resolve()
+    assert config.definition_from_server() == "never"
+    assert config.transport_type() == "file"
+    assert config.transport_params() == {"file_url": "server.yaml"}
+    assert config.log_level() == "INFO"
+    assert config.check_server_version() is False

@@ -28,14 +28,17 @@ namespace lrpc
 
         void transmit(const uint8_t, const uint8_t) final
         {
+            // TODO: #206 Add LRPC_ASSERT
             // LRPC_ASSERT();
         }
         void transmit(const uint8_t, const uint8_t, const ParamWriter) final
         {
+            // TODO: #206 Add LRPC_ASSERT
             // LRPC_ASSERT();
         }
         void error(const LrpcMetaError, const uint8_t, const uint8_t, const int32_t, const etl::string_view &) final
         {
+            // TODO: #206 Add LRPC_ASSERT
             // LRPC_ASSERT();
         }
     };

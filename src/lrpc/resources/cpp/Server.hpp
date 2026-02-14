@@ -138,6 +138,7 @@ namespace lrpc
             const auto s = w.size_bytes();
             if (s != 0)
             {
+                // TODO: #202 Bug: not possible to use entire TX buffer
                 *w.begin() = static_cast<uint8_t>(s);
             }
         }

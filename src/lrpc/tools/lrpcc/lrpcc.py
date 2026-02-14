@@ -249,8 +249,8 @@ def run_cli() -> None:
     # catching general exception here is considered ok, because application will terminate
     # pylint: disable=broad-exception-caught
     except Exception:
-        log.exception("Something unexpected happened in LRPCC")
-        log.info("Entering lrpcc config creator")
+        log.exception("Unable to find or load an LRPCC config")
+        log.info("Entering LRPCC config creator")
         run_lrpcc_config_creator()
         return
 
@@ -260,7 +260,7 @@ def run_cli() -> None:
     # catching general exception here is considered ok, because application will terminate
     # pylint: disable=broad-exception-caught
     except Exception:
-        log.exception("Error running lrpcc for %s", config.definition_url())
+        log.exception("Error running LRPCC")
         log.info(traceback.format_exc())
 
 

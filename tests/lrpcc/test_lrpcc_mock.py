@@ -29,7 +29,7 @@ def make_lrpcc(definition_url: str, response: str = "", *, check_server_version:
     lrpcc_config: LrpccConfigDict = {
         "definition_url": definition_url,
         "transport_type": "mock",
-        "transport_params": {"response": meta_version_response + response},  # type: ignore[dict-item]
+        "transport_params": {"response": meta_version_response + response},
         "check_server_version": check_server_version,
     }
     return Lrpcc(LrpccConfig(lrpcc_config))

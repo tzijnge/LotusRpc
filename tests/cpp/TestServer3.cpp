@@ -57,14 +57,14 @@ static_assert(std::is_same<srv3::Server3, lrpc::Server<6, srv3::LrpcMeta_service
 
 TEST_F(TestServer3, decodeI0)
 {
-    receive("040000AA");
-    EXPECT_EQ("040000AA", transmitted);
+    receive("030000AA");
+    EXPECT_EQ("030000AA", transmitted);
 }
 
 TEST_F(TestServer3, decodeI0AndI5)
 {
-    receive("040000BB050508CCDD");
-    EXPECT_EQ("040000BB050508CCDD", transmitted);
+    receive("030000BB040508CCDD");
+    EXPECT_EQ("030000BB040508CCDD", transmitted);
 }
 
 namespace meta = srv3::lrpc_meta;

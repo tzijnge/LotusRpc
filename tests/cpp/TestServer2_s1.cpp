@@ -27,8 +27,8 @@ TEST_F(TestServer2_s1, decodeF0)
     using sv = etl::string_view;
     const std::vector<sv> expected{sv("T1"), sv("T2")};
     EXPECT_CALL(service, f0(testutils::SPAN_EQ(expected)));
-    const auto response = receive("090100543100543200");
-    EXPECT_EQ("030100", response);
+    const auto response = receive("080100543100543200");
+    EXPECT_EQ("020100", response);
 }
 
 TEST_F(TestServer2_s1, decodeF0WithStringShorterThanMax)
@@ -36,8 +36,8 @@ TEST_F(TestServer2_s1, decodeF0WithStringShorterThanMax)
     using sv = etl::string_view;
     const std::vector<sv> expected{sv("1"), sv("2")};
     EXPECT_CALL(service, f0(testutils::SPAN_EQ(expected)));
-    const auto response = receive("07010031003200");
-    EXPECT_EQ("030100", response);
+    const auto response = receive("06010031003200");
+    EXPECT_EQ("020100", response);
 }
 
 // Decode function that returns array of strings
@@ -45,8 +45,8 @@ TEST_F(TestServer2_s1, decodeF1)
 {
     const etl::array<etl::string_view, 2> retVal{"T1", "T2"};
     EXPECT_CALL(service, f1()).WillOnce(Return(retVal));
-    const auto response = receive("030101");
-    EXPECT_EQ("090101543100543200", response);
+    const auto response = receive("020101");
+    EXPECT_EQ("080101543100543200", response);
 }
 
 // Decode void function with optional fixed size string param
@@ -55,8 +55,8 @@ TEST_F(TestServer2_s1, decodeF2)
     using sv = etl::string_view;
     const etl::optional<sv> expected{"T1"};
     EXPECT_CALL(service, f2(expected));
-    const auto response = receive("07010201543100");
-    EXPECT_EQ("030102", response);
+    const auto response = receive("06010201543100");
+    EXPECT_EQ("020102", response);
 }
 
 // Decode void function with optional auto string param
@@ -65,8 +65,8 @@ TEST_F(TestServer2_s1, decodeF3)
     using sv = etl::string_view;
     const etl::optional<sv> expected{"T1"};
     EXPECT_CALL(service, f3(expected));
-    const auto response = receive("07010301543100");
-    EXPECT_EQ("030103", response);
+    const auto response = receive("06010301543100");
+    EXPECT_EQ("020103", response);
 }
 
 // Decode function that returns optional string
@@ -74,8 +74,8 @@ TEST_F(TestServer2_s1, decodeF4)
 {
     const etl::optional<etl::string_view> expected{"T1"};
     EXPECT_CALL(service, f4()).WillOnce(Return(expected));
-    const auto response = receive("030104");
-    EXPECT_EQ("07010401543100", response);
+    const auto response = receive("020104");
+    EXPECT_EQ("06010401543100", response);
 }
 
 // Decode function that takes custom struct argument
@@ -87,8 +87,8 @@ TEST_F(TestServer2_s1, decodeF5)
     expected.c = "T4";
 
     EXPECT_CALL(service, f5(expected));
-    const auto response = receive("10010554310054320054330001543400");
-    EXPECT_EQ("030105", response);
+    const auto response = receive("0F010554310054320054330001543400");
+    EXPECT_EQ("020105", response);
 }
 
 // Decode function that returns custom struct
@@ -100,8 +100,8 @@ TEST_F(TestServer2_s1, decodeF6)
     retVal.c = "T4";
 
     EXPECT_CALL(service, f6()).WillOnce(Return(retVal));
-    const auto response = receive("030106");
-    EXPECT_EQ("10010654310054320054330001543400", response);
+    const auto response = receive("020106");
+    EXPECT_EQ("0F010654310054320054330001543400", response);
 }
 
 // Decode function that takes auto string argument and returns fixed size string
@@ -109,8 +109,8 @@ TEST_F(TestServer2_s1, decodeF7)
 {
     const etl::string_view expected{"T0"};
     EXPECT_CALL(service, f7(expected)).WillOnce(Return("T1234"));
-    const auto response = receive("060107543000");
-    EXPECT_EQ("090107543132333400", response);
+    const auto response = receive("050107543000");
+    EXPECT_EQ("080107543132333400", response);
 }
 
 // Decode void function with array of auto strings param
@@ -119,8 +119,8 @@ TEST_F(TestServer2_s1, decodeF8)
     using sv = etl::string_view;
     const std::vector<sv> expected{sv("T1"), sv("T2")};
     EXPECT_CALL(service, f8(testutils::SPAN_EQ(expected)));
-    const auto response = receive("090108543100543200");
-    EXPECT_EQ("030108", response);
+    const auto response = receive("080108543100543200");
+    EXPECT_EQ("020108", response);
 }
 
 // Decode function that takes custom struct argument
@@ -132,8 +132,8 @@ TEST_F(TestServer2_s1, decodeF9)
     expected.c = "T4";
 
     EXPECT_CALL(service, f9(expected));
-    const auto response = receive("10010954310054320054330001543400");
-    EXPECT_EQ("030109", response);
+    const auto response = receive("0F010954310054320054330001543400");
+    EXPECT_EQ("020109", response);
 }
 
 // Decode function that returns custom struct
@@ -145,6 +145,6 @@ TEST_F(TestServer2_s1, decodeF10)
     retVal.c = "T4";
 
     EXPECT_CALL(service, f10()).WillOnce(Return(retVal));
-    const auto response = receive("03010A");
-    EXPECT_EQ("10010A54310054320054330001543400", response);
+    const auto response = receive("02010A");
+    EXPECT_EQ("0F010A54310054320054330001543400", response);
 }

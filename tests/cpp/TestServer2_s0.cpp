@@ -19,16 +19,16 @@ static_assert(std::is_same<Server2, lrpc::Server<1, LrpcMeta_service, 100, 256>>
 TEST_F(TestServer2, decodeF0)
 {
     EXPECT_CALL(service, f0(true, etl::string_view("Test")));
-    const auto response = receive("090000015465737400");
-    EXPECT_EQ("030000", response);
+    const auto response = receive("080000015465737400");
+    EXPECT_EQ("020000", response);
 }
 
 // Decode void function with auto string as first param
 TEST_F(TestServer2, decodeF1)
 {
     EXPECT_CALL(service, f1(etl::string_view("Test"), true));
-    const auto response = receive("090001546573740001");
-    EXPECT_EQ("030001", response);
+    const auto response = receive("080001546573740001");
+    EXPECT_EQ("020001", response);
 }
 
 // Decode void function with two auto string params
@@ -36,8 +36,8 @@ TEST_F(TestServer2, decodeF2)
 {
     using sv = etl::string_view;
     EXPECT_CALL(service, f2(sv("T1"), sv("T2")));
-    const auto response = receive("090002543100543200");
-    EXPECT_EQ("030002", response);
+    const auto response = receive("080002543100543200");
+    EXPECT_EQ("020002", response);
 }
 
 namespace meta = lrpc_meta;

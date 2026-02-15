@@ -55,8 +55,8 @@ namespace
 TEST_F(TestServerErrors, decodeUnknownServiceLessThanMaxServiceId)
 {
     // Non-existing service 0x02 (smaller than MAX_SERVICE_ID), function ID 0xAB and no additional bytes
-    receive("0302AB");
-    EXPECT_EQ("0BFF000002AB0000000000", transmitted);
+    receive("0202AB");
+    EXPECT_EQ("0AFF000002AB0000000000", transmitted);
 }
 
 TEST_F(TestServerErrors, decodeUnknownServiceGreaterThanServiceId)
@@ -65,43 +65,43 @@ TEST_F(TestServerErrors, decodeUnknownServiceGreaterThanServiceId)
     static_assert(std::is_same<srv3::Server3, lrpc::Server<SRV3_MAX_SERVICE_ID, srv3::LrpcMeta_service>>::value, "Unexpected server properties");
 
     // Non-existing service 0x07 (one greater than MAX_SERVICE_ID), function ID 0xAB and no additional bytes
-    receive("0307AB");
-    EXPECT_EQ("0BFF000007AB0000000000", transmitted);
+    receive("0207AB");
+    EXPECT_EQ("0AFF000007AB0000000000", transmitted);
 }
 
 TEST_F(TestServerErrors, decodeUnknownServiceMuchGreaterThanMaxServiceId)
 {
     // Non-existing service 0x77 (greater than MAX_SERVICE_ID), function ID 0 and two additional bytes
-    receive("0577000000");
-    EXPECT_EQ("0BFF000077000000000000", transmitted);
+    receive("0477000000");
+    EXPECT_EQ("0AFF000077000000000000", transmitted);
 }
 
 TEST_F(TestServerErrors, decodeUnregistereredService)
 {
-    receive("050508CCDD");
-    EXPECT_EQ("0BFF000005080000000000", transmitted);
+    receive("040508CCDD");
+    EXPECT_EQ("0AFF000005080000000000", transmitted);
 }
 
 TEST_F(TestServerErrors, decodeUnknownFunctionSmallerThanMaxFunctionId)
 {
     // register service s01 (ID 5) and call non-existing function with ID 0x00 and two additional bytes
     registerService(service01);
-    receive("050500CCDD");
-    EXPECT_EQ("0BFF000105000000000000", transmitted);
+    receive("040500CCDD");
+    EXPECT_EQ("0AFF000105000000000000", transmitted);
 }
 
 TEST_F(TestServerErrors, decodeUnknownFunctionGreaterThanMaxFunctionId)
 {
     // register service s01 (ID 5) and call non-existing function with ID 0x09 and two additional bytes
     registerService(service01);
-    receive("050509CCDD");
-    EXPECT_EQ("0BFF000105090000000000", transmitted);
+    receive("040509CCDD");
+    EXPECT_EQ("0AFF000105090000000000", transmitted);
 }
 
 TEST_F(TestServerErrors, decodeUnknownFunctionMuchGreaterThanMaxFunctionId)
 {
     // register service s01 (ID 5) and call non-existing function with ID 0xAB and two additional bytes
     registerService(service01);
-    receive("0505ABCCDD");
-    EXPECT_EQ("0BFF000105AB0000000000", transmitted);
+    receive("0405ABCCDD");
+    EXPECT_EQ("0AFF000105AB0000000000", transmitted);
 }

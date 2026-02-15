@@ -34,7 +34,7 @@ using TestRetrieveDefinition = testutils::TestServerBase<test_rd::RetrieveDefini
 
 TEST_F(TestRetrieveDefinition, retrieveDefinition)
 {
-    const auto response = receive("03FF01");
+    const auto response = receive("02FF01");
     ASSERT_EQ(NumberDefStreamPackets * TxBufferSizeHex, response.size());
 
     // sanity check on first 10 bytes
@@ -46,7 +46,7 @@ TEST_F(TestRetrieveDefinition, retrieveDefinition)
         const auto message = response.substr(start, TxBufferSizeHex);
 
         // length, service ID and message ID
-        EXPECT_EQ("3AFF01", message.substr(0, 6));
+        EXPECT_EQ("39FF01", message.substr(0, 6));
         // bytearray length
         EXPECT_EQ("35", message.substr(6, 2));
 

@@ -99,7 +99,7 @@ namespace lrpc
 
         bool messageIsComplete() const
         {
-            return receiveBuffer.size() == receiveBuffer.at(0);
+            return receiveBuffer.size() == receiveBuffer.at(0) + 1;
         }
 
         Service *service(const uint8_t serviceId)
@@ -138,8 +138,7 @@ namespace lrpc
             const auto s = w.size_bytes();
             if (s != 0)
             {
-                // TODO: #202 Bug: not possible to use entire TX buffer
-                *w.begin() = static_cast<uint8_t>(s);
+                *w.begin() = static_cast<uint8_t>(s - 1);
             }
         }
     };

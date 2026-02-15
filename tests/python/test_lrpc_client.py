@@ -45,7 +45,7 @@ class TestLrpcClient:
         # client: send encoded to server
 
         # server: copy service ID and function ID and append return value
-        response_bytes = b"\x04" + encoded[1:2] + encoded[2:3] + struct.pack("<B", encoded[3] + 5)
+        response_bytes = b"\x03" + encoded[1:2] + encoded[2:3] + struct.pack("<B", encoded[3] + 5)
 
         # client: receive bytes and decode
         response = self.client().decode(response_bytes)
@@ -57,7 +57,7 @@ class TestLrpcClient:
     def test_encode_function_nested_struct(self) -> None:
         assert (
             self.client().encode("srv0", "f1", p1={"a": {"a": 4567, "b": 123, "c": True}})
-            == b"\x07\x00\x01\xd7\x11\x7b\x01"
+            == b"\x06\x00\x01\xd7\x11\x7b\x01"
         )
 
     def test_encode_function_invalid_service(self) -> None:
@@ -85,49 +85,49 @@ class TestLrpcClient:
 
     def test_encode_function(self) -> None:
         encoded = self.client().encode("srv1", "add5", p0=0xAB)
-        assert encoded == b"\x04\x01\x00\xab"
+        assert encoded == b"\x03\x01\x00\xab"
 
     def test_encode_function_bytearray(self) -> None:
         encoded = self.client().encode("srv1", "bytearray", p0=b"\x11\x22")
-        assert encoded == b"\x06\x01\x02\x02\x11\x22"
+        assert encoded == b"\x05\x01\x02\x02\x11\x22"
 
         encoded = self.client().encode("srv1", "bytearray", p0=bytearray(b"\x11\x22"))
-        assert encoded == b"\x06\x01\x02\x02\x11\x22"
+        assert encoded == b"\x05\x01\x02\x02\x11\x22"
 
         encoded = self.client().encode("srv1", "bytearray", p0=memoryview(b"\x11\x22"))
-        assert encoded == b"\x06\x01\x02\x02\x11\x22"
+        assert encoded == b"\x05\x01\x02\x02\x11\x22"
 
         if sys.version_info >= (3, 12):
             arr = array.array("i", [0x11223344, 0x55667788])
             encoded = self.client().encode("srv1", "bytearray", p0=arr)
-            assert encoded == b"\x0c\x01\x02\x08\x44\x33\x22\x11\x88\x77\x66\x55"
+            assert encoded == b"\x0b\x01\x02\x08\x44\x33\x22\x11\x88\x77\x66\x55"
 
     def test_encode_stream_client_infinite(self) -> None:
         encoded = self.client().encode("srv2", "client_infinite", p0=0xAB, p1=0xCDEF)
-        assert encoded == b"\x06\x02\x00\xab\xef\xcd"
+        assert encoded == b"\x05\x02\x00\xab\xef\xcd"
 
     def test_encode_stream_client_finite(self) -> None:
         encoded = self.client().encode("srv2", "client_finite", p0=0xAB, p1=0xCDEF, final=True)
-        assert encoded == b"\x07\x02\x01\xab\xef\xcd\x01"
+        assert encoded == b"\x06\x02\x01\xab\xef\xcd\x01"
 
     def test_encode_stream_server_infinite_start(self) -> None:
         encoded = self.client().encode("srv2", "server_infinite", start=True)
-        assert encoded == b"\x04\x02\x02\x01"
+        assert encoded == b"\x03\x02\x02\x01"
 
     def test_encode_stream_server_infinite_stop(self) -> None:
         encoded = self.client().encode("srv2", "server_infinite", start=False)
-        assert encoded == b"\x04\x02\x02\x00"
+        assert encoded == b"\x03\x02\x02\x00"
 
     def test_encode_stream_server_finite_start(self) -> None:
         encoded = self.client().encode("srv2", "server_finite", start=True)
-        assert encoded == b"\x04\x02\x03\x01"
+        assert encoded == b"\x03\x02\x03\x01"
 
     def test_encode_stream_server_finite_stop(self) -> None:
         encoded = self.client().encode("srv2", "server_finite", start=False)
-        assert encoded == b"\x04\x02\x03\x00"
+        assert encoded == b"\x03\x02\x03\x00"
 
     def test_decode_stream_client_infinite_request_stop(self) -> None:
-        response = self.client().decode(b"\x03\x02\x00")
+        response = self.client().decode(b"\x02\x02\x00")
         payload = response.payload
 
         assert isinstance(payload, dict)
@@ -137,10 +137,10 @@ class TestLrpcClient:
         # In a client stream, the server can only send a stop request
         # that is a message with no fields other than message size, service ID and stream ID
         with pytest.raises(ValueError, match=re.escape("1 remaining bytes after decoding srv2.client_infinite")):
-            self.client().decode(b"\x04\x02\x00\x00")
+            self.client().decode(b"\x03\x02\x00\x00")
 
     def test_decode_stream_client_finite_request_stop(self) -> None:
-        response = self.client().decode(b"\x03\x02\x01")
+        response = self.client().decode(b"\x02\x02\x01")
         payload = response.payload
 
         assert isinstance(payload, dict)
@@ -150,10 +150,10 @@ class TestLrpcClient:
         # In a client stream, the server can only send a stop request
         # that is a message with no fields other than message size, service ID and stream ID
         with pytest.raises(ValueError, match=re.escape("2 remaining bytes after decoding srv2.client_finite")):
-            self.client().decode(b"\x05\x02\x01\xff\x66")
+            self.client().decode(b"\x04\x02\x01\xff\x66")
 
     def test_decode_stream_server_infinite(self) -> None:
-        response = self.client().decode(b"\x06\x02\x02\x45\x67\x89")
+        response = self.client().decode(b"\x05\x02\x02\x45\x67\x89")
         payload = response.payload
 
         assert isinstance(payload, dict)
@@ -164,7 +164,7 @@ class TestLrpcClient:
         assert payload.get("p1") == 0x8967
 
     def test_decode_stream_server_finite(self) -> None:
-        response = self.client().decode(b"\x07\x02\x03\x45\x67\x89\x00")
+        response = self.client().decode(b"\x06\x02\x03\x45\x67\x89\x00")
         payload = response.payload
 
         assert isinstance(payload, dict)
@@ -177,12 +177,12 @@ class TestLrpcClient:
         assert payload.get("final") is False
 
     def test_decode_invalid_service_id(self) -> None:
-        encoded = b"\x04\xaa\x00\x02"
+        encoded = b"\x03\xaa\x00\x02"
         with pytest.raises(ValueError, match="Service with ID 170 not found in the LRPC definition file"):
             self.client().decode(encoded)
 
     def test_decode_invalid_function_id(self) -> None:
-        encoded = b"\x04\x01\xaa\x02"
+        encoded = b"\x03\x01\xaa\x02"
         with pytest.raises(ValueError, match="No function or stream with ID 170 found in service srv1"):
             self.client().decode(encoded)
 
@@ -207,11 +207,11 @@ class TestLrpcClient:
 
     def test_decode_incorrect_size(self) -> None:
         with pytest.raises(ValueError, match=re.escape("Incorrect message size. Expected 4 but got 3")):
-            self.client().decode(b"\x04\x00\x00")
+            self.client().decode(b"\x03\x00\x00")
 
     def test_error_response(self) -> None:
         # unknown service
-        response = self.client().decode(b"\x0b\xff\x00\x00\x55\x66\x00\x00\x00\x77\x00")
+        response = self.client().decode(b"\x0a\xff\x00\x00\x55\x66\x00\x00\x00\x77\x00")
 
         assert response.is_error_response
         assert not response.is_expected_response
@@ -221,7 +221,7 @@ class TestLrpcClient:
         assert response.function_or_stream_name == "error"
 
     def test_decode_error_response_unknown_service(self) -> None:
-        response = self.client().decode(b"\x0b\xff\x00\x00\x55\x66\x00\x00\x00\x77\x00")
+        response = self.client().decode(b"\x0a\xff\x00\x00\x55\x66\x00\x00\x00\x77\x00")
         payload = response.payload
 
         assert "type" in payload
@@ -236,7 +236,7 @@ class TestLrpcClient:
         assert payload["message"] == ""
 
     def test_decode_error_response_unknown_function_or_stream(self) -> None:
-        response = self.client().decode(b"\x0f\xff\x00\x01\x22\x33\x44\x00\x00\x00\x74\x65\x73\x74\x00")
+        response = self.client().decode(b"\x0e\xff\x00\x01\x22\x33\x44\x00\x00\x00\x74\x65\x73\x74\x00")
         payload = response.payload
 
         assert "type" in payload
@@ -252,21 +252,21 @@ class TestLrpcClient:
 
     def test_decode_error_response_invalid_type(self) -> None:
         with pytest.raises(ValueError, match=re.escape("Value 255 (0xff) is not valid for enum LrpcMetaError")):
-            self.client().decode(b"\x0f\xff\x00\xff\x22\x33\x44\x00\x00\x00\x74\x65\x73\x74\x00")
+            self.client().decode(b"\x0e\xff\x00\xff\x22\x33\x44\x00\x00\x00\x74\x65\x73\x74\x00")
 
     def test_decode_void_function(self) -> None:
         # srv0.f0
-        response = self.client().decode(b"\x03\x00\x00")
+        response = self.client().decode(b"\x02\x00\x00")
         payload = response.payload
         assert isinstance(payload, dict)
         assert len(payload.items()) == 0
 
     def test_remaining_bytes_after_decode(self) -> None:
         with pytest.raises(ValueError, match=re.escape("2 remaining bytes after decoding srv0.f0")):
-            self.client().decode(b"\x05\x00\x00\xab\xcd")
+            self.client().decode(b"\x04\x00\x00\xab\xcd")
 
     def test_communicate_function(self) -> None:
-        response_bytes = b"\x04\x01\x00\xcd"
+        response_bytes = b"\x03\x01\x00\xcd"
         response = self.client(response_bytes).communicate_single("srv1", "add5", p0=0xAB)
         payload = response.payload
 
@@ -282,7 +282,7 @@ class TestLrpcClient:
         assert response.function_or_stream_name == "add5"
 
     def test_communicate_function_bytearray(self) -> None:
-        response_bytes = b"\x06\x01\x02\x02\x33\x44"
+        response_bytes = b"\x05\x01\x02\x02\x33\x44"
         response = self.client(response_bytes).communicate_single("srv1", "bytearray", p0=b"\x11\x22")
         payload = response.payload
 
@@ -299,7 +299,7 @@ class TestLrpcClient:
 
     def test_communicate_function_wrong_response(self, caplog: pytest.LogCaptureFixture) -> None:
         # response belongs to srv0.f0
-        response_bytes = b"\x03\x00\x00"
+        response_bytes = b"\x02\x00\x00"
         response = self.client(response_bytes).communicate_single("srv1", "add5", p0=0xAB)
         payload = response.payload
 
@@ -316,7 +316,7 @@ class TestLrpcClient:
         assert caplog.messages[0] == "Unexpected response. Expected srv1.add5, but got srv0.f0"
 
     def test_communicate_function_error_response(self, caplog: pytest.LogCaptureFixture) -> None:
-        response_bytes = b"\x0b\xff\x00\x00\x55\x66\x00\x00\x00\x77\x00"
+        response_bytes = b"\x0a\xff\x00\x00\x55\x66\x00\x00\x00\x77\x00"
         response = self.client(response_bytes).communicate_single("srv1", "add5", p0=0xAB)
 
         assert response.is_error_response
@@ -350,7 +350,7 @@ class TestLrpcClient:
         assert response is None
 
     def test_communicate_stream_server_infinite_start(self) -> None:
-        response_bytes = b"\x06\x02\x02\xcd\x01\x02"
+        response_bytes = b"\x05\x02\x02\xcd\x01\x02"
         response_generator = self.client(response_bytes).communicate("srv2", "server_infinite", start=True)
         response = next(response_generator)
         payload = response.payload
@@ -374,7 +374,7 @@ class TestLrpcClient:
             next(response_generator)
 
     def test_communicate_stream_server_finite_start(self) -> None:
-        response_bytes = b"\x07\x02\x03\xcd\x01\x02\x01"
+        response_bytes = b"\x06\x02\x03\xcd\x01\x02\x01"
         response = self.client(response_bytes).communicate_single("srv2", "server_finite", start=True)
         payload = response.payload
 
@@ -396,7 +396,7 @@ class TestLrpcClient:
     @staticmethod
     def make_version_response(def_version: str, def_hash: str, lrpc_version: str) -> bytes:
         message_length = 3 + len(def_version) + 1 + len(def_hash) + 1 + len(lrpc_version) + 1
-        msg_len = message_length.to_bytes(length=1, byteorder="little")
+        msg_len = (message_length - 1).to_bytes(length=1, byteorder="little")
 
         return (
             msg_len
@@ -474,7 +474,7 @@ class TestLrpcClient:
         # meta.definition message with empty bytearray chunk param. final=True
         # binary blob is generated in LrpcMeta_constants.hpp after running the definition file
         # through lrpcg
-        definition_response = b"\x05\xff\x01\x00\x01"
+        definition_response = b"\x04\xff\x01\x00\x01"
 
         transport = FakeTransport(definition_response)
 

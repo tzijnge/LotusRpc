@@ -57,6 +57,7 @@ generate_lrpc(Server3)
 generate_lrpc(Server4)
 generate_lrpc(Server5)
 generate_lrpc(Bytearray)
+generate_lrpc(RetrieveDefinition)
 
 set_directory_properties(PROPERTIES ADDITIONAL_CLEAN_FILES ${CMAKE_CURRENT_SOURCE_DIR}/generated)
 
@@ -74,6 +75,7 @@ add_executable(UnitTests
                 TestBytearray_unsigned_char.cpp
                 TestBytearray_int8_t.cpp
                 TestBytearray_uint8_t.cpp
+                TestRetrieveDefinition.cpp ${CMAKE_CURRENT_SOURCE_DIR}/generated/RetrieveDefinition/RetrieveDefinition.hpp
                 TestServerErrors.cpp)
 
 target_include_directories(UnitTests PRIVATE .)

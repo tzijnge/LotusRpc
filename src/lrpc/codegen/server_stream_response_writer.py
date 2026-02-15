@@ -12,16 +12,16 @@ class ServerStreamResponseWriter:
         returns = stream.returns()
 
         with self._file.block(f"void {stream.name()}_response({self._response_params(returns)})"):
-            self._file.write("if (server == nullptr) { return; }")
-            self._file.newline()
-            self._file.write("auto w = server->getWriter();")
-            self._file.write(f"writeHeader(w, {stream.id()});")
+            if len(returns) == 0:
+                self._file.write(f"server().transmit(id(), {stream.id()});")
+            else:
+                response = self._response_captures(returns)
 
-            for r in returns:
-                self._file.write(f"lrpc::write_unchecked<{r.rw_type()}>({self._write_params(r)});")
+                with self._file.block(f"const auto paramWriter = [{response}](Writer &w)", ";"):
+                    for r in returns:
+                        self._file.write(f"lrpc::write_unchecked<{r.rw_type()}>({self._write_params(r)});")
 
-            self._file.write("updateHeader(w);")
-            self._file.write("server->transmit(w);")
+                self._file.write(f"server().transmit(id(), {stream.id()}, paramWriter);")
 
     @staticmethod
     def _write_params(var: LrpcVar) -> str:
@@ -37,3 +37,7 @@ class ServerStreamResponseWriter:
     @staticmethod
     def _response_params(params: list[LrpcVar]) -> str:
         return ", ".join([f"{p.param_type()} {p.name()}" for p in params])
+
+    @staticmethod
+    def _response_captures(params: list[LrpcVar]) -> str:
+        return ", ".join([f"&{p.name()}" for p in params])

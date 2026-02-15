@@ -1,5 +1,8 @@
 import math
 import re
+import tempfile
+from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 from pydantic import ValidationError
@@ -8,6 +11,9 @@ from lrpc.core import LrpcDef, LrpcFun, LrpcStream
 from lrpc.utils import load_lrpc_def_from_str
 
 from .utilities import StringifyVisitor
+
+if TYPE_CHECKING:
+    from lrpc.core.definition import LrpcDefDict
 
 
 def load_lrpc_def(def_str: str) -> LrpcDef:
@@ -824,9 +830,11 @@ services:
 
     assert (
         "service[LrpcMeta]"
-        "-function[version+128]-return[definition]-return[definition_hash]-return[lrpc]-return_end-param_end-function_end"
+        "-function[version+2]-return[definition]-return[definition_hash]-return[lrpc]-return_end-param_end-function_end"
         "-stream[error+0+server]"
         "-param[start]-param_end-return[type]-return[p1]-return[p2]-return[p3]-return[message]-return_end-stream_end"
+        "-stream[definition+1+server]"
+        "-param[start]-param_end-return[chunk]-return[final]-return_end-stream_end"
         "-service_end" in v.result
     )
 
@@ -902,3 +910,96 @@ def test_validation_wrong_type_rx_buffer_size() -> None:
 
     with pytest.raises(ValidationError, match=re.escape("Input should be a valid integer")):
         LrpcDef(d)  # type: ignore[arg-type]
+
+
+def test_embed_definition_default_false() -> None:
+    def_str = """name: test
+services:
+  - name: s1
+    functions:
+      - name: f1
+"""
+    lrpc_def = load_lrpc_def(def_str)
+    assert lrpc_def.embed_definition() is False
+
+
+def test_embed_definition_false() -> None:
+    def_str = """name: test
+embed_definition: false
+services:
+  - name: s1
+    functions:
+      - name: f1
+"""
+    lrpc_def = load_lrpc_def(def_str)
+    assert lrpc_def.embed_definition() is False
+
+
+def test_embed_definition_true() -> None:
+    def_str = """name: test
+embed_definition: true
+services:
+  - name: s1
+    functions:
+      - name: f1
+"""
+    lrpc_def = load_lrpc_def(def_str)
+    assert lrpc_def.embed_definition() is True
+
+
+def test_compress_decompress() -> None:
+    def_str = """name: test
+services:
+  - name: bbb
+    functions:
+      - name: f1
+  - name: aaa
+    functions:
+      - name: f1
+"""
+    lrpc_def1 = load_lrpc_def(def_str)
+    compressed = lrpc_def1.compressed_definition()
+
+    assert len(compressed) == 392
+
+    lrpc_def2 = LrpcDef.decompress(compressed)
+
+    assert lrpc_def1.name() == lrpc_def2.name()
+    assert lrpc_def1.compressed_definition() == lrpc_def2.compressed_definition()
+    assert lrpc_def1.definition_hash() == lrpc_def2.definition_hash()
+
+    services1 = lrpc_def1.services()
+    services2 = lrpc_def2.services()
+    assert len(services1) == 2
+    assert services1[0].name() == "bbb"
+    assert services1[0].id() == 0
+    assert services1[1].name() == "aaa"
+    assert services1[1].id() == 1
+
+    assert services2[0].name() == "bbb"
+    assert services2[0].id() == 0
+    assert services2[1].name() == "aaa"
+    assert services2[1].id() == 1
+
+
+def test_save_to() -> None:
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_file = Path(temp_dir).joinpath("temp_file.txt")
+        assert not temp_file.exists()
+
+        # lzma encoding of string 'test_save_to'
+        encoded = b"\xfd7zXZ\x00\x00\x04\xe6\xd6\xb4F\x02\x00!\x01\x16\x00\x00\x00t/\xe5"
+        encoded += b"\xa3\x01\x00\x0btest_save_to\x00\xff\x8f4aP5v\xf3\x00\x01$\x0c\xa6\x18"
+        encoded += b"\xd8\xd8\x1f\xb6\xf3}\x01\x00\x00\x00\x00\x04YZ"
+
+        LrpcDef.save_to(encoded, temp_file)
+
+        assert temp_file.exists()
+        with temp_file.open("rt", encoding="utf-8") as f:
+            assert f.read() == "test_save_to"
+
+
+def test_construct_without_meta_service() -> None:
+    raw: LrpcDefDict = {"name": "test", "services": []}
+    with pytest.raises(ValueError, match="No meta service found in definition"):
+        LrpcDef(raw)

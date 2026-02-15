@@ -1,0 +1,1 @@
+from .embedded_definition import embedded_definition_for_testing as embedded_definition_for_testing

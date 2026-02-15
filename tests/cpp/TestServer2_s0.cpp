@@ -40,7 +40,7 @@ TEST_F(TestServer2, decodeF2)
     EXPECT_EQ("030002", response);
 }
 
-namespace meta = lrpc_meta_version;
+namespace meta = lrpc_meta;
 static_assert(meta::DefinitionVersion.empty(), "");
 static_assert(std::is_same<decltype(meta::DefinitionVersion), const etl::string_view>::value, "");
 

@@ -18,12 +18,7 @@ def test_no_params() -> None:
     func: LrpcStreamDict = {"name": "test_stream", "id": 42, "origin": "server"}
     expected = """void test_stream_response()
 {
-\tif (server == nullptr) { return; }
-\t
-\tauto w = server->getWriter();
-\twriteHeader(w, 42);
-\tupdateHeader(w);
-\tserver->transmit(w);
+\tserver().transmit(id(), 42);
 }
 """
 
@@ -39,13 +34,11 @@ def test_single_param() -> None:
     }
     expected = """void test_stream_response(uint8_t p0)
 {
-\tif (server == nullptr) { return; }
-\t
-\tauto w = server->getWriter();
-\twriteHeader(w, 42);
-\tlrpc::write_unchecked<uint8_t>(w, p0);
-\tupdateHeader(w);
-\tserver->transmit(w);
+\tconst auto paramWriter = [&p0](Writer &w)
+\t{
+\t\tlrpc::write_unchecked<uint8_t>(w, p0);
+\t};
+\tserver().transmit(id(), 42, paramWriter);
 }
 """
 
@@ -61,14 +54,12 @@ def test_two_params() -> None:
     }
     expected = """void test_stream_response(uint8_t p0, bool p1)
 {
-\tif (server == nullptr) { return; }
-\t
-\tauto w = server->getWriter();
-\twriteHeader(w, 42);
-\tlrpc::write_unchecked<uint8_t>(w, p0);
-\tlrpc::write_unchecked<bool>(w, p1);
-\tupdateHeader(w);
-\tserver->transmit(w);
+\tconst auto paramWriter = [&p0, &p1](Writer &w)
+\t{
+\t\tlrpc::write_unchecked<uint8_t>(w, p0);
+\t\tlrpc::write_unchecked<bool>(w, p1);
+\t};
+\tserver().transmit(id(), 42, paramWriter);
 }
 """
 
@@ -84,13 +75,11 @@ def test_array_param() -> None:
     }
     expected = """void test_stream_response(etl::span<const uint8_t> p0)
 {
-\tif (server == nullptr) { return; }
-\t
-\tauto w = server->getWriter();
-\twriteHeader(w, 42);
-\tlrpc::write_unchecked<lrpc::tags::array_n<uint8_t>>(w, p0, 25);
-\tupdateHeader(w);
-\tserver->transmit(w);
+\tconst auto paramWriter = [&p0](Writer &w)
+\t{
+\t\tlrpc::write_unchecked<lrpc::tags::array_n<uint8_t>>(w, p0, 25);
+\t};
+\tserver().transmit(id(), 42, paramWriter);
 }
 """
 
@@ -106,13 +95,11 @@ def test_string_n_param() -> None:
     }
     expected = """void test_stream_response(etl::string_view p0)
 {
-\tif (server == nullptr) { return; }
-\t
-\tauto w = server->getWriter();
-\twriteHeader(w, 42);
-\tlrpc::write_unchecked<lrpc::tags::string_n>(w, p0, 20);
-\tupdateHeader(w);
-\tserver->transmit(w);
+\tconst auto paramWriter = [&p0](Writer &w)
+\t{
+\t\tlrpc::write_unchecked<lrpc::tags::string_n>(w, p0, 20);
+\t};
+\tserver().transmit(id(), 42, paramWriter);
 }
 """
 
@@ -128,13 +115,11 @@ def test_array_of_string_n_param() -> None:
     }
     expected = """void test_stream_response(etl::span<const etl::string_view> p0)
 {
-\tif (server == nullptr) { return; }
-\t
-\tauto w = server->getWriter();
-\twriteHeader(w, 42);
-\tlrpc::write_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(w, p0, 7, 5);
-\tupdateHeader(w);
-\tserver->transmit(w);
+\tconst auto paramWriter = [&p0](Writer &w)
+\t{
+\t\tlrpc::write_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(w, p0, 7, 5);
+\t};
+\tserver().transmit(id(), 42, paramWriter);
 }
 """
 

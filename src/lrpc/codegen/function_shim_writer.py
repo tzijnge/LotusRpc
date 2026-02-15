@@ -13,15 +13,16 @@ class FunctionShimWriter:
         params = self._params_string(function.params())
         reader_param_name = " r" if len(params) != 0 else ""
 
-        with self._file.block(f"void {function.name()}_shim(Reader&{reader_param_name}, Writer& w)"):
+        with self._file.block(f"void {function.name()}_shim(Reader&{reader_param_name})"):
             self._write_function_shim_body(function)
 
     def _write_function_shim_body(self, function: LrpcFun) -> None:
-        self._file.write(f"writeHeader(w, {function.id()});")
-
         self._write_param_readers(function)
         self._write_invocation(function)
-        self._write_return_writers(function)
+        self._write_return_lambda(function)
+
+        callback = "" if function.number_returns() == 0 else ", paramWriter"
+        self._file.write(f"server().transmit(id(), {function.id()}{callback});")
 
     def _write_param_readers(self, function: LrpcFun) -> None:
         def read_params(var: LrpcVar) -> str:
@@ -49,7 +50,7 @@ class FunctionShimWriter:
         response = "const auto response = " if len(function.returns()) != 0 else ""
         self._file.write(f"{response}{function.name()}({param_list});")
 
-    def _write_return_writers(self, function: LrpcFun) -> None:
+    def _write_return_lambda(self, function: LrpcFun) -> None:
         def write_params(var: LrpcVar, index: int | None) -> str:
             params = ["w"]
             if index is None:
@@ -64,12 +65,16 @@ class FunctionShimWriter:
 
             return ", ".join(params)
 
-        returns = function.returns()
-        for i, r in enumerate(returns):
-            return_index = None if len(returns) == 1 else i
-            self._file.write(
-                f"lrpc::write_unchecked<{r.rw_type()}>({write_params(r, return_index)});",
-            )
+        if function.number_returns() == 0:
+            return
+
+        with self._file.block("const auto paramWriter = [&response](Writer &w)", ";"):
+            returns = function.returns()
+            for i, r in enumerate(returns):
+                return_index = None if len(returns) == 1 else i
+                self._file.write(
+                    f"lrpc::write_unchecked<{r.rw_type()}>({write_params(r, return_index)});",
+                )
 
     @staticmethod
     def _params_string(params: list[LrpcVar]) -> str:

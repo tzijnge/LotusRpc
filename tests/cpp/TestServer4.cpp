@@ -84,7 +84,7 @@ static_assert(static_cast<int>(srv4::MyEnum4::f2) == 1, "");
 static_assert(static_cast<int>(srv4::MyEnum4::f3) == 222, "");
 static_assert(static_cast<int>(srv4::MyEnum4::f4) == 223, "");
 
-namespace meta = srv4::lrpc_meta_version;
+namespace meta = srv4::lrpc_meta;
 static_assert(meta::DefinitionVersion == "major.minor.patch.123", "");
 static_assert(std::is_same<decltype(meta::DefinitionVersion), const etl::string_view>::value, "");
 

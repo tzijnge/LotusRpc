@@ -5,10 +5,9 @@ from collections.abc import Generator
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-import pydantic
 import pytest
 
-from lrpc.lrpcc import LRPCC_CONFIG_ENV_VAR, find_config, load_config
+from lrpc.tools.lrpcc.lrpcc import LRPCC_CONFIG_ENV_VAR, find_config
 
 
 @contextlib.contextmanager
@@ -30,13 +29,6 @@ def lrpcc_config_env_var(config_path: Path) -> Generator[None, None, None]:
     finally:
         os.environ.clear()
         os.environ.update(old_environ)
-
-
-@pytest.fixture(autouse=True)
-def change_test_dir(request: pytest.FixtureRequest) -> Generator[None, None, None]:
-    os.chdir(request.fspath.dirname)  # type: ignore[attr-defined]
-    yield
-    os.chdir(request.config.invocation_params.dir)
 
 
 def test_find_config_in_cwd() -> None:
@@ -111,60 +103,3 @@ def test_find_config_in_cwd_file_not_found() -> None:
         pytest.raises(FileNotFoundError, match=not_found_in_cwd_message),
     ):
         find_config()
-
-
-def test_bad_config_additional_entry() -> None:
-    with pytest.raises(pydantic.ValidationError, match="Extra inputs are not permitted"):
-        load_config(Path("bad_configs/additional_entry.config.yaml"))
-
-
-def test_bad_config_invalid_log_level() -> None:
-    with pytest.raises(
-        pydantic.ValidationError,
-        match="Input should be 'CRITICAL', 'FATAL', 'ERROR', 'WARN', 'WARNING', 'INFO', 'DEBUG' or 'NOTSET'",
-    ):
-        load_config(Path("bad_configs/invalid_log_level.config.yaml"))
-
-
-def test_bad_config_invalid_transport_params() -> None:
-    with pytest.raises(
-        pydantic.ValidationError,
-        match="Input should be a valid string",
-    ):
-        load_config(Path("bad_configs/invalid_transport_params.config.yaml"))
-
-
-def test_bad_config_invalid_type() -> None:
-    with pytest.raises(
-        pydantic.ValidationError,
-        match="Input should be a valid string",
-    ):
-        load_config(Path("bad_configs/invalid_type.config.yaml"))
-
-
-def test_bad_config_missing_def_url() -> None:
-    with pytest.raises(
-        pydantic.ValidationError,
-        match="validation error for LrpccConfigDict\ndefinition_url\n  Field required",
-    ):
-        load_config(Path("bad_configs/missing_def_url.config.yaml"))
-
-
-def test_bad_config_missing_transport_type() -> None:
-    with pytest.raises(
-        pydantic.ValidationError,
-        match="validation error for LrpccConfigDict\ntransport_type\n  Field required",
-    ):
-        load_config(Path("bad_configs/missing_transport_type.config.yaml"))
-
-
-def test_load_config() -> None:
-    config = load_config(Path("lrpcc.config.yaml"))
-    assert config["definition_url"] == "../testdata/TestServer1.lrpc.yaml"
-    assert config["transport_type"] == "file"
-    assert "transport_params" in config
-    assert config["transport_params"] == {"file_url": "server.yaml"}
-    assert "log_level" in config
-    assert config["log_level"] == "INFO"
-    assert "check_server_version" in config
-    assert config["check_server_version"] is False

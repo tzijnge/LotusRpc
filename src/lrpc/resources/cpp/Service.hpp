@@ -1,5 +1,6 @@
 #pragma once
 #include <etl/byte_stream.h>
+#include <etl/delegate.h>
 #include <etl/string_view.h>
 #include <cstdint>
 #include "MetaError.hpp"
@@ -12,10 +13,34 @@ namespace lrpc
         using Reader = etl::byte_stream_reader;
         using Writer = etl::byte_stream_writer;
 
-        virtual Writer getWriter() = 0;
-        virtual void transmit(const Writer &w) = 0;
+        using ParamWriter = etl::delegate<void(Writer &)>;
+
+        virtual void transmit(const uint8_t serviceId, const uint8_t functionOrStreamId) = 0;
+        virtual void transmit(const uint8_t serviceId, const uint8_t functionOrStreamId, const ParamWriter writeParams) = 0;
 
         virtual void error(const LrpcMetaError type, const uint8_t p1 = 0, const uint8_t p2 = 0, const int32_t p3 = 0, const etl::string_view &message = {}) = 0;
+    };
+
+    class NullServer : public IServer
+    {
+    public:
+        virtual ~NullServer() = default;
+
+        void transmit(const uint8_t, const uint8_t) final
+        {
+            // TODO: #206 Add LRPC_ASSERT
+            // LRPC_ASSERT();
+        }
+        void transmit(const uint8_t, const uint8_t, const ParamWriter) final
+        {
+            // TODO: #206 Add LRPC_ASSERT
+            // LRPC_ASSERT();
+        }
+        void error(const LrpcMetaError, const uint8_t, const uint8_t, const int32_t, const etl::string_view &) final
+        {
+            // TODO: #206 Add LRPC_ASSERT
+            // LRPC_ASSERT();
+        }
     };
 
     class Service
@@ -27,40 +52,20 @@ namespace lrpc
         using Writer = IServer::Writer;
 
         virtual uint8_t id() const = 0;
-        virtual void invoke(Reader &reader, Writer &writer) = 0;
+        virtual void invoke(Reader &reader) = 0;
 
-        void linkServer(IServer &s) { server = &s; }
+        void linkServer(IServer &s) { linkedServer = &s; }
 
     protected:
-        IServer *server{nullptr};
+        IServer &server() const { return *linkedServer; };
 
-        void writeHeader(Writer &w, const uint8_t functionId) const
+        void requestStop(const uint8_t streamId) const
         {
-            w.write_unchecked<uint8_t>(0);    // placeholder for message size
-            w.write_unchecked<uint8_t>(id()); // service ID
-            w.write_unchecked<uint8_t>(functionId);
+            server().transmit(id(), streamId);
         }
 
-        static void updateHeader(Writer &w)
-        {
-            const auto s = w.size_bytes();
-            if (s != 0)
-            {
-                *w.begin() = static_cast<uint8_t>(s);
-            }
-        }
-
-        void requestStop(const uint8_t streamId)
-        {
-            if (server != nullptr)
-            {
-                constexpr uint8_t messageSize{3};
-                auto w = server->getWriter();
-                w.write_unchecked<uint8_t>(messageSize);
-                w.write_unchecked<uint8_t>(id());
-                w.write_unchecked<uint8_t>(streamId);
-                server->transmit(w);
-            }
-        }
+    private:
+        NullServer nullServer;
+        IServer *linkedServer{&nullServer};
     };
 }

@@ -1,4 +1,5 @@
-definition_url: App/lrpc/example.lrpc.yaml
+definition_url: example.lrpc.yaml
+definition_from_server: once
 transport_params:
   baudrate: 115200
   port: COM28

@@ -8,6 +8,7 @@ import pytest
 
 from lrpc.client import LrpcClient
 from lrpc.utils import load_lrpc_def_from_url
+from tests.embedded_definition import embedded_definition_for_testing
 
 if sys.version_info >= (3, 12):
     import array
@@ -399,7 +400,7 @@ class TestLrpcClient:
 
         return (
             msg_len
-            + b"\xff\x80"
+            + b"\xff\x02"
             + def_version.encode("utf-8")
             + b"\x00"
             + def_hash.encode("utf-8")
@@ -434,7 +435,7 @@ class TestLrpcClient:
         assert "Server mismatch detected. Details client vs server:" in caplog.messages
         assert f"LotusRPC version: {lrpc_version} vs {lrpc_version}" in caplog.messages
         assert "Definition version: [disabled] vs [disabled]" in caplog.messages
-        assert "Definition hash: e3617a4673c10b3b... vs [wrong hash]..." in caplog.messages
+        assert "Definition hash: 99ceeaa08c6373b4... vs [wrong hash]..." in caplog.messages
 
     def test_check_server_version_mismatch_lrpc_version(self, caplog: pytest.LogCaptureFixture) -> None:
         def_version = lrpc_def.version() or ""
@@ -450,7 +451,7 @@ class TestLrpcClient:
         assert "Server mismatch detected. Details client vs server:" in caplog.messages
         assert f"LotusRPC version: {version('lotusrpc')} vs [wrong version]" in caplog.messages
         assert "Definition version: [disabled] vs [disabled]" in caplog.messages
-        assert "Definition hash: e3617a4673c10b3b... vs e3617a4673c10b3b..." in caplog.messages
+        assert "Definition hash: 99ceeaa08c6373b4... vs 99ceeaa08c6373b4..." in caplog.messages
 
     def test_check_server_version_mismatch_def_version(self, caplog: pytest.LogCaptureFixture) -> None:
         def_version = "[wrong version]"
@@ -466,4 +467,35 @@ class TestLrpcClient:
         assert "Server mismatch detected. Details client vs server:" in caplog.messages
         assert f"LotusRPC version: {lrpc_version} vs {lrpc_version}" in caplog.messages
         assert "Definition version: [disabled] vs [wrong version]" in caplog.messages
-        assert "Definition hash: e3617a4673c10b3b... vs e3617a4673c10b3b..." in caplog.messages
+        assert "Definition hash: 99ceeaa08c6373b4... vs 99ceeaa08c6373b4..." in caplog.messages
+
+    @staticmethod
+    def test_from_server_when_not_embedded() -> None:
+        # meta.definition message with empty bytearray chunk param. final=True
+        # binary blob is generated in LrpcMeta_constants.hpp after running the definition file
+        # through lrpcg
+        definition_response = b"\x05\xff\x01\x00\x01"
+
+        transport = FakeTransport(definition_response)
+
+        with pytest.raises(ValueError, match="No embedded definition found on server"):
+            LrpcClient.from_server(transport)
+
+    @staticmethod
+    def test_from_server() -> None:
+        definition_response = embedded_definition_for_testing()
+
+        transport = FakeTransport(definition_response)
+
+        client = LrpcClient.from_server(transport)
+
+        definition = client.definition()
+
+        assert definition.name() == "RetrieveDefinition"
+        assert definition.namespace() == "test_rd"
+        assert definition.tx_buffer_size() == 58
+        assert definition.embed_definition() is True
+        assert len(definition.services()) == 1
+        s0 = definition.service_by_id(0)
+        assert s0 is not None
+        assert s0.name() == "s0"

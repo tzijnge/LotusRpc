@@ -332,6 +332,10 @@
       "maximum": 64,
       "description": "Length of definition hash to include in generated code"
     },
+    "embed_definition": {
+      "type": "boolean",
+      "description": "Embed the definition in the generated server code"
+    },
     "namespace": {
       "$ref": "#/$defs/cppid",
       "description": "C++ namespace to be generate code in"

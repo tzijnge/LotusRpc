@@ -115,7 +115,7 @@ namespace testutils
         return ss.str();
     }
 
-    template <typename Server, typename Service>
+    template <typename Server, typename Service, bool AutoReset = true>
     class TestServerBase : public Server, public ::testing::Test
     {
     public:
@@ -126,8 +126,11 @@ namespace testutils
 
         void lrpcTransmit(etl::span<const uint8_t> bytes) override
         {
-            responseBuffer.clear();
-            responseBuffer.assign(bytes.begin(), bytes.end());
+            if (AutoReset)
+            {
+                responseBuffer.clear();
+            }
+            (void)responseBuffer.insert(responseBuffer.end(), bytes.begin(), bytes.end());
         }
 
         std::string receive(const etl::string_view hex)

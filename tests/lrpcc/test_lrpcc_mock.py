@@ -34,7 +34,7 @@ def make_lrpcc(
     definition_from_server: Literal["always", "never", "once"] = "never",
 ) -> Lrpcc:
     # dummy version response with all fields set to empty string
-    meta_version_response = "06ff02000000" if check_server_version else ""
+    meta_version_response = "05ff02000000" if check_server_version else ""
 
     lrpcc_config: LrpccConfigDict = {
         "definition_url": definition_url,
@@ -47,7 +47,7 @@ def make_lrpcc(
 
 
 def test_server1_f13(capsys: pytest.CaptureFixture[str]) -> None:
-    response = "05000dcdab"
+    response = "04000dcdab"
     lrpcc = make_lrpcc("../testdata/TestServer1.lrpc.yaml", response, check_server_version=False)
     lrpcc._command_handler("s0", "f13")
 
@@ -57,7 +57,7 @@ def test_server1_f13(capsys: pytest.CaptureFixture[str]) -> None:
 
 
 def test_server1_f13_with_version_check(capsys: pytest.CaptureFixture[str]) -> None:
-    response = "05000dcdab"
+    response = "04000dcdab"
     lrpcc = make_lrpcc("../testdata/TestServer1.lrpc.yaml", response, check_server_version=True)
     lrpcc._command_handler("s0", "f13")
 
@@ -67,7 +67,7 @@ def test_server1_f13_with_version_check(capsys: pytest.CaptureFixture[str]) -> N
 
 
 def test_server1_f29(capsys: pytest.CaptureFixture[str]) -> None:
-    response = "07001d03334455"
+    response = "06001d03334455"
     lrpcc = make_lrpcc("../testdata/TestServer1.lrpc.yaml", response, check_server_version=False)
     lrpcc._command_handler("s0", "f29", p0=b"\x77\x88\x99")
 
@@ -77,7 +77,7 @@ def test_server1_f29(capsys: pytest.CaptureFixture[str]) -> None:
 
 
 def test_server1_f30(capsys: pytest.CaptureFixture[str]) -> None:
-    response = "03001e"
+    response = "02001e"
     lrpcc = make_lrpcc("../testdata/TestServer1.lrpc.yaml", response, check_server_version=False)
     lrpcc._command_handler("s0", "f30", p0=[b"\x33\x44", b"\x55\x66"])
 
@@ -117,9 +117,9 @@ def test_client_finite(capsys: pytest.CaptureFixture[str]) -> None:
 
 
 def test_server_infinite_start(capsys: pytest.CaptureFixture[str]) -> None:
-    response = "064200d20438"
-    response += "0642000a1a4d"
-    response += "064200e8fd03"
+    response = "054200d20438"
+    response += "0542000a1a4d"
+    response += "054200e8fd03"
 
     lrpcc = make_lrpcc("../testdata/TestServer5.lrpc.yaml", response)
     with pytest.raises(TimeoutError, match="Timeout waiting for response"):
@@ -139,9 +139,9 @@ p1: 3 (0x3)
 
 
 def test_server_infinite_stop(capsys: pytest.CaptureFixture[str]) -> None:
-    response = "064200d20438"
-    response += "0642000a1a4d"
-    response += "064200e8fd03"
+    response = "054200d20438"
+    response += "0542000a1a4d"
+    response += "054200e8fd03"
 
     lrpcc = make_lrpcc("../testdata/TestServer5.lrpc.yaml", response)
     lrpcc._command_handler("srv1", "server_infinite", start=False)
@@ -150,9 +150,9 @@ def test_server_infinite_stop(capsys: pytest.CaptureFixture[str]) -> None:
 
 
 def test_server_finite_start(capsys: pytest.CaptureFixture[str]) -> None:
-    response = "064221000000"
-    response += "064221010100"
-    response += "064221000101"
+    response = "054221000000"
+    response += "054221010100"
+    response += "054221000101"
 
     lrpcc = make_lrpcc("../testdata/TestServer5.lrpc.yaml", response)
     lrpcc._command_handler("srv1", "server_finite", start=True)
@@ -171,8 +171,8 @@ p1: Closed
 
 
 def test_server_finite_start_no_final_response(capsys: pytest.CaptureFixture[str]) -> None:
-    response = "064221000000"
-    response += "064221010100"
+    response = "054221000000"
+    response += "054221010100"
 
     lrpcc = make_lrpcc("../testdata/TestServer5.lrpc.yaml", response)
 
@@ -190,8 +190,8 @@ p1: Closed
 
 
 def test_server_finite_stop(capsys: pytest.CaptureFixture[str]) -> None:
-    response = "064221000000"
-    response += "064221010100"
+    response = "054221000000"
+    response += "054221010100"
 
     lrpcc = make_lrpcc("../testdata/TestServer5.lrpc.yaml", response)
     lrpcc._command_handler("srv1", "server_finite", start=False)
@@ -200,7 +200,7 @@ def test_server_finite_stop(capsys: pytest.CaptureFixture[str]) -> None:
 
 
 def test_error_response_unknown_service(capsys: pytest.CaptureFixture[str], caplog: pytest.LogCaptureFixture) -> None:
-    response = "0bff000044550000000000"
+    response = "0aff000044550000000000"
     lrpcc = make_lrpcc("../testdata/TestServer1.lrpc.yaml", response, check_server_version=False)
     lrpcc._command_handler("s0", "f13")
 
@@ -216,7 +216,7 @@ def test_error_response_unknown_function_or_stream(
     capsys: pytest.CaptureFixture[str],
     caplog: pytest.LogCaptureFixture,
 ) -> None:
-    response = "0bff000144550000000000"
+    response = "0aff000144550000000000"
     lrpcc = make_lrpcc("../testdata/TestServer1.lrpc.yaml", response, check_server_version=False)
     lrpcc._command_handler("s0", "f13")
 
@@ -231,7 +231,7 @@ def test_error_response_unknown_function_or_stream(
 def test_definition_from_server_always(capsys: pytest.CaptureFixture[str]) -> None:
     response = embedded_definition_for_testing()
     # actual response to s0.f0
-    response += b"\x03\x00\x00"
+    response += b"\x02\x00\x00"
 
     lrpcc = make_lrpcc(
         "",
@@ -248,8 +248,8 @@ def test_definition_from_server_once(capsys: pytest.CaptureFixture[str]) -> None
     response = embedded_definition_for_testing()
     # actual response to s0.f0. Times 2 to make sure s0.f0 can be called again without retrieving the
     # embedded definition again
-    response += b"\x03\x00\x00"
-    response += b"\x03\x00\x00"
+    response += b"\x02\x00\x00"
+    response += b"\x02\x00\x00"
 
     with tempfile.TemporaryDirectory() as temp_dir:
         definition_file = Path(temp_dir).joinpath("test_definition_from_server_once.lrpc.yaml")
@@ -271,4 +271,4 @@ def test_definition_from_server_once(capsys: pytest.CaptureFixture[str]) -> None
 
 def test_definition_from_server_when_server_has_no_embedded_definition() -> None:
     with pytest.raises(ValueError, match="No embedded definition found on server"):
-        make_lrpcc("", "05ff010001", check_server_version=False, definition_from_server="always")
+        make_lrpcc("", "04ff010001", check_server_version=False, definition_from_server="always")

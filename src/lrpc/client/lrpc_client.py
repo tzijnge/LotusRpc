@@ -141,7 +141,7 @@ class LrpcClient:
         if len(encoded) < self.LRPC_MESSAGE_MIN_LENGTH:
             raise ValueError(f"Unable to decode message from {encoded!r}: an LRPC message has at least 3 bytes")
 
-        message_size = encoded[0]
+        message_size = encoded[0] + 1
         service_id = encoded[1]
         function_or_stream_id = encoded[2]
 
@@ -242,11 +242,11 @@ class LrpcClient:
         self._receive_buffer += encoded
         received = len(self._receive_buffer)
 
-        message_length = self._receive_buffer[0]
+        message_length = self._receive_buffer[0] + 1
 
         if received >= message_length:
             result = self.decode(self._receive_buffer[0:message_length])
-            self._receive_buffer = self._receive_buffer[message_length + 1 :]
+            self._receive_buffer = self._receive_buffer[message_length:]
             return result
 
         return LrpcClient.IncompleteResponse()
@@ -330,4 +330,4 @@ class LrpcClient:
 
     @staticmethod
     def _add_message_length(encoded: bytes) -> bytes:
-        return struct.pack("<B", len(encoded) + 1) + encoded
+        return struct.pack("<B", len(encoded)) + encoded

@@ -1,62 +1,62 @@
 # TestServer1.lrpc.yaml
-- { cli: "lrpcc s0 f0", write: "030000", read: "030000", response: "" }
-- { cli: "lrpcc s0 f1", write: "030001", read: "030001", response: "" }
-- { cli: "lrpcc s0 f2 171", write: "040002AB", read: "030002", response: "" }
-- { cli: "lrpcc s0 f3 43981", write: "050003CDAB", read: "030003", response: "" }
-- { cli: "lrpcc s0 f4 123.456", write: "07000479E9F642", read: "030004", response: "" }
-- { cli: "lrpcc s0 f5 43981 52671", write: "070005CDABBFCD", read: "030005", response: "" }
+- { cli: "lrpcc s0 f0", write: "020000", read: "020000", response: "" }
+- { cli: "lrpcc s0 f1", write: "020001", read: "020001", response: "" }
+- { cli: "lrpcc s0 f2 171", write: "030002AB", read: "020002", response: "" }
+- { cli: "lrpcc s0 f3 43981", write: "040003CDAB", read: "020003", response: "" }
+- { cli: "lrpcc s0 f4 123.456", write: "06000479E9F642", read: "020004", response: "" }
+- { cli: "lrpcc s0 f5 43981 52671", write: "060005CDABBFCD", read: "020005", response: "" }
 - cli: 'lrpcc s0 f6 "lorem ipsum"'
-  write: "1800066C6F72656D20697073756D00000000000000000000"
-  read: "030006"
+  write: "1700066C6F72656D20697073756D00000000000000000000"
+  read: "020006"
   response: ""
-- { cli: "lrpcc s0 f8 V2", write: "04000802", read: "030008", response: "" }
-- { cli: "lrpcc s0 f11 171 205", write: "05000BABCD", read: "03000B", response: "" }
-- { cli: "lrpcc s0 f12", write: "03000C", read: "04000CAB", response: "a: 171 (0xab)" }
-- { cli: "lrpcc s0 f13", write: "03000D", read: "05000DCDAB", response: "a: 43981 (0xabcd)" }
-- { cli: "lrpcc s0 f14", write: "03000E", read: "07000E79E9F642", response: "a: 123.45600128173828" }
-- { cli: "lrpcc s0 f15", write: "03000F", read: "07000FCDAB12FC", response: "a: [43981, 64530]" }
-- { cli: "lrpcc s0 f16", write: "030010", read: "0C001048656C6C6F20210000", response: "a: Hello !" }
+- { cli: "lrpcc s0 f8 V2", write: "03000802", read: "020008", response: "" }
+- { cli: "lrpcc s0 f11 171 205", write: "04000BABCD", read: "02000B", response: "" }
+- { cli: "lrpcc s0 f12", write: "02000C", read: "03000CAB", response: "a: 171 (0xab)" }
+- { cli: "lrpcc s0 f13", write: "02000D", read: "04000DCDAB", response: "a: 43981 (0xabcd)" }
+- { cli: "lrpcc s0 f14", write: "02000E", read: "06000E79E9F642", response: "a: 123.45600128173828" }
+- { cli: "lrpcc s0 f15", write: "02000F", read: "06000FCDAB12FC", response: "a: [43981, 64530]" }
+- { cli: "lrpcc s0 f16", write: "020010", read: "0B001048656C6C6F20210000", response: "a: Hello !" }
 - cli: "lrpcc s0 f17"
-  write: "030011"
-  read: "0900111234ABCDEF01"
+  write: "020011"
+  read: "0800111234ABCDEF01"
   response: "cd: {'a': [13330, 52651], 'b': 239, 'c': True}"
-- { cli: "lrpcc s0 f18", write: "030012", read: "04001203", response: "a: V3" }
+- { cli: "lrpcc s0 f18", write: "020012", read: "03001203", response: "a: V3" }
 - cli: "lrpcc s0 f19"
-  write: "030013"
-  read: "070013ABCD1234"
+  write: "020013"
+  read: "060013ABCD1234"
   response: "a: [{'a': 171, 'b': 205}, {'a': 18, 'b': 52}]"
-- { cli: "lrpcc s0 f20", write: "030014", read: "060014ABCD01", response: "a: {'a': {'a': 171, 'b': 205}, 'b': 'V1'}" }
-- { cli: "lrpcc s0 f21", write: "030015", read: "050015ABCD", response: "a: 171 (0xab)\r\nb: 205 (0xcd)" }
+- { cli: "lrpcc s0 f20", write: "020014", read: "050014ABCD01", response: "a: {'a': {'a': 171, 'b': 205}, 'b': 'V1'}" }
+- { cli: "lrpcc s0 f21", write: "020015", read: "040015ABCD", response: "a: 171 (0xab)\r\nb: 205 (0xcd)" }
 - cli: "lrpcc s0 f22 Flip dip"
-  write: "0D0016466C6970006469700000"
-  read: "0D0016456C65000066616E7400"
+  write: "0C0016466C6970006469700000"
+  read: "0C0016456C65000066616E7400"
   response: "r1: Ele\r\nr2: fant"
 - cli: "lrpcc s0 f23"
-  write: "030017"
-  read: "170017456C6566616E7420696E2074686520726F6F6D00"
+  write: "020017"
+  read: "160017456C6566616E7420696E2074686520726F6F6D00"
   response: "r0: Elefant in the room"
 - cli: "lrpcc s0 f24"
-  write: "030018"
-  read: "180018456C6566616E742000696E2074686520726F6F6D00"
+  write: "020018"
+  read: "170018456C6566616E742000696E2074686520726F6F6D00"
   response: "r0: Elefant \r\nr1: in the room"
-- { cli: "lrpcc s0 f25", write: "030019", read: "0C001901456C6566616E7400", response: "r0: Elefant" }
+- { cli: "lrpcc s0 f25", write: "020019", read: "0B001901456C6566616E7400", response: "r0: Elefant" }
 - cli: "lrpcc s0 f26"
-  write: "03001A"
-  read: "10001A49276D00206120007472656500"
+  write: "02001A"
+  read: "0F001A49276D00206120007472656500"
   response: 'r0: ["I''m", '' a '', ''tree'']'
 - cli: 'lrpcc s0 f29 "1a 2B3C"'
-  write: "07001D031A2B3C"
-  read: "07001D03334455"
+  write: "06001D031A2B3C"
+  read: "06001D03334455"
   response: "r0: [33 44 55]"
 - cli: 'lrpcc s0 f30 "1A2B" "3C4D"'
-  write: "09001E021A2B023C4D"
-  read: "03001E"
+  write: "08001E021A2B023C4D"
+  read: "02001E"
   response: ""
 - cli: 'lrpcc s0 stream0 "1a 2B3C"'
-  write: "08001F031A2B3C00"
+  write: "07001F031A2B3C00"
   read: ""
   response: ""
 - cli: 'lrpcc s0 stream0 "1a 2B3C" --final'
-  write: "08001F031A2B3C01"
+  write: "07001F031A2B3C01"
   read: ""
   response: ""

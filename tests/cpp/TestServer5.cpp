@@ -50,35 +50,35 @@ TEST_F(TestServer5Srv0, client_infinite)
 {
     EXPECT_CALL(service, client_infinite(0x1234, 0x56));
 
-    const auto response = receive("060000341256");
+    const auto response = receive("050000341256");
     EXPECT_EQ("", response);
 }
 
 TEST_F(TestServer5Srv0, client_infinite_requestStop)
 {
     service.client_infinite_requestStop();
-    EXPECT_EQ("030000", response());
+    EXPECT_EQ("020000", response());
 }
 
 TEST_F(TestServer5Srv0, client_finite)
 {
     EXPECT_CALL(service, client_finite(true, DoorState::Closed, false));
 
-    const auto response = receive("07003701010000");
+    const auto response = receive("06003701010000");
     EXPECT_EQ("", response);
 }
 
 TEST_F(TestServer5Srv0, client_finite_requestStop)
 {
     service.client_finite_requestStop();
-    EXPECT_EQ("030037", response());
+    EXPECT_EQ("020037", response());
 }
 
 TEST_F(TestServer5Srv1, server_infinite_stop)
 {
     EXPECT_CALL(service, server_infinite_stop());
 
-    const auto response = receive("04420000");
+    const auto response = receive("03420000");
     EXPECT_EQ("", response);
 }
 
@@ -86,21 +86,21 @@ TEST_F(TestServer5Srv1, server_infinite)
 {
     EXPECT_CALL(service, server_infinite());
 
-    const auto response = receive("04420001");
+    const auto response = receive("03420001");
     EXPECT_EQ("", response);
 }
 
 TEST_F(TestServer5Srv1, server_infinite_response)
 {
     service.server_infinite_response(0x1234, 0x56);
-    EXPECT_EQ("064200341256", response());
+    EXPECT_EQ("054200341256", response());
 }
 
 TEST_F(TestServer5Srv1, server_finite)
 {
     EXPECT_CALL(service, server_finite());
 
-    const auto response = receive("04422101");
+    const auto response = receive("03422101");
     EXPECT_EQ("", response);
 }
 
@@ -108,35 +108,35 @@ TEST_F(TestServer5Srv1, server_finite_stop)
 {
     EXPECT_CALL(service, server_finite_stop());
 
-    const auto response = receive("04422100");
+    const auto response = receive("03422100");
     EXPECT_EQ("", response);
 }
 
 TEST_F(TestServer5Srv1, server_finite_response)
 {
     service.server_finite_response(true, DoorState::Open, true);
-    EXPECT_EQ("064221010001", response());
+    EXPECT_EQ("054221010001", response());
 }
 
 TEST_F(TestServer5Srv2, client_infinite)
 {
     EXPECT_CALL(service, client_infinite(DoorState::Open));
 
-    const auto response = receive("04430000");
+    const auto response = receive("03430000");
     EXPECT_EQ("", response);
 }
 
 TEST_F(TestServer5Srv2, client_infinite_requestStop)
 {
     service.client_infinite_requestStop();
-    EXPECT_EQ("034300", response());
+    EXPECT_EQ("024300", response());
 }
 
 TEST_F(TestServer5Srv2, server_infinite)
 {
     EXPECT_CALL(service, server_infinite());
 
-    const auto response = receive("04430101");
+    const auto response = receive("03430101");
     EXPECT_EQ("", response);
 }
 
@@ -144,20 +144,20 @@ TEST_F(TestServer5Srv2, server_infinite_stop)
 {
     EXPECT_CALL(service, server_infinite_stop());
 
-    const auto response = receive("04430100");
+    const auto response = receive("03430100");
     EXPECT_EQ("", response);
 }
 
 TEST_F(TestServer5Srv2, server_infinite_response)
 {
     service.server_infinite_response(DoorState::Closed, Color::Magenta);
-    EXPECT_EQ("0543010102", response());
+    EXPECT_EQ("0443010102", response());
 }
 
 TEST_F(TestServer5Srv2, decodeF0)
 {
     EXPECT_CALL(service, f0(DoorState::Closed));
 
-    const auto response = receive("04430201");
-    EXPECT_EQ("034302", response);
+    const auto response = receive("03430201");
+    EXPECT_EQ("024302", response);
 }

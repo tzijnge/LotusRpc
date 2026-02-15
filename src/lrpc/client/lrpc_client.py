@@ -246,7 +246,7 @@ class LrpcClient:
 
         if received >= message_length:
             result = self.decode(self._receive_buffer[0:message_length])
-            self._receive_buffer = self._receive_buffer[message_length + 1 :]
+            self._receive_buffer = self._receive_buffer[message_length:]
             return result
 
         return LrpcClient.IncompleteResponse()

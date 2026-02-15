@@ -99,7 +99,7 @@ namespace lrpc
 
         bool messageIsComplete() const
         {
-            return receiveBuffer.size() == receiveBuffer.at(0) + 1;
+            return receiveBuffer.size() == static_cast<size_t>(receiveBuffer.at(0) + 1);
         }
 
         Service *service(const uint8_t serviceId)

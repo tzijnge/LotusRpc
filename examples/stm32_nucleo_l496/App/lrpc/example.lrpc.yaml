@@ -1,7 +1,5 @@
 name: example
 embed_definition: true
-tx_buffer_size: 255
-rx_buffer_size: 255
 services:
   - name: srv1
     functions:

@@ -245,7 +245,7 @@ TEST_F(TestServer1, decodef21)
 }
 
 // Decode function f22 that takes two string arguments and returns two strings
-TEST_F(TestServer1, decodf22)
+TEST_F(TestServer1, decodef22)
 {
     const etl::string_view arg1{"arg1"};
     const etl::string_view arg2{"arg2"};

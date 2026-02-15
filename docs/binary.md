@@ -7,7 +7,7 @@ As an engineer in the low level embedded domain, you are probably very curious w
 
 ## Frame format
 
-All data is encoded in little endian byte order. The smallest unit of data is 1 byte (8 bits). Packets have a minimum size of 3 bytes and a maximum size of 255 bytes. The actual packet size depends on the type of function that is encoded
+All data is encoded in little endian byte order. The smallest unit of data is 1 byte (8 bits). Packets have a minimum size of 3 bytes and a maximum size of 256 bytes. The actual packet size depends on the type of function that is encoded
 
 Here's a top level overview of a LotusRPC data frame. The payload field is not actually 8 bits, but a placeholder for the packet payload (the parameters or return values of the function). The frame format for a function call from client to server is exactly the same as the frame format for getting the return value(s) back from server to client.
 
@@ -99,7 +99,7 @@ packet
 
 ### Bytearray
 
-A bytearray in LotusRPC is a flexible-size collection of single-byte values preceded by a single-byte length field. This means that a bytearray has a maximum length of 255 and a minimum length of 0 (an empty bytearray). Note that using the maximum bytearray length in combination with the default maximum packet size of 255 will always result in buffer overflow and hence an unsent message. The bytearray [0xAB, 0xCD, 0x11] is encoded as follows
+A bytearray in LotusRPC is a flexible-size collection of single-byte values preceded by a single-byte length field. This means that a bytearray has a maximum length of 255 and a minimum length of 0 (an empty bytearray). Note that using the maximum bytearray length in combination with the default maximum packet size of 256 will always result in buffer overflow and hence an unsent message. The bytearray [0xAB, 0xCD, 0x11] is encoded as follows
 
 ``` mermaid
 ---

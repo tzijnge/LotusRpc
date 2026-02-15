@@ -7,7 +7,7 @@ As an engineer in the low level embedded domain, you are probably very curious w
 
 ## Frame format
 
-All data is encoded in little endian byte order. The smallest unit of data is 1 byte (8 bits). Packets have a minimum size of 3 bytes and a maximum size of 256 bytes. The actual packet size depends on the type of function that is encoded
+All data is encoded in little-endian byte order. The smallest unit of data is 1 byte (8 bits). Packets have a minimum size of 3 bytes and a maximum size of 256 bytes. The actual packet size depends on the type of function that is encoded
 
 Here's a top level overview of a LotusRPC data frame. The payload field is not actually 8 bits, but a placeholder for the packet payload (the parameters or return values of the function). The frame format for a function call from client to server is exactly the same as the frame format for getting the return value(s) back from server to client.
 
@@ -30,7 +30,7 @@ packet
 | Packet size             | 1            | Total packet size (including this field) minus one |
 | Service ID              | 1            | ID of the current service                          |
 | Function ID / Stream ID | 1            | ID of the current function or stream               |
-| Payload                 | 0-252        | Any number of parameters or return values          |
+| Payload                 | 0-253        | Any number of parameters or return values          |
 
 Alternatively, the packet size field can be described to contain the number of bytes following the packet size field.
 

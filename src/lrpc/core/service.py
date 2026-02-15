@@ -33,19 +33,19 @@ class LrpcService:
     def __init__(self, raw: LrpcServiceDict) -> None:
         LrpcServiceValidator.validate_python(raw, strict=True, extra="forbid")
 
-        functions, streams = self.__assign_function_and_stream_ids(
+        functions, streams = self._assign_function_and_stream_ids(
             raw.get("functions", []),
             raw.get("streams", []),
             functions_before_streams=raw["functions_before_streams"],
         )
 
-        self.__name = raw["name"]
-        self.__id = raw["id"]
-        self.__functions = [LrpcFun(f) for f in functions]
-        self.__streams = [LrpcStream(s) for s in streams]
+        self._name = raw["name"]
+        self._id = raw["id"]
+        self._functions = [LrpcFun(f) for f in functions]
+        self._streams = [LrpcStream(s) for s in streams]
 
     @staticmethod
-    def __assign_function_and_stream_ids(
+    def _assign_function_and_stream_ids(
         functions: list[LrpcFunOptionalIdDict],
         streams: list[LrpcStreamOptionalIdDict],
         *,
@@ -57,32 +57,32 @@ class LrpcService:
         last_id = -1
 
         if functions_before_streams:
-            last_id = LrpcService.__assign_function_ids(functions, last_id)
-            LrpcService.__assign_stream_ids(streams, last_id)
+            last_id = LrpcService._assign_function_ids(functions, last_id)
+            LrpcService._assign_stream_ids(streams, last_id)
         else:
-            last_id = LrpcService.__assign_stream_ids(streams, last_id)
-            LrpcService.__assign_function_ids(functions, last_id)
+            last_id = LrpcService._assign_stream_ids(streams, last_id)
+            LrpcService._assign_function_ids(functions, last_id)
 
         # functions and streams are now converted to LrpcFunDict and LrpcStreamDict respectively
         # This is validated in the LrpcFun and LrpcStream constructors
         return cast(list[LrpcFunDict], functions), cast(list[LrpcStreamDict], streams)
 
     @staticmethod
-    def __assign_function_ids(
+    def _assign_function_ids(
         functions: list[LrpcFunOptionalIdDict],
         last_id: int,
     ) -> int:
-        return LrpcService.__assign_ids(functions, last_id)
+        return LrpcService._assign_ids(functions, last_id)
 
     @staticmethod
-    def __assign_stream_ids(
+    def _assign_stream_ids(
         streams: list[LrpcStreamOptionalIdDict],
         last_id: int,
     ) -> int:
-        return LrpcService.__assign_ids(streams, last_id)
+        return LrpcService._assign_ids(streams, last_id)
 
     @staticmethod
-    def __assign_ids(
+    def _assign_ids(
         items_needing_id: list[LrpcFunOptionalIdDict] | list[LrpcStreamOptionalIdDict],
         last_id: int,
     ) -> int:
@@ -104,13 +104,13 @@ class LrpcService:
         visitor.visit_lrpc_service_end()
 
     def name(self) -> str:
-        return self.__name
+        return self._name
 
     def id(self) -> int:
-        return self.__id
+        return self._id
 
     def functions(self) -> list[LrpcFun]:
-        return self.__functions
+        return self._functions
 
     def function_by_name(self, name: str) -> LrpcFun | None:
         for f in self.functions():
@@ -127,7 +127,7 @@ class LrpcService:
         return None
 
     def streams(self) -> list[LrpcStream]:
-        return self.__streams
+        return self._streams
 
     def stream_by_name(self, name: str) -> LrpcStream | None:
         for s in self.streams():

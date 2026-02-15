@@ -129,7 +129,7 @@ class ClientCliVisitor(LrpcVisitor):
             raise ValueError("Click group initialized without name")
         self.current_function = click.Command(
             name=function.name(),
-            callback=partial(self.__handle_command, self.current_service.name, function.name(), None),
+            callback=partial(self._handle_command, self.current_service.name, function.name(), None),
             help=f"Call LRPC function {self.current_service.name}.{function.name()}",
         )
 
@@ -137,7 +137,7 @@ class ClientCliVisitor(LrpcVisitor):
         self.current_service.add_command(self.current_function)
 
     def visit_lrpc_function_param(self, param: LrpcVar) -> None:
-        self.current_function.params.append(self.__make_arg(param))
+        self.current_function.params.append(self._make_arg(param))
 
     def visit_lrpc_stream(self, stream: LrpcStream) -> None:
         if self.current_service.name is None:
@@ -154,7 +154,7 @@ class ClientCliVisitor(LrpcVisitor):
         self.current_stream = click.Command(
             name=stream.name(),
             callback=partial(
-                self.__handle_command,
+                self._handle_command,
                 self.current_service.name,
                 stream.name(),
                 self.current_stream_origin,
@@ -168,34 +168,34 @@ class ClientCliVisitor(LrpcVisitor):
         if self.current_stream_origin == LrpcStream.Origin.SERVER:
             if param.name() != "start":
                 raise ValueError("Server stream takes a single parameter named 'start'")
-            self.current_stream.params.append(self.__make_stream_start_stop_option())
+            self.current_stream.params.append(self._make_stream_start_stop_option())
         elif self.current_stream_is_finite and (param.name() == "final"):
-            self.current_stream.params.append(self.__make_stream_final_option())
+            self.current_stream.params.append(self._make_stream_final_option())
         else:
-            self.current_stream.params.append(self.__make_arg(param))
+            self.current_stream.params.append(self._make_arg(param))
 
     def visit_lrpc_stream_end(self) -> None:
         if self.current_stream_origin == LrpcStream.Origin.CLIENT:
             self.current_service.add_command(self.current_stream)
 
-    def __make_arg(self, param: LrpcVar) -> click.Parameter:
+    def _make_arg(self, param: LrpcVar) -> click.Parameter:
         cb: (
             Callable[[click.Context, click.Parameter, str], bytes]
             | Callable[[click.Context, click.Parameter, tuple[str]], Iterable[bytes]]
             | None
         ) = None
         if param.base_type_is_bytearray():
-            cb = self.__validate_array_of_bytearray if param.is_array() else self.__validate_bytearray
+            cb = self._validate_array_of_bytearray if param.is_array() else self._validate_bytearray
 
         return click.Argument(
             [param.name()],
             required=True,
-            type=self.__click_type(param),
+            type=self._click_type(param),
             nargs=param.array_size() if param.is_array() else 1,
             callback=cb,
         )
 
-    def __make_stream_final_option(self) -> click.Option:
+    def _make_stream_final_option(self) -> click.Option:
         return click.Option(
             ["--final"],
             is_flag=True,
@@ -205,7 +205,7 @@ class ClientCliVisitor(LrpcVisitor):
             help="Indicate the final message in the stream",
         )
 
-    def __make_stream_start_stop_option(self) -> click.Option:
+    def _make_stream_start_stop_option(self) -> click.Option:
         return click.Option(
             ["--start/--stop"],
             is_flag=True,
@@ -216,15 +216,15 @@ class ClientCliVisitor(LrpcVisitor):
         )
 
     @staticmethod
-    def __validate_array_of_bytearray(
+    def _validate_array_of_bytearray(
         ctx: click.Context,
         param: click.Parameter,
         value: tuple[str],
     ) -> Iterable[bytes]:
-        return [ClientCliVisitor.__validate_bytearray(ctx, param, ba) for ba in value]
+        return [ClientCliVisitor._validate_bytearray(ctx, param, ba) for ba in value]
 
     @staticmethod
-    def __validate_bytearray(ctx: click.Context, param: click.Parameter, ba: str) -> bytes:
+    def _validate_bytearray(ctx: click.Context, param: click.Parameter, ba: str) -> bytes:
         try:
             return bytes.fromhex(ba)
         except ValueError as e:
@@ -234,7 +234,7 @@ class ClientCliVisitor(LrpcVisitor):
                 param=param,
             ) from e
 
-    def __click_type(self, param: LrpcVar) -> click.ParamType:
+    def _click_type(self, param: LrpcVar) -> click.ParamType:
         t: click.ParamType = click.UNPROCESSED
 
         if param.base_type_is_integral():
@@ -261,7 +261,7 @@ class ClientCliVisitor(LrpcVisitor):
 
         return t
 
-    def __handle_command(
+    def _handle_command(
         self,
         service: str,
         function_or_stream: str,

@@ -11,47 +11,47 @@ from lrpc.visitors import LrpcVisitor
 
 class ConstantsFileVisitor(LrpcVisitor):
     def __init__(self, output: Path) -> None:
-        self.__output = output
-        self.__namespace: str | None = None
-        self.__file: CppFile
-        self.__includes: set[str] = set()
-        self.__constant_definitions: list[str] = []
-        self.__def_name: str
+        self._output = output
+        self._namespace: str | None = None
+        self._file: CppFile
+        self._includes: set[str] = set()
+        self._constant_definitions: list[str] = []
+        self._def_name: str
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
-        self.__namespace = lrpc_def.namespace()
-        self.__def_name = lrpc_def.name()
+        self._namespace = lrpc_def.namespace()
+        self._def_name = lrpc_def.name()
 
     def visit_lrpc_constant(self, constant: LrpcConstant) -> None:
         if "int" in constant.cpp_type():
-            self.__includes.add("stdint.h")
+            self._includes.add("stdint.h")
         if constant.cpp_type() == "string":
-            self.__includes.add("etl/string_view.h")
+            self._includes.add("etl/string_view.h")
         if constant.cpp_type() == "bytearray":
-            self.__includes.update({"etl/array.h", "stdint.h"})
+            self._includes.update({"etl/array.h", "stdint.h"})
 
-        self.__constant_definitions.append(self.__constant_definition(constant))
+        self._constant_definitions.append(self._constant_definition(constant))
 
     def visit_lrpc_constants_end(self) -> None:
-        self.__file = CppFile(f"{self.__output}/{self.__def_name}_Constants.hpp")
-        write_file_banner(self.__file)
-        self.__write_include_guard()
-        self.__write_includes()
-        self.__file.newline()
-        optionally_in_namespace(self.__file, self.__write_constant_definitions, self.__namespace)
+        self._file = CppFile(f"{self._output}/{self._def_name}_Constants.hpp")
+        write_file_banner(self._file)
+        self._write_include_guard()
+        self._write_includes()
+        self._file.newline()
+        optionally_in_namespace(self._file, self._write_constant_definitions, self._namespace)
 
-    def __write_include_guard(self) -> None:
-        self.__file("#pragma once")
+    def _write_include_guard(self) -> None:
+        self._file("#pragma once")
 
-    def __write_includes(self) -> None:
-        for i in self.__includes:
-            self.__file.write(f"#include <{i}>")
+    def _write_includes(self) -> None:
+        for i in self._includes:
+            self._file.write(f"#include <{i}>")
 
-    def __write_constant_definitions(self) -> None:
-        for cd in self.__constant_definitions:
-            self.__file.write(cd)
+    def _write_constant_definitions(self) -> None:
+        for cd in self._constant_definitions:
+            self._file.write(cd)
 
-    def __constant_definition(self, constant: LrpcConstant) -> str:
+    def _constant_definition(self, constant: LrpcConstant) -> str:
         n = constant.name()
         literal = "f" if constant.cpp_type() == "float" else ""
 

@@ -17,14 +17,14 @@ class LrpcEnumField:
     def __init__(self, raw: LrpcEnumFieldDict) -> None:
         LrpcEnumFieldValidator.validate_python(raw)
 
-        self.__name = raw["name"]
-        self.__id = raw["id"]
+        self._name = raw["name"]
+        self._id = raw["id"]
 
     def name(self) -> str:
-        return self.__name
+        return self._name
 
     def id(self) -> int:
-        return self.__id
+        return self._id
 
 
 class LrpcEnumFieldSimpleDict(TypedDict):
@@ -51,10 +51,10 @@ class LrpcEnum:
     def __init__(self, raw: LrpcEnumDict) -> None:
         LrpcEnumValidator.validate_python(raw, strict=True, extra="forbid")
 
-        self.__name = raw["name"]
-        self.__fields = raw["fields"]
-        self.__external = raw.get("external", None)
-        self.__external_namespace = raw.get("external_namespace", None)
+        self._name = raw["name"]
+        self._fields = raw["fields"]
+        self._external = raw.get("external", None)
+        self._external_namespace = raw.get("external_namespace", None)
 
     def accept(self, visitor: LrpcVisitor) -> None:
         visitor.visit_lrpc_enum(self)
@@ -65,12 +65,12 @@ class LrpcEnum:
         visitor.visit_lrpc_enum_end(self)
 
     def name(self) -> str:
-        return self.__name
+        return self._name
 
     def fields(self) -> list[LrpcEnumField]:
         all_fields = []
         index = 0
-        for field in self.__fields:
+        for field in self._fields:
             if isinstance(field, str):
                 f = field
                 i = index
@@ -95,10 +95,10 @@ class LrpcEnum:
         return None
 
     def is_external(self) -> bool:
-        return self.__external is not None
+        return self._external is not None
 
     def external_file(self) -> str | None:
-        return self.__external
+        return self._external
 
     def external_namespace(self) -> str | None:
-        return self.__external_namespace
+        return self._external_namespace

@@ -28,9 +28,9 @@ class ServiceShimVisitor(LrpcVisitor):
         write_file_banner(self._file)
         self._write_include_guard()
         self._write_includes()
-        optionally_in_namespace(self._file, self._write_service_shim2, self._namespace)
+        optionally_in_namespace(self._file, self._write_service_shim, self._namespace)
 
-    def _write_service_shim2(self) -> None:
+    def _write_service_shim(self) -> None:
         functions = self._service.functions()
         client_streams = [s for s in self._service.streams() if s.origin() == LrpcStream.Origin.CLIENT]
         server_streams = [s for s in self._service.streams() if s.origin() == LrpcStream.Origin.SERVER]

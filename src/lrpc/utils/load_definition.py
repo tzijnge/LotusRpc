@@ -42,7 +42,7 @@ class LrpcLoader(yaml.SafeLoader):
         return mapping
 
 
-def __yaml_safe_load(def_str: str | TextIO) -> LrpcDefDict:
+def _yaml_safe_load(def_str: str | TextIO) -> LrpcDefDict:
     def_dict: LrpcDefDict = yaml.load(def_str, Loader=LrpcLoader)  # noqa: S506
     if not isinstance(def_dict, dict):
         raise TypeError("Invalid YAML input")
@@ -50,14 +50,14 @@ def __yaml_safe_load(def_str: str | TextIO) -> LrpcDefDict:
     return def_dict
 
 
-def __load_meta_def_dict() -> LrpcDefDict:
+def _load_meta_def_dict() -> LrpcDefDict:
     with meta_def_file() as mdf, mdf.open(encoding="utf-8") as meta_def:
-        meta_def_dict = __yaml_safe_load(meta_def)
+        meta_def_dict = _yaml_safe_load(meta_def)
         jsonschema.validate(meta_def_dict, load_lrpc_schema())
         return meta_def_dict
 
 
-def __merge_user_and_meta_def(user_def: LrpcDefDict, meta_def: LrpcDefDict) -> LrpcDefDict:
+def _merge_user_and_meta_def(user_def: LrpcDefDict, meta_def: LrpcDefDict) -> LrpcDefDict:
     if "services" not in user_def:
         raise AssertionError("Invalid definition")
 
@@ -75,7 +75,7 @@ def __merge_user_and_meta_def(user_def: LrpcDefDict, meta_def: LrpcDefDict) -> L
 
 
 def load_meta_def() -> LrpcDef:
-    return LrpcDef(__load_meta_def_dict())
+    return LrpcDef(_load_meta_def_dict())
 
 
 def load_lrpc_def_from_dict(def_dict: LrpcDefDict, *, warnings_as_errors: bool) -> LrpcDef:
@@ -89,8 +89,8 @@ def load_lrpc_def_from_dict(def_dict: LrpcDefDict, *, warnings_as_errors: bool) 
 
 
 def load_lrpc_def_from_str(def_str: str, *, warnings_as_errors: bool) -> LrpcDef:
-    user_def = __yaml_safe_load(def_str)
-    user_def = __merge_user_and_meta_def(user_def, __load_meta_def_dict())
+    user_def = _yaml_safe_load(def_str)
+    user_def = _merge_user_and_meta_def(user_def, _load_meta_def_dict())
     return load_lrpc_def_from_dict(user_def, warnings_as_errors=warnings_as_errors)
 
 
@@ -104,7 +104,7 @@ def load_lrpc_def_from_url(def_url: Path, *, warnings_as_errors: bool, include_m
 
 
 def load_lrpc_def_from_file(def_file: TextIO, *, warnings_as_errors: bool, include_meta_def: bool = True) -> LrpcDef:
-    user_def = __yaml_safe_load(def_file)
+    user_def = _yaml_safe_load(def_file)
     if include_meta_def:
-        user_def = __merge_user_and_meta_def(user_def, __load_meta_def_dict())
+        user_def = _merge_user_and_meta_def(user_def, _load_meta_def_dict())
     return load_lrpc_def_from_dict(user_def, warnings_as_errors=warnings_as_errors)

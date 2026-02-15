@@ -18,31 +18,28 @@ class ServiceShimVisitor(LrpcVisitor):
         self._output = output
         self._service: LrpcService
 
-    def _write_service_shim(self, output: Path, service: LrpcService, namespace: str | None) -> None:
-        self._file = CppFile(f"{output.absolute()}/{service.name()}_shim.hpp")
-        self._service = service
-
-        write_file_banner(self._file)
-        self.__write_include_guard()
-        self.__write_includes()
-        optionally_in_namespace(self._file, self.__write_service_shim, namespace)
-
     def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
         self._namespace = lrpc_def.namespace()
 
     def visit_lrpc_service(self, service: LrpcService) -> None:
-        self._write_service_shim(self._output, service, self._namespace)
+        self._file = CppFile(f"{self._output.absolute()}/{service.name()}_shim.hpp")
+        self._service = service
 
-    def __write_service_shim(self) -> None:
+        write_file_banner(self._file)
+        self._write_include_guard()
+        self._write_includes()
+        optionally_in_namespace(self._file, self._write_service_shim2, self._namespace)
+
+    def _write_service_shim2(self) -> None:
         functions = self._service.functions()
         client_streams = [s for s in self._service.streams() if s.origin() == LrpcStream.Origin.CLIENT]
         server_streams = [s for s in self._service.streams() if s.origin() == LrpcStream.Origin.SERVER]
 
-        with self._file.block(f"class {self.__class_name()} : public lrpc::Service", ";"):
+        with self._file.block(f"class {self._class_name()} : public lrpc::Service", ";"):
             self._file.label("public")
-            self._file(f"virtual ~{self.__class_name()}() = default;")
+            self._file(f"virtual ~{self._class_name()}() = default;")
             self._file.newline()
-            self._file(f"uint8_t id() const override {{ return {self.__service_id()}; }}")
+            self._file(f"uint8_t id() const override {{ return {self._service_id()}; }}")
             self._file.newline()
 
             with self._file.block("void invoke(Reader &r) override"):
@@ -51,44 +48,44 @@ class ServiceShimVisitor(LrpcVisitor):
                 self._file("((this)->*(functionOrStreamShim))(r);")
 
             self._file.newline()
-            self.__write_server_stream_responses(server_streams)
-            self.__write_client_stream_stop_requests(client_streams)
+            self._write_server_stream_responses(server_streams)
+            self._write_client_stream_stop_requests(client_streams)
 
             self._file.label("protected")
-            self.__write_function_declarations(functions)
-            self.__write_function_shims(functions)
+            self._write_function_declarations(functions)
+            self._write_function_shims(functions)
 
-            self.__write_client_stream_declarations(client_streams)
-            self.__write_client_stream_shims(client_streams)
+            self._write_client_stream_declarations(client_streams)
+            self._write_client_stream_shims(client_streams)
 
-            self.__write_server_stream_declarations(server_streams)
-            self.__write_server_stream_stop_request_shims(server_streams)
+            self._write_server_stream_declarations(server_streams)
+            self._write_server_stream_stop_request_shims(server_streams)
 
             self._file.label("private")
-            self.__write_shim_array(functions, client_streams, server_streams)
+            self._write_shim_array(functions, client_streams, server_streams)
 
-    def __write_function_declarations(self, functions: list[LrpcFun]) -> None:
+    def _write_function_declarations(self, functions: list[LrpcFun]) -> None:
         if len(functions) != 0:
             self._file.write("// Function declarations")
 
         for function in functions:
-            params = self.__params_string(function.params())
-            returns = self.__returns_string(function.returns())
+            params = self._params_string(function.params())
+            returns = self._returns_string(function.returns())
             self._file.write(f"virtual {returns} {function.name()}({params}) = 0;")
             self._file.newline()
 
-    def __write_client_stream_declarations(self, client_streams: list[LrpcStream]) -> None:
+    def _write_client_stream_declarations(self, client_streams: list[LrpcStream]) -> None:
         if len(client_streams) != 0:
             self._file.write("// Client stream declarations")
 
         for stream in client_streams:
             params = stream.params()
-            param_string = self.__params_string(params)
+            param_string = self._params_string(params)
             self._file.write(f"virtual void {stream.name()}({param_string}) = 0;")
 
             self._file.newline()
 
-    def __write_server_stream_declarations(self, server_streams: list[LrpcStream]) -> None:
+    def _write_server_stream_declarations(self, server_streams: list[LrpcStream]) -> None:
         if len(server_streams) != 0:
             self._file.write("// Server stream declarations")
 
@@ -97,7 +94,7 @@ class ServiceShimVisitor(LrpcVisitor):
             self._file.write(f"virtual void {stream.name()}_stop() = 0;")
             self._file.newline()
 
-    def __write_function_shims(self, functions: list[LrpcFun]) -> None:
+    def _write_function_shims(self, functions: list[LrpcFun]) -> None:
         if len(functions) != 0:
             self._file.write("// Function shims")
 
@@ -106,7 +103,7 @@ class ServiceShimVisitor(LrpcVisitor):
             writer.write_function_shim(function)
             self._file.newline()
 
-    def __write_client_stream_shims(self, client_streams: list[LrpcStream]) -> None:
+    def _write_client_stream_shims(self, client_streams: list[LrpcStream]) -> None:
         writer = ClientStreamShimWriter(self._file)
 
         if len(client_streams) != 0:
@@ -116,7 +113,7 @@ class ServiceShimVisitor(LrpcVisitor):
             writer.write_shim(stream)
             self._file.newline()
 
-    def __write_server_stream_responses(self, server_streams: list[LrpcStream]) -> None:
+    def _write_server_stream_responses(self, server_streams: list[LrpcStream]) -> None:
         writer = ServerStreamResponseWriter(self._file)
 
         if len(server_streams) != 0:
@@ -126,7 +123,7 @@ class ServiceShimVisitor(LrpcVisitor):
             writer.write_response(stream)
             self._file.newline()
 
-    def __write_server_stream_stop_request_shims(self, server_streams: list[LrpcStream]) -> None:
+    def _write_server_stream_stop_request_shims(self, server_streams: list[LrpcStream]) -> None:
         if len(server_streams) != 0:
             self._file.write("// Server stream start/stop shims")
 
@@ -140,7 +137,7 @@ class ServiceShimVisitor(LrpcVisitor):
 
             self._file.newline()
 
-    def __write_client_stream_stop_requests(self, client_streams: list[LrpcStream]) -> None:
+    def _write_client_stream_stop_requests(self, client_streams: list[LrpcStream]) -> None:
         if len(client_streams) != 0:
             self._file.write("// Client stream stop requests")
 
@@ -150,15 +147,15 @@ class ServiceShimVisitor(LrpcVisitor):
 
             self._file.newline()
 
-    def __write_shim_array(
+    def _write_shim_array(
         self,
         functions: list[LrpcFun],
         client_streams: list[LrpcStream],
         server_streams: list[LrpcStream],
     ) -> None:
-        max_function_or_stream_id = self.__max_function_or_stream_id(functions, client_streams, server_streams)
+        max_function_or_stream_id = self._max_function_or_stream_id(functions, client_streams, server_streams)
 
-        self._file.write(f"using ShimType = void ({self.__class_name()}::*)(Reader &);")
+        self._file.write(f"using ShimType = void ({self._class_name()}::*)(Reader &);")
         with self._file.block("void missingFunction_shim(Reader& r)"):
             self._file.write("const auto data = r.data();")
             self._file.write("const auto functionOrStreamId = data.at(2);")
@@ -176,23 +173,23 @@ class ServiceShimVisitor(LrpcVisitor):
                     name = function_info.get(fid, name)
                     name = client_stream_info.get(fid, name)
                     name = server_stream_info.get(fid, name)
-                    self._file(f"&{self.__class_name()}::{name}_shim,")
+                    self._file(f"&{self._class_name()}::{name}_shim,")
 
             self._file.newline()
 
             with self._file.block("if (functionId >= shims.size())"):
-                self._file.write(f"return &{self.__class_name()}::missingFunction_shim;")
+                self._file.write(f"return &{self._class_name()}::missingFunction_shim;")
 
             self._file.newline()
 
             self._file.write("return shims.at(functionId);")
 
     @staticmethod
-    def __params_string(params: list[LrpcVar]) -> str:
+    def _params_string(params: list[LrpcVar]) -> str:
         return ", ".join([f"{p.param_type()} {p.name()}" for p in params])
 
     @staticmethod
-    def __returns_string(returns: list[LrpcVar]) -> str:
+    def _returns_string(returns: list[LrpcVar]) -> str:
         if len(returns) == 0:
             return "void"
 
@@ -202,7 +199,7 @@ class ServiceShimVisitor(LrpcVisitor):
         types = ", ".join([r.return_type() for r in returns])
         return f"std::tuple<{types}>"
 
-    def __max_function_or_stream_id(
+    def _max_function_or_stream_id(
         self,
         functions: list[LrpcFun],
         client_streams: list[LrpcStream],
@@ -213,18 +210,18 @@ class ServiceShimVisitor(LrpcVisitor):
         function_ids = [f.id() for f in functions]
         return max(server_stream_ids + client_stream_ids + function_ids)
 
-    def __write_include_guard(self) -> None:
+    def _write_include_guard(self) -> None:
         self._file("#pragma once")
 
-    def __write_includes(self) -> None:
+    def _write_includes(self) -> None:
         self._file('#include "lrpccore/Service.hpp"')
         self._file('#include "lrpccore/EtlRwExtensions.hpp"')
         self._file(f'#include "{self._service.name()}_includes.hpp"')
 
         self._file.newline()
 
-    def __class_name(self) -> str:
+    def _class_name(self) -> str:
         return self._service.name() + "_shim"
 
-    def __service_id(self) -> int:
+    def _service_id(self) -> int:
         return self._service.id()

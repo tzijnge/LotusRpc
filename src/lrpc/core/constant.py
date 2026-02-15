@@ -34,12 +34,12 @@ class LrpcConstant:
     def __init__(self, raw: LrpcConstantDict) -> None:
         LrpcConstantValidator.validate_python(raw, strict=True, extra="forbid")
 
-        self.__name: str = raw["name"]
-        self.__value = self.__init_value(raw)
-        self.__cpp_type = self.__init_cpp_type(raw)
+        self._name: str = raw["name"]
+        self._value = self._init_value(raw)
+        self._cpp_type = self._init_cpp_type(raw)
 
     @staticmethod
-    def __init_value(raw: LrpcConstantDict) -> int | float | bool | str | bytes:
+    def _init_value(raw: LrpcConstantDict) -> int | float | bool | str | bytes:
         value = raw["value"]
         if "cppType" in raw and raw["cppType"] == "bytearray":
             if not isinstance(value, str):
@@ -48,7 +48,7 @@ class LrpcConstant:
 
         return value
 
-    def __init_cpp_type(self, raw: LrpcConstantDict) -> str:
+    def _init_cpp_type(self, raw: LrpcConstantDict) -> str:
         if "cppType" not in raw:
             if isinstance(self.value(), bool):
                 return "bool"
@@ -65,16 +65,16 @@ class LrpcConstant:
         if cpp_type in CPP_TYPES:
             return cpp_type
 
-        raise ValueError(f"Invalid cppType for LrpcConstant {self.__name}: {cpp_type}")
+        raise ValueError(f"Invalid cppType for LrpcConstant {self._name}: {cpp_type}")
 
     def accept(self, visitor: LrpcVisitor) -> None:
         visitor.visit_lrpc_constant(self)
 
     def name(self) -> str:
-        return self.__name
+        return self._name
 
     def value(self) -> int | float | bool | str | bytes:
-        return self.__value
+        return self._value
 
     def cpp_type(self) -> str:
-        return self.__cpp_type
+        return self._cpp_type

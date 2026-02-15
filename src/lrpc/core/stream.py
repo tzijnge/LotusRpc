@@ -36,12 +36,12 @@ class LrpcStream:
     def __init__(self, raw: LrpcStreamDict) -> None:
         LrpcStreamValidator.validate_python(raw, strict=True, extra="forbid")
 
-        self.__name = raw["name"]
-        self.__id = raw["id"]
-        self.__origin = LrpcStream.Origin(raw["origin"])
-        self.__is_finite = raw.get("finite", False)
-        self.__params = []
-        self.__returns = []
+        self._name = raw["name"]
+        self._id = raw["id"]
+        self._origin = LrpcStream.Origin(raw["origin"])
+        self._is_finite = raw.get("finite", False)
+        self._params = []
+        self._returns = []
 
         params = []
         if "params" in raw:
@@ -51,10 +51,10 @@ class LrpcStream:
             params.append(LrpcVar({"name": "final", "type": "bool"}))
 
         if self.origin() == LrpcStream.Origin.CLIENT:
-            self.__params = params
+            self._params = params
         else:
-            self.__params.append(LrpcVar({"name": "start", "type": "bool"}))
-            self.__returns = params
+            self._params.append(LrpcVar({"name": "start", "type": "bool"}))
+            self._returns = params
 
     def accept(self, visitor: LrpcVisitor) -> None:
         visitor.visit_lrpc_stream(self)
@@ -70,10 +70,10 @@ class LrpcStream:
         visitor.visit_lrpc_stream_end()
 
     def params(self) -> list[LrpcVar]:
-        return self.__params
+        return self._params
 
     def returns(self) -> list[LrpcVar]:
-        return self.__returns
+        return self._returns
 
     def param(self, name: str) -> LrpcVar:
         for p in self.params():
@@ -83,13 +83,13 @@ class LrpcStream:
         raise ValueError(f"No parameter {name} in function {self.name()}")
 
     def name(self) -> str:
-        return self.__name
+        return self._name
 
     def id(self) -> int:
-        return self.__id
+        return self._id
 
     def origin(self) -> Origin:
-        return self.__origin
+        return self._origin
 
     def number_params(self) -> int:
         return len(self.params())
@@ -101,4 +101,4 @@ class LrpcStream:
         return [p.name() for p in self.params()]
 
     def is_finite(self) -> bool:
-        return self.__is_finite
+        return self._is_finite

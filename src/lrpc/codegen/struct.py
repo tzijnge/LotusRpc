@@ -11,131 +11,131 @@ from lrpc.visitors import LrpcVisitor
 
 class StructFileVisitor(LrpcVisitor):
     def __init__(self, output: Path) -> None:
-        self.__output = output
-        self.__namespace: str | None
-        self.__file: CppFile
-        self.__descriptor: LrpcStruct
-        self.__alias: str = ""
-        self.__includes: set[str] = set()
+        self._output = output
+        self._namespace: str | None
+        self._file: CppFile
+        self._descriptor: LrpcStruct
+        self._alias: str = ""
+        self._includes: set[str] = set()
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
-        self.__namespace = lrpc_def.namespace()
+        self._namespace = lrpc_def.namespace()
 
     def visit_lrpc_struct(self, struct: LrpcStruct) -> None:
-        self.__descriptor = struct
-        self.__file = CppFile(f"{self.__output}/{self.__qualified_name()}.hpp")
-        self.__init_alias()
+        self._descriptor = struct
+        self._file = CppFile(f"{self._output}/{self._qualified_name()}.hpp")
+        self._init_alias()
 
     def visit_lrpc_struct_end(self) -> None:
-        write_file_banner(self.__file)
-        self.__file.write("#pragma once")
-        self.__write_includes()
-        self.__file.newline()
+        write_file_banner(self._file)
+        self._file.write("#pragma once")
+        self._write_includes()
+        self._file.newline()
 
-        if self.__descriptor.is_external():
-            self.__write_external_alias_if_needed()
+        if self._descriptor.is_external():
+            self._write_external_alias_if_needed()
         else:
-            optionally_in_namespace(self.__file, self.__write_struct, self.__namespace)
+            optionally_in_namespace(self._file, self._write_struct, self._namespace)
 
-        self.__file.newline()
-        self.__write_codec()
-        self.__file.newline()
+        self._file.newline()
+        self._write_codec()
+        self._file.newline()
 
-        if self.__descriptor.is_external():
-            self.__write_external_struct_checks()
+        if self._descriptor.is_external():
+            self._write_external_struct_checks()
 
     def visit_lrpc_struct_field(self, _struct: LrpcStruct, field: LrpcVar) -> None:
-        if self.__descriptor.is_external():
+        if self._descriptor.is_external():
             return
 
-        self.__includes.update(lrpc_var_includes(field))
+        self._includes.update(lrpc_var_includes(field))
 
-    def __init_alias(self) -> None:
-        ns = self.__namespace
-        ext_ns = self.__descriptor.external_namespace()
-        name = self.__descriptor.name()
+    def _init_alias(self) -> None:
+        ns = self._namespace
+        ext_ns = self._descriptor.external_namespace()
+        name = self._descriptor.name()
 
         if (not ns) and (not ext_ns):
-            self.__alias = ""
+            self._alias = ""
         elif (not ns) and ext_ns:
-            self.__alias = name
+            self._alias = name
         elif ns and (not ext_ns):
-            self.__alias = f"{ns}::{name}"
+            self._alias = f"{ns}::{name}"
         else:
-            self.__alias = f"{ns}::{name}"
+            self._alias = f"{ns}::{name}"
 
-    def __write_external_alias_if_needed(self) -> None:
-        if len(self.__alias) > 0:
-            optionally_in_namespace(self.__file, self.__write_external_alias, self.__namespace)
-            self.__file.newline()
+    def _write_external_alias_if_needed(self) -> None:
+        if len(self._alias) > 0:
+            optionally_in_namespace(self._file, self._write_external_alias, self._namespace)
+            self._file.newline()
 
-    def __write_external_struct_checks(self) -> None:
+    def _write_external_struct_checks(self) -> None:
         with (
-            self.__file.block("namespace lrpc_private"),
-            self.__file.block("namespace dummy"),
+            self._file.block("namespace lrpc_private"),
+            self._file.block("namespace dummy"),
         ):
-            with self.__file.block(f"struct {self.__qualified_name()}", ";"):
-                for f in self.__descriptor.fields():
-                    self.__write_struct_field(f)
+            with self._file.block(f"struct {self._qualified_name()}", ";"):
+                for f in self._descriptor.fields():
+                    self._write_struct_field(f)
 
-            self.__file.newline()
-            self.__file.write(
-                f"static_assert(sizeof(dummy::{self.__qualified_name()}) == sizeof({self.__name()}), "
+            self._file.newline()
+            self._file.write(
+                f"static_assert(sizeof(dummy::{self._qualified_name()}) == sizeof({self._name()}), "
                 '"External struct size not as expected. It may have missing or additional fields '
                 'or different packing.");',
             )
-            self.__file.newline()
-            for f in self.__descriptor.fields():
-                self.__file.write(
-                    f"static_assert(std::is_same<decltype(dummy::{self.__qualified_name()}::{f.name()}), "
-                    f'decltype({self.__name()}::{f.name()})>::value, "Type of field {f.name()} '
+            self._file.newline()
+            for f in self._descriptor.fields():
+                self._file.write(
+                    f"static_assert(std::is_same<decltype(dummy::{self._qualified_name()}::{f.name()}), "
+                    f'decltype({self._name()}::{f.name()})>::value, "Type of field {f.name()} '
                     'is not as specified in LRPC");',
                 )
 
-    def __write_external_alias(self) -> None:
-        ext_ns = self.__descriptor.external_namespace()
-        name = self.__descriptor.name()
+    def _write_external_alias(self) -> None:
+        ext_ns = self._descriptor.external_namespace()
+        name = self._descriptor.name()
         ext_full_name = f"{ext_ns}::{name}" if ext_ns else f"::{name}"
-        self.__file.write(f"using {name} = {ext_full_name};")
+        self._file.write(f"using {name} = {ext_full_name};")
 
-    def __write_includes(self) -> None:
-        self.__includes.add("<etl/byte_stream.h>")
-        self.__includes.add('"lrpccore/EtlRwExtensions.hpp"')
-        if self.__descriptor.is_external():
-            self.__includes.add(f'"{self.__descriptor.external_file()}"')
-        for i in sorted(self.__includes):
-            self.__file(f"#include {i}")
+    def _write_includes(self) -> None:
+        self._includes.add("<etl/byte_stream.h>")
+        self._includes.add('"lrpccore/EtlRwExtensions.hpp"')
+        if self._descriptor.is_external():
+            self._includes.add(f'"{self._descriptor.external_file()}"')
+        for i in sorted(self._includes):
+            self._file(f"#include {i}")
 
-    def __write_struct(self) -> None:
-        with self.__file.block(f"struct {self.__qualified_name()}", ";"):
-            for f in self.__descriptor.fields():
-                self.__write_struct_field(f)
+    def _write_struct(self) -> None:
+        with self._file.block(f"struct {self._qualified_name()}", ";"):
+            for f in self._descriptor.fields():
+                self._write_struct_field(f)
 
-            self.__file.newline()
+            self._file.newline()
 
-            with self.__file.block(f"bool operator==(const {self.__qualified_name()}& other) const"):
-                field_names = [f.name() for f in self.__descriptor.fields()]
+            with self._file.block(f"bool operator==(const {self._qualified_name()}& other) const"):
+                field_names = [f.name() for f in self._descriptor.fields()]
                 fields_equal = [f"(this->{n} == other.{n})" for n in field_names]
                 all_fields_equal = " && ".join(fields_equal)
-                self.__file(f"return {all_fields_equal};")
+                self._file(f"return {all_fields_equal};")
 
-            with self.__file.block(f"bool operator!=(const {self.__qualified_name()}& other) const"):
-                self.__file("return !(*this == other);")
+            with self._file.block(f"bool operator!=(const {self._qualified_name()}& other) const"):
+                self._file("return !(*this == other);")
 
-    def __write_codec(self) -> None:
-        codec_writer = StructCodecWriter(self.__file, self.__descriptor, self.__namespace)
-        with self.__file.block("namespace lrpc"):
+    def _write_codec(self) -> None:
+        codec_writer = StructCodecWriter(self._file, self._descriptor, self._namespace)
+        with self._file.block("namespace lrpc"):
             codec_writer.write_decoder()
-            self.__file.newline()
+            self._file.newline()
             codec_writer.write_encoder()
 
-    def __write_struct_field(self, f: LrpcVar) -> None:
-        self.__file(f"{f.field_type()} {f.name()};")
+    def _write_struct_field(self, f: LrpcVar) -> None:
+        self._file(f"{f.field_type()} {f.name()};")
 
-    def __name(self) -> str:
-        ns = self.__namespace
-        qn = self.__qualified_name()
+    def _name(self) -> str:
+        ns = self._namespace
+        qn = self._qualified_name()
         return f"{ns}::{qn}" if ns else qn
 
-    def __qualified_name(self) -> str:
-        return self.__descriptor.name()
+    def _qualified_name(self) -> str:
+        return self._descriptor.name()

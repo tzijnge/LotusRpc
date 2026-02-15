@@ -37,11 +37,11 @@ class LrpcVar:
     def __init__(self, raw: LrpcVarDict) -> None:
         LrpcVarValidator.validate_python(raw, strict=True, extra="forbid")
 
-        self.__name = raw["name"]
-        self.__type = raw["type"].replace("struct@", "").replace("enum@", "").strip("@")
-        self.__base_type_is_struct = raw["type"].startswith("struct@")
-        self.__base_type_is_enum = raw["type"].startswith("enum@")
-        self.__base_type_is_custom = "@" in raw["type"]
+        self._name = raw["name"]
+        self._type = raw["type"].replace("struct@", "").replace("enum@", "").strip("@")
+        self._base_type_is_struct = raw["type"].startswith("struct@")
+        self._base_type_is_enum = raw["type"].startswith("enum@")
+        self._base_type_is_custom = "@" in raw["type"]
 
         c = raw.get("count", 1)
         if isinstance(c, int):
@@ -52,10 +52,10 @@ class LrpcVar:
             self._count = 1
 
     def name(self) -> str:
-        return self.__name
+        return self._name
 
     def base_type(self) -> str:
-        return self.__type
+        return self._type
 
     def _resolved_base_type(self) -> str:
         if self.base_type_is_string():
@@ -121,13 +121,13 @@ class LrpcVar:
         return t
 
     def base_type_is_custom(self) -> bool:
-        return self.__base_type_is_custom
+        return self._base_type_is_custom
 
     def base_type_is_struct(self) -> bool:
-        return self.__base_type_is_struct
+        return self._base_type_is_struct
 
     def base_type_is_enum(self) -> bool:
-        return self.__base_type_is_enum
+        return self._base_type_is_enum
 
     def base_type_is_integral(self) -> bool:
         return self.base_type() in [

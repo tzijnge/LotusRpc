@@ -6,32 +6,32 @@ from .validator import LrpcValidator
 class NamesValidator(LrpcValidator):
     def __init__(self) -> None:
         super().__init__()
-        self.__names: set[str] = set()
+        self._names: set[str] = set()
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
         self.reset()
-        self.__names.clear()
-        self.__names.add(lrpc_def.name())
+        self._names.clear()
+        self._names.add(lrpc_def.name())
 
-    def __check(self, name: str) -> None:
-        if name in self.__names:
+    def _check(self, name: str) -> None:
+        if name in self._names:
             self.add_error(f"Duplicate name: {name}")
 
-        self.__names.add(name)
+        self._names.add(name)
 
     def visit_lrpc_struct(self, struct: LrpcStruct) -> None:
-        self.__check(struct.name())
+        self._check(struct.name())
 
     def visit_lrpc_enum(self, enum: LrpcEnum) -> None:
-        self.__check(enum.name())
+        self._check(enum.name())
 
     def visit_lrpc_service(self, service: LrpcService) -> None:
         # A top-level item with the same name as the service is
         # not strictly a problem, because the generated class
         # has the word 'ServiceShim' appended. But it is confusing
         # and therefore both are treated as an invalid name
-        self.__check(service.name())
-        self.__check(service.name() + "ServiceShim")
+        self._check(service.name())
+        self._check(service.name() + "ServiceShim")
 
     def visit_lrpc_constant(self, constant: LrpcConstant) -> None:
-        self.__check(constant.name())
+        self._check(constant.name())

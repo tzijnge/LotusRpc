@@ -6,16 +6,16 @@ from .validator import LrpcValidator
 class ServiceValidator(LrpcValidator):
     def __init__(self) -> None:
         super().__init__()
-        self.__service_ids: set[int] = set()
+        self._service_ids: set[int] = set()
 
     def visit_lrpc_def(self, _: LrpcDef) -> None:
         self.reset()
-        self.__service_ids.clear()
+        self._service_ids.clear()
 
     def visit_lrpc_service(self, service: LrpcService) -> None:
         service_id = service.id()
 
-        if service_id in self.__service_ids:
+        if service_id in self._service_ids:
             self.add_error(f"Duplicate service id: {service_id}")
 
-        self.__service_ids.add(service_id)
+        self._service_ids.add(service_id)

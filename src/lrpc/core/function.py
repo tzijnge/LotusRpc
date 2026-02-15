@@ -28,17 +28,17 @@ class LrpcFun:
     def __init__(self, raw: LrpcFunDict) -> None:
         LrpcFunValidator.validate_python(raw, strict=True, extra="forbid")
 
-        self.__params = []
-        self.__returns = []
+        self._params = []
+        self._returns = []
 
         if "params" in raw:
-            self.__params.extend([LrpcVar(p) for p in raw["params"]])
+            self._params.extend([LrpcVar(p) for p in raw["params"]])
 
         if "returns" in raw:
-            self.__returns.extend([LrpcVar(p) for p in raw["returns"]])
+            self._returns.extend([LrpcVar(p) for p in raw["returns"]])
 
-        self.__name = raw["name"]
-        self.__id = raw["id"]
+        self._name = raw["name"]
+        self._id = raw["id"]
 
     def accept(self, visitor: LrpcVisitor) -> None:
         visitor.visit_lrpc_function(self)
@@ -54,7 +54,7 @@ class LrpcFun:
         visitor.visit_lrpc_function_end()
 
     def params(self) -> list[LrpcVar]:
-        return self.__params
+        return self._params
 
     def param(self, name: str) -> LrpcVar:
         for p in self.params():
@@ -64,7 +64,7 @@ class LrpcFun:
         raise ValueError(f"No parameter {name} in function {self.name()}")
 
     def returns(self) -> list[LrpcVar]:
-        return self.__returns
+        return self._returns
 
     def ret(self, name: str) -> LrpcVar:
         for r in self.returns():
@@ -74,10 +74,10 @@ class LrpcFun:
         raise ValueError(f"No return value {name} in function {self.name()}")
 
     def name(self) -> str:
-        return self.__name
+        return self._name
 
     def id(self) -> int:
-        return self.__id
+        return self._id
 
     def number_returns(self) -> int:
         return len(self.returns())

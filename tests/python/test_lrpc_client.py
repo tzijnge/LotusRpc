@@ -493,7 +493,7 @@ class TestLrpcClient:
 
         assert definition.name() == "RetrieveDefinition"
         assert definition.namespace() == "test_rd"
-        assert definition.tx_buffer_size() == 47
+        assert definition.tx_buffer_size() == 58
         assert definition.embed_definition() is True
         assert len(definition.services()) == 1
         s0 = definition.service_by_id(0)

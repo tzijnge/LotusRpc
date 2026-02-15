@@ -58,6 +58,9 @@ def __load_meta_def_dict() -> LrpcDefDict:
 
 
 def __merge_user_and_meta_def(user_def: LrpcDefDict, meta_def: LrpcDefDict) -> LrpcDefDict:
+    if "services" not in user_def:
+        raise AssertionError("Invalid definition")
+
     user_def["services"].extend(meta_def["services"])
 
     if "enums" not in meta_def:

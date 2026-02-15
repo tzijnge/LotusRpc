@@ -33,5 +33,5 @@ def test_meta_service_properties() -> None:
 
     meta_functions = meta_service.functions()
     assert len(meta_functions) == 1
-    assert meta_functions[0].id() == 128
+    assert meta_functions[0].id() == 2
     assert meta_functions[0].name() == "version"

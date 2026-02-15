@@ -2,15 +2,18 @@ import math
 import re
 import tempfile
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 from pydantic import ValidationError
 
 from lrpc.core import LrpcDef, LrpcFun, LrpcStream
-from lrpc.core.definition import LrpcDefDict
 from lrpc.utils import load_lrpc_def_from_str
 
 from .utilities import StringifyVisitor
+
+if TYPE_CHECKING:
+    from lrpc.core.definition import LrpcDefDict
 
 
 def load_lrpc_def(def_str: str) -> LrpcDef:
@@ -827,7 +830,7 @@ services:
 
     assert (
         "service[LrpcMeta]"
-        "-function[version+128]-return[definition]-return[definition_hash]-return[lrpc]-return_end-param_end-function_end"
+        "-function[version+2]-return[definition]-return[definition_hash]-return[lrpc]-return_end-param_end-function_end"
         "-stream[error+0+server]"
         "-param[start]-param_end-return[type]-return[p1]-return[p2]-return[p3]-return[message]-return_end-stream_end"
         "-stream[definition+1+server]"
@@ -957,7 +960,7 @@ services:
     lrpc_def1 = load_lrpc_def(def_str)
     compressed = lrpc_def1.compressed_definition()
 
-    assert len(compressed) == 388
+    assert len(compressed) == 392
 
     lrpc_def2 = LrpcDef.decompress(compressed)
 
@@ -984,7 +987,10 @@ def test_save_to() -> None:
         temp_file = Path(temp_dir).joinpath("temp_file.txt")
         assert not temp_file.exists()
 
-        encoded = b"\xfd7zXZ\x00\x00\x04\xe6\xd6\xb4F\x02\x00!\x01\x16\x00\x00\x00t/\xe5\xa3\x01\x00\x0btest_save_to\x00\xff\x8f4aP5v\xf3\x00\x01$\x0c\xa6\x18\xd8\xd8\x1f\xb6\xf3}\x01\x00\x00\x00\x00\x04YZ"
+        # lzma encoding of string 'test_save_to'
+        encoded = b"\xfd7zXZ\x00\x00\x04\xe6\xd6\xb4F\x02\x00!\x01\x16\x00\x00\x00t/\xe5"
+        encoded += b"\xa3\x01\x00\x0btest_save_to\x00\xff\x8f4aP5v\xf3\x00\x01$\x0c\xa6\x18"
+        encoded += b"\xd8\xd8\x1f\xb6\xf3}\x01\x00\x00\x00\x00\x04YZ"
 
         LrpcDef.save_to(encoded, temp_file)
 

@@ -1,9 +1,9 @@
 name: meta_def
 services:
   - name: LrpcMeta
-    functions_before_streams: false
     streams:
       - name: error
+        id: 0
         origin: server
         finite: false
         params:
@@ -13,13 +13,14 @@ services:
           - { name: p3, type: int32_t }
           - { name: message, type: string }
       - name: definition
+        id: 1
         origin: server
         finite: true
         params:
           - { name: chunk, type: bytearray }
     functions:
       - name: version
-        id: 128
+        id: 2
         returns:
           - { name: definition, type: string }
           - { name: definition_hash, type: string }

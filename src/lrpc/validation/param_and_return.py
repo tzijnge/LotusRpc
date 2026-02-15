@@ -38,10 +38,10 @@ class ParamAndReturnValidator(LrpcValidator):
 
     def visit_lrpc_function_return(self, ret: LrpcVar) -> None:
         name = ret.name()
-        if name in self._param_names:
+        if name in self._return_names:
             self.add_error(f"Duplicate name in {self._current_service}.{self._current_function}: {name}")
 
-        self._param_names.add(name)
+        self._return_names.add(name)
 
     def visit_lrpc_function_return_end(self) -> None:
         self._return_names.clear()

@@ -252,10 +252,10 @@ def test_encode_array() -> None:
     with pytest.raises(TypeError, match=re.escape("Type error for v1: expected list or tuple, but got <class 'int'>")):
         encode_var(0, var)
 
-    with pytest.raises(ValueError, match=re.escape("Length error for v1: expected 4, but gor 3")):
+    with pytest.raises(ValueError, match=re.escape("Length error for v1: expected 4, but got 3")):
         encode_var([1, 2, 3], var)
 
-    with pytest.raises(ValueError, match=re.escape("Length error for v1: expected 4, but gor 5")):
+    with pytest.raises(ValueError, match=re.escape("Length error for v1: expected 4, but got 5")):
         encode_var([1, 2, 3, 4, 5], var)
 
 

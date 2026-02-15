@@ -85,7 +85,7 @@ def _check_array(value: LrpcType, var: LrpcVar) -> list[LrpcType]:
         raise TypeError(f"Type error for {var.name()}: expected list or tuple, but got {type(value)}")
 
     if len(value) != var.array_size():
-        raise ValueError(f"Length error for {var.name()}: expected {var.array_size()}, but gor {len(value)}")
+        raise ValueError(f"Length error for {var.name()}: expected {var.array_size()}, but got {len(value)}")
 
     return list(value)
 

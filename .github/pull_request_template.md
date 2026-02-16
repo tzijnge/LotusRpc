@@ -1,15 +1,15 @@
-# :sparkle: PR [name]
+# :sparkle: @coderabbitai
 
 ## Description
 
 Fixes issue #xxx
 
-[add description]
+@coderabbitai summary
 
 ## Type
 
-- [ ] feature. [add description]
-- [ ] bugfix. [add description]
-- [ ] doc. [add description]
-- [ ] removal. [add description]
-- [ ] misc. [add description]
+- [ ] feature
+- [ ] bugfix
+- [ ] doc
+- [ ] removal
+- [ ] misc

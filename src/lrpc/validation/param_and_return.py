@@ -10,6 +10,7 @@ class ParamAndReturnValidator(LrpcValidator):
         self._current_function: str = ""
         self._current_stream: str = ""
         self._param_return_names: set[str] = set()
+        self._return_names: list[str] = []
 
     def visit_lrpc_def(self, _: LrpcDef) -> None:
         self.reset()
@@ -17,6 +18,7 @@ class ParamAndReturnValidator(LrpcValidator):
         self._current_function = ""
         self._current_stream = ""
         self._param_return_names.clear()
+        self._return_names.clear()
 
     def visit_lrpc_function(self, function: LrpcFun) -> None:
         self._current_function = function.name()
@@ -37,9 +39,19 @@ class ParamAndReturnValidator(LrpcValidator):
             self.add_error(f"Duplicate name in {self._current_service}.{self._current_function}: {name}")
 
         self._param_return_names.add(name)
+        self._return_names.append(name)
 
     def visit_lrpc_function_end(self) -> None:
+        if len(self._return_names) > 1:
+            return_name = "_".join(self._return_names)
+            if return_name in self._param_return_names:
+                self.add_error(
+                    "Composite function return name matches a parameter name in "
+                    f"{self._current_service}.{self._current_function}: {return_name}",
+                )
+
         self._param_return_names.clear()
+        self._return_names.clear()
 
     def visit_lrpc_stream(self, stream: LrpcStream) -> None:
         self._current_stream = stream.name()

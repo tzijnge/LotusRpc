@@ -473,6 +473,26 @@ services:
     assert_log_entries(["Duplicate name in s1.f1: x0"], caplog.text)
 
 
+def test_function_composite_return_name_matches_parameter_name(caplog: pytest.LogCaptureFixture) -> None:
+    rpc_def = """name: test
+services:
+  - name: s1
+    functions:
+      - name: f1
+        params:
+          - { name: a_b, type: bool }
+        returns:
+          - { name: a, type: string }
+          - { name: b, type: string }
+"""
+
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
+        load_def(rpc_def)
+
+    assert_log_entries(["Composite function return name matches a parameter name in s1.f1: a_b"], caplog.text)
+
+
 def test_duplicate_server_stream_param_names(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: test
 services:

@@ -4,7 +4,6 @@ import binascii
 import importlib.util
 import logging
 import os
-import traceback
 from importlib import import_module
 from pathlib import Path
 from typing import Final, cast
@@ -261,7 +260,6 @@ def run_cli() -> None:
     # pylint: disable=broad-exception-caught
     except Exception:
         log.exception("Error running LRPCC")
-        log.info(traceback.format_exc())
 
 
 if __name__ == "__main__":

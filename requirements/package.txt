@@ -4,7 +4,7 @@ jsonschema==4.26.0
 click==8.3.0
 click-log==0.4.0
 types-click-log==0.4.0.20250413
-pyserial==3.5
+pyserial==3.5  # optional for lrpcc serial transport
 typing-extensions==4.15.0
 colorama==0.4.6
 pydantic==2.12.5

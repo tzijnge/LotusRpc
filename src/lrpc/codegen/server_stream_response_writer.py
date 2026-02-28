@@ -17,11 +17,11 @@ class ServerStreamResponseWriter:
             else:
                 response = self._response_captures(returns)
 
-                with self._file.block(f"const auto paramWriter = [{response}](Writer &w)", ";"):
+                with self._file.block(f"const auto _lrpc_paramWriter = [{response}](Writer &w)", ";"):
                     for r in returns:
                         self._file.write(f"lrpc::write_unchecked<{r.rw_type()}>({self._write_params(r)});")
 
-                self._file.write(f"server().transmit(id(), {stream.id()}, paramWriter);")
+                self._file.write(f"server().transmit(id(), {stream.id()}, _lrpc_paramWriter);")
 
     @staticmethod
     def _write_params(var: LrpcVar) -> str:

@@ -34,11 +34,11 @@ def test_single_param() -> None:
     }
     expected = """void test_stream_response(uint8_t p0)
 {
-\tconst auto paramWriter = [&p0](Writer &w)
+\tconst auto _lrpc_paramWriter = [&p0](Writer &w)
 \t{
 \t\tlrpc::write_unchecked<uint8_t>(w, p0);
 \t};
-\tserver().transmit(id(), 42, paramWriter);
+\tserver().transmit(id(), 42, _lrpc_paramWriter);
 }
 """
 
@@ -54,12 +54,12 @@ def test_two_params() -> None:
     }
     expected = """void test_stream_response(uint8_t p0, bool p1)
 {
-\tconst auto paramWriter = [&p0, &p1](Writer &w)
+\tconst auto _lrpc_paramWriter = [&p0, &p1](Writer &w)
 \t{
 \t\tlrpc::write_unchecked<uint8_t>(w, p0);
 \t\tlrpc::write_unchecked<bool>(w, p1);
 \t};
-\tserver().transmit(id(), 42, paramWriter);
+\tserver().transmit(id(), 42, _lrpc_paramWriter);
 }
 """
 
@@ -75,11 +75,11 @@ def test_array_param() -> None:
     }
     expected = """void test_stream_response(etl::span<const uint8_t> p0)
 {
-\tconst auto paramWriter = [&p0](Writer &w)
+\tconst auto _lrpc_paramWriter = [&p0](Writer &w)
 \t{
 \t\tlrpc::write_unchecked<lrpc::tags::array_n<uint8_t>>(w, p0, 25);
 \t};
-\tserver().transmit(id(), 42, paramWriter);
+\tserver().transmit(id(), 42, _lrpc_paramWriter);
 }
 """
 
@@ -95,11 +95,11 @@ def test_string_n_param() -> None:
     }
     expected = """void test_stream_response(etl::string_view p0)
 {
-\tconst auto paramWriter = [&p0](Writer &w)
+\tconst auto _lrpc_paramWriter = [&p0](Writer &w)
 \t{
 \t\tlrpc::write_unchecked<lrpc::tags::string_n>(w, p0, 20);
 \t};
-\tserver().transmit(id(), 42, paramWriter);
+\tserver().transmit(id(), 42, _lrpc_paramWriter);
 }
 """
 
@@ -115,11 +115,11 @@ def test_array_of_string_n_param() -> None:
     }
     expected = """void test_stream_response(etl::span<const etl::string_view> p0)
 {
-\tconst auto paramWriter = [&p0](Writer &w)
+\tconst auto _lrpc_paramWriter = [&p0](Writer &w)
 \t{
 \t\tlrpc::write_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(w, p0, 7, 5);
 \t};
-\tserver().transmit(id(), 42, paramWriter);
+\tserver().transmit(id(), 42, _lrpc_paramWriter);
 }
 """
 

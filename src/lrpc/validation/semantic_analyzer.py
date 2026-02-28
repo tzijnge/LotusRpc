@@ -2,6 +2,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from lrpc.core import LrpcDef
+from lrpc.errors import LrpcDefinitionError
 
 from .custom_types import CustomTypesValidator
 from .enum import EnumValidator
@@ -47,7 +48,10 @@ class SemanticAnalyzer:
             self._log.error(e)
 
         if len(self._errors) != 0:
-            raise ValueError("Errors detected in LRPC definition")
+            msg = f"Errors detected in LRPC definition: {self._errors}"
+            raise LrpcDefinitionError(msg)
 
         if warnings_as_errors and (len(self._warnings) != 0):
-            raise ValueError("Warnings detected in LRPC definition and treated as error")
+            self._log.info("Warnings treated as error")
+            msg = f"Warnings treated as error: {self._warnings}"
+            raise LrpcDefinitionError(msg)

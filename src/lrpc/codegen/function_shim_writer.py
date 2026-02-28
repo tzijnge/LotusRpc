@@ -21,7 +21,7 @@ class FunctionShimWriter:
         self._write_invocation(function)
         self._write_return_lambda(function)
 
-        callback = "" if function.number_returns() == 0 else ", paramWriter"
+        callback = "" if function.number_returns() == 0 else ", _lrpc_paramWriter"
         self._file.write(f"server().transmit(id(), {function.id()}{callback});")
 
     def _write_param_readers(self, function: LrpcFun) -> None:
@@ -44,19 +44,25 @@ class FunctionShimWriter:
 
             self._file.write(f"{assignment}lrpc::read_unchecked<{p.rw_type()}>({read_params(p)});")
 
+    @staticmethod
+    def _response_var_name(function: LrpcFun) -> str:
+        return "_".join([r.name() for r in function.returns()])
+
     def _write_invocation(self, function: LrpcFun) -> None:
         param_list = ", ".join(function.param_names())
 
-        response = "const auto response = " if len(function.returns()) != 0 else ""
+        response = f"const auto {self._response_var_name(function)} = " if len(function.returns()) != 0 else ""
         self._file.write(f"{response}{function.name()}({param_list});")
 
     def _write_return_lambda(self, function: LrpcFun) -> None:
+        response = self._response_var_name(function)
+
         def write_params(var: LrpcVar, index: int | None) -> str:
             params = ["w"]
             if index is None:
-                params.append("response")
+                params.append(response)
             else:
-                params.append(f"std::get<{index}>(response)")
+                params.append(f"std::get<{index}>({response})")
 
             if var.is_array():
                 params.append(f"{var.array_size()}")
@@ -68,7 +74,7 @@ class FunctionShimWriter:
         if function.number_returns() == 0:
             return
 
-        with self._file.block("const auto paramWriter = [&response](Writer &w)", ";"):
+        with self._file.block(f"const auto _lrpc_paramWriter = [&{response}](Writer &w)", ";"):
             returns = function.returns()
             for i, r in enumerate(returns):
                 return_index = None if len(returns) == 1 else i

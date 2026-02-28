@@ -1,10 +1,10 @@
 import logging
 import os
-import traceback
 from pathlib import Path
 from typing import TextIO
 
 import click
+import click_log
 
 from lrpc.codegen import (
     ConstantsFileVisitor,
@@ -50,6 +50,7 @@ def generate_puml(lrpc_def: LrpcDef, output: Path) -> None:
 
 
 @click.group()
+@click_log.simple_verbosity_option()
 @click.version_option(package_name="lotusrpc", message="%(version)s")
 def run_cli() -> None:
     """\b
@@ -90,9 +91,8 @@ def cpp(definition_file: TextIO, output: str, core: bool, warnings_as_errors: bo
     # catching general exception here is considered ok, because application will terminate
     # pylint: disable=broad-exception-caught
     except Exception:
-        log.exception("Error while generating code for %s", definition_file.name)
-
-        traceback.print_exc()
+        exc_info = logging.root.level <= logging.DEBUG
+        log.exception("Error while generating code for %s", definition_file.name, exc_info=exc_info)
 
 
 @run_cli.command()

@@ -8,8 +8,8 @@ from lrpc.errors import LrpcDefinitionError
 from lrpc.utils import load_lrpc_def_from_str
 
 
-def load_def(rpc_def: str) -> None:
-    _ = load_lrpc_def_from_str(rpc_def, warnings_as_errors=False)
+def load_def(rpc_def: str, warnings_as_errors: bool = False) -> None:
+    _ = load_lrpc_def_from_str(rpc_def, warnings_as_errors=warnings_as_errors)
 
 
 def assert_log_entries(expected_entries: list[str], actual: str) -> None:
@@ -632,8 +632,38 @@ enums:
 """
 
     caplog.set_level(logging.WARNING)
-    load_def(rpc_def)
+    load_def(rpc_def, warnings_as_errors=False)
     assert_log_entries(["Unused custom type: s0", "Unused custom type: e0"], caplog.text)
+
+
+def test_warnings_as_error(caplog: pytest.LogCaptureFixture) -> None:
+    rpc_def = """name: test
+services:
+  - name: srv0
+    functions:
+      - name: f0
+        params:
+          - { name: p0, type: bool }
+structs:
+  - name: my_struct
+    fields:
+      - { name: maybe, type: bool }
+enums:
+  - name: colors
+    fields: [yellow, green]
+"""
+
+    caplog.set_level(logging.WARNING)
+
+    caplog.clear()
+
+    with pytest.raises(
+        LrpcDefinitionError,
+        match=re.escape("Warnings treated as error: "),
+    ):
+        load_def(rpc_def, warnings_as_errors=True)
+
+    assert_log_entries(["Unused custom type: my_struct", "Unused custom type: colors"], caplog.text)
 
 
 def test_custom_type_is_not_unused_in_server_stream(caplog: pytest.LogCaptureFixture) -> None:

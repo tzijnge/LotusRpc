@@ -1,0 +1,2 @@
+class LrpcDefinitionError(Exception):
+    pass

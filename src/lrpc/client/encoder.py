@@ -116,7 +116,7 @@ def _encode_basic_type(pack_type: str, value: LrpcBasicType) -> bytes:
 
 
 # pylint: disable = too-many-return-statements
-def lrpc_encode(value: LrpcType, var: LrpcVar, lrpc_def: LrpcDef) -> bytes:
+def lrpc_encode(value: LrpcType, var: LrpcVar, lrpc_def: LrpcDef) -> bytes:  # noqa: PLR0911
     if var.is_array():
         value = _check_array(value, var)
         return _encode_array(value, var, lrpc_def)

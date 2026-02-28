@@ -4,11 +4,12 @@ import re
 import jsonschema
 import pytest
 
+from lrpc.errors import LrpcDefinitionError
 from lrpc.utils import load_lrpc_def_from_str
 
 
-def load_def(rpc_def: str) -> None:
-    _ = load_lrpc_def_from_str(rpc_def, warnings_as_errors=False)
+def load_def(rpc_def: str, *, warnings_as_errors: bool = False) -> None:
+    _ = load_lrpc_def_from_str(rpc_def, warnings_as_errors=warnings_as_errors)
 
 
 def assert_log_entries(expected_entries: list[str], actual: str) -> None:
@@ -41,7 +42,7 @@ enums:
         id: 1
 """
     caplog.set_level(logging.ERROR)
-    with pytest.raises(ValueError, match=re.escape("Errors detected in LRPC definition")):
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
         load_def(rpc_def)
 
     assert_log_entries(["Duplicate field name in enum e0: f", "Duplicate field name in enum e1: g"], caplog.text)
@@ -70,7 +71,7 @@ enums:
         id: 222
 """
     caplog.set_level(logging.ERROR)
-    with pytest.raises(ValueError, match=re.escape("Errors detected in LRPC definition")):
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
         load_def(rpc_def)
 
     assert_log_entries(["Duplicate field id in enum e0: 111", "Duplicate field id in enum e1: 222"], caplog.text)
@@ -96,7 +97,7 @@ enums:
 """
 
     caplog.set_level(logging.ERROR)
-    with pytest.raises(ValueError, match=re.escape("Errors detected in LRPC definition")):
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
         load_def(rpc_def)
 
     assert_log_entries(["Duplicate name: e0"], caplog.text)
@@ -122,7 +123,7 @@ structs:
 """
 
     caplog.set_level(logging.ERROR)
-    with pytest.raises(ValueError, match=re.escape("Errors detected in LRPC definition")):
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
         load_def(rpc_def)
 
     assert_log_entries(["Duplicate name: s0"], caplog.text)
@@ -156,7 +157,7 @@ constants:
 """
 
     caplog.set_level(logging.ERROR)
-    with pytest.raises(ValueError, match=re.escape("Errors detected in LRPC definition")):
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
         load_def(rpc_def)
 
     assert_log_entries(["Duplicate name: s0", "Duplicate name: s1", "Duplicate name: s2"], caplog.text)
@@ -186,7 +187,7 @@ structs:
 """
 
     caplog.set_level(logging.ERROR)
-    with pytest.raises(ValueError, match=re.escape("Errors detected in LRPC definition")):
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
         load_def(rpc_def)
 
     assert_log_entries(["Duplicate field name in struct s0: f", "Duplicate field name in struct s1: g"], caplog.text)
@@ -208,7 +209,7 @@ services:
 """
 
     caplog.set_level(logging.ERROR)
-    with pytest.raises(ValueError, match=re.escape("Errors detected in LRPC definition")):
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
         load_def(rpc_def)
 
     assert_log_entries(["Duplicate name: s0", "Duplicate name: s0ServiceShim"], caplog.text)
@@ -230,7 +231,7 @@ services:
 """
 
     caplog.set_level(logging.ERROR)
-    with pytest.raises(ValueError, match=re.escape("Errors detected in LRPC definition")):
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
         load_def(rpc_def)
 
     assert_log_entries(["Duplicate service id: 111"], caplog.text)
@@ -256,7 +257,7 @@ services:
 """
 
     caplog.set_level(logging.ERROR)
-    with pytest.raises(ValueError, match=re.escape("Errors detected in LRPC definition")):
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
         load_def(rpc_def)
 
     assert_log_entries(
@@ -279,7 +280,7 @@ services:
 """
 
     caplog.set_level(logging.ERROR)
-    with pytest.raises(ValueError, match=re.escape("Errors detected in LRPC definition")):
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
         load_def(rpc_def)
 
     assert_log_entries(
@@ -302,7 +303,7 @@ services:
 """
 
     caplog.set_level(logging.ERROR)
-    with pytest.raises(ValueError, match=re.escape("Errors detected in LRPC definition")):
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
         load_def(rpc_def)
 
     assert_log_entries(
@@ -331,7 +332,7 @@ services:
 """
 
     caplog.set_level(logging.ERROR)
-    with pytest.raises(ValueError, match=re.escape("Errors detected in LRPC definition")):
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
         load_def(rpc_def)
 
     assert_log_entries(
@@ -349,7 +350,7 @@ services:
 """
 
     caplog.set_level(logging.ERROR)
-    with pytest.raises(ValueError, match=re.escape("Errors detected in LRPC definition")):
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
         load_def(rpc_def)
 
     assert_log_entries(
@@ -379,7 +380,7 @@ structs:
 """
 
     caplog.set_level(logging.ERROR)
-    with pytest.raises(ValueError, match=re.escape("Errors detected in LRPC definition")):
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
         load_def(rpc_def)
 
     errors = caplog.text.splitlines()
@@ -405,7 +406,7 @@ services:
 """
 
     caplog.set_level(logging.ERROR)
-    with pytest.raises(ValueError, match=re.escape("Errors detected in LRPC definition")):
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
         load_def(rpc_def)
 
     assert_log_entries(["Duplicate name: c0", "Duplicate name: c1"], caplog.text)
@@ -426,7 +427,7 @@ services:
 """
 
     caplog.set_level(logging.ERROR)
-    with pytest.raises(ValueError, match=re.escape("Errors detected in LRPC definition")):
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
         load_def(rpc_def)
 
     assert_log_entries(["Duplicate name in s1.f1: p0"], caplog.text)
@@ -447,10 +448,49 @@ services:
 """
 
     caplog.set_level(logging.ERROR)
-    with pytest.raises(ValueError, match=re.escape("Errors detected in LRPC definition")):
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
         load_def(rpc_def)
 
     assert_log_entries(["Duplicate name in s1.f1: r0"], caplog.text)
+
+
+def test_duplicate_function_param_and_return_names(caplog: pytest.LogCaptureFixture) -> None:
+    rpc_def = """name: test
+services:
+  - name: s1
+    functions:
+      - name: f1
+        params:
+          - { name: x0, type: bool }
+        returns:
+          - { name: x0, type: string }
+"""
+
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
+        load_def(rpc_def)
+
+    assert_log_entries(["Duplicate name in s1.f1: x0"], caplog.text)
+
+
+def test_function_composite_return_name_matches_parameter_name(caplog: pytest.LogCaptureFixture) -> None:
+    rpc_def = """name: test
+services:
+  - name: s1
+    functions:
+      - name: f1
+        params:
+          - { name: a_b, type: bool }
+        returns:
+          - { name: a, type: string }
+          - { name: b, type: string }
+"""
+
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
+        load_def(rpc_def)
+
+    assert_log_entries(["Composite function return name matches a parameter name in s1.f1: a_b"], caplog.text)
 
 
 def test_duplicate_server_stream_param_names(caplog: pytest.LogCaptureFixture) -> None:
@@ -476,7 +516,7 @@ services:
 """
 
     caplog.set_level(logging.ERROR)
-    with pytest.raises(ValueError, match=re.escape("Errors detected in LRPC definition")):
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
         load_def(rpc_def)
 
     assert_log_entries(
@@ -511,7 +551,7 @@ services:
 """
 
     caplog.set_level(logging.ERROR)
-    with pytest.raises(ValueError, match="Errors detected in LRPC definition"):
+    with pytest.raises(LrpcDefinitionError, match="Errors detected in LRPC definition"):
         load_def(rpc_def)
 
     assert_log_entries(
@@ -565,7 +605,7 @@ enums:
 """
 
     caplog.set_level(logging.ERROR)
-    with pytest.raises(ValueError, match="Errors detected in LRPC definition"):
+    with pytest.raises(LrpcDefinitionError, match="Errors detected in LRPC definition"):
         load_def(rpc_def)
 
     assert_log_entries(
@@ -592,8 +632,38 @@ enums:
 """
 
     caplog.set_level(logging.WARNING)
-    load_def(rpc_def)
+    load_def(rpc_def, warnings_as_errors=False)
     assert_log_entries(["Unused custom type: s0", "Unused custom type: e0"], caplog.text)
+
+
+def test_warnings_as_error(caplog: pytest.LogCaptureFixture) -> None:
+    rpc_def = """name: test
+services:
+  - name: srv0
+    functions:
+      - name: f0
+        params:
+          - { name: p0, type: bool }
+structs:
+  - name: my_struct
+    fields:
+      - { name: maybe, type: bool }
+enums:
+  - name: colors
+    fields: [yellow, green]
+"""
+
+    caplog.set_level(logging.WARNING)
+
+    caplog.clear()
+
+    with pytest.raises(
+        LrpcDefinitionError,
+        match=re.escape("Warnings treated as error: "),
+    ):
+        load_def(rpc_def, warnings_as_errors=True)
+
+    assert_log_entries(["Unused custom type: my_struct", "Unused custom type: colors"], caplog.text)
 
 
 def test_custom_type_is_not_unused_in_server_stream(caplog: pytest.LogCaptureFixture) -> None:

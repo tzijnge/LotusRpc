@@ -8,7 +8,7 @@ from lrpc.errors import LrpcDefinitionError
 from lrpc.utils import load_lrpc_def_from_str
 
 
-def load_def(rpc_def: str, warnings_as_errors: bool = False) -> None:
+def load_def(rpc_def: str, *, warnings_as_errors: bool = False) -> None:
     _ = load_lrpc_def_from_str(rpc_def, warnings_as_errors=warnings_as_errors)
 
 

@@ -40,7 +40,7 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
-serial = ["pyserial==3.5"]
+transport_serial = ["pyserial==3.5"]
 
 [project.urls]
 homepage = "https://github.com/tzijnge/LotusRpc"

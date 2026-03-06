@@ -384,7 +384,7 @@ TEST_F(TestServer1, decodeF37)
 // Decode function f38 which returns int32_t
 TEST_F(TestServer1, decodeF38)
 {
-    EXPECT_CALL(service, f38()).WillOnce(Return(10'0000));
+    EXPECT_CALL(service, f38()).WillOnce(Return(100'000));
     const auto response = receive("020026");
     EXPECT_EQ("060026A0860100", response);
 }

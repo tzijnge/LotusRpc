@@ -287,6 +287,20 @@ def test_encode_optional_auto_bytearray() -> None:
     assert encode_var(b"ab", var) == b"\x01\x02ab"
 
 
+def test_encode_optional_float() -> None:
+    var = LrpcVar({"name": "v1", "type": "float", "count": "?"})
+
+    assert encode_var(None, var) == b"\x00"
+    assert encode_var(123.456, var) == b"\x01\x79\xe9\xf6\x42"
+
+
+def test_encode_optional_double() -> None:
+    var = LrpcVar({"name": "v1", "type": "double", "count": "?"})
+
+    assert encode_var(None, var) == b"\x00"
+    assert encode_var(123.456, var) == b"\x01\x77\xbe\x9f\x1a\x2f\xdd\x5e\x40"
+
+
 def test_encode_struct() -> None:
     var = LrpcVar({"name": "v1", "type": "struct@MyStruct1"})
 
@@ -393,3 +407,21 @@ def test_encode_array_of_auto_bytearray() -> None:
 
     assert encode_var([b"abcd", b"ef", b""], var) == b"\x04abcd\x02ef\x00"
     assert encode_var([b"ab1", b"cd23", b"ef45"], var) == b"\x03ab1\x04cd23\x04ef45"
+
+
+def test_encode_array_of_float() -> None:
+    var = LrpcVar({"name": "v1", "type": "float", "count": 2})
+
+    assert encode_var([0, 123.456], var) == b"\x00\x00\x00\x00\x79\xe9\xf6\x42"
+
+    with pytest.raises(ValueError, match=re.escape("Length error for v1: expected 2, but got 1")):
+        encode_var([123.456], var)
+
+
+def test_encode_array_of_double() -> None:
+    var = LrpcVar({"name": "v1", "type": "double", "count": 2})
+
+    assert encode_var([0, 123.456], var) == b"\x00\x00\x00\x00\x00\x00\x00\x00\x77\xbe\x9f\x1a\x2f\xdd\x5e\x40"
+
+    with pytest.raises(ValueError, match=re.escape("Length error for v1: expected 2, but got 3")):
+        encode_var([0, 123.456, 456.789], var)

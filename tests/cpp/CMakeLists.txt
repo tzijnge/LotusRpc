@@ -6,10 +6,10 @@ set(gtest_force_shared_crt on)
 
 if(MSVC)
   add_compile_options(/fsanitize=address /Zi)
-add_link_options(/fsanitize=address)
+  add_link_options(/fsanitize=address)
 else()
   add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
-add_link_options(-fsanitize=address -static-libasan)
+  add_link_options(-fsanitize=address -static-libasan)
 endif()
 
 include(GoogleTest)
@@ -98,3 +98,30 @@ target_link_libraries(
 )
 
 gtest_discover_tests(UnitTests XML_OUTPUT_DIR TestResults)
+
+# Copy MSVC AddressSanitizer runtime DLL to the output directory
+if(MSVC)
+  get_filename_component(CXX_COMPILER_DIR "${CMAKE_CXX_COMPILER}" DIRECTORY)
+
+  if(CXX_COMPILER_DIR MATCHES "x64")
+    set(ASAN_DLL_ARCH "x86_64")
+  elseif(CXX_COMPILER_DIR MATCHES "ARM64")
+    set(ASAN_DLL_ARCH "arm64")
+  else()
+    set(ASAN_DLL_ARCH "x86_64")
+  endif()
+
+  find_file(ASAN_DLL_FILE
+    NAMES "clang_rt.asan_dynamic-${ASAN_DLL_ARCH}.dll"
+    PATHS "${CXX_COMPILER_DIR}"
+    REQUIRED
+    NO_DEFAULT_PATH
+  )
+
+  add_custom_command(TARGET UnitTests POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ASAN_DLL_FILE}" $<TARGET_FILE_DIR:UnitTests>
+    COMMENT "Copying ASAN runtime DLL to test directory"
+  )
+
+  unset(ASAN_DLL_FILE CACHE)
+endif()

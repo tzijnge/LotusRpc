@@ -246,6 +246,24 @@ def test_decode_array_of_auto_bytearray() -> None:
         lrpc_decode(b"\x02cd\x01", var, lrpc_def)
 
 
+def test_decode_array_of_float() -> None:
+    var = LrpcVar({"name": "v1", "type": "float", "count": 2})
+
+    decoded = lrpc_decode(b"\x00\x00\x00\x00\x79\xe9\xf6\x42", var, lrpc_def)
+    assert len(decoded) == 2
+    assert decoded[0] == 0
+    assert math.isclose(decoded[1], 123.456, abs_tol=0.00001)
+
+
+def test_decode_array_of_double() -> None:
+    var = LrpcVar({"name": "v1", "type": "double", "count": 2})
+
+    decoded = lrpc_decode(b"\x00\x00\x00\x00\x00\x00\x00\x00\x77\xbe\x9f\x1a\x2f\xdd\x5e\x40", var, lrpc_def)
+    assert len(decoded) == 2
+    assert decoded[0] == 0
+    assert math.isclose(float(decoded[1]), 123.456)
+
+
 def test_decode_optional() -> None:
     var = LrpcVar({"name": "v1", "type": "uint8_t", "count": "?"})
 
@@ -301,6 +319,22 @@ def test_decode_optional_auto_bytearray() -> None:
 
     with pytest.raises(ValueError, match="Incomplete bytearray: expected 3 bytes but got 2"):
         lrpc_decode(b"\x01\x03ab", var, lrpc_def)
+
+
+def test_decode_optional_float() -> None:
+    var = LrpcVar({"name": "v1", "type": "float", "count": "?"})
+
+    assert lrpc_decode(b"\x00", var, lrpc_def) is None
+    decoded = lrpc_decode(b"\x01\x79\xe9\xf6\x42", var, lrpc_def)
+    assert math.isclose(decoded, 123.456, abs_tol=0.00001)
+
+
+def test_decode_optional_double() -> None:
+    var = LrpcVar({"name": "v1", "type": "double", "count": "?"})
+
+    assert lrpc_decode(b"\x00", var, lrpc_def) is None
+    v = lrpc_decode(b"\x01\x77\xbe\x9f\x1a\x2f\xdd\x5e\x40", var, lrpc_def)
+    assert math.isclose(float(v), 123.456)
 
 
 def test_decode_struct_not_in_def() -> None:

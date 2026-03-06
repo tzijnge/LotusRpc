@@ -126,6 +126,48 @@ services:
       - name: f30
         params:
           - { name: p0, type: "bytearray", count: 2 }
+      - name: f31
+        params:
+          - { name: a, type: double }
+      - name: f32
+        returns:
+          - { name: a, type: double }
+      - name: f33
+        params:
+          - { name: a, type: int8_t }
+      - name: f34
+        returns:
+          - { name: a, type: int8_t }
+      - name: f35
+        params:
+          - { name: a, type: int16_t }
+      - name: f36
+        returns:
+          - { name: a, type: int16_t }
+      - name: f37
+        params:
+          - { name: a, type: int32_t }
+      - name: f38
+        returns:
+          - { name: a, type: int32_t }
+      - name: f39
+        params:
+          - { name: a, type: int64_t }
+      - name: f40
+        returns:
+          - { name: a, type: int64_t }
+      - name: f41
+        params:
+          - { name: a, type: uint32_t }
+      - name: f42
+        returns:
+          - { name: a, type: uint32_t }
+      - name: f43
+        params:
+          - { name: a, type: uint64_t }
+      - name: f44
+        returns:
+          - { name: a, type: uint64_t }
     streams:
       - name: stream0
         origin: client

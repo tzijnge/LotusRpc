@@ -377,21 +377,21 @@ TEST_F(TestServer1, decodeF36)
 // Decode function f37 with int32_t arg
 TEST_F(TestServer1, decodeF37)
 {
-    EXPECT_CALL(service, f37(-100000));
+    EXPECT_CALL(service, f37(-100'000));
     const auto response = receive("0600256079FEFF");
     EXPECT_EQ("020025", response);
 }
 // Decode function f38 which returns int32_t
 TEST_F(TestServer1, decodeF38)
 {
-    EXPECT_CALL(service, f38()).WillOnce(Return(100000));
+    EXPECT_CALL(service, f38()).WillOnce(Return(10'0000));
     const auto response = receive("020026");
     EXPECT_EQ("060026A0860100", response);
 }
 // Decode function f39 with int64_t arg
 TEST_F(TestServer1, decodeF39)
 {
-    EXPECT_CALL(service, f39(-2020202020202));
+    EXPECT_CALL(service, f39(-2'020'202'020'202));
     const auto response = receive("0A0027968293A229FEFFFF");
     EXPECT_EQ("020027", response);
 }
@@ -399,7 +399,7 @@ TEST_F(TestServer1, decodeF39)
 // Decode function f40 which returns int64_t
 TEST_F(TestServer1, decodeF40)
 {
-    EXPECT_CALL(service, f40()).WillOnce(Return(1000000000000LL));
+    EXPECT_CALL(service, f40()).WillOnce(Return(1'000'000'000'000LL));
     const auto response = receive("020028");
     EXPECT_EQ("0A00280010A5D4E8000000", response);
 }
@@ -407,7 +407,7 @@ TEST_F(TestServer1, decodeF40)
 // Decode function f41 with uint32_t arg
 TEST_F(TestServer1, decodeF41)
 {
-    EXPECT_CALL(service, f41(0xDEADBEEFU));
+    EXPECT_CALL(service, f41(0xDEAD'BEEFU));
     const auto response = receive("060029EFBEADDE");
     EXPECT_EQ("020029", response);
 }
@@ -415,7 +415,7 @@ TEST_F(TestServer1, decodeF41)
 // Decode function f42 which returns uint32_t
 TEST_F(TestServer1, decodeF42)
 {
-    EXPECT_CALL(service, f42()).WillOnce(Return(0x12345678U));
+    EXPECT_CALL(service, f42()).WillOnce(Return(0x1234'5678U));
     const auto response = receive("02002A");
     EXPECT_EQ("06002A78563412", response);
 }
@@ -423,7 +423,7 @@ TEST_F(TestServer1, decodeF42)
 // Decode function f43 with uint64_t arg
 TEST_F(TestServer1, decodeF43)
 {
-    EXPECT_CALL(service, f43(0xCAFEBABEDEADBEEFULL));
+    EXPECT_CALL(service, f43(0xCAFE'BABE'DEAD'BEEFULL));
     const auto response = receive("0A002BEFBEADDEBEBAFECA");
     EXPECT_EQ("02002B", response);
 }
@@ -431,7 +431,7 @@ TEST_F(TestServer1, decodeF43)
 // Decode function f44 which returns uint64_t
 TEST_F(TestServer1, decodeF44)
 {
-    EXPECT_CALL(service, f44()).WillOnce(Return(0x123456789ABCDEF0ULL));
+    EXPECT_CALL(service, f44()).WillOnce(Return(0x1234'5678'9ABC'DEF0ULL));
     const auto response = receive("02002C");
     EXPECT_EQ("0A002CF0DEBC9A78563412", response);
 }

@@ -1,3 +1,5 @@
+from typing import Literal
+
 from lrpc.core import LrpcDef, LrpcFun, LrpcService, LrpcStream
 
 from .validator import LrpcValidator
@@ -38,32 +40,41 @@ class FunctionAndStreamIdValidator(LrpcValidator):
 class FunctionAndStreamNameValidator(LrpcValidator):
     def __init__(self) -> None:
         super().__init__()
-        self._function_names: set[str] = set()
+        self._function_and_stream_names: set[str] = set()
         self._current_service: str = ""
         self._param_names: set[str] = set()
         self._return_names: set[str] = set()
 
     def visit_lrpc_def(self, _lrpc_def: LrpcDef) -> None:
         self.reset()
-        self._function_names.clear()
+        self._function_and_stream_names.clear()
         self._current_service = ""
         self._param_names.clear()
         self._return_names.clear()
 
     def visit_lrpc_function(self, function: LrpcFun) -> None:
-        name = function.name()
+        self._check_name("function", function.name())
 
-        if name in self._function_names:
-            self.add_error(f"Duplicate function name in service {self._current_service}: {name}")
-
-        if name == (self._current_service + "_shim"):
-            self.add_error(
-                f"Invalid function name: {name}. This name is incompatible with the generated code "
-                "for the containing service",
-            )
-
-        self._function_names.add(name)
+    def visit_lrpc_stream(self, stream: LrpcStream) -> None:
+        self._check_name("stream", stream.name())
 
     def visit_lrpc_service(self, service: LrpcService) -> None:
         self._current_service = service.name()
-        self._function_names.clear()
+        self._function_and_stream_names.clear()
+
+    def _check_name(self, stream_or_function: Literal["stream", "function"], name: str) -> None:
+        if name in self._function_and_stream_names:
+            self.add_error(f"Duplicate {stream_or_function} name in service {self._current_service}: {name}")
+
+        if name == (self._current_service + "_shim"):
+            self.add_error(
+                f"Invalid {stream_or_function} name: {name}. This name is incompatible with the generated code "
+                f"for the containing service ({self._current_service})",
+            )
+
+        if name in {"id", "requestStop"}:
+            self.add_error(
+                f"Invalid {stream_or_function} name: {name}. This name is reserved for LotusRPC internal use",
+            )
+
+        self._function_and_stream_names.add(name)

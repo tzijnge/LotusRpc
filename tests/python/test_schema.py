@@ -212,7 +212,37 @@ services:
     with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
         load_def(rpc_def)
 
-    assert_log_entries(["Duplicate name: s0", "Duplicate name: s0ServiceShim"], caplog.text)
+    assert_log_entries(["Duplicate name: s0", "Duplicate name: s0_shim"], caplog.text)
+
+
+def test_service_name_equals_definition_name(caplog: pytest.LogCaptureFixture) -> None:
+    rpc_def = """name: test
+services:
+  - name: test
+    functions:
+      - name: f0
+"""
+
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
+        load_def(rpc_def)
+
+    assert_log_entries(["Duplicate name: test"], caplog.text)
+
+
+def test_service_name_equals_definition_name_shim(caplog: pytest.LogCaptureFixture) -> None:
+    rpc_def = """name: test_shim
+services:
+  - name: test
+    functions:
+      - name: f0
+"""
+
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
+        load_def(rpc_def)
+
+    assert_log_entries(["Duplicate name: test_shim"], caplog.text)
 
 
 def test_duplicate_service_ids(caplog: pytest.LogCaptureFixture) -> None:
@@ -341,7 +371,7 @@ services:
     )
 
 
-def test_invalid_function_name(caplog: pytest.LogCaptureFixture) -> None:
+def test_invalid_function_name_shim(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: test
 services:
   - name: s0
@@ -357,6 +387,107 @@ services:
         [
             "Invalid function name: s0_shim. This name is incompatible with the generated code "
             "for the containing service",
+        ],
+        caplog.text,
+    )
+
+
+def test_invalid_function_name_id(caplog: pytest.LogCaptureFixture) -> None:
+    rpc_def = """name: test
+services:
+  - name: s0
+    functions:
+      - { name: "id" }
+"""
+
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
+        load_def(rpc_def)
+
+    assert_log_entries(
+        [
+            "Invalid function name: id. This name is reserved for LotusRPC internal use",
+        ],
+        caplog.text,
+    )
+
+
+def test_invalid_function_name_request_stop(caplog: pytest.LogCaptureFixture) -> None:
+    rpc_def = """name: test
+services:
+  - name: s0
+    functions:
+      - { name: "requestStop" }
+"""
+
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
+        load_def(rpc_def)
+
+    assert_log_entries(
+        [
+            "Invalid function name: requestStop. This name is reserved for LotusRPC internal use",
+        ],
+        caplog.text,
+    )
+
+
+def test_invalid_stream_name_shim(caplog: pytest.LogCaptureFixture) -> None:
+    rpc_def = """name: test
+services:
+  - name: s0
+    streams:
+      - { name: "s0_shim", origin: client }
+"""
+
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
+        load_def(rpc_def)
+
+    assert_log_entries(
+        [
+            "Invalid stream name: s0_shim. This name is incompatible with the generated code "
+            "for the containing service",
+        ],
+        caplog.text,
+    )
+
+
+def test_invalid_stream_name_id(caplog: pytest.LogCaptureFixture) -> None:
+    rpc_def = """name: test
+services:
+  - name: s0
+    streams:
+      - { name: "id", origin: server }
+"""
+
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
+        load_def(rpc_def)
+
+    assert_log_entries(
+        [
+            "Invalid stream name: id. This name is reserved for LotusRPC internal use",
+        ],
+        caplog.text,
+    )
+
+
+def test_invalid_stream_name_request_stop(caplog: pytest.LogCaptureFixture) -> None:
+    rpc_def = """name: test
+services:
+  - name: s0
+    streams:
+      - { name: "requestStop", origin: client }
+"""
+
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
+        load_def(rpc_def)
+
+    assert_log_entries(
+        [
+            "Invalid stream name: requestStop. This name is reserved for LotusRPC internal use",
         ],
         caplog.text,
     )

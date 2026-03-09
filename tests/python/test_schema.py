@@ -434,8 +434,7 @@ services:
 
     assert_log_entries(
         [
-            "Invalid function name: s0_shim. This name is incompatible with the generated code "
-            "for the containing service",
+            "Invalid function name s0_shim in service s0. This name is incompatible with the generated code",
         ],
         caplog.text,
     )
@@ -455,7 +454,7 @@ services:
 
     assert_log_entries(
         [
-            "Invalid function name: id. This name is reserved for LotusRPC internal use",
+            "Invalid function name id in service s0. This name is reserved for LotusRPC internal use",
         ],
         caplog.text,
     )
@@ -475,7 +474,7 @@ services:
 
     assert_log_entries(
         [
-            "Invalid function name: requestStop. This name is reserved for LotusRPC internal use",
+            "Invalid function name requestStop in service s0. This name is reserved for LotusRPC internal use",
         ],
         caplog.text,
     )
@@ -495,8 +494,7 @@ services:
 
     assert_log_entries(
         [
-            "Invalid stream name: s0_shim. This name is incompatible with the generated code "
-            "for the containing service",
+            "Invalid stream name s0_shim in service s0. This name is incompatible with the generated code",
         ],
         caplog.text,
     )
@@ -516,7 +514,7 @@ services:
 
     assert_log_entries(
         [
-            "Invalid stream name: id. This name is reserved for LotusRPC internal use",
+            "Invalid stream name id in service s0. This name is reserved for LotusRPC internal use",
         ],
         caplog.text,
     )
@@ -536,7 +534,7 @@ services:
 
     assert_log_entries(
         [
-            "Invalid stream name: requestStop. This name is reserved for LotusRPC internal use",
+            "Invalid stream name requestStop in service s0. This name is reserved for LotusRPC internal use",
         ],
         caplog.text,
     )

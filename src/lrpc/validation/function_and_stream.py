@@ -68,13 +68,14 @@ class FunctionAndStreamNameValidator(LrpcValidator):
 
         if name == (self._current_service + "_shim"):
             self.add_error(
-                f"Invalid {stream_or_function} name: {name}. This name is incompatible with the generated code "
-                f"for the containing service ({self._current_service})",
+                f"Invalid {stream_or_function} name {name} in service {self._current_service}."
+                " This name is incompatible with the generated code",
             )
 
         if name in {"id", "requestStop"}:
             self.add_error(
-                f"Invalid {stream_or_function} name: {name}. This name is reserved for LotusRPC internal use",
+                f"Invalid {stream_or_function} name {name} in service {self._current_service}."
+                " This name is reserved for LotusRPC internal use",
             )
 
         self._function_and_stream_names.add(name)

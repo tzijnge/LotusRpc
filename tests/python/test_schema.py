@@ -371,6 +371,55 @@ services:
     )
 
 
+def test_duplicate_stream_names(caplog: pytest.LogCaptureFixture) -> None:
+    rpc_def = """name: test
+services:
+  - name: s0
+    streams:
+      - name: str0
+        origin: server
+      - name: str0
+        origin: client
+  - name: s1
+    streams:
+      - name: str1
+        origin: server
+      - name: str1
+        origin: server
+
+"""
+
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
+        load_def(rpc_def)
+
+    assert_log_entries(
+        ["Duplicate stream name in service s0: str0", "Duplicate stream name in service s1: str1"],
+        caplog.text,
+    )
+
+
+def test_duplicate_function_and_stream_names(caplog: pytest.LogCaptureFixture) -> None:
+    rpc_def = """name: test
+services:
+  - name: s0
+    streams:
+      - name: x0
+        origin: server
+    functions:
+      - name: x0
+"""
+
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
+        load_def(rpc_def)
+
+    assert_log_entries(
+        ["Duplicate stream name in service s0: x0"],
+        caplog.text,
+    )
+
+
 def test_invalid_function_name_shim(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: test
 services:

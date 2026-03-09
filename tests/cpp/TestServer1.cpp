@@ -36,8 +36,8 @@ namespace
         MOCK_METHOD((etl::span<const etl::string_view>), f26, (), (override));
         MOCK_METHOD((std::tuple<etl::span<const uint8_t>, etl::span<const etl::string_view>, etl::span<const etl::string_view>>), f27, (), (override));
         MOCK_METHOD(void, f28, (const ts1::CompositeData4 &), (override));
-        MOCK_METHOD(lrpc::bytearray_t, f29, (lrpc::bytearray_t), (override));
-        MOCK_METHOD(void, f30, (etl::span<const lrpc::bytearray_t>), (override));
+        MOCK_METHOD(lrpc::bytearray, f29, (lrpc::bytearray), (override));
+        MOCK_METHOD(void, f30, (etl::span<const lrpc::bytearray>), (override));
         MOCK_METHOD(void, f31, (double a), (override));
         MOCK_METHOD(double, f32, (), (override));
         MOCK_METHOD(void, f33, (int8_t a), (override));
@@ -52,7 +52,7 @@ namespace
         MOCK_METHOD(uint32_t, f42, (), (override));
         MOCK_METHOD(void, f43, (uint64_t a), (override));
         MOCK_METHOD(uint64_t, f44, (), (override));
-        MOCK_METHOD(void, stream0, (lrpc::bytearray_t, bool), (override));
+        MOCK_METHOD(void, stream0, (lrpc::bytearray, bool), (override));
     };
 }
 

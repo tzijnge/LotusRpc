@@ -4,6 +4,7 @@
 #include <etl/array.h>
 #include <etl/byte_stream.h>
 #include <etl/string_view.h>
+#include "LrpcTypes.hpp"
 
 namespace lrpc
 {
@@ -18,14 +19,6 @@ namespace lrpc
         template <typename T>
         struct array_n;
     };
-
-#ifndef LRPC_BYTE_TYPE
-#define LRPC_BYTE_TYPE uint8_t
-#endif
-
-    static_assert(sizeof(LRPC_BYTE_TYPE) == 1, "sizeof(LRPC_BYTE_TYPE) must be exactly 1");
-
-    using bytearray_t = etl::span<const LRPC_BYTE_TYPE>;
 
     template <typename T>
     struct is_etl_optional : public etl::false_type
@@ -95,7 +88,7 @@ namespace lrpc
     template <>
     struct etl_optional_pr_type<etl::optional<tags::bytearray_auto>>
     {
-        using type = etl::optional<bytearray_t>;
+        using type = etl::optional<bytearray>;
     };
 
     template <typename T>
@@ -129,7 +122,7 @@ namespace lrpc
     template <>
     struct array_param_type<tags::array_n<tags::bytearray_auto>>
     {
-        using type = etl::span<const bytearray_t>;
+        using type = etl::span<const bytearray>;
     };
 
     template <typename T>
@@ -152,7 +145,7 @@ namespace lrpc
     template <>
     struct array_outparam_type<tags::array_n<tags::bytearray_auto>>
     {
-        using type = etl::span<bytearray_t>;
+        using type = etl::span<bytearray>;
     };
 
     template <typename T>
@@ -259,7 +252,7 @@ namespace lrpc
 
     // auto bytearray
     template <typename T>
-    using enable_for_bytearray = etl::enable_if_t<etl::is_same<T, tags::bytearray_auto>::value, bytearray_t>;
+    using enable_for_bytearray = etl::enable_if_t<etl::is_same<T, tags::bytearray_auto>::value, bytearray>;
 
     template <typename T>
     enable_for_bytearray<T>
@@ -270,7 +263,7 @@ namespace lrpc
 
         readSize = std::min(readSize, streamSize);
 
-        const bytearray_t ba{reinterpret_cast<const LRPC_BYTE_TYPE *>(stream.end()), readSize};
+        const auto ba = stream.free_data().take<const LRPC_BYTE_TYPE>(readSize);
         (void)stream.skip<LRPC_BYTE_TYPE>(readSize);
         return ba;
     };
@@ -414,7 +407,7 @@ namespace lrpc
 
     // auto bytearray
     template <typename T, typename etl::enable_if_t<etl::is_same<T, tags::bytearray_auto>::value, bool> = true>
-    void write_unchecked(etl::byte_stream_writer &stream, const bytearray_t &value)
+    void write_unchecked(etl::byte_stream_writer &stream, const bytearray &value)
     {
         constexpr size_t baMaxSize{std::numeric_limits<uint8_t>::max()};
         const size_t ba_size = std::min<size_t>(baMaxSize, value.size());

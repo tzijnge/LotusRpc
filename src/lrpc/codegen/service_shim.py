@@ -163,7 +163,9 @@ class ServiceShimVisitor(LrpcVisitor):
         self._file.newline()
 
         with self._file.block("static ShimType shim(const size_t functionId)"):
-            with self._file.block(f"static constexpr etl::array<ShimType, {max_function_or_stream_id + 1}> shims", ";"):
+            with self._file.block(
+                f"static constexpr lrpc::array<ShimType, {max_function_or_stream_id + 1}> shims", ";"
+            ):
                 function_info = {function.id(): function.name() for function in functions}
                 client_stream_info = {stream.id(): stream.name() for stream in client_streams}
                 server_stream_info = {stream.id(): stream.name() + "_start_stop" for stream in server_streams}

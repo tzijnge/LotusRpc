@@ -31,8 +31,7 @@ class MetaConstantsWriter:
 
         self._file.write("#pragma once")
         self._file.write("#include <stdint.h>")
-        self._file.write("#include <etl/array.h>")
-        self._file.write("#include <etl/string_view.h>")
+        self._file.write('#include "lrpccore/LrpcTypes.hpp"')
 
         self._file.newline()
         optionally_in_namespace(self._file, self._write_constants, namespace)
@@ -49,9 +48,9 @@ class MetaConstantsWriter:
         def_version_hash_str = f'"{self._definition_hash}"' if self._definition_hash else ""
         lrpc_version_str = f'"{lrpc_version}"'
 
-        self._file.write(f"static constexpr etl::string_view DefinitionVersion {{{def_version_str}}};")
-        self._file.write(f"static constexpr etl::string_view DefinitionHash {{{def_version_hash_str}}};")
-        self._file.write(f"static constexpr etl::string_view LrpcVersion {{{lrpc_version_str}}};")
+        self._file.write(f"static constexpr lrpc::string_view DefinitionVersion {{{def_version_str}}};")
+        self._file.write(f"static constexpr lrpc::string_view DefinitionHash {{{def_version_hash_str}}};")
+        self._file.write(f"static constexpr lrpc::string_view LrpcVersion {{{lrpc_version_str}}};")
 
     def _write_definition_constants(self) -> None:
         chunk_size = self._definition_stream_chunk_size
@@ -62,7 +61,7 @@ class MetaConstantsWriter:
         self._file.newline()
 
         with self._file.block(
-            f"static constexpr etl::array<uint8_t, {comp_def_size}> CompressedDefinition =",
+            f"static constexpr lrpc::array<uint8_t, {comp_def_size}> CompressedDefinition =",
             ";",
         ):
             if comp_def_size == 0:

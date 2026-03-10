@@ -116,7 +116,7 @@ def test_array_param() -> None:
     }
     expected = """void test_func_shim(Reader& r)
 {
-\tetl::array<uint8_t, 2> x;
+\tlrpc::array<uint8_t, 2> x;
 \tlrpc::read_unchecked<lrpc::tags::array_n<uint8_t>>(r, x, 2);
 \ttest_func(x);
 \tserver().transmit(id(), 43);
@@ -151,7 +151,7 @@ def test_array_of_fixed_size_string_param() -> None:
     }
     expected = """void test_func_shim(Reader& r)
 {
-\tetl::array<etl::string_view, 3> x;
+\tlrpc::array<lrpc::string_view, 3> x;
 \tlrpc::read_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(r, x, 3, 2);
 \ttest_func(x);
 \tserver().transmit(id(), 43);
@@ -239,9 +239,9 @@ def test_many_params_and_returns() -> None:
     expected = """void test_func_shim(Reader& r)
 {
 \tconst auto p0 = lrpc::read_unchecked<uint8_t>(r);
-\tetl::array<uint8_t, 2> p1;
+\tlrpc::array<uint8_t, 2> p1;
 \tlrpc::read_unchecked<lrpc::tags::array_n<uint8_t>>(r, p1, 2);
-\tetl::array<etl::string_view, 3> p2;
+\tlrpc::array<lrpc::string_view, 3> p2;
 \tlrpc::read_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(r, p2, 3, 10);
 \tconst auto r0_r1_r2 = test_func(p0, p1, p2);
 \tconst auto _lrpc_paramWriter = [&r0_r1_r2](Writer &w)

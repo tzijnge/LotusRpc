@@ -258,7 +258,7 @@ def test_rw_type_array_of_intrinsic() -> None:
 def test_rw_type_optional_of_intrinsic() -> None:
     v: LrpcVarDict = {"name": "v1", "type": "float", "count": "?"}
 
-    assert LrpcVar(v).rw_type() == "etl::optional<float>"
+    assert LrpcVar(v).rw_type() == "lrpc::optional<float>"
 
 
 def test_rw_type_custom() -> None:
@@ -288,7 +288,7 @@ def test_rw_type_array_of_custom_with_namespace() -> None:
 def test_rw_type_optional_of_custom_with_namespace() -> None:
     v: LrpcVarDict = {"name": "v1", "type": "@MyType", "count": "?"}
 
-    assert LrpcVar(v).rw_type("my_namespace") == "etl::optional<my_namespace::MyType>"
+    assert LrpcVar(v).rw_type("my_namespace") == "lrpc::optional<my_namespace::MyType>"
 
 
 class TestLrpcVarByteArray:
@@ -330,9 +330,9 @@ class TestLrpcVarByteArray:
 
         assert v.name() == "v1"
         assert v.base_type() == "bytearray"
-        assert v.field_type() == "etl::array<lrpc::bytearray, 2>"
-        assert v.return_type() == "etl::span<const lrpc::bytearray>"
-        assert v.param_type() == "etl::span<const lrpc::bytearray>"
+        assert v.field_type() == "lrpc::array<lrpc::bytearray, 2>"
+        assert v.return_type() == "lrpc::span<const lrpc::bytearray>"
+        assert v.param_type() == "lrpc::span<const lrpc::bytearray>"
         assert v.rw_type() == "lrpc::tags::array_n<lrpc::tags::bytearray_auto>"
         assert not v.base_type_is_custom()
         assert not v.base_type_is_struct()
@@ -361,10 +361,10 @@ class TestLrpcVarByteArray:
 
         assert v.name() == "v1"
         assert v.base_type() == "bytearray"
-        assert v.field_type() == "etl::optional<lrpc::bytearray>"
-        assert v.return_type() == "etl::optional<lrpc::bytearray>"
-        assert v.param_type() == "etl::optional<lrpc::bytearray>"
-        assert v.rw_type() == "etl::optional<lrpc::tags::bytearray_auto>"
+        assert v.field_type() == "lrpc::optional<lrpc::bytearray>"
+        assert v.return_type() == "lrpc::optional<lrpc::bytearray>"
+        assert v.param_type() == "lrpc::optional<lrpc::bytearray>"
+        assert v.rw_type() == "lrpc::optional<lrpc::tags::bytearray_auto>"
         assert not v.base_type_is_custom()
         assert not v.base_type_is_struct()
         assert not v.base_type_is_enum()

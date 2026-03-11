@@ -82,7 +82,7 @@ public:
         return p1;
     }
 
-    lrpc::bytearray_t f15(lrpc::bytearray_t p1) override
+    lrpc::bytearray f15(lrpc::bytearray p1) override
     {
         return p1;
     }
@@ -172,7 +172,7 @@ private:
     bool s4StopCalled{false};
 
     etl::array<uint8_t, 7> data{0x00U, 0x01U, 0x02U, 0x03U, 0x04U, 0x05U, 0x06U};
-    lrpc::bytearray_t s4_remaining{data};
+    lrpc::bytearray s4_remaining{data};
 };
 
 class ExampleServer : public example

@@ -1,9 +1,7 @@
 #pragma once
 #include <algorithm>
 #include <limits>
-#include <etl/array.h>
 #include <etl/byte_stream.h>
-#include <etl/string_view.h>
 #include "LrpcTypes.hpp"
 
 namespace lrpc
@@ -26,7 +24,7 @@ namespace lrpc
     };
 
     template <typename T>
-    struct is_etl_optional<etl::optional<T>> : public etl::true_type
+    struct is_etl_optional<lrpc::optional<T>> : public etl::true_type
     {
     };
 
@@ -56,7 +54,7 @@ namespace lrpc
     };
 
     template <typename T>
-    struct etl_optional_type<etl::optional<T>>
+    struct etl_optional_type<lrpc::optional<T>>
     {
         using type = T;
     };
@@ -68,27 +66,27 @@ namespace lrpc
     };
 
     template <typename T>
-    struct etl_optional_pr_type<etl::optional<T>>
+    struct etl_optional_pr_type<lrpc::optional<T>>
     {
-        using type = etl::optional<T>;
+        using type = lrpc::optional<T>;
     };
 
     template <>
-    struct etl_optional_pr_type<etl::optional<tags::string_auto>>
+    struct etl_optional_pr_type<lrpc::optional<tags::string_auto>>
     {
-        using type = etl::optional<etl::string_view>;
+        using type = lrpc::optional<lrpc::string_view>;
     };
 
     template <>
-    struct etl_optional_pr_type<etl::optional<tags::string_n>>
+    struct etl_optional_pr_type<lrpc::optional<tags::string_n>>
     {
-        using type = etl::optional<etl::string_view>;
+        using type = lrpc::optional<lrpc::string_view>;
     };
 
     template <>
-    struct etl_optional_pr_type<etl::optional<tags::bytearray_auto>>
+    struct etl_optional_pr_type<lrpc::optional<tags::bytearray_auto>>
     {
-        using type = etl::optional<bytearray>;
+        using type = lrpc::optional<bytearray>;
     };
 
     template <typename T>
@@ -110,19 +108,19 @@ namespace lrpc
     template <typename T>
     struct array_param_type<tags::array_n<T>>
     {
-        using type = etl::span<const typename array_n_type<typename tags::array_n<T>>::type>;
+        using type = lrpc::span<const typename array_n_type<typename tags::array_n<T>>::type>;
     };
 
     template <>
     struct array_param_type<tags::array_n<tags::string_auto>>
     {
-        using type = etl::span<const etl::string_view>;
+        using type = lrpc::span<const lrpc::string_view>;
     };
 
     template <>
     struct array_param_type<tags::array_n<tags::bytearray_auto>>
     {
-        using type = etl::span<const bytearray>;
+        using type = lrpc::span<const bytearray>;
     };
 
     template <typename T>
@@ -133,26 +131,26 @@ namespace lrpc
     template <typename T>
     struct array_outparam_type<tags::array_n<T>>
     {
-        using type = etl::span<typename array_n_type<typename tags::array_n<T>>::type>;
+        using type = lrpc::span<typename array_n_type<typename tags::array_n<T>>::type>;
     };
 
     template <>
     struct array_outparam_type<tags::array_n<tags::string_auto>>
     {
-        using type = etl::span<etl::string_view>;
+        using type = lrpc::span<lrpc::string_view>;
     };
 
     template <>
     struct array_outparam_type<tags::array_n<tags::bytearray_auto>>
     {
-        using type = etl::span<bytearray>;
+        using type = lrpc::span<bytearray>;
     };
 
     template <typename T>
     using array_n_type_is_string_n = etl::is_same<typename array_n_type<T>::type, tags::string_n>;
 
     template <typename T>
-    using is_optional_string_n = etl::is_same<T, etl::optional<tags::string_n>>;
+    using is_optional_string_n = etl::is_same<T, lrpc::optional<tags::string_n>>;
 
     // deleted read function to allow specializations for custom structs
     template <typename T>
@@ -190,7 +188,7 @@ namespace lrpc
 
     // Auto string
     template <typename T>
-    using enable_for_auto_string = etl::enable_if_t<etl::is_same<T, tags::string_auto>::value, etl::string_view>;
+    using enable_for_auto_string = etl::enable_if_t<etl::is_same<T, tags::string_auto>::value, lrpc::string_view>;
 
     template <typename T>
     enable_for_auto_string<T>
@@ -213,14 +211,14 @@ namespace lrpc
             skipSize = stringSize;
         }
 
-        const etl::string_view s{stream.end(), stringSize};
+        const lrpc::string_view s{stream.end(), stringSize};
         (void)stream.read_unchecked<uint8_t>(skipSize);
         return s;
     };
 
     // Fixed size string
     template <typename T>
-    using enable_for_fixed_size_string = etl::enable_if_t<etl::is_same<T, tags::string_n>::value, etl::string_view>;
+    using enable_for_fixed_size_string = etl::enable_if_t<etl::is_same<T, tags::string_n>::value, lrpc::string_view>;
 
     template <typename T>
     enable_for_fixed_size_string<T>
@@ -245,7 +243,7 @@ namespace lrpc
             skipSize = actualStringSize;
         }
 
-        const etl::string_view s{stream.end(), actualStringSize};
+        const lrpc::string_view s{stream.end(), actualStringSize};
         (void)stream.read_unchecked<uint8_t>(skipSize);
         return s;
     }
@@ -285,9 +283,9 @@ namespace lrpc
         return {};
     };
 
-    // Optional of fixed size string. Read as an optional of etl::string_view
+    // Optional of fixed size string. Read as an optional of lrpc::string_view
     template <typename T>
-    using enable_for_optional_string_n = etl::enable_if_t<is_optional_string_n<T>::value, etl::optional<etl::string_view>>;
+    using enable_for_optional_string_n = etl::enable_if_t<is_optional_string_n<T>::value, lrpc::optional<lrpc::string_view>>;
 
     template <typename T>
     enable_for_optional_string_n<T>
@@ -328,13 +326,13 @@ namespace lrpc
         }
     };
 
-    // Array of fixed size string. Read as an array of etl::string_view
+    // Array of fixed size string. Read as an array of lrpc::string_view
     template <typename T>
     using enable_for_array_of_string_n = etl::enable_if_t<is_array_n<T>::value && array_n_type_is_string_n<T>::value, void>;
 
     template <typename T>
     enable_for_array_of_string_n<T>
-    read_unchecked(etl::byte_stream_reader &stream, etl::span<etl::string_view> dest, size_t definitionArraySize, size_t definitionStringSize)
+    read_unchecked(etl::byte_stream_reader &stream, lrpc::span<lrpc::string_view> dest, size_t definitionArraySize, size_t definitionStringSize)
     {
         const auto s = std::min(dest.size(), definitionArraySize);
         for (size_t i{0}; i < s; ++i)
@@ -375,7 +373,7 @@ namespace lrpc
 
     // auto string
     template <typename T, typename etl::enable_if_t<etl::is_same<T, tags::string_auto>::value, bool> = true>
-    void write_unchecked(etl::byte_stream_writer &stream, const etl::string_view &value)
+    void write_unchecked(etl::byte_stream_writer &stream, const lrpc::string_view &value)
     {
         for (auto i = 0U; i < value.size(); ++i)
         {
@@ -388,7 +386,7 @@ namespace lrpc
 
     // fixed size string
     template <typename T, typename etl::enable_if_t<etl::is_same<T, tags::string_n>::value, bool> = true>
-    void write_unchecked(etl::byte_stream_writer &stream, const etl::string_view &value, size_t definitionStringSize)
+    void write_unchecked(etl::byte_stream_writer &stream, const lrpc::string_view &value, size_t definitionStringSize)
     {
         for (auto i = 0U; i < value.size(); ++i)
         {
@@ -434,7 +432,7 @@ namespace lrpc
 
     // optional fixed size string
     template <typename OPT, typename etl::enable_if_t<is_optional_string_n<OPT>::value, bool> = true>
-    void write_unchecked(etl::byte_stream_writer &stream, etl::optional<etl::string_view> value, size_t definitionStringSize)
+    void write_unchecked(etl::byte_stream_writer &stream, lrpc::optional<lrpc::string_view> value, size_t definitionStringSize)
     {
         stream.write_unchecked<bool>(value.has_value());
         if (value.has_value())
@@ -466,7 +464,7 @@ namespace lrpc
 
     // array of fixed size string
     template <typename ARR, typename etl::enable_if_t<is_array_n<ARR>::value && array_n_type_is_string_n<ARR>::value, bool> = true>
-    void write_unchecked(etl::byte_stream_writer &stream, etl::span<const etl::string_view> value, size_t definitionArraySize, size_t definitionStringSize)
+    void write_unchecked(etl::byte_stream_writer &stream, lrpc::span<const lrpc::string_view> value, size_t definitionArraySize, size_t definitionStringSize)
     {
         const auto s = std::min(value.size(), definitionArraySize);
         for (size_t i{0}; i < s; ++i)

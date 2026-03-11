@@ -24,10 +24,9 @@ class ConstantsFileVisitor(LrpcVisitor):
 
     def visit_lrpc_constant(self, constant: LrpcConstant) -> None:
         if "int" in constant.cpp_type():
-            self._includes.add("stdint.h")
+            self._includes.add("<stdint.h>")
         if (constant.cpp_type() == "string") or (constant.cpp_type() == "bytearray"):
-            # TODO: this include should be in quotes, not in angle brackets
-            self._includes.add("lrpccore/LrpcTypes.hpp")
+            self._includes.add('"lrpccore/LrpcTypes.hpp"')
 
         self._constant_definitions.append(self._constant_definition(constant))
 
@@ -44,7 +43,7 @@ class ConstantsFileVisitor(LrpcVisitor):
 
     def _write_includes(self) -> None:
         for i in self._includes:
-            self._file.write(f"#include <{i}>")
+            self._file.write(f"#include {i}")
 
     def _write_constant_definitions(self) -> None:
         for cd in self._constant_definitions:

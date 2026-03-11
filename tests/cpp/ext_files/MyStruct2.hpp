@@ -3,12 +3,12 @@
 
 namespace ext
 {
-namespace test
-{
-    struct MyStruct2
+    namespace test
     {
-        float f1;
-        etl::array<bool, 7> f2;
-    };
-}
+        struct MyStruct2
+        {
+            float f1;
+            lrpc::array<bool, 7> f2;
+        };
+    }
 }

@@ -28,10 +28,10 @@ class NamesValidator(LrpcValidator):
     def visit_lrpc_service(self, service: LrpcService) -> None:
         # A top-level item with the same name as the service is
         # not strictly a problem, because the generated class
-        # has the word 'ServiceShim' appended. But it is confusing
+        # has the word '_shim' appended. But it is confusing
         # and therefore both are treated as an invalid name
         self._check(service.name())
-        self._check(service.name() + "ServiceShim")
+        self._check(service.name() + "_shim")
 
     def visit_lrpc_constant(self, constant: LrpcConstant) -> None:
         self._check(constant.name())

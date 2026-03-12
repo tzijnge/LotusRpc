@@ -8,15 +8,15 @@ class TEST_BYTEARRAY_SERVICE : public test_ba::bytearray_shim
 public:
     MOCK_METHOD((lrpc::bytearray), param_return, (lrpc::bytearray), (override));
     MOCK_METHOD((std::tuple<lrpc::bytearray, lrpc::bytearray>), param_return_multiple, (lrpc::bytearray p0, lrpc::bytearray), (override));
-    MOCK_METHOD((etl::optional<lrpc::bytearray>), optional, (etl::optional<lrpc::bytearray>), (override));
-    MOCK_METHOD((etl::span<const lrpc::bytearray>), array, (etl::span<const lrpc::bytearray>), (override));
+    MOCK_METHOD((lrpc::optional<lrpc::bytearray>), optional, (lrpc::optional<lrpc::bytearray>), (override));
+    MOCK_METHOD((lrpc::span<const lrpc::bytearray>), array, (lrpc::span<const lrpc::bytearray>), (override));
     MOCK_METHOD(test_ba::BytearrayStruct, custom, (const test_ba::BytearrayStruct &), (override));
 
     // client streams
     MOCK_METHOD(void, client_single, (lrpc::bytearray), (override));
     MOCK_METHOD(void, client_multiple, (lrpc::bytearray, lrpc::bytearray), (override));
-    MOCK_METHOD(void, client_optional, (etl::optional<lrpc::bytearray>), (override));
-    MOCK_METHOD(void, client_array, (etl::span<const lrpc::bytearray>), (override));
+    MOCK_METHOD(void, client_optional, (lrpc::optional<lrpc::bytearray>), (override));
+    MOCK_METHOD(void, client_array, (lrpc::span<const lrpc::bytearray>), (override));
     MOCK_METHOD(void, client_custom, (const test_ba::BytearrayStruct &), (override));
 
     // server streams
@@ -68,9 +68,9 @@ TEST_F(TEST_BYTEARRAY_CLASS, param_return_multiple)
 TEST_F(TEST_BYTEARRAY_CLASS, optional)
 {
     const auto data0 = makeBytes(0x11, 0x22, 0x33);
-    const etl::optional<lrpc::bytearray> p0{data0};
+    const lrpc::optional<lrpc::bytearray> p0{data0};
     const auto data1 = makeBytes(0x44, 0x55, 0x66);
-    const etl::optional<lrpc::bytearray> r0{data1};
+    const lrpc::optional<lrpc::bytearray> r0{data1};
     EXPECT_CALL(service, optional(testutils::OPT_SPAN_EQ(p0))).WillOnce(Return(r0));
     const auto response = receive("0700020103112233");
     EXPECT_EQ("0700020103445566", response);
@@ -82,7 +82,7 @@ TEST_F(TEST_BYTEARRAY_CLASS, array)
     const auto ba1 = makeBytes(0x73, 0x74, 0x75);
     const std::vector<lrpc::bytearray> r0{ba0, ba1};
 
-    const auto handler = [r0](etl::span<const lrpc::bytearray> ba)
+    const auto handler = [r0](lrpc::span<const lrpc::bytearray> ba)
     {
         EXPECT_EQ(2, ba.size());
         EXPECT_EQ(3, ba.at(0).size());
@@ -93,7 +93,7 @@ TEST_F(TEST_BYTEARRAY_CLASS, array)
         EXPECT_EQ(0x44, ba.at(1).at(0));
         EXPECT_EQ(0x55, ba.at(1).at(1));
 
-        return etl::span<const lrpc::bytearray>{r0};
+        return lrpc::span<const lrpc::bytearray>{r0};
     };
 
     EXPECT_CALL(service, array(testing::_)).WillOnce(testing::Invoke(handler));
@@ -124,7 +124,7 @@ TEST_F(TEST_BYTEARRAY_CLASS, custom)
         EXPECT_EQ(0x77, bas.f2.at(1).at(0));
         EXPECT_EQ(0x78, bas.f2.at(1).at(1));
 
-        return test_ba::BytearrayStruct{ba4, etl::optional<lrpc::bytearray>{ba5}, {ba6, ba7}};
+        return test_ba::BytearrayStruct{ba4, lrpc::optional<lrpc::bytearray>{ba5}, {ba6, ba7}};
     };
 
     EXPECT_CALL(service, custom(testing::_)).WillOnce(testing::Invoke(handler));
@@ -154,7 +154,7 @@ TEST_F(TEST_BYTEARRAY_CLASS, client_multiple)
 TEST_F(TEST_BYTEARRAY_CLASS, client_optional)
 {
     const auto data0 = makeBytes(0x11, 0x22, 0x33);
-    const etl::optional<lrpc::bytearray> p0{data0};
+    const lrpc::optional<lrpc::bytearray> p0{data0};
     EXPECT_CALL(service, client_optional(testutils::OPT_SPAN_EQ(p0)));
     const auto response = receive("0700070103112233");
     EXPECT_EQ("", response);
@@ -162,7 +162,7 @@ TEST_F(TEST_BYTEARRAY_CLASS, client_optional)
 
 TEST_F(TEST_BYTEARRAY_CLASS, client_array)
 {
-    const auto handler = [](etl::span<const lrpc::bytearray> ba)
+    const auto handler = [](lrpc::span<const lrpc::bytearray> ba)
     {
         EXPECT_EQ(2, ba.size());
         EXPECT_EQ(3, ba.at(0).size());
@@ -241,6 +241,6 @@ TEST_F(TEST_BYTEARRAY_CLASS, server_custom)
     const auto ba6 = makeBytes(0x76, 0x77);
     const auto ba7 = makeBytes(0x78);
 
-    service.server_custom_response(test_ba::BytearrayStruct{ba4, etl::optional<lrpc::bytearray>{ba5}, {ba6, ba7}});
+    service.server_custom_response(test_ba::BytearrayStruct{ba4, lrpc::optional<lrpc::bytearray>{ba5}, {ba6, ba7}});
     EXPECT_EQ("0F000E03717273010274750276770178", response());
 }

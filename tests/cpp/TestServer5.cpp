@@ -31,8 +31,8 @@ namespace ts5
     class MockService3 : public srv3_shim
     {
     public:
-        MOCK_METHOD(void, client_infinite, (etl::span<const uint8_t>, etl::span<const etl::string_view>), (override));
-        MOCK_METHOD(void, client_finite, (etl::span<const uint8_t>, etl::span<const etl::string_view>, bool), (override));
+        MOCK_METHOD(void, client_infinite, (lrpc::span<const uint8_t>, lrpc::span<const lrpc::string_view>), (override));
+        MOCK_METHOD(void, client_finite, (lrpc::span<const uint8_t>, lrpc::span<const lrpc::string_view>, bool), (override));
         MOCK_METHOD(void, server_infinite, (), (override));
         MOCK_METHOD(void, server_infinite_stop, (), (override));
         MOCK_METHOD(void, server_finite, (), (override));

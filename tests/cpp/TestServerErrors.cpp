@@ -31,12 +31,12 @@ namespace
             // service 5 is intentionally not registered
         }
 
-        void receive(const etl::string_view hex)
+        void receive(const lrpc::string_view hex)
         {
             lrpcReceive(testutils::hexToBytes(hex));
         }
 
-        void lrpcTransmit(const etl::span<const uint8_t> bytes) override
+        void lrpcTransmit(const lrpc::span<const uint8_t> bytes) override
         {
             std::stringstream stream;
             for (const auto b : bytes)

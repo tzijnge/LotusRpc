@@ -24,7 +24,7 @@ namespace lrpc
     using span = etl::span<T>;
 
     template <typename T, size_t N>
-    using array = etl::array<T, N>;
+    using array = std::array<T, N>;
 
     template <typename T>
     using optional = etl::optional<T>;

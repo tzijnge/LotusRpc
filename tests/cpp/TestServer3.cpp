@@ -31,12 +31,12 @@ namespace
             registerService(service01);
         }
 
-        void receive(const etl::string_view hex)
+        void receive(const lrpc::string_view hex)
         {
             lrpcReceive(testutils::hexToBytes(hex));
         }
 
-        void lrpcTransmit(const etl::span<const uint8_t> bytes) override
+        void lrpcTransmit(const lrpc::span<const uint8_t> bytes) override
         {
             std::stringstream stream;
             for (const auto b : bytes)
@@ -69,13 +69,13 @@ TEST_F(TestServer3, decodeI0AndI5)
 
 namespace meta = srv3::lrpc_meta;
 static_assert(meta::DefinitionVersion.empty(), "");
-static_assert(std::is_same<decltype(meta::DefinitionVersion), const etl::string_view>::value, "");
+static_assert(std::is_same<decltype(meta::DefinitionVersion), const lrpc::string_view>::value, "");
 
 static_assert(meta::DefinitionHash.size() == 20, "");
-static_assert(std::is_same<decltype(meta::DefinitionHash), const etl::string_view>::value, "");
+static_assert(std::is_same<decltype(meta::DefinitionHash), const lrpc::string_view>::value, "");
 
 static_assert(!meta::LrpcVersion.empty(), "");
-static_assert(std::is_same<decltype(meta::LrpcVersion), const etl::string_view>::value, "");
+static_assert(std::is_same<decltype(meta::LrpcVersion), const lrpc::string_view>::value, "");
 
 TEST_F(TestServer3, versionInfo)
 {

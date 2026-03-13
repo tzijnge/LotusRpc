@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <cstdint>
 #include <etl/optional.h>
 #include <etl/span.h>
 #include <etl/string_view.h>

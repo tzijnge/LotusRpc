@@ -1,5 +1,5 @@
 #pragma once
-#include <etl/array.h>
+#include <array>
 
 namespace ext
 {
@@ -8,7 +8,7 @@ namespace ext
         struct MyStruct2
         {
             float f1;
-            lrpc::array<bool, 7> f2;
+            std::array<bool, 7> f2;
         };
     }
 }

@@ -73,7 +73,7 @@ def test_array_param() -> None:
         "origin": "server",
         "params": [{"name": "p0", "type": "uint8_t", "count": 25}],
     }
-    expected = """void test_stream_response(etl::span<const uint8_t> p0)
+    expected = """void test_stream_response(lrpc::span<const uint8_t> p0)
 {
 \tconst auto _lrpc_paramWriter = [&p0](Writer &w)
 \t{
@@ -93,7 +93,7 @@ def test_string_n_param() -> None:
         "origin": "server",
         "params": [{"name": "p0", "type": "string_20"}],
     }
-    expected = """void test_stream_response(etl::string_view p0)
+    expected = """void test_stream_response(lrpc::string_view p0)
 {
 \tconst auto _lrpc_paramWriter = [&p0](Writer &w)
 \t{
@@ -113,7 +113,7 @@ def test_array_of_string_n_param() -> None:
         "origin": "server",
         "params": [{"name": "p0", "type": "string_5", "count": 7}],
     }
-    expected = """void test_stream_response(etl::span<const etl::string_view> p0)
+    expected = """void test_stream_response(lrpc::span<const lrpc::string_view> p0)
 {
 \tconst auto _lrpc_paramWriter = [&p0](Writer &w)
 \t{

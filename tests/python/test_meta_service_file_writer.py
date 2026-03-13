@@ -22,12 +22,12 @@ public:
 
 \tvoid definition() override
 \t{
-\t\tetl::span<const uint8_t> data{lrpc_meta::CompressedDefinition};
+\t\tlrpc::span<const uint8_t> data{lrpc_meta::CompressedDefinition};
 
 \t\tbool final{false};
 \t\twhile (!final)
 \t\t{
-\t\t\tconst auto transmitSize = etl::min<size_t>(data.size(), lrpc_meta::DefinitionStreamChunkSize);
+\t\t\tconst auto transmitSize = std::min<size_t>(data.size(), lrpc_meta::DefinitionStreamChunkSize);
 \t\t\tfinal = (transmitSize != lrpc_meta::DefinitionStreamChunkSize) ||
 \t\t\t\t\t(data.size() == lrpc_meta::DefinitionStreamChunkSize);
 
@@ -36,7 +36,7 @@ public:
 \t}
 \tvoid definition_stop() override {}
 
-\tstd::tuple<etl::string_view, etl::string_view, etl::string_view> version() override
+\tstd::tuple<lrpc::string_view, lrpc::string_view, lrpc::string_view> version() override
 \t{
 \t\treturn {
 \t\t\tlrpc_meta::DefinitionVersion,
@@ -70,12 +70,12 @@ namespace my_namespace
 \t
 \t\tvoid definition() override
 \t\t{
-\t\t\tetl::span<const uint8_t> data{lrpc_meta::CompressedDefinition};
+\t\t\tlrpc::span<const uint8_t> data{lrpc_meta::CompressedDefinition};
 \t
 \t\t\tbool final{false};
 \t\t\twhile (!final)
 \t\t\t{
-\t\t\t\tconst auto transmitSize = etl::min<size_t>(data.size(), lrpc_meta::DefinitionStreamChunkSize);
+\t\t\t\tconst auto transmitSize = std::min<size_t>(data.size(), lrpc_meta::DefinitionStreamChunkSize);
 \t\t\t\tfinal = (transmitSize != lrpc_meta::DefinitionStreamChunkSize) ||
 \t\t\t\t\t\t(data.size() == lrpc_meta::DefinitionStreamChunkSize);
 \t
@@ -84,7 +84,7 @@ namespace my_namespace
 \t\t}
 \t\tvoid definition_stop() override {}
 \t
-\t\tstd::tuple<etl::string_view, etl::string_view, etl::string_view> version() override
+\t\tstd::tuple<lrpc::string_view, lrpc::string_view, lrpc::string_view> version() override
 \t\t{
 \t\t\treturn {
 \t\t\t\tlrpc_meta::DefinitionVersion,

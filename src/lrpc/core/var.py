@@ -31,8 +31,8 @@ LrpcVarValidator = TypeAdapter(LrpcVarDict)
 
 # pylint: disable = too-many-public-methods
 class LrpcVar:
-    ETL_STRING_VIEW: Final = "etl::string_view"
-    LRPC_BYTEARRAY_T: Final = "lrpc::bytearray_t"
+    ETL_STRING_VIEW: Final = "lrpc::string_view"
+    LRPC_BYTEARRAY: Final = "lrpc::bytearray"
 
     def __init__(self, raw: LrpcVarDict) -> None:
         LrpcVarValidator.validate_python(raw, strict=True, extra="forbid")
@@ -62,7 +62,7 @@ class LrpcVar:
             return LrpcVar.ETL_STRING_VIEW
 
         if self.base_type_is_bytearray():
-            return LrpcVar.LRPC_BYTEARRAY_T
+            return LrpcVar.LRPC_BYTEARRAY
 
         return self.base_type()
 
@@ -70,10 +70,10 @@ class LrpcVar:
         t = self._resolved_base_type()
 
         if self.is_optional():
-            return f"etl::optional<{t}>"
+            return f"lrpc::optional<{t}>"
 
         if self.is_array():
-            return f"etl::array<{t}, {self.array_size()}>"
+            return f"lrpc::array<{t}, {self.array_size()}>"
 
         return t
 
@@ -81,10 +81,10 @@ class LrpcVar:
         t = self._resolved_base_type()
 
         if self.is_optional():
-            return f"etl::optional<{t}>"
+            return f"lrpc::optional<{t}>"
 
         if self.is_array():
-            return f"etl::span<const {t}>"
+            return f"lrpc::span<const {t}>"
 
         return t
 
@@ -92,10 +92,10 @@ class LrpcVar:
         t = self._resolved_base_type()
 
         if self.is_optional():
-            return f"etl::optional<{t}>"
+            return f"lrpc::optional<{t}>"
 
         if self.is_array():
-            return f"etl::span<const {t}>"
+            return f"lrpc::span<const {t}>"
 
         if self.base_type_is_struct():
             return f"const {t}&"
@@ -116,7 +116,7 @@ class LrpcVar:
             return f"lrpc::tags::array_n<{t}>"
 
         if self.is_optional():
-            return f"etl::optional<{t}>"
+            return f"lrpc::optional<{t}>"
 
         return t
 

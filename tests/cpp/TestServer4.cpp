@@ -57,21 +57,21 @@ static_assert(srv4::c17 == testc17, "");
 static_assert(std::is_same<decltype(srv4::c17), const double>::value, "");
 
 static_assert(srv4::c18 == "This is an implicit string constant", "");
-static_assert(std::is_same<decltype(srv4::c18), const etl::string_view>::value, "");
+static_assert(std::is_same<decltype(srv4::c18), const lrpc::string_view>::value, "");
 
 static_assert(srv4::c19 == "This is an explicit string constant", "");
-static_assert(std::is_same<decltype(srv4::c19), const etl::string_view>::value, "");
+static_assert(std::is_same<decltype(srv4::c19), const lrpc::string_view>::value, "");
 
 static_assert(srv4::c20 == "333.444", "");
-static_assert(std::is_same<decltype(srv4::c20), const etl::string_view>::value, "");
+static_assert(std::is_same<decltype(srv4::c20), const lrpc::string_view>::value, "");
 
 static_assert(srv4::c21 == "444.444", "");
-static_assert(std::is_same<decltype(srv4::c21), const etl::string_view>::value, "");
+static_assert(std::is_same<decltype(srv4::c21), const lrpc::string_view>::value, "");
 
 TEST(TestServer4, c22)
 {
-    static_assert(std::is_same<decltype(srv4::c22), const etl::array<LRPC_BYTE_TYPE, 4>>::value, "");
-    EXPECT_EQ(srv4::c22, (etl::array<uint8_t, 4>{0xAA, 0xBB, 0x00, 0x01}));
+    static_assert(std::is_same<decltype(srv4::c22), const lrpc::array<LRPC_BYTE_TYPE, 4>>::value, "");
+    EXPECT_EQ(srv4::c22, (lrpc::array<LRPC_BYTE_TYPE, 4>{0xAA, 0xBB, 0x00, 0x01}));
 }
 
 static_assert(static_cast<int>(srv4::MyEnum::V0) == 0, "");
@@ -86,13 +86,13 @@ static_assert(static_cast<int>(srv4::MyEnum4::f4) == 223, "");
 
 namespace meta = srv4::lrpc_meta;
 static_assert(meta::DefinitionVersion == "major.minor.patch.123", "");
-static_assert(std::is_same<decltype(meta::DefinitionVersion), const etl::string_view>::value, "");
+static_assert(std::is_same<decltype(meta::DefinitionVersion), const lrpc::string_view>::value, "");
 
 static_assert(meta::DefinitionHash.size() == 64, "");
-static_assert(std::is_same<decltype(meta::DefinitionHash), const etl::string_view>::value, "");
+static_assert(std::is_same<decltype(meta::DefinitionHash), const lrpc::string_view>::value, "");
 
 static_assert(!meta::LrpcVersion.empty(), "");
-static_assert(std::is_same<decltype(meta::LrpcVersion), const etl::string_view>::value, "");
+static_assert(std::is_same<decltype(meta::LrpcVersion), const lrpc::string_view>::value, "");
 
 TEST(TestServer4, versionInfo)
 {

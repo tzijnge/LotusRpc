@@ -1,8 +1,8 @@
 #pragma once
+#include <cstdint>
 #include <etl/byte_stream.h>
 #include <etl/delegate.h>
-#include <etl/string_view.h>
-#include <cstdint>
+#include "LrpcTypes.hpp"
 #include "MetaError.hpp"
 
 namespace lrpc
@@ -18,7 +18,7 @@ namespace lrpc
         virtual void transmit(const uint8_t serviceId, const uint8_t functionOrStreamId) = 0;
         virtual void transmit(const uint8_t serviceId, const uint8_t functionOrStreamId, const ParamWriter writeParams) = 0;
 
-        virtual void error(const LrpcMetaError type, const uint8_t p1 = 0, const uint8_t p2 = 0, const int32_t p3 = 0, const etl::string_view &message = {}) = 0;
+        virtual void error(const LrpcMetaError type, const uint8_t p1 = 0, const uint8_t p2 = 0, const int32_t p3 = 0, const lrpc::string_view &message = {}) = 0;
     };
 
     class NullServer : public IServer
@@ -36,7 +36,7 @@ namespace lrpc
             // TODO: #206 Add LRPC_ASSERT
             // LRPC_ASSERT();
         }
-        void error(const LrpcMetaError, const uint8_t, const uint8_t, const int32_t, const etl::string_view &) final
+        void error(const LrpcMetaError, const uint8_t, const uint8_t, const int32_t, const lrpc::string_view &) final
         {
             // TODO: #206 Add LRPC_ASSERT
             // LRPC_ASSERT();

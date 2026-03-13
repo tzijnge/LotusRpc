@@ -1,7 +1,8 @@
 #pragma once
-#include "Service.hpp"
-#include <etl/array.h>
+#include <cstdint>
 #include <etl/vector.h>
+#include "LrpcTypes.hpp"
+#include "Service.hpp"
 
 namespace lrpc
 {
@@ -42,7 +43,7 @@ namespace lrpc
 
         void transmit(const uint8_t serviceId, const uint8_t functionOrStreamId, const ParamWriter writeParams) override
         {
-            auto w = Writer{sendBuffer.begin(), sendBuffer.end(), etl::endian::little};
+            auto w = Writer{sendBuffer, etl::endian::little};
 
             createHeader(w, serviceId, functionOrStreamId);
             writeParams(w);
@@ -62,7 +63,7 @@ namespace lrpc
             service.linkServer(*this);
         }
 
-        void lrpcReceive(etl::span<const uint8_t> bytes)
+        void lrpcReceive(lrpc::span<const uint8_t> bytes)
         {
             for (const auto b : bytes)
             {
@@ -81,19 +82,19 @@ namespace lrpc
             }
         }
 
-        void error(const LrpcMetaError type, const uint8_t p1 = 0, const uint8_t p2 = 0, const int32_t p3 = 0, const etl::string_view &message = {}) override
+        void error(const LrpcMetaError type, const uint8_t p1 = 0, const uint8_t p2 = 0, const int32_t p3 = 0, const lrpc::string_view &message = {}) override
         {
             metaService.error_response(type, p1, p2, p3, message);
         }
 
-        virtual void lrpcTransmit(etl::span<const uint8_t> bytes) = 0;
+        virtual void lrpcTransmit(lrpc::span<const uint8_t> bytes) = 0;
 
     private:
         etl::vector<uint8_t, RX_SIZE> receiveBuffer;
-        etl::array<uint8_t, TX_SIZE> sendBuffer;
+        lrpc::array<uint8_t, TX_SIZE> sendBuffer;
 
         // +2 to allocate space for all regular services and the meta service
-        etl::array<Service *, MAX_SERVICE_ID + 2U> services;
+        lrpc::array<Service *, MAX_SERVICE_ID + 2U> services;
         META_SERVICE metaService;
         ServiceNotFoundService serviceNotFound;
 

@@ -13,15 +13,8 @@ def lrpc_var_includes(var: LrpcVar) -> set[str]:
     if var.base_type_is_custom():
         includes.add(f'"{var.base_type()}.hpp"')
 
-    if var.base_type_is_string():
-        includes.add("<etl/string.h>")
-        includes.add("<etl/string_view.h>")
-
-    if var.is_array():
-        includes.add("<etl/span.h>")
-
-    if var.is_optional():
-        includes.add("<etl/optional.h>")
+    if var.base_type_is_string() or var.is_array() or var.is_optional():
+        includes.add('"lrpccore/LrpcTypes.hpp"')
 
     return includes
 

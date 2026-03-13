@@ -3,13 +3,12 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <etl/to_arithmetic.h>
-#include <etl/array.h>
-#include <etl/span.h>
 #include <vector>
 #include <stdexcept>
 #include <sstream>
 #include <iomanip>
 #include <string>
+#include "generated/core/lrpccore/LrpcTypes.hpp"
 
 namespace testutils
 {
@@ -25,7 +24,7 @@ namespace testutils
 #pragma warning(disable : 4100)
 #endif
 
-    MATCHER_P(SPAN_EQ, e, "Equality matcher for etl::span")
+    MATCHER_P(SPAN_EQ, e, "Equality matcher for lrpc::span")
     {
         if (e.size() != arg.size())
         {
@@ -43,7 +42,7 @@ namespace testutils
         return true;
     }
 
-    MATCHER_P(OPT_SPAN_EQ, e, "Equality matcher for etl::optional of etl::span")
+    MATCHER_P(OPT_SPAN_EQ, e, "Equality matcher for lrpc::optional of lrpc::span")
     {
         if (e.has_value() != arg.has_value())
         {
@@ -75,7 +74,7 @@ namespace testutils
 #pragma warning(pop)
 #endif
 
-    inline std::vector<uint8_t> hexToBytes(const etl::string_view hex)
+    inline std::vector<uint8_t> hexToBytes(const lrpc::string_view hex)
     {
         if ((hex.size() % 2) != 0)
         {
@@ -102,7 +101,7 @@ namespace testutils
         return bytes;
     }
 
-    inline std::string bytesToHex(const etl::span<const uint8_t> bytes)
+    inline std::string bytesToHex(const lrpc::span<const uint8_t> bytes)
     {
         std::stringstream ss;
         ss << std::hex << std::setfill('0') << std::uppercase;
@@ -124,7 +123,7 @@ namespace testutils
             Server::registerService(service);
         }
 
-        void lrpcTransmit(etl::span<const uint8_t> bytes) override
+        void lrpcTransmit(lrpc::span<const uint8_t> bytes) override
         {
             if (AutoReset)
             {
@@ -133,7 +132,7 @@ namespace testutils
             (void)responseBuffer.insert(responseBuffer.end(), bytes.begin(), bytes.end());
         }
 
-        std::string receive(const etl::string_view hex)
+        std::string receive(const lrpc::string_view hex)
         {
             Server::lrpcReceive(testutils::hexToBytes(hex));
             return response();

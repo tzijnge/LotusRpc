@@ -59,30 +59,30 @@ public:
         return {123, 456};
     }
 
-    etl::span<const uint8_t> f10() override
+    lrpc::span<const uint8_t> f10() override
     {
         return {};
     }
 
-    void f11(etl::span<const uint8_t>) override
+    void f11(lrpc::span<const uint8_t>) override
     {
     }
 
-    void f12(etl::optional<uint8_t>) override
+    void f12(lrpc::optional<uint8_t>) override
     {
     }
 
-    uint32_t f13(etl::string_view p1) override
+    uint32_t f13(lrpc::string_view p1) override
     {
         return p1.size();
     }
 
-    etl::string_view f14(etl::string_view p1) override
+    lrpc::string_view f14(lrpc::string_view p1) override
     {
         return p1;
     }
 
-    lrpc::bytearray_t f15(lrpc::bytearray_t p1) override
+    lrpc::bytearray f15(lrpc::bytearray p1) override
     {
         return p1;
     }
@@ -128,11 +128,11 @@ public:
         s1StopCalled = true;
     }
 
-    void s2(uint16_t, etl::string_view, bool) override
+    void s2(uint16_t, lrpc::string_view, bool) override
     {
     }
 
-    void s3(etl::string_view, int16_t) override
+    void s3(lrpc::string_view, int16_t) override
     {
     }
 
@@ -146,7 +146,7 @@ public:
 
         while (!s4StopCalled)
         {
-            const auto sub_size = etl::min<size_t>(s4_remaining.size(), 2);
+            const auto sub_size = std::min<size_t>(s4_remaining.size(), 2);
             const auto sub = s4_remaining.subspan(0, sub_size);
             const auto final = sub_size != 2;
             s4_response(sub, final);
@@ -171,8 +171,8 @@ private:
     bool s1StopCalled{false};
     bool s4StopCalled{false};
 
-    etl::array<uint8_t, 7> data{0x00U, 0x01U, 0x02U, 0x03U, 0x04U, 0x05U, 0x06U};
-    lrpc::bytearray_t s4_remaining{data};
+    lrpc::array<uint8_t, 7> data{0x00U, 0x01U, 0x02U, 0x03U, 0x04U, 0x05U, 0x06U};
+    lrpc::bytearray s4_remaining{data};
 };
 
 class ExampleServer : public example
@@ -184,7 +184,7 @@ public:
         registerService(srv2);
     }
 
-    void lrpcTransmit(etl::span<const uint8_t> bytes) override
+    void lrpcTransmit(lrpc::span<const uint8_t> bytes) override
     {
         HAL_UART_Transmit(&hlpuart1, bytes.data(), static_cast<uint16_t>(bytes.size()), HAL_MAX_DELAY);
     }

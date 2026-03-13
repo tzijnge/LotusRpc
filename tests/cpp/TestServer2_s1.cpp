@@ -6,15 +6,15 @@ using ::testing::Return;
 class MockS01Service : public s01_shim
 {
 public:
-    MOCK_METHOD(void, f0, (etl::span<const etl::string_view> p0), (override));
-    MOCK_METHOD((etl::span<const etl::string_view>), f1, (), (override));
-    MOCK_METHOD(void, f2, (etl::optional<etl::string_view> p01), (override));
-    MOCK_METHOD(void, f3, (etl::optional<etl::string_view> p01), (override));
-    MOCK_METHOD((etl::optional<etl::string_view>), f4, (), (override));
+    MOCK_METHOD(void, f0, (lrpc::span<const lrpc::string_view> p0), (override));
+    MOCK_METHOD((lrpc::span<const lrpc::string_view>), f1, (), (override));
+    MOCK_METHOD(void, f2, (lrpc::optional<lrpc::string_view> p01), (override));
+    MOCK_METHOD(void, f3, (lrpc::optional<lrpc::string_view> p01), (override));
+    MOCK_METHOD((lrpc::optional<lrpc::string_view>), f4, (), (override));
     MOCK_METHOD(void, f5, (const StringStruct &a), (override));
     MOCK_METHOD(StringStruct, f6, (), (override));
-    MOCK_METHOD((etl::string_view), f7, (etl::string_view p0), (override));
-    MOCK_METHOD(void, f8, (etl::span<const etl::string_view> p0), (override));
+    MOCK_METHOD((lrpc::string_view), f7, (lrpc::string_view p0), (override));
+    MOCK_METHOD(void, f8, (lrpc::span<const lrpc::string_view> p0), (override));
     MOCK_METHOD(void, f9, (const StringStruct2 &a), (override));
     MOCK_METHOD(StringStruct2, f10, (), (override));
 };
@@ -24,7 +24,7 @@ using TestServer2_s1 = testutils::TestServerBase<Server2, MockS01Service>;
 // Decode void function with array of strings param
 TEST_F(TestServer2_s1, decodeF0)
 {
-    using sv = etl::string_view;
+    using sv = lrpc::string_view;
     const std::vector<sv> expected{sv("T1"), sv("T2")};
     EXPECT_CALL(service, f0(testutils::SPAN_EQ(expected)));
     const auto response = receive("080100543100543200");
@@ -33,7 +33,7 @@ TEST_F(TestServer2_s1, decodeF0)
 
 TEST_F(TestServer2_s1, decodeF0WithStringShorterThanMax)
 {
-    using sv = etl::string_view;
+    using sv = lrpc::string_view;
     const std::vector<sv> expected{sv("1"), sv("2")};
     EXPECT_CALL(service, f0(testutils::SPAN_EQ(expected)));
     const auto response = receive("06010031003200");
@@ -43,7 +43,7 @@ TEST_F(TestServer2_s1, decodeF0WithStringShorterThanMax)
 // Decode function that returns array of strings
 TEST_F(TestServer2_s1, decodeF1)
 {
-    const etl::array<etl::string_view, 2> retVal{"T1", "T2"};
+    const lrpc::array<lrpc::string_view, 2> retVal{"T1", "T2"};
     EXPECT_CALL(service, f1()).WillOnce(Return(retVal));
     const auto response = receive("020101");
     EXPECT_EQ("080101543100543200", response);
@@ -52,8 +52,8 @@ TEST_F(TestServer2_s1, decodeF1)
 // Decode void function with optional fixed size string param
 TEST_F(TestServer2_s1, decodeF2)
 {
-    using sv = etl::string_view;
-    const etl::optional<sv> expected{"T1"};
+    using sv = lrpc::string_view;
+    const lrpc::optional<sv> expected{"T1"};
     EXPECT_CALL(service, f2(expected));
     const auto response = receive("06010201543100");
     EXPECT_EQ("020102", response);
@@ -62,8 +62,8 @@ TEST_F(TestServer2_s1, decodeF2)
 // Decode void function with optional auto string param
 TEST_F(TestServer2_s1, decodeF3)
 {
-    using sv = etl::string_view;
-    const etl::optional<sv> expected{"T1"};
+    using sv = lrpc::string_view;
+    const lrpc::optional<sv> expected{"T1"};
     EXPECT_CALL(service, f3(expected));
     const auto response = receive("06010301543100");
     EXPECT_EQ("020103", response);
@@ -72,7 +72,7 @@ TEST_F(TestServer2_s1, decodeF3)
 // Decode function that returns optional string
 TEST_F(TestServer2_s1, decodeF4)
 {
-    const etl::optional<etl::string_view> expected{"T1"};
+    const lrpc::optional<lrpc::string_view> expected{"T1"};
     EXPECT_CALL(service, f4()).WillOnce(Return(expected));
     const auto response = receive("020104");
     EXPECT_EQ("06010401543100", response);
@@ -107,7 +107,7 @@ TEST_F(TestServer2_s1, decodeF6)
 // Decode function that takes auto string argument and returns fixed size string
 TEST_F(TestServer2_s1, decodeF7)
 {
-    const etl::string_view expected{"T0"};
+    const lrpc::string_view expected{"T0"};
     EXPECT_CALL(service, f7(expected)).WillOnce(Return("T1234"));
     const auto response = receive("050107543000");
     EXPECT_EQ("080107543132333400", response);
@@ -116,7 +116,7 @@ TEST_F(TestServer2_s1, decodeF7)
 // Decode void function with array of auto strings param
 TEST_F(TestServer2_s1, decodeF8)
 {
-    using sv = etl::string_view;
+    using sv = lrpc::string_view;
     const std::vector<sv> expected{sv("T1"), sv("T2")};
     EXPECT_CALL(service, f8(testutils::SPAN_EQ(expected)));
     const auto response = receive("080108543100543200");

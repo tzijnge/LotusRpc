@@ -24,11 +24,9 @@ class ConstantsFileVisitor(LrpcVisitor):
 
     def visit_lrpc_constant(self, constant: LrpcConstant) -> None:
         if "int" in constant.cpp_type():
-            self._includes.add("stdint.h")
-        if constant.cpp_type() == "string":
-            self._includes.add("etl/string_view.h")
-        if constant.cpp_type() == "bytearray":
-            self._includes.update({"etl/array.h", "stdint.h"})
+            self._includes.add("<stdint.h>")
+        if (constant.cpp_type() == "string") or (constant.cpp_type() == "bytearray"):
+            self._includes.add('"lrpccore/LrpcTypes.hpp"')
 
         self._constant_definitions.append(self._constant_definition(constant))
 
@@ -45,7 +43,7 @@ class ConstantsFileVisitor(LrpcVisitor):
 
     def _write_includes(self) -> None:
         for i in self._includes:
-            self._file.write(f"#include <{i}>")
+            self._file.write(f"#include {i}")
 
     def _write_constant_definitions(self) -> None:
         for cd in self._constant_definitions:
@@ -57,11 +55,11 @@ class ConstantsFileVisitor(LrpcVisitor):
 
         if constant.cpp_type() == "string":
             str_value = typing.cast(str, constant.value())
-            t = "etl::string_view"
+            t = "lrpc::string_view"
             v = f'"{str_value}"'
         elif constant.cpp_type() == "bytearray":
             ba_value = typing.cast(bytes, constant.value())
-            t = f"etl::array<uint8_t, {len(ba_value)}>"
+            t = f"lrpc::array<LRPC_BYTE_TYPE, {len(ba_value)}>"
             v = ", ".join(hex(b) for b in ba_value)
         else:
             t = constant.cpp_type()

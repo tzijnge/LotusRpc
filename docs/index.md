@@ -32,9 +32,9 @@ LotusRPC aims to be extensible, although it is not yet as extensible as it could
 
 * string
   * Fixed size: e.g., `string_10` for a maximum size of 10 characters (excluding termination character)
-  * Automatic size: `string`. For this type the number of bytes that is transferred is determined by how long the actual string is. This can be different for every RPC function call, contrary to the fixed size string. An auto string is represented in the generated code with `etl::string_view`.
+  * Automatic size: `string`. For this type the number of bytes that is transferred is determined by how long the actual string is. This can be different for every RPC function call, contrary to the fixed size string. An auto string is represented in the generated code with `lrpc::string_view` which is an alias for `etl::string_view`.
 * bytearray
-This type represents an array of bytes. In Python, a function taking a `bytearray` parameter accepts `bytes`, `bytearray` or `memoryview`. In Python 3.12 any type that implements the `Buffer` protocol (`collections.abc.Buffer`) is accepted. Functions returning a `bytearray` always return a `bytes` object. In C++ `bytearray` translates to `etl::span<const uint8_t>`, but the alias `lrpc::bytearray_t` is available and used internally in LotusRPC. It is also possible to change the byte type to another single-byte type (e.g. `char`, `std::byte`, etc.) by defining `LRPC_BYTE_TYPE` as that type.
+This type represents an array of bytes. In Python, a function taking a `bytearray` parameter accepts `bytes`, `bytearray` or `memoryview`. In Python 3.12 any type that implements the `Buffer` protocol (`collections.abc.Buffer`) is accepted. Functions returning a `bytearray` always return a `bytes` object. In C++ `bytearray` translates to `lrpc::bytearray`, see [this section](#type-aliases).
 
 This type was added because in the generated C++ code `bytearray` is more efficient than using a plain array of `uint8_t`. In Python it is convenient to have something that maps to a built-in byte-like type, e.g. for binary blob transfer between client and server.
 
@@ -43,7 +43,7 @@ This type was added because in the generated C++ code `bytearray` is more effici
   * Enabled by using the `count` setting in the definition file with any value larger than 1
 * optional
   * Can be used with any type
-  * Translated to `etl::optional` in the generated C++ code
+  * Translated to `lrpc::optional` in the generated C++ code
   * Enabled by using the `count` setting in the definition file with a value `?`
 * custom
   * struct
@@ -52,6 +52,26 @@ This type was added because in the generated C++ code `bytearray` is more effici
   * enum
     * A custom enum can have any number of fields
     * Translated to an `enum class` in the generated C++ code
+
+### Type aliases
+
+LotusRPC defines the following type aliases and uses them internally.
+
+* `LRPC_BYTE_TYPE`. Type that LotusRPC uses internally to represent a byte. Defaults to `uint8_t` but can be defined to any other single-byte type,
+* `lrpc::bytearray`. Alias for `etl::span<const LRPC_BYTE_TYPE>`
+* `lrpc::string_view`. Alias for `etl::string_view`
+* `lrpc::span`. Alias for `etl::span`
+* `lrpc::array`. Alias for `std::array`
+* `lrpc::optional`. Alias for `etl::optional`
+
+### Parameter and return value ownership
+
+In LotusRPC, a remote function call from client to server involves decoding function parameters from the server receive buffer and forwarding them to the user implementation of the remote function. Conversely, a value (or values) returned by the user function is encoded into the server transmit buffer. LotusRPC uses value semantics for these processes as much as possible, but for efficiency there are a few exceptions.
+
+* Strings (fixed size and auto size) use reference semantics. A string function parameter translates to `lrpc::string_view` that views directly into the server receive buffer. This means that the parameter can be used safely inside the function implementation, but the user must make a copy if the string value must be available outside of the function call. A string return value also translates to `lrpc::string_view` and the user must take care that the lifetime of the return value exceeds that of the function it is returned from, at least until the value is copied into the server transmit buffer by LotusRPC. This should be relatively intuitive to an experienced C++ programmer because returning a reference of any kind (`*`, `&`, `string_view`, `span`, etc.) to a local variable leads to undefined behavior.
+* Arrays are copied from the server receive buffer to a local `lrpc::array` variable before being passed as a function parameter as `lrpc::span`. The local copy is necessary because an array can hold any other type and the location of the array in the server receive buffer does not necessarily meet the alignment requirements of the contained type. Array type function return values use `lrpc::span`. The semantics for array parameters and returns are the same as for strings.
+* Byte arrays are treated the same as strings, but use a different type: `lrpc::bytearray`. Since this type is a view on a range of single-byte values, there is no risk of invalid alignment as with a normal array.
+* Struct parameters are copied from the server receive buffer to a local value and then passed by reference (`&`) to the user function. Structs are returned from a function by value. Struct fields are value types, except for strings (`lrpc::string_view`) and byte arrays (`lrpc::bytearray`).
 
 ### Multiple return values
 
@@ -84,16 +104,15 @@ LRPC uses Python to generate code and can therefore be used on all platforms tha
 ## Example definition
 
 ``` yaml
+name: example
 services:
   - name: battery
     functions:
       - name: get
         params:
-          - name: option
-            type: "@VoltageScales"
+          - { name: option, type: "@VoltageScales" }
         returns:
-          - name: voltage
-            type: double
+          - { name: voltage, type: double }
 enums:
   - name: VoltageScales
     fields:

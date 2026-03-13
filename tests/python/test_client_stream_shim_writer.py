@@ -69,7 +69,7 @@ def test_array_param() -> None:
     }
     expected = """void test_stream_shim(Reader& r)
 {
-\tetl::array<uint8_t, 25> p0;
+\tlrpc::array<uint8_t, 25> p0;
 \tlrpc::read_unchecked<lrpc::tags::array_n<uint8_t>>(r, p0, 25);
 \ttest_stream(p0);
 }
@@ -104,7 +104,7 @@ def test_array_of_string_n_param() -> None:
     }
     expected = """void test_stream_shim(Reader& r)
 {
-\tetl::array<etl::string_view, 7> p0;
+\tlrpc::array<lrpc::string_view, 7> p0;
 \tlrpc::read_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(r, p0, 7, 5);
 \ttest_stream(p0);
 }

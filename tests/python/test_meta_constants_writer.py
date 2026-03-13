@@ -22,22 +22,21 @@ def test_with_namespace() -> None:
     expected = (
         """#pragma once
 #include <stdint.h>
-#include <etl/array.h>
-#include <etl/string_view.h>
+#include "lrpccore/LrpcTypes.hpp"
 
 namespace test123
 {
 \tnamespace lrpc_meta
 \t{
-\t\tstatic constexpr etl::string_view DefinitionVersion {};
-\t\tstatic constexpr etl::string_view DefinitionHash {};
-\t\tstatic constexpr etl::string_view LrpcVersion {"""
+\t\tstatic constexpr lrpc::string_view DefinitionVersion {};
+\t\tstatic constexpr lrpc::string_view DefinitionHash {};
+\t\tstatic constexpr lrpc::string_view LrpcVersion {"""
         f'"{lrpc_version}"'
         """};
 \t\t
 \t\tstatic constexpr size_t DefinitionStreamChunkSize {20};
 \t\t
-\t\tstatic constexpr etl::array<uint8_t, 0> CompressedDefinition =
+\t\tstatic constexpr lrpc::array<uint8_t, 0> CompressedDefinition =
 \t\t{
 \t\t\t// Use the 'embed_definition' setting in the definition file to embed the definition in the generated server code
 \t\t};
@@ -66,20 +65,19 @@ def test_without_namespace() -> None:
     expected = (
         """#pragma once
 #include <stdint.h>
-#include <etl/array.h>
-#include <etl/string_view.h>
+#include "lrpccore/LrpcTypes.hpp"
 
 namespace lrpc_meta
 {
-\tstatic constexpr etl::string_view DefinitionVersion {};
-\tstatic constexpr etl::string_view DefinitionHash {};
-\tstatic constexpr etl::string_view LrpcVersion {"""
+\tstatic constexpr lrpc::string_view DefinitionVersion {};
+\tstatic constexpr lrpc::string_view DefinitionHash {};
+\tstatic constexpr lrpc::string_view LrpcVersion {"""
         f'"{lrpc_version}"'
         """};
 \t
 \tstatic constexpr size_t DefinitionStreamChunkSize {30};
 \t
-\tstatic constexpr etl::array<uint8_t, 0> CompressedDefinition =
+\tstatic constexpr lrpc::array<uint8_t, 0> CompressedDefinition =
 \t{
 \t\t// Use the 'embed_definition' setting in the definition file to embed the definition in the generated server code
 \t};
@@ -107,22 +105,21 @@ def test_with_definition_hash_and_version() -> None:
     expected = (
         """#pragma once
 #include <stdint.h>
-#include <etl/array.h>
-#include <etl/string_view.h>
+#include "lrpccore/LrpcTypes.hpp"
 
 namespace test123
 {
 \tnamespace lrpc_meta
 \t{
-\t\tstatic constexpr etl::string_view DefinitionVersion {"1.2.3.4"};
-\t\tstatic constexpr etl::string_view DefinitionHash {"AABBCCDD"};
-\t\tstatic constexpr etl::string_view LrpcVersion {"""
+\t\tstatic constexpr lrpc::string_view DefinitionVersion {"1.2.3.4"};
+\t\tstatic constexpr lrpc::string_view DefinitionHash {"AABBCCDD"};
+\t\tstatic constexpr lrpc::string_view LrpcVersion {"""
         f'"{lrpc_version}"'
         """};
 \t\t
 \t\tstatic constexpr size_t DefinitionStreamChunkSize {20};
 \t\t
-\t\tstatic constexpr etl::array<uint8_t, 0> CompressedDefinition =
+\t\tstatic constexpr lrpc::array<uint8_t, 0> CompressedDefinition =
 \t\t{
 \t\t\t// Use the 'embed_definition' setting in the definition file to embed the definition in the generated server code
 \t\t};
@@ -152,20 +149,19 @@ def test_without_namespace_with_compressed_definition() -> None:
     expected = (
         """#pragma once
 #include <stdint.h>
-#include <etl/array.h>
-#include <etl/string_view.h>
+#include "lrpccore/LrpcTypes.hpp"
 
 namespace lrpc_meta
 {
-\tstatic constexpr etl::string_view DefinitionVersion {};
-\tstatic constexpr etl::string_view DefinitionHash {};
-\tstatic constexpr etl::string_view LrpcVersion {"""
+\tstatic constexpr lrpc::string_view DefinitionVersion {};
+\tstatic constexpr lrpc::string_view DefinitionHash {};
+\tstatic constexpr lrpc::string_view LrpcVersion {"""
         f'"{lrpc_version}"'
         """};
 \t
 \tstatic constexpr size_t DefinitionStreamChunkSize {30};
 \t
-\tstatic constexpr etl::array<uint8_t, 20> CompressedDefinition =
+\tstatic constexpr lrpc::array<uint8_t, 20> CompressedDefinition =
 \t{
 \t\t0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
 \t\t0x10, 0x11, 0x12, 0x13,

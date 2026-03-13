@@ -107,7 +107,7 @@ TEST_F(TestServer1, decodeF4)
 // Decode function f5 with array of uint16_t arg
 TEST_F(TestServer1, decodeF5)
 {
-    std::vector<uint16_t> expected{0xBBAA, 0xDDCC};
+    const std::vector<uint16_t> expected{0xBBAA, 0xDDCC};
     EXPECT_CALL(service, f5(testutils::SPAN_EQ(expected)));
     const auto response = receive("060005AABBCCDD");
     EXPECT_EQ("020005", response);
@@ -132,7 +132,7 @@ TEST_F(TestServer1, decodeF6WithMissingStringTerminator)
 // Decode function f7 with custom type
 TEST_F(TestServer1, decodeF7)
 {
-    ts1::CompositeData expected{{0xBBAA, 0xDDCC}, 123, true};
+    const ts1::CompositeData expected{{0xBBAA, 0xDDCC}, 123, true};
     EXPECT_CALL(service, f7(expected));
     const auto response = receive("080007AABBCCDD7B01");
     EXPECT_EQ("020007", response);
@@ -201,7 +201,7 @@ TEST_F(TestServer1, decodeF14)
 // Decode function f15 which return array of uint16_t
 TEST_F(TestServer1, decodeF15)
 {
-    lrpc::array<uint16_t, 2> expected{0xBBAA, 0xDDCC};
+    const lrpc::array<uint16_t, 2> expected{0xBBAA, 0xDDCC};
     EXPECT_CALL(service, f15()).WillOnce(Return(expected));
     const auto response = receive("02000F");
     EXPECT_EQ("06000FAABBCCDD", response);
@@ -234,7 +234,7 @@ TEST_F(TestServer1, decodeF18)
 // Decode function f19 which returns array of custom type
 TEST_F(TestServer1, decodeF19)
 {
-    lrpc::array<ts1::CompositeData2, 2> expected{
+    const lrpc::array<ts1::CompositeData2, 2> expected{
         ts1::CompositeData2{0xAA, 0xBB},
         ts1::CompositeData2{0xCC, 0xDD}};
     EXPECT_CALL(service, f19()).WillOnce(Return(expected));

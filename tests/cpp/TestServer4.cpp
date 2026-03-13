@@ -71,7 +71,7 @@ static_assert(std::is_same<decltype(srv4::c21), const lrpc::string_view>::value,
 TEST(TestServer4, c22)
 {
     static_assert(std::is_same<decltype(srv4::c22), const lrpc::array<LRPC_BYTE_TYPE, 4>>::value, "");
-    EXPECT_EQ(srv4::c22, (lrpc::array<uint8_t, 4>{0xAA, 0xBB, 0x00, 0x01}));
+    EXPECT_EQ(srv4::c22, (lrpc::array<LRPC_BYTE_TYPE, 4>{0xAA, 0xBB, 0x00, 0x01}));
 }
 
 static_assert(static_cast<int>(srv4::MyEnum::V0) == 0, "");

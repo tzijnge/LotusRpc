@@ -173,7 +173,7 @@ TEST(TestEtlRwExtensions, readArrayOfBytearray)
     const etl::vector<uint8_t, 10> storage{0x02, 0x11, 0x22, 0x03, 0x33, 0x44, 0x55};
     etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
 
-    lrpc::array<lrpc::span<const uint8_t>, 2> a1;
+    lrpc::array<lrpc::bytearray, 2> a1;
     lrpc::read_unchecked<lrpc::tags::array_n<lrpc::tags::bytearray_auto>>(reader, a1, 2);
     ASSERT_EQ(2, a1.size());
     ASSERT_EQ(2, a1.at(0).size());

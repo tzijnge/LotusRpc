@@ -7,8 +7,8 @@ namespace ext
     {
         struct MyStruct2
         {
-            float f1;
-            std::array<bool, 7> f2;
+            float f1{};
+            std::array<bool, 7> f2{};
         };
     }
 }

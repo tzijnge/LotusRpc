@@ -1,6 +1,6 @@
 #pragma once
 
-#include <etl/array.h>
+#include <array>
 #include <etl/optional.h>
 #include <etl/span.h>
 #include <etl/string_view.h>

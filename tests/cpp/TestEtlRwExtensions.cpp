@@ -296,7 +296,7 @@ TEST(TestEtlRwExtensions, readBytearray)
 TEST(TestEtlRwExtensions, writeArithmetic)
 {
     lrpc::array<uint8_t, 10> storage;
-    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+    etl::byte_stream_writer writer(storage, etl::endian::little);
 
     lrpc::write_unchecked<bool>(writer, false);
     lrpc::write_unchecked<bool>(writer, true);
@@ -325,7 +325,7 @@ TEST(TestEtlRwExtensions, writeEnum)
     };
 
     etl::vector<uint8_t, 1> storage;
-    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+    etl::byte_stream_writer writer(storage, etl::endian::little);
 
     lrpc::write_unchecked<Dummy>(writer, Dummy::V1);
     const auto written = writer.used_data();
@@ -336,7 +336,7 @@ TEST(TestEtlRwExtensions, writeEnum)
 TEST(TestEtlRwExtensions, writeOptional)
 {
     lrpc::array<uint8_t, 10> storage;
-    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+    etl::byte_stream_writer writer(storage, etl::endian::little);
 
     lrpc::write_unchecked<lrpc::optional<uint8_t>>(writer, {});
     lrpc::write_unchecked<lrpc::optional<uint8_t>>(writer, 0x02);
@@ -351,7 +351,7 @@ TEST(TestEtlRwExtensions, writeOptional)
 TEST(TestEtlRwExtensions, writeString)
 {
     lrpc::array<uint8_t, 10> storage;
-    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+    etl::byte_stream_writer writer(storage, etl::endian::little);
 
     lrpc::write_unchecked<lrpc::tags::string_n>(writer, "T1", 4);
     const lrpc::string_view t2("T2");
@@ -372,7 +372,7 @@ TEST(TestEtlRwExtensions, writeString)
 TEST(TestEtlRwExtensions, writeAutoString)
 {
     lrpc::array<uint8_t, 10> storage;
-    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+    etl::byte_stream_writer writer(storage, etl::endian::little);
 
     lrpc::write_unchecked<lrpc::tags::string_auto>(writer, "T1");
     const lrpc::string_view t2("T2");
@@ -391,7 +391,7 @@ TEST(TestEtlRwExtensions, writeAutoString)
 TEST(TestEtlRwExtensions, writeByteArray)
 {
     lrpc::array<uint8_t, 10> storage;
-    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+    etl::byte_stream_writer writer(storage, etl::endian::little);
 
     const lrpc::array<uint8_t, 3> a{0x11, 0x12, 0x13};
     const lrpc::array<uint8_t, 2> b{0x14, 0x15};
@@ -422,7 +422,7 @@ TEST(TestEtlRwExtensions, writeBytearrayTooBig)
     // or not the value will fit in the transmit buffer
 
     lrpc::array<uint8_t, 500> storage{};
-    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+    etl::byte_stream_writer writer(storage, etl::endian::little);
 
     lrpc::array<uint8_t, 300> a{};
     std::iota(a.begin(), a.end(), 0);
@@ -443,7 +443,7 @@ TEST(TestEtlRwExtensions, writeBytearrayTooBig)
 TEST(TestEtlRwExtensions, writeArray)
 {
     lrpc::array<uint8_t, 10> storage;
-    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+    etl::byte_stream_writer writer(storage, etl::endian::little);
 
     lrpc::array<uint8_t, 3> t2{0x01, 0x02, 0x03};
     lrpc::write_unchecked<lrpc::tags::array_n<uint8_t>>(writer, t2, 2);
@@ -457,7 +457,7 @@ TEST(TestEtlRwExtensions, writeArray)
 TEST(TestEtlRwExtensions, writeArrayFromInsufficientStorage)
 {
     lrpc::array<uint8_t, 10> storage;
-    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+    etl::byte_stream_writer writer(storage, etl::endian::little);
 
     // request to write 3, but only 2 available. Fill remaining with default values
     lrpc::array<uint8_t, 2> t2{0x01, 0x02};
@@ -473,7 +473,7 @@ TEST(TestEtlRwExtensions, writeArrayFromInsufficientStorage)
 TEST(TestEtlRwExtensions, writeArrayOfFixedSizeString)
 {
     lrpc::array<uint8_t, 10> storage;
-    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+    etl::byte_stream_writer writer(storage, etl::endian::little);
 
     lrpc::array<lrpc::string_view, 2> a{"T1", "T22"};
     lrpc::write_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(writer, a, 2, 3);
@@ -493,7 +493,7 @@ TEST(TestEtlRwExtensions, writeArrayOfFixedSizeString)
 TEST(TestEtlRwExtensions, writeArrayOfFixedSizeStringFromInsufficientStorage)
 {
     lrpc::array<uint8_t, 12> storage;
-    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+    etl::byte_stream_writer writer(storage, etl::endian::little);
 
     // request to write 3, but only 2 available. Fill remaining with default values
     lrpc::array<lrpc::string_view, 2> a{"T1", "T22"};
@@ -518,7 +518,7 @@ TEST(TestEtlRwExtensions, writeArrayOfFixedSizeStringFromInsufficientStorage)
 TEST(TestEtlRwExtensions, writeArrayOfAutoString)
 {
     lrpc::array<uint8_t, 10> storage;
-    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+    etl::byte_stream_writer writer(storage, etl::endian::little);
 
     lrpc::array<lrpc::string_view, 2> a{"T1", "T1234"};
     lrpc::write_unchecked<lrpc::tags::array_n<lrpc::tags::string_auto>>(writer, a, 2);
@@ -539,7 +539,7 @@ TEST(TestEtlRwExtensions, writeArrayOfAutoString)
 TEST(TestEtlRwExtensions, writeArrayOfAutoStringFromInsufficientStorage)
 {
     lrpc::array<uint8_t, 10> storage;
-    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+    etl::byte_stream_writer writer(storage, etl::endian::little);
 
     // request to write 3, but only 2 available. Fill remaining with default values
     lrpc::array<lrpc::string_view, 2> a{"T1", "T1234"};
@@ -562,7 +562,7 @@ TEST(TestEtlRwExtensions, writeArrayOfAutoStringFromInsufficientStorage)
 TEST(TestEtlRwExtensions, writeOptionalFixedSizeString)
 {
     lrpc::array<uint8_t, 10> storage;
-    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+    etl::byte_stream_writer writer(storage, etl::endian::little);
 
     const lrpc::optional<lrpc::string_view> a{"T1"};
     const lrpc::optional<lrpc::string_view> b{};
@@ -582,7 +582,7 @@ TEST(TestEtlRwExtensions, writeOptionalFixedSizeString)
 TEST(TestEtlRwExtensions, writeOptionalAutoString)
 {
     lrpc::array<uint8_t, 10> storage;
-    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+    etl::byte_stream_writer writer(storage, etl::endian::little);
 
     const lrpc::optional<lrpc::string_view> a{"T1"};
     const lrpc::optional<lrpc::string_view> b{};
@@ -602,7 +602,7 @@ TEST(TestEtlRwExtensions, writeOptionalBytearray)
 {
     lrpc::array<uint8_t, 10> storage;
     const lrpc::array<uint8_t, 2> o1{0x11, 0x22};
-    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+    etl::byte_stream_writer writer(storage, etl::endian::little);
 
     lrpc::write_unchecked<lrpc::optional<lrpc::tags::bytearray_auto>>(writer, {});
     lrpc::write_unchecked<lrpc::optional<lrpc::tags::bytearray_auto>>(writer, lrpc::span<const uint8_t>{});
@@ -627,7 +627,7 @@ TEST(TestEtlRwExtensions, writeArrayOfBytearray)
     lrpc::array<uint8_t, 10> storage;
     const lrpc::array<uint8_t, 2> ba1{0x11, 0x22};
     const lrpc::array<uint8_t, 3> ba2{0x33, 0x44, 0x55};
-    etl::byte_stream_writer writer(storage.begin(), storage.end(), etl::endian::little);
+    etl::byte_stream_writer writer(storage, etl::endian::little);
 
     lrpc::array<lrpc::span<const uint8_t>, 2> baArray{ba1, ba2};
     lrpc::write_unchecked<lrpc::tags::array_n<lrpc::tags::bytearray_auto>>(writer, baArray, 2);

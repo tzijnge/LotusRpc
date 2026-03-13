@@ -43,7 +43,7 @@ namespace lrpc
 
         void transmit(const uint8_t serviceId, const uint8_t functionOrStreamId, const ParamWriter writeParams) override
         {
-            auto w = Writer{sendBuffer.begin(), sendBuffer.end(), etl::endian::little};
+            auto w = Writer{sendBuffer, etl::endian::little};
 
             createHeader(w, serviceId, functionOrStreamId);
             writeParams(w);

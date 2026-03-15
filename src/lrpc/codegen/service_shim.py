@@ -28,7 +28,11 @@ class ServiceShimVisitor(LrpcVisitor):
         write_file_banner(self._file)
         self._write_include_guard()
         self._write_includes()
-        optionally_in_namespace(self._file, self._write_service_shim, self._namespace)
+        optionally_in_namespace(self._file, self._write_aliases_and_service_shim, self._namespace)
+
+    def _write_aliases_and_service_shim(self) -> None:
+        self._write_aliases()
+        self._write_service_shim()
 
     def _write_service_shim(self) -> None:
         functions = self._service.functions()
@@ -70,7 +74,10 @@ class ServiceShimVisitor(LrpcVisitor):
 
         for function in functions:
             params = self._params_string(function.params())
-            returns = self._returns_string(function.returns())
+            if function.returns_alias() is not None:
+                returns = function.returns_alias()
+            else:
+                returns = self._returns_string(function.returns())
             self._file.write(f"virtual {returns} {function.name()}({params}) = 0;")
             self._file.newline()
 
@@ -220,6 +227,14 @@ class ServiceShimVisitor(LrpcVisitor):
         self._file('#include "lrpccore/Service.hpp"')
         self._file('#include "lrpccore/EtlRwExtensions.hpp"')
         self._file(f'#include "{self._service.name()}_includes.hpp"')
+
+        self._file.newline()
+
+    def _write_aliases(self) -> None:
+        for f in self._service.functions():
+            if f.returns_alias() is not None:
+                returns = self._returns_string(f.returns())
+                self._file.write(f"using {f.returns_alias()} = {returns};")
 
         self._file.newline()
 

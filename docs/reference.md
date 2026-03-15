@@ -58,13 +58,16 @@ A single LRPC service must contain at least one function or stream and up to 256
 
 A function has the following properties:
 
-| Required | Optional |
-|----------|----------|
-| name     | id       |
-|          | params   |
-|          | returns  |
+| Required | Optional      |
+|----------|---------------|
+| name     | id            |
+|          | params        |
+|          | returns       |
+|          | returns_alias |
 
 `name` is the name of the function. It must be a valid C++ identifier. `id` is the function identifier, similar to the [service ID](#service-id). `params` is a list of parameters and `returns` is a list of return values. Every item in `params` and `returns` is a [LrpcType](#lrpctype).
+
+It is possible to define an alias for the combined function returns with `returns_alias`. For functions with multiple, complex return values this can significantly improve readability of generated C++ code. The alias must be a valid C++ identifier and not collide with any of the function parameter or return names.
 
 ### Streams
 

@@ -75,7 +75,7 @@ In LotusRPC, a remote function call from client to server involves decoding func
 
 ### Multiple return values
 
-Multiple return values for a function are supported. In the generated C++ code this feature is translated to a function returning a `std::tuple`
+Multiple return values for a function are supported. In the generated C++ code this feature is translated to a function returning a `std::tuple`. Because multiple return types can quickly become hard to read in C++ (especially when returning arrays, strings, optionals, etc, that are template types themselves), LotusRpc allows defining a alias for the combined return type with the [`returns_alias`](reference.md#functions) property. This way something complex like `std::tuple<lrpc::array<lrpc::string_view, 5>, uint32_t>` can be aliased to something simple like `LogChunk`.
 
 ### Interface definition file
 

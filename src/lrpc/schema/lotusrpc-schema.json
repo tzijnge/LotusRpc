@@ -221,6 +221,12 @@
             "$ref": "#/$defs/var_decl"
           },
           "description": "List of function returns"
+        },
+        "returns_alias": {
+          "name": {
+            "$ref": "#/$defs/cppid"
+          },
+          "description": "Alias for the combined return types"
         }
       }
     },

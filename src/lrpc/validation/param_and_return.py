@@ -57,7 +57,8 @@ class ParamAndReturnValidator(LrpcValidator):
 
         if (len(self._return_names) == 0) and (self._returns_alias is not None):
             self.add_warning(
-                f"returns_alias specified for function without returns: {self._current_service}.{self._current_function}",
+                "returns_alias specified for function without returns:"
+                f" {self._current_service}.{self._current_function}",
             )
 
         self._param_return_names.clear()

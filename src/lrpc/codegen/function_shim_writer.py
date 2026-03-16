@@ -46,6 +46,9 @@ class FunctionShimWriter:
 
     @staticmethod
     def _response_var_name(function: LrpcFun) -> str:
+        if function.returns_alias() is not None:
+            return "_" + function.returns_alias()
+
         return "_".join([r.name() for r in function.returns()])
 
     def _write_invocation(self, function: LrpcFun) -> None:

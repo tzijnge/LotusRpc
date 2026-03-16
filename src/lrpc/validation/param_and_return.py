@@ -47,7 +47,10 @@ class ParamAndReturnValidator(LrpcValidator):
         self._return_names.append(name)
 
     def visit_lrpc_function_end(self) -> None:
-        if len(self._return_names) > 1:
+        number_returns = len(self._return_names)
+        has_returns_alias = self._returns_alias is not None
+
+        if (number_returns > 1) and not has_returns_alias:
             return_name = "_".join(self._return_names)
             if return_name in self._param_return_names:
                 self.add_error(
@@ -55,7 +58,7 @@ class ParamAndReturnValidator(LrpcValidator):
                     f"{self._current_service}.{self._current_function}: {return_name}",
                 )
 
-        if (len(self._return_names) == 0) and (self._returns_alias is not None):
+        if (number_returns == 0) and has_returns_alias:
             self.add_warning(
                 "returns_alias specified for function without returns:"
                 f" {self._current_service}.{self._current_function}",

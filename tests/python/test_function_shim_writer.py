@@ -255,3 +255,28 @@ def test_many_params_and_returns() -> None:
 """
 
     assert_func(func, expected)
+
+
+def test_returns_alias() -> None:
+    func: LrpcFunDict = {
+        "name": "test_func",
+        "id": 250,
+        "returns": [
+            {"name": "a", "type": "uint8_t"},
+            {"name": "b", "type": "uint16_t"},
+        ],
+        "returns_alias": "a_and_b",
+    }
+    expected = """void test_func_shim(Reader&)
+{
+\tconst auto _a_and_b = test_func();
+\tconst auto _lrpc_paramWriter = [&_a_and_b](Writer &w)
+\t{
+\t\tlrpc::write_unchecked<uint8_t>(w, std::get<0>(_a_and_b));
+\t\tlrpc::write_unchecked<uint16_t>(w, std::get<1>(_a_and_b));
+\t};
+\tserver().transmit(id(), 250, _lrpc_paramWriter);
+}
+"""
+
+    assert_func(func, expected)

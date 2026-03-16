@@ -92,7 +92,8 @@ def cpp(definition_file: TextIO, output: str, core: bool, warnings_as_errors: bo
     # pylint: disable=broad-exception-caught
     except Exception:
         exc_info = logging.root.level <= logging.DEBUG
-        log.exception("Error while generating code for %s", definition_file.name, exc_info=exc_info)
+        more_info = "" if exc_info else ". Use the DEBUG verbosity level to show more information"
+        log.exception("Error while generating code for %s%s", definition_file.name, more_info, exc_info=exc_info)
 
 
 @run_cli.command()

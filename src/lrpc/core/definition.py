@@ -264,4 +264,4 @@ class LrpcDef:
             if c.name() == name:
                 return c.value()
 
-        raise ValueError(f"No constant with name {name} in definition")
+        raise ValueError(f"No constant {name} in LRPC definition {self.name()}")

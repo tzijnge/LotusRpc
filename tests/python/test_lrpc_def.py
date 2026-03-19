@@ -210,7 +210,7 @@ services:
     assert c7.cpp_type() == "bytearray"
     assert lrpc_def.constant("c7") == b"\xaa\xbb\x00\x01"
 
-    with pytest.raises(ValueError, match="No constant with name c8 in definition"):
+    with pytest.raises(ValueError, match="No constant c8 in LRPC definition test"):
         lrpc_def.constant("c8")
 
 

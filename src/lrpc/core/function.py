@@ -11,6 +11,7 @@ class LrpcFunDict(TypedDict):
     id: int
     params: NotRequired[list[LrpcVarDict]]
     returns: NotRequired[list[LrpcVarDict]]
+    returns_alias: NotRequired[str]
 
 
 class LrpcFunOptionalIdDict(TypedDict):
@@ -18,6 +19,7 @@ class LrpcFunOptionalIdDict(TypedDict):
     id: NotRequired[int]
     params: NotRequired[list[LrpcVarDict]]
     returns: NotRequired[list[LrpcVarDict]]
+    returns_alias: NotRequired[str]
 
 
 # pylint: disable=invalid-name
@@ -36,6 +38,8 @@ class LrpcFun:
 
         if "returns" in raw:
             self._returns.extend([LrpcVar(p) for p in raw["returns"]])
+
+        self._returns_alias = raw.get("returns_alias", None)
 
         self._name = raw["name"]
         self._id = raw["id"]
@@ -84,3 +88,6 @@ class LrpcFun:
 
     def param_names(self) -> list[str]:
         return [p.name() for p in self.params()]
+
+    def returns_alias(self) -> str | None:
+        return self._returns_alias

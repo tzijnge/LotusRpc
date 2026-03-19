@@ -651,6 +651,46 @@ services:
     assert_log_entries(["Duplicate name in s1.f1: x0"], caplog.text)
 
 
+def test_duplicate_function_param_and_returns_alias_names(caplog: pytest.LogCaptureFixture) -> None:
+    rpc_def = """name: test
+services:
+  - name: s1
+    functions:
+      - name: f1
+        params:
+          - { name: x0, type: bool }
+        returns:
+          - { name: r0, type: string }
+        returns_alias: x0
+"""
+
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
+        load_def(rpc_def)
+
+    assert_log_entries(["Duplicate name in s1.f1: x0"], caplog.text)
+
+
+def test_duplicate_function_return_and_returns_alias_names(caplog: pytest.LogCaptureFixture) -> None:
+    rpc_def = """name: test
+services:
+  - name: s1
+    functions:
+      - name: f1
+        params:
+          - { name: x0, type: bool }
+        returns:
+          - { name: r0, type: string }
+        returns_alias: r0
+"""
+
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
+        load_def(rpc_def)
+
+    assert_log_entries(["Duplicate name in s1.f1: r0"], caplog.text)
+
+
 def test_function_composite_return_name_matches_parameter_name(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: test
 services:
@@ -910,3 +950,18 @@ services:
         load_def(rpc_def)
 
     assert e.value.message == "255 is greater than the maximum of 254"
+
+
+def test_returns_alias_specified_without_returns(caplog: pytest.LogCaptureFixture) -> None:
+    rpc_def = """name: test
+services:
+  - name: srv0
+    functions:
+      - name: f0
+        returns_alias: five_doubles
+"""
+
+    caplog.set_level(logging.WARNING)
+    load_def(rpc_def)
+    assert_log_entries(["returns_alias specified for function without returns: srv0.f0"], caplog.text)
+

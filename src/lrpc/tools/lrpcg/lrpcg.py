@@ -91,8 +91,9 @@ def cpp(definition_file: TextIO, output: str, core: bool, warnings_as_errors: bo
     # catching general exception here is considered ok, because application will terminate
     # pylint: disable=broad-exception-caught
     except Exception:
-        exc_info = logging.root.level <= logging.DEBUG
-        log.exception("Error while generating code for %s", definition_file.name, exc_info=exc_info)
+        level_is_debug = log.isEnabledFor(logging.DEBUG)
+        more_info = "" if level_is_debug else ". Use the DEBUG verbosity level to show more information"
+        log.exception("Error while generating code for %s%s", definition_file.name, more_info, exc_info=level_is_debug)
 
 
 @run_cli.command()

@@ -11,6 +11,7 @@ class ParamAndReturnValidator(LrpcValidator):
         self._current_stream: str = ""
         self._param_return_names: set[str] = set()
         self._return_names: list[str] = []
+        self._returns_alias: str | None = None
 
     def visit_lrpc_def(self, _: LrpcDef) -> None:
         self.reset()
@@ -19,9 +20,13 @@ class ParamAndReturnValidator(LrpcValidator):
         self._current_stream = ""
         self._param_return_names.clear()
         self._return_names.clear()
+        self._returns_alias = None
 
     def visit_lrpc_function(self, function: LrpcFun) -> None:
         self._current_function = function.name()
+        self._returns_alias = function.returns_alias()
+        if self._returns_alias is not None:
+            self._param_return_names.add(self._returns_alias)
 
     def visit_lrpc_service(self, service: LrpcService) -> None:
         self._current_service = service.name()
@@ -42,13 +47,22 @@ class ParamAndReturnValidator(LrpcValidator):
         self._return_names.append(name)
 
     def visit_lrpc_function_end(self) -> None:
-        if len(self._return_names) > 1:
+        number_returns = len(self._return_names)
+        has_returns_alias = self._returns_alias is not None
+
+        if (number_returns > 1) and not has_returns_alias:
             return_name = "_".join(self._return_names)
             if return_name in self._param_return_names:
                 self.add_error(
                     "Composite function return name matches a parameter name in "
                     f"{self._current_service}.{self._current_function}: {return_name}",
                 )
+
+        if (number_returns == 0) and has_returns_alias:
+            self.add_warning(
+                "returns_alias specified for function without returns:"
+                f" {self._current_service}.{self._current_function}",
+            )
 
         self._param_return_names.clear()
         self._return_names.clear()

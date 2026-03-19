@@ -34,7 +34,7 @@ namespace
         MOCK_METHOD((std::tuple<lrpc::string_view, lrpc::string_view>), f24, (), (override));
         MOCK_METHOD((lrpc::optional<lrpc::string_view>), f25, (), (override));
         MOCK_METHOD((lrpc::span<const lrpc::string_view>), f26, (), (override));
-        MOCK_METHOD((std::tuple<lrpc::span<const uint8_t>, lrpc::span<const lrpc::string_view>, lrpc::span<const lrpc::string_view>>), f27, (), (override));
+        MOCK_METHOD((ts1::complex_return), f27, (), (override));
         MOCK_METHOD(void, f28, (const ts1::CompositeData4 &), (override));
         MOCK_METHOD(lrpc::bytearray, f29, (lrpc::bytearray), (override));
         MOCK_METHOD(void, f30, (lrpc::span<const lrpc::bytearray>), (override));
@@ -313,7 +313,7 @@ TEST_F(TestServer1, decodef27)
     const lrpc::array<uint8_t, 2> r0{0x01, 0x02};
     const lrpc::array<lrpc::string_view, 2> r1{"t1", "t2"};
     const lrpc::array<lrpc::string_view, 2> r2{"t3", "t4"};
-    const std::tuple<lrpc::array<uint8_t, 2>, lrpc::array<lrpc::string_view, 2>, lrpc::array<lrpc::string_view, 2>> r{r0, r1, r2};
+    const ts1::complex_return r{r0, r1, r2};
     EXPECT_CALL(service, f27()).WillOnce(Return(r));
     const auto response = receive("02001B");
     EXPECT_EQ("10001B0102743100743200743300743400", response);

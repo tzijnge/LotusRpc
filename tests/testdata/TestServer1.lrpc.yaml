@@ -115,6 +115,7 @@ services:
           - { name: r0, type: uint8_t, count: 2 }
           - { name: r1, type: string, count: 2 }
           - { name: r2, type: string_2, count: 2 }
+        returns_alias: complex_return
       - name: f28
         params:
           - { name: p0, type: "@CompositeData4" }

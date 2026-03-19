@@ -19,6 +19,7 @@ def test_short_notation() -> None:
     assert fun.number_returns() == 0
     assert len(fun.returns()) == 0
     assert fun.id() == 123
+    assert fun.returns_alias() is None
 
 
 def test_full_notation() -> None:
@@ -27,6 +28,7 @@ def test_full_notation() -> None:
         "id": 123,
         "params": [{"name": "p1", "type": "uint8_t"}],
         "returns": [{"name": "r1", "type": "uint8_t"}],
+        "returns_alias": "my_return_alias",
     }
 
     fun = LrpcFun(f)
@@ -40,6 +42,10 @@ def test_full_notation() -> None:
     assert len(fun.returns()) == 1
     assert fun.returns()[0].name() == "r1"
     assert fun.id() == 123
+    returns_alias = fun.returns_alias()
+    assert returns_alias is not None
+    assert returns_alias == "my_return_alias"
+
 
 
 def test_get_param_by_name() -> None:

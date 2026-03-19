@@ -145,13 +145,16 @@ constants:
   - name: "c3"
     value: 123.456
   - name: "c4"
-    value: 123.456
+    value: 456.789
     cppType: double
   - name: "c5"
-    value: 123
+    value: 456
     cppType: uint64_t
   - name: "c6"
     value: This is a string
+  - name: "c7"
+    value: "AA bb 00 01"
+    cppType: bytearray
 services:
   - name: s1
     functions:
@@ -159,37 +162,52 @@ services:
 """
     lrpc_def = load_lrpc_def(def_str)
     constants = lrpc_def.constants()
-    assert len(constants) == 6
+    assert len(constants) == 7
 
     c1 = constants[0]
     assert c1.name() == "c1"
     assert c1.value() is True
     assert c1.cpp_type() == "bool"
+    assert lrpc_def.constant("c1") is True
 
     c2 = constants[1]
     assert c2.name() == "c2"
     assert c2.value() == 123
     assert c2.cpp_type() == "int32_t"
+    assert lrpc_def.constant("c2") == 123
 
     c3 = constants[2]
     assert c3.name() == "c3"
     assert math.isclose(float(c3.value()), 123.456)
     assert c3.cpp_type() == "float"
+    assert math.isclose(lrpc_def.constant("c3"), 123.456)
 
     c4 = constants[3]
     assert c4.name() == "c4"
-    assert math.isclose(float(c4.value()), 123.456)
+    assert math.isclose(float(c4.value()), 456.789)
     assert c4.cpp_type() == "double"
+    assert math.isclose(lrpc_def.constant("c4"), 456.789)
 
     c5 = constants[4]
     assert c5.name() == "c5"
-    assert c5.value() == 123
+    assert c5.value() == 456
     assert c5.cpp_type() == "uint64_t"
+    assert lrpc_def.constant("c5") == 456
 
     c6 = constants[5]
     assert c6.name() == "c6"
     assert c6.value() == "This is a string"
     assert c6.cpp_type() == "string"
+    assert lrpc_def.constant("c6") == "This is a string"
+
+    c7 = constants[6]
+    assert c7.name() == "c7"
+    assert c7.value() == b"\xaa\xbb\x00\x01"
+    assert c7.cpp_type() == "bytearray"
+    assert lrpc_def.constant("c7") == b"\xaa\xbb\x00\x01"
+
+    with pytest.raises(ValueError, match="No constant with name c8 in definition"):
+        lrpc_def.constant("c8")
 
 
 def test_enums() -> None:

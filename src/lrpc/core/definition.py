@@ -258,3 +258,10 @@ class LrpcDef:
 
     def constants(self) -> list[LrpcConstant]:
         return self._constants
+
+    def constant(self, name: str) -> int | float | bool | str | bytes:
+        for c in self.constants():
+            if c.name() == name:
+                return c.value()
+
+        raise ValueError(f"No constant with name {name} in definition")

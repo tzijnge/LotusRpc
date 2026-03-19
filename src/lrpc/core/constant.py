@@ -29,6 +29,8 @@ class LrpcConstantDict(TypedDict):
 # pylint: disable=invalid-name
 LrpcConstantValidator = TypeAdapter(LrpcConstantDict)
 
+LrpcConstantType = int | float | bool | str | bytes
+
 
 class LrpcConstant:
     def __init__(self, raw: LrpcConstantDict) -> None:
@@ -39,7 +41,7 @@ class LrpcConstant:
         self._cpp_type = self._init_cpp_type(raw)
 
     @staticmethod
-    def _init_value(raw: LrpcConstantDict) -> int | float | bool | str | bytes:
+    def _init_value(raw: LrpcConstantDict) -> LrpcConstantType:
         value = raw["value"]
         if "cppType" in raw and raw["cppType"] == "bytearray":
             if not isinstance(value, str):
@@ -73,7 +75,7 @@ class LrpcConstant:
     def name(self) -> str:
         return self._name
 
-    def value(self) -> int | float | bool | str | bytes:
+    def value(self) -> LrpcConstantType:
         return self._value
 
     def cpp_type(self) -> str:

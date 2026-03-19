@@ -180,13 +180,17 @@ services:
     assert c3.name() == "c3"
     assert math.isclose(float(c3.value()), 123.456)
     assert c3.cpp_type() == "float"
-    assert math.isclose(lrpc_def.constant("c3"), 123.456)
+    c3_value = lrpc_def.constant("c3")
+    assert isinstance(c3_value, float)
+    assert math.isclose(c3_value, 123.456)
 
     c4 = constants[3]
     assert c4.name() == "c4"
     assert math.isclose(float(c4.value()), 456.789)
     assert c4.cpp_type() == "double"
-    assert math.isclose(lrpc_def.constant("c4"), 456.789)
+    c4_value = lrpc_def.constant("c4")
+    assert isinstance(c4_value, float)
+    assert math.isclose(c4_value, 456.789)
 
     c5 = constants[4]
     assert c5.name() == "c5"

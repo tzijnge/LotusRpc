@@ -9,7 +9,7 @@ from typing_extensions import NotRequired, TypedDict
 
 from lrpc.visitors import LrpcVisitor
 
-from .constant import LrpcConstant, LrpcConstantDict
+from .constant import LrpcConstant, LrpcConstantDict, LrpcConstantType
 from .enum import LrpcEnum, LrpcEnumDict
 from .function import LrpcFun
 from .service import LrpcService, LrpcServiceDict, LrpcServiceOptionalIdDict
@@ -259,7 +259,7 @@ class LrpcDef:
     def constants(self) -> list[LrpcConstant]:
         return self._constants
 
-    def constant(self, name: str) -> int | float | bool | str | bytes:
+    def constant(self, name: str) -> LrpcConstantType:
         for c in self.constants():
             if c.name() == name:
                 return c.value()

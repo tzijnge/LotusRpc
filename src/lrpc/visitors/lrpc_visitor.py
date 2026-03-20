@@ -11,6 +11,7 @@ if TYPE_CHECKING:
         LrpcStream,
         LrpcStruct,
         LrpcVar,
+        RpcSettings,
     )
 
 
@@ -21,6 +22,9 @@ class LrpcVisitor:
 
     def visit_lrpc_def_end(self) -> None:
         """Called after visiting the LRPC definition"""
+
+    def visit_rpc_settings(self, settings: "RpcSettings") -> None:
+        """Called when visiting RPC settings"""
 
     def visit_lrpc_service(self, service: "LrpcService") -> None:
         """Called before each service in the LRPC definition"""

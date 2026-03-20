@@ -5,7 +5,7 @@ from code_generation.code_generator import CppFile  # type: ignore[import-untype
 
 from lrpc.codegen.common import write_file_banner
 from lrpc.codegen.utils import optionally_in_namespace
-from lrpc.core import LrpcConstant, LrpcDef
+from lrpc.core import LrpcConstant, LrpcDef, RpcSettings
 from lrpc.visitors import LrpcVisitor
 
 
@@ -19,8 +19,10 @@ class ConstantsFileVisitor(LrpcVisitor):
         self._def_name: str
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
-        self._namespace = lrpc_def.namespace()
         self._def_name = lrpc_def.name()
+
+    def visit_rpc_settings(self, settings: RpcSettings) -> None:
+        self._namespace = settings.namespace()
 
     def visit_lrpc_constant(self, constant: LrpcConstant) -> None:
         if "int" in constant.cpp_type():

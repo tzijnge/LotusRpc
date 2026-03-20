@@ -7,7 +7,7 @@ from lrpc.codegen.common import write_file_banner
 from lrpc.codegen.function_shim_writer import FunctionShimWriter
 from lrpc.codegen.server_stream_response_writer import ServerStreamResponseWriter
 from lrpc.codegen.utils import optionally_in_namespace
-from lrpc.core import LrpcDef, LrpcFun, LrpcService, LrpcStream, LrpcVar
+from lrpc.core import LrpcFun, LrpcService, LrpcStream, LrpcVar, RpcSettings
 from lrpc.visitors import LrpcVisitor
 
 
@@ -18,8 +18,8 @@ class ServiceShimVisitor(LrpcVisitor):
         self._output = output
         self._service: LrpcService
 
-    def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
-        self._namespace = lrpc_def.namespace()
+    def visit_rpc_settings(self, settings: RpcSettings) -> None:
+        self._namespace = settings.namespace()
 
     def visit_lrpc_service(self, service: LrpcService) -> None:
         self._file = CppFile(f"{self._output.absolute()}/{service.name()}_shim.hpp")

@@ -10,6 +10,8 @@ from .function import LrpcFunDict as LrpcFunDict
 from .function import LrpcFunOptionalIdDict as LrpcFunOptionalIdDict
 from .service import LrpcService as LrpcService
 from .service import LrpcServiceDict as LrpcServiceDict
+from .settings import RpcSettings as RpcSettings
+from .settings import RpcSettingsDict as RpcSettingsDict
 from .stream import LrpcStream as LrpcStream
 from .stream import LrpcStreamDict as LrpcStreamDict
 from .stream import LrpcStreamOptionalIdDict as LrpcStreamOptionalIdDict

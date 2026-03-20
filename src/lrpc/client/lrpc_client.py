@@ -66,7 +66,7 @@ class LrpcClient:
         disabled = "[disabled]"
         client_side_lrpc_version = version("lotusrpc")
         client_side_def_hash = self._lrpc_def.definition_hash() or disabled
-        client_side_def_version = self._lrpc_def.version() or disabled
+        client_side_def_version = self._lrpc_def.settings().version() or disabled
 
         def get_server_version() -> MetaVersionResponseDict:
             version_response = self.communicate_single("LrpcMeta", "version").payload

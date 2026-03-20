@@ -1,6 +1,7 @@
 name: Server2
-rx_buffer_size: 100
-definition_hash_length: 0
+settings:
+  rx_buffer_size: 100
+  definition_hash_length: 0
 services:
   - name: s00
     functions:

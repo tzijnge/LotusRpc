@@ -5,7 +5,7 @@ from code_generation.code_generator import CppFile  # type: ignore[import-untype
 from lrpc.codegen.common import lrpc_var_includes, write_file_banner
 from lrpc.codegen.struct_codec_writer import StructCodecWriter
 from lrpc.codegen.utils import optionally_in_namespace
-from lrpc.core import LrpcDef, LrpcStruct, LrpcVar
+from lrpc.core import LrpcStruct, LrpcVar, RpcSettings
 from lrpc.visitors import LrpcVisitor
 
 
@@ -18,8 +18,8 @@ class StructFileVisitor(LrpcVisitor):
         self._alias: str = ""
         self._includes: set[str] = set()
 
-    def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
-        self._namespace = lrpc_def.namespace()
+    def visit_rpc_settings(self, settings: RpcSettings) -> None:
+        self._namespace = settings.namespace()
 
     def visit_lrpc_struct(self, struct: LrpcStruct) -> None:
         self._descriptor = struct

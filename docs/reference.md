@@ -11,17 +11,12 @@ The LRPC definition is written in YAML and therefore benefits from all the featu
 
 The LRPC definition file has the following properties:
 
-| Required              | Optional                                          |
-|-----------------------|---------------------------------------------------|
-| [name](#name)         | [structs](#structs)                               |
-| [services](#services) | [enums](#enums)                                   |
-|                       | [constants](#constants)                           |
-|                       | [rx_buffer_size](#rx_buffer_size)                 |
-|                       | [tx_buffer_size](#tx_buffer_size)                 |
-|                       | [namespace](#namespace)                           |
-|                       | [version](#version)                               |
-|                       | [definition_hash_length](#definition_hash_length) |
-|                       | [embed_definition](#embed_definition)             |
+| Required              | Optional                |
+|-----------------------|-------------------------|
+| [name](#name)         | [structs](#structs)     |
+| [services](#services) | [enums](#enums)         |
+|                       | [constants](#constants) |
+|                       | [settings](#settings)   |
 
 At the top level it is also allowed to use additional properties. These properties are ignored by the LRPC tool, but may be useful creating anchors or for any other purpose that you may have. Remember that it's very easy to parse the definition file, so everyone is free to extend the functionality of LRPC.
 
@@ -201,27 +196,40 @@ services:
 ...
 ```
 
-## rx_buffer_size
+## Settings
+
+All optional settings can be grouped under a `settings` section in the definition file. A settings section has the following optional properties:
+
+| Property                |
+|-------------------------|
+| [rx_buffer_size](#rx_buffer_size) |
+| [tx_buffer_size](#tx_buffer_size) |
+| [namespace](#namespace) |
+| [version](#version) |
+| [definition_hash_length](#definition_hash_length) |
+| [embed_definition](#embed_definition) |
+
+### rx_buffer_size
 
 Receive buffer size in bytes for generated C++ server code. Default is 256.
 
-## tx_buffer_size
+### tx_buffer_size
 
 Transmit buffer size in bytes for generated C++ server code. Default is 256.
 
-## namespace
+### namespace
 
 Namespace to generate C++ server code in.
 
-## version
+### version
 
 Version to identify the definition with. Used to detect a mismatch between the client and the server (through the [version](meta.md#version) function in the meta service).
 
-## definition_hash_length
+### definition_hash_length
 
 By default, [lrpcg](tools.md#lrpcg) calculates the sha3-256 hash of the definition file when generating code. This results in a 64 character hash string on the server that is used to detect a mismatch between the client and the server (through the [version](meta.md#version) function in the meta service). `definition_hash_length` is used to truncate the hash string to anything less than 64.
 
-## embed_definition
+### embed_definition
 
 It is possible to embed the LotusRPC definition file in the generated server code. This is enabled by setting `embed_definition` to `true`. When not specified, the definition is not embedded. The definition file is compressed by [lrpcg](tools.md#lrpcg) and included in the generated code as a constant array of `uint8_t`.
 

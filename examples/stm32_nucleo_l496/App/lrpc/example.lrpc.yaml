@@ -1,5 +1,6 @@
 name: example
-embed_definition: true
+settings:
+  embed_definition: true
 services:
   - name: srv1
     functions:

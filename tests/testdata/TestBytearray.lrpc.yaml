@@ -1,5 +1,6 @@
 name: Bytearray
-namespace: test_ba
+settings:
+  namespace: test_ba
 services:
   - name: bytearray
     functions:

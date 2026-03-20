@@ -1,6 +1,7 @@
 name: "Server4"
-namespace: "srv4"
-version: "major.minor.patch.123"
+settings:
+  namespace: "srv4"
+  version: "major.minor.patch.123"
 some_local_variable: &array_size 55
 constants:
   - name: c0

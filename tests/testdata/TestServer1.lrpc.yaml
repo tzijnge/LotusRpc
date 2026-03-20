@@ -1,7 +1,8 @@
 name: Server1
-namespace: ts1
-rx_buffer_size: 100
-tx_buffer_size: 200
+settings:
+  namespace: ts1
+  rx_buffer_size: 100
+  tx_buffer_size: 200
 services:
   - name: s0
     functions:

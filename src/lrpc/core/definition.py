@@ -134,8 +134,7 @@ class LrpcDef:
     def _init_definition_hash(self) -> None:
         definition_hash = hashlib.sha3_256(self._definition_yaml.encode(encoding="utf-8")).hexdigest()
         definition_hash_length = self._settings.definition_hash_length()
-        if definition_hash_length is None:
-            definition_hash_length = len(definition_hash)
+        definition_hash_length = min(definition_hash_length, len(definition_hash))
         self._definition_hash = None if definition_hash_length == 0 else definition_hash[:definition_hash_length]
 
     def accept(self, visitor: LrpcVisitor, *, visit_meta_service: bool = True) -> None:

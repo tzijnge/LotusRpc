@@ -19,20 +19,19 @@ class MetaServiceVisitor(LrpcVisitor):
         self._definition_hash: str | None
         self._compressed_definition = b""
         self._definition_stream_chunk_size: int
-        self._lrpc_def: LrpcDef
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
-        self._lrpc_def = lrpc_def
         self._service_file = CppFile(f"{self._output}/LrpcMeta_service.hpp")
         self._constants_file = CppFile(f"{self._output}/LrpcMeta_constants.hpp")
         self._definition_hash = lrpc_def.definition_hash()
+        self._compressed_definition = lrpc_def.compressed_definition()
 
     def visit_rpc_settings(self, settings: RpcSettings) -> None:
         self._namespace = settings.namespace()
         self._definition_version = settings.version()
 
-        if settings.embed_definition():
-            self._compressed_definition = self._lrpc_def.compressed_definition()
+        if not settings.embed_definition():
+            self._compressed_definition = b""
 
         # TX buffer size - 5 to account for
         # - Message size field

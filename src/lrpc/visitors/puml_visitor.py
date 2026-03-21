@@ -217,6 +217,9 @@ class PlantUmlVisitor(LrpcVisitor):
         self._puml.list_item(f"Namespace: {settings.namespace()}", level=0)
         self._puml.list_item(f"RX buffer size: {settings.rx_buffer_size()}", level=0)
         self._puml.list_item(f"TX Buffer size: {settings.tx_buffer_size()}", level=0)
+        self._puml.list_item(f"Def hash length: {settings.definition_hash_length()}", level=0)
+        self._puml.list_item(f"Embed definition: {settings.embed_definition()}", level=0)
+        self._puml.list_item(f"Version: {settings.version()}", level=0)
         self._puml.list_end()
 
     def visit_lrpc_def_end(self) -> None:

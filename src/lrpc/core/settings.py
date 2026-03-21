@@ -20,7 +20,7 @@ class RpcSettings:
         RpcSettingsValidator.validate_python(raw, strict=True, extra="forbid")
 
         self._version = raw.get("version", None)
-        self._definition_hash_length = raw.get("definition_hash_length", None)
+        self._definition_hash_length = raw.get("definition_hash_length", 64)
         self._embed_definition = raw.get("embed_definition", False)
         self._namespace = raw.get("namespace", None)
         self._rx_buffer_size = raw.get("rx_buffer_size", 256)
@@ -29,7 +29,7 @@ class RpcSettings:
     def version(self) -> str | None:
         return self._version
 
-    def definition_hash_length(self) -> int | None:
+    def definition_hash_length(self) -> int:
         return self._definition_hash_length
 
     def embed_definition(self) -> bool:

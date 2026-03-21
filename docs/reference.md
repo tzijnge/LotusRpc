@@ -198,38 +198,20 @@ services:
 
 ## Settings
 
-All optional settings can be grouped under a `settings` section in the definition file. A settings section has the following optional properties:
+LotusRPC allows some level of customization with the following optional properties in the `settings` section in the definition file.
 
 | Property                |
 |-------------------------|
-| [rx_buffer_size](#rx_buffer_size) |
-| [tx_buffer_size](#tx_buffer_size) |
-| [namespace](#namespace) |
-| [version](#version) |
-| [definition_hash_length](#definition_hash_length) |
-| [embed_definition](#embed_definition) |
+| rx_buffer_size          |
+| tx_buffer_size          |
+| namespace               |
+| version                 |
+| definition_hash_length  |
+| embed_definition        |
 
-### rx_buffer_size
+`rx_buffer_size` and `tx_buffer_size` defines the receive and transmit buffer size in bytes for generated C++ server code. Default is 256. `namespace` defines the C++ namespace to generate server code in. By default the code is generated in the global namespace.
 
-Receive buffer size in bytes for generated C++ server code. Default is 256.
-
-### tx_buffer_size
-
-Transmit buffer size in bytes for generated C++ server code. Default is 256.
-
-### namespace
-
-Namespace to generate C++ server code in.
-
-### version
-
-Version to identify the definition with. Used to detect a mismatch between the client and the server (through the [version](meta.md#version) function in the meta service).
-
-### definition_hash_length
-
-By default, [lrpcg](tools.md#lrpcg) calculates the sha3-256 hash of the definition file when generating code. This results in a 64 character hash string on the server that is used to detect a mismatch between the client and the server (through the [version](meta.md#version) function in the meta service). `definition_hash_length` is used to truncate the hash string to anything less than 64.
-
-### embed_definition
+`version` is used to identify the definition wit a user-defined version. When specified, it is used by LotusRPC to detect a mismatch between the client and the server (through the [version](meta.md#version) function in the meta service). Another way to detect differences between client and server is to use the definition hash. By default, [lrpcg](tools.md#lrpcg) calculates the sha3-256 hash of the definition file when generating code. This results in a 64 character hash string on the server that is used to detect a mismatch between the client and the server (through the [version](meta.md#version) function in the meta service). `definition_hash_length` is used to truncate the hash string to anything less than 64.
 
 It is possible to embed the LotusRPC definition file in the generated server code. This is enabled by setting `embed_definition` to `true`. When not specified, the definition is not embedded. The definition file is compressed by [lrpcg](tools.md#lrpcg) and included in the generated code as a constant array of `uint8_t`.
 

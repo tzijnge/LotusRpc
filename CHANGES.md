@@ -16,7 +16,7 @@ LotusRPC is an RPC framework for embedded systems. Here are the release notes.
 - Add version function in meta service. Allows client to check compatibility with server. ([#84](https://github.com/tzijnge/LotusRpc/issues/84))
 - Reference semantics for array and string
 
-  > ⚠ Breaking change: This change may require changes to existing service files (deriving from *_shim class). ([#185](https://github.com/tzijnge/LotusRpc/issues/185))
+- > ⚠ Breaking change: This change may require changes to existing service files (deriving from *_shim class). ([#185](https://github.com/tzijnge/LotusRpc/issues/185))
 - Added bytearray convenience type. LotusRPC bytearray has flexible length, handling in C++ is more efficient than 'array of uint8_t' and is translated to bytes/bytearray/memoryview in Python ([#186](https://github.com/tzijnge/LotusRpc/issues/186))
 
 ### Bugfixes

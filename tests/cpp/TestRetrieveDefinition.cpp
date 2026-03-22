@@ -28,7 +28,7 @@ using TestRetrieveDefinition = testutils::TestServerBase<test_rd::RetrieveDefini
 // definition stream message from server to client has an overhead of
 // 5 bytes per chunk: message length, service ID, stream ID, chunk size, 'final' param
 // TX buffer size has been chosen in the definition as 58 bytes.
-// This leaves 58 - 5 = 53 bytes for the chunk payload. This means
+// This leaves 59 - 5 = 54 bytes for the chunk payload. This means
 // that the compressed definition is transferred from server to client
 // in 432 / 54 = 8 packets
 

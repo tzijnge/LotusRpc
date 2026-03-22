@@ -13,6 +13,7 @@ from .constant import LrpcConstant, LrpcConstantDict, LrpcConstantType
 from .enum import LrpcEnum, LrpcEnumDict
 from .function import LrpcFun
 from .service import LrpcService, LrpcServiceDict, LrpcServiceOptionalIdDict
+from .settings import RpcSettings, RpcSettingsDict
 from .stream import LrpcStream
 from .struct import LrpcStruct, LrpcStructDict
 from .var import LrpcVarDict
@@ -20,23 +21,17 @@ from .var import LrpcVarDict
 
 class LrpcDefDict(TypedDict):
     name: str
-    version: NotRequired[str]
-    definition_hash_length: NotRequired[int]
-    embed_definition: NotRequired[bool]
     services: list[LrpcServiceOptionalIdDict]
-    namespace: NotRequired[str]
-    rx_buffer_size: NotRequired[int]
-    tx_buffer_size: NotRequired[int]
     structs: NotRequired[list[LrpcStructDict]]
     enums: NotRequired[list[LrpcEnumDict]]
     constants: NotRequired[list[LrpcConstantDict]]
+    settings: NotRequired[RpcSettingsDict]
 
 
 # pylint: disable=invalid-name
 LrpcDefValidator = TypeAdapter(LrpcDefDict)
 
 
-# pylint: disable = too-many-instance-attributes
 # pylint: disable = too-many-public-methods
 class LrpcDef:
     META_SERVICE_ID = 255
@@ -59,6 +54,9 @@ class LrpcDef:
         LrpcDefValidator.validate_python(raw, strict=True, extra="allow")
         self._definition_yaml = yaml.dump(raw, sort_keys=False)
 
+        self._name = raw["name"]
+        self._settings = RpcSettings(raw.get("settings", {}))
+
         struct_names = []
         if "structs" in raw:
             struct_names.extend([s["name"] for s in raw["structs"]])
@@ -70,16 +68,9 @@ class LrpcDef:
         self._init_all_vars(raw, struct_names, enum_names)
         self._init_meta_service(raw)
         self._init_service_ids(raw)
-        self._init_definition_hash(raw)
-
-        self._name = raw["name"]
-        self._version = raw.get("version", None)
-        self._embed_definition = raw.get("embed_definition", False)
+        self._init_definition_hash()
 
         self._services = [LrpcService(cast(LrpcServiceDict, s)) for s in raw["services"]]
-        self._namespace = raw.get("namespace", None)
-        self._rx_buffer_size = raw.get("rx_buffer_size", 256)
-        self._tx_buffer_size = raw.get("tx_buffer_size", 256)
 
         self._structs = []
         if "structs" in raw:
@@ -140,13 +131,16 @@ class LrpcDef:
                 last_service_id = last_service_id + 1
                 s["id"] = last_service_id
 
-    def _init_definition_hash(self, raw: LrpcDefDict) -> None:
+    def _init_definition_hash(self) -> None:
         definition_hash = hashlib.sha3_256(self._definition_yaml.encode(encoding="utf-8")).hexdigest()
-        definition_hash_length = raw.get("definition_hash_length", len(definition_hash))
+        definition_hash_length = self._settings.definition_hash_length()
+        definition_hash_length = min(definition_hash_length, len(definition_hash))
         self._definition_hash = None if definition_hash_length == 0 else definition_hash[:definition_hash_length]
 
     def accept(self, visitor: LrpcVisitor, *, visit_meta_service: bool = True) -> None:
         visitor.visit_lrpc_def(self)
+
+        visitor.visit_rpc_settings(self._settings)
 
         if len(self.constants()) != 0:
             visitor.visit_lrpc_constants()
@@ -171,26 +165,14 @@ class LrpcDef:
     def name(self) -> str:
         return self._name
 
-    def version(self) -> str | None:
-        return self._version
+    def settings(self) -> RpcSettings:
+        return self._settings
 
     def definition_hash(self) -> str | None:
         return self._definition_hash
 
-    def embed_definition(self) -> bool:
-        return self._embed_definition
-
     def compressed_definition(self) -> bytes:
         return lzma.compress(self._definition_yaml.encode(encoding="utf-8"))
-
-    def namespace(self) -> str | None:
-        return self._namespace
-
-    def rx_buffer_size(self) -> int:
-        return self._rx_buffer_size
-
-    def tx_buffer_size(self) -> int:
-        return self._tx_buffer_size
 
     def services(self) -> list[LrpcService]:
         return self._services

@@ -4,7 +4,7 @@ from code_generation.code_generator import CppFile  # type: ignore[import-untype
 
 from lrpc.codegen.common import write_file_banner
 from lrpc.codegen.utils import optionally_in_namespace
-from lrpc.core import LrpcDef, LrpcEnum
+from lrpc.core import LrpcEnum, RpcSettings
 from lrpc.visitors import LrpcVisitor
 
 
@@ -15,8 +15,8 @@ class EnumFileVisitor(LrpcVisitor):
         self._namespace: str | None
         self._output = output
 
-    def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
-        self._namespace = lrpc_def.namespace()
+    def visit_rpc_settings(self, settings: RpcSettings) -> None:
+        self._namespace = settings.namespace()
 
     def visit_lrpc_enum(self, enum: LrpcEnum) -> None:
         self._descriptor = enum

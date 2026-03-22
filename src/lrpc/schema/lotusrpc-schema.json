@@ -310,6 +310,41 @@
           "description": "Indicate if LRPC should start automatic assignment if IDs with functions or streams. Default is the order of specification in the definition file"
         }
       }
+    },
+    "rpc_settings": {
+      "type": "object",
+      "description": "RPC settings",
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "Version of the definition file"
+        },
+        "definition_hash_length": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 64,
+          "description": "Length of definition hash to include in generated code"
+        },
+        "embed_definition": {
+          "type": "boolean",
+          "description": "Embed the definition in the generated server code"
+        },
+        "namespace": {
+          "$ref": "#/$defs/cppid",
+          "description": "C++ namespace to generate code in"
+        },
+        "rx_buffer_size": {
+          "type": "integer",
+          "minimum": 3,
+          "description": "Size of the server side receive buffer in bytes"
+        },
+        "tx_buffer_size": {
+          "type": "integer",
+          "minimum": 3,
+          "description": "Size of the server side transmit buffer in bytes"
+        }
+      }
     }
   },
   "$schema": "http://json-schema.org/draft-07/schema#",
@@ -326,33 +361,9 @@
       "$ref": "#/$defs/cppid",
       "description": "Name of the RPC"
     },
-    "version": {
-      "type": "string",
-      "description": "Version of the definition file"
-    },
-    "definition_hash_length": {
-      "type": "integer",
-      "minimum": 0,
-      "maximum": 64,
-      "description": "Length of definition hash to include in generated code"
-    },
-    "embed_definition": {
-      "type": "boolean",
-      "description": "Embed the definition in the generated server code"
-    },
-    "namespace": {
-      "$ref": "#/$defs/cppid",
-      "description": "C++ namespace to be generate code in"
-    },
-    "rx_buffer_size": {
-      "type": "integer",
-      "minimum": 1,
-      "description": "Size of the server side receive buffer in bytes"
-    },
-    "tx_buffer_size": {
-      "type": "integer",
-      "minimum": 1,
-      "description": "Size of the server side transmit buffer in bytes"
+    "settings": {
+      "$ref": "#/$defs/rpc_settings",
+      "description": "RPC settings"
     },
     "services": {
       "type": "array",

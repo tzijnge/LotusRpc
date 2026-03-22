@@ -501,35 +501,37 @@ services:
       - name: f1
 """
     lrpc_def = load_lrpc_def(def_str)
-    assert lrpc_def.version() is None
+    assert lrpc_def.settings().version() is None
 
 
 def test_version() -> None:
     def_str = """name: test
-version: 1.2.3
+settings:
+  version: 1.2.3
 services:
   - name: s1
     functions:
       - name: f1
 """
     lrpc_def = load_lrpc_def(def_str)
-    assert lrpc_def.version() == "1.2.3"
+    assert lrpc_def.settings().version() == "1.2.3"
 
 
 def test_top_level_properties() -> None:
     def_str = """name: test
-namespace: ns
-rx_buffer_size: 123
-tx_buffer_size: 456
+settings:
+  namespace: ns
+  rx_buffer_size: 123
+  tx_buffer_size: 456
 services:
   - name: s1
     functions:
       - name: f1
 """
     lrpc_def = load_lrpc_def(def_str)
-    assert lrpc_def.namespace() == "ns"
-    assert lrpc_def.rx_buffer_size() == 123
-    assert lrpc_def.tx_buffer_size() == 456
+    assert lrpc_def.settings().namespace() == "ns"
+    assert lrpc_def.settings().rx_buffer_size() == 123
+    assert lrpc_def.settings().tx_buffer_size() == 456
 
 
 def test_definition_hash() -> None:
@@ -547,7 +549,8 @@ services:
 
 def test_definition_hash_truncated() -> None:
     def_str = """name: test
-definition_hash_length: 20
+settings:
+  definition_hash_length: 20
 services:
   - name: s1
     functions:
@@ -561,7 +564,8 @@ services:
 
 def test_definition_hash_removed() -> None:
     def_str = """name: test
-definition_hash_length: 0
+settings:
+  definition_hash_length: 0
 services:
   - name: s1
     functions:
@@ -924,7 +928,9 @@ def test_validation_wrong_type_services() -> None:
 def test_validation_wrong_type_rx_buffer_size() -> None:
     d = {
         "name": "test",
-        "rx_buffer_size": "invalid",
+        "settings": {
+            "rx_buffer_size": "invalid",
+        },
         "services": [
             {"name": "srv0", "functions": [{"name": "f0"}], "functions_before_streams": True},
         ],
@@ -942,31 +948,33 @@ services:
       - name: f1
 """
     lrpc_def = load_lrpc_def(def_str)
-    assert lrpc_def.embed_definition() is False
+    assert lrpc_def.settings().embed_definition() is False
 
 
 def test_embed_definition_false() -> None:
     def_str = """name: test
-embed_definition: false
+settings:
+  embed_definition: false
 services:
   - name: s1
     functions:
       - name: f1
 """
     lrpc_def = load_lrpc_def(def_str)
-    assert lrpc_def.embed_definition() is False
+    assert lrpc_def.settings().embed_definition() is False
 
 
 def test_embed_definition_true() -> None:
     def_str = """name: test
-embed_definition: true
+settings:
+  embed_definition: true
 services:
   - name: s1
     functions:
       - name: f1
 """
     lrpc_def = load_lrpc_def(def_str)
-    assert lrpc_def.embed_definition() is True
+    assert lrpc_def.settings().embed_definition() is True
 
 
 def test_compress_decompress() -> None:

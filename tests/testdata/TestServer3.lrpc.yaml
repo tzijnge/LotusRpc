@@ -1,6 +1,7 @@
 name: "Server3"
-namespace: "srv3"
-definition_hash_length: 20
+settings:
+  namespace: "srv3"
+  definition_hash_length: 20
 services:
   - name: "s00"
     id: 0

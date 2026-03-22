@@ -5,7 +5,7 @@ from code_generation.code_generator import CppFile  # type: ignore[import-untype
 from lrpc.codegen.common import write_file_banner
 from lrpc.codegen.meta_constants_writer import MetaConstantsWriter
 from lrpc.codegen.meta_service_file_writer import MetaServiceFileWriter
-from lrpc.core import LrpcDef
+from lrpc.core import LrpcDef, RpcSettings
 from lrpc.visitors import LrpcVisitor
 
 
@@ -21,14 +21,17 @@ class MetaServiceVisitor(LrpcVisitor):
         self._definition_stream_chunk_size: int
 
     def visit_lrpc_def(self, lrpc_def: LrpcDef) -> None:
-        self._namespace = lrpc_def.namespace()
         self._service_file = CppFile(f"{self._output}/LrpcMeta_service.hpp")
         self._constants_file = CppFile(f"{self._output}/LrpcMeta_constants.hpp")
-        self._definition_version = lrpc_def.version()
         self._definition_hash = lrpc_def.definition_hash()
+        self._compressed_definition = lrpc_def.compressed_definition()
 
-        if lrpc_def.embed_definition():
-            self._compressed_definition = lrpc_def.compressed_definition()
+    def visit_rpc_settings(self, settings: RpcSettings) -> None:
+        self._namespace = settings.namespace()
+        self._definition_version = settings.version()
+
+        if not settings.embed_definition():
+            self._compressed_definition = b""
 
         # TX buffer size - 5 to account for
         # - Message size field
@@ -36,7 +39,7 @@ class MetaServiceVisitor(LrpcVisitor):
         # - Stream ID field
         # - Bytearray length field
         # - Stream final parameter
-        self._definition_stream_chunk_size = lrpc_def.tx_buffer_size() - 5
+        self._definition_stream_chunk_size = settings.tx_buffer_size() - 5
 
         self._write_service_file()
         self._write_constants_file()

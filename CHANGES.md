@@ -16,7 +16,7 @@ LotusRPC is an RPC framework for embedded systems. Here are the release notes.
 - Add version function in meta service. Allows client to check compatibility with server. ([#84](https://github.com/tzijnge/LotusRpc/issues/84))
 - Reference semantics for array and string
 
-  > Breaking change: This change may require changes to existing service files (deriving from *_shim class). ([#185](https://github.com/tzijnge/LotusRpc/issues/185))
+- > ⚠ Breaking change: This change may require changes to existing service files (deriving from *_shim class). ([#185](https://github.com/tzijnge/LotusRpc/issues/185))
 - Added bytearray convenience type. LotusRPC bytearray has flexible length, handling in C++ is more efficient than 'array of uint8_t' and is translated to bytes/bytearray/memoryview in Python ([#186](https://github.com/tzijnge/LotusRpc/issues/186))
 
 ### Bugfixes
@@ -24,12 +24,12 @@ LotusRPC is an RPC framework for embedded systems. Here are the release notes.
 - Fix code generation for array parameter in a stream ([#188](https://github.com/tzijnge/LotusRpc/issues/188))
 - Size field now encodes message size minus 1. This way a message of size 256 is possible in a 256-byte receive/transmit buffer.
 
-  > Breaking change: This change causes binary incompatibility with all previous versions of LotusRPC ([#202](https://github.com/tzijnge/LotusRpc/issues/202))
+  > ⚠ Breaking change: This change causes binary incompatibility with all previous versions of LotusRPC ([#202](https://github.com/tzijnge/LotusRpc/issues/202))
 
 ### Misc
 
 - [#16](https://github.com/tzijnge/LotusRpc/issues/16), [#106](https://github.com/tzijnge/LotusRpc/issues/106), [#160](https://github.com/tzijnge/LotusRpc/issues/160), [#167](https://github.com/tzijnge/LotusRpc/issues/167), [#170](https://github.com/tzijnge/LotusRpc/issues/170), [#176](https://github.com/tzijnge/LotusRpc/issues/176)
-- > Breaking change: C++ service shims no longer get a '_ServiceShim' postfix, but simply '_shim' instead
+- > ⚠ Breaking change: C++ service shims no longer get a '_ServiceShim' postfix, but simply '_shim' instead
 
 
 ## lotusrpc 0.9.7 (2025-11-16)

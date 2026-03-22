@@ -4,7 +4,7 @@
 
 [![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=tzijnge_LotusRpc)](https://sonarcloud.io/summary/new_code?id=tzijnge_LotusRpc)
 
-> **_WARNING:_**  This project is work in progress
+> ⚠ **_WARNING:_**  This project is work in progress
 
 LotusRPC is an RPC framework for embedded systems based on [ETL](https://github.com/ETLCPP/etl). It generates C++ code with no dynamic memory allocations, no exceptions, no RTTI, etc. Code generator and client side CLI application in a simple Python package.
 

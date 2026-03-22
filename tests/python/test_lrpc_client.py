@@ -410,7 +410,7 @@ class TestLrpcClient:
         )
 
     def test_check_server_version_ok(self, caplog: pytest.LogCaptureFixture) -> None:
-        def_version = lrpc_def.version() or ""
+        def_version = lrpc_def.settings().version() or ""
         def_hash = lrpc_def.definition_hash() or ""
         lrpc_version = version("lotusrpc")
 
@@ -422,7 +422,7 @@ class TestLrpcClient:
         assert len(caplog.messages) == 0
 
     def test_check_server_version_mismatch_def_hash(self, caplog: pytest.LogCaptureFixture) -> None:
-        def_version = lrpc_def.version() or ""
+        def_version = lrpc_def.settings().version() or ""
         def_hash = "[wrong hash]"
         lrpc_version = version("lotusrpc")
 
@@ -438,7 +438,7 @@ class TestLrpcClient:
         assert "Definition hash: 99ceeaa08c6373b4... vs [wrong hash]..." in caplog.messages
 
     def test_check_server_version_mismatch_lrpc_version(self, caplog: pytest.LogCaptureFixture) -> None:
-        def_version = lrpc_def.version() or ""
+        def_version = lrpc_def.settings().version() or ""
         def_hash = lrpc_def.definition_hash() or ""
         lrpc_version = "[wrong version]"
 
@@ -492,9 +492,9 @@ class TestLrpcClient:
         definition = client.definition()
 
         assert definition.name() == "RetrieveDefinition"
-        assert definition.namespace() == "test_rd"
-        assert definition.tx_buffer_size() == 58
-        assert definition.embed_definition() is True
+        assert definition.settings().namespace() == "test_rd"
+        assert definition.settings().tx_buffer_size() == 59
+        assert definition.settings().embed_definition() is True
         assert len(definition.services()) == 1
         s0 = definition.service_by_id(0)
         assert s0 is not None

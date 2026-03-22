@@ -16,6 +16,7 @@ if TYPE_CHECKING:
         LrpcStream,
         LrpcStruct,
         LrpcVar,
+        RpcSettings,
     )
 
 
@@ -211,9 +212,14 @@ class PlantUmlVisitor(LrpcVisitor):
         self._puml = PumlFile(self._output.joinpath(f"{lrpc_def.name()}.puml"))
 
         self._puml.block(lrpc_def.name(), "Yellow", level=1)
-        self._puml.list_item(f"Namespace: {lrpc_def.namespace()}", level=0)
-        self._puml.list_item(f"RX buffer size: {lrpc_def.rx_buffer_size()}", level=0)
-        self._puml.list_item(f"TX Buffer size: {lrpc_def.tx_buffer_size()}", level=0)
+
+    def visit_rpc_settings(self, settings: "RpcSettings") -> None:
+        self._puml.list_item(f"Namespace: {settings.namespace() or '<not provided>'}", level=0)
+        self._puml.list_item(f"RX buffer size: {settings.rx_buffer_size()}", level=0)
+        self._puml.list_item(f"TX Buffer size: {settings.tx_buffer_size()}", level=0)
+        self._puml.list_item(f"Def hash length: {settings.definition_hash_length()}", level=0)
+        self._puml.list_item(f"Embed definition: {settings.embed_definition()}", level=0)
+        self._puml.list_item(f"Version: {settings.version() or '<not provided>'}", level=0)
         self._puml.list_end()
 
     def visit_lrpc_def_end(self) -> None:

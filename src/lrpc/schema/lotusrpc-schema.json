@@ -332,7 +332,7 @@
         },
         "namespace": {
           "$ref": "#/$defs/cppid",
-          "description": "C++ namespace to be generate code in"
+          "description": "C++ namespace to generate code in"
         },
         "rx_buffer_size": {
           "type": "integer",

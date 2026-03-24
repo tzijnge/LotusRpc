@@ -13,6 +13,7 @@ if TYPE_CHECKING:
         LrpcVar,
         RpcSettings,
     )
+    from lrpc.core.definition import UserProperties
 
 
 # pylint: disable = too-many-public-methods
@@ -97,3 +98,6 @@ class LrpcVisitor:
 
     def visit_lrpc_stream_end(self) -> None:
         """Called after visiting all parameters of the current stream"""
+
+    def visit_lrpc_user_properties(self, user_properties: "UserProperties") -> None:
+        """Called once for the set of all user properties"""

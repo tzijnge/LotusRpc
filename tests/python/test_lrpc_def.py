@@ -1033,3 +1033,104 @@ def test_construct_without_meta_service() -> None:
     raw: LrpcDefDict = {"name": "test", "services": []}
     with pytest.raises(ValueError, match="No meta service found in definition"):
         LrpcDef(raw)
+
+
+def test_no_user_properties() -> None:
+    def_str = """name: test
+services:
+  - name: srv1
+    functions:
+      - name: f1
+"""
+    lrpc_def = load_lrpc_def(def_str)
+    assert lrpc_def.user_properties() is None
+
+
+def test_user_properties_dict() -> None:
+    def_str = """name: test
+services:
+  - name: srv1
+    functions:
+      - name: f1
+user_properties:
+  red: 1
+  green: 2
+  blue: 3
+"""
+    lrpc_def = load_lrpc_def(def_str)
+    up = lrpc_def.user_properties()
+    assert isinstance(up, dict)
+    assert len(up) == 3
+    assert up.get("red") == 1
+    assert up.get("green") == 2
+    assert up.get("blue") == 3
+
+
+def test_user_properties_list() -> None:
+    def_str = """name: test
+services:
+  - name: srv1
+    functions:
+      - name: f1
+user_properties:
+  - red: 1
+  - green: 2
+  - blue: 3
+"""
+    lrpc_def = load_lrpc_def(def_str)
+    up = lrpc_def.user_properties()
+    assert isinstance(up, list)
+    assert len(up) == 3
+    assert isinstance(up[0], dict)
+    assert up[0].get("red") == 1
+    assert isinstance(up[1], dict)
+    assert up[1].get("green") == 2
+    assert isinstance(up[2], dict)
+    assert up[2].get("blue") == 3
+
+
+def test_user_properties_complex() -> None:
+    def_str = """name: test
+services:
+  - name: srv1
+    functions:
+      - name: f1
+user_properties:
+  - red: 1
+  - green: 2
+  - others:
+    white: true
+    black: 123
+"""
+    lrpc_def = load_lrpc_def(def_str)
+    up = lrpc_def.user_properties()
+    assert isinstance(up, list)
+    assert len(up) == 3
+    assert isinstance(up[0], dict)
+    assert up[0].get("red") == 1
+    assert isinstance(up[1], dict)
+    assert up[1].get("green") == 2
+    others = up[2]
+    assert isinstance(others, dict)
+    assert others.get("white") is True
+    assert others.get("black") == 123
+
+
+def test_visit_user_properties() -> None:
+    def_str = """name: test
+services:
+  - name: srv1
+    functions:
+      - name: f1
+user_properties:
+  red: 1
+  green: 2
+"""
+    lrpc_def = load_lrpc_def(def_str)
+    v = StringifyVisitor()
+    lrpc_def.accept(v, visit_meta_service=False)
+
+    assert (
+        v.result == "service[srv1]-function[f1+0]-return_end-param_end-function_end-service_end"
+        "-user_properties: {red: 1}, {green: 2}"
+    )

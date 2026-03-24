@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 from pathlib import Path
 from typing import TextIO
 
@@ -90,10 +91,16 @@ def cpp(definition_file: TextIO, output: str, core: bool, warnings_as_errors: bo
 
     # catching general exception here is considered ok, because application will terminate
     # pylint: disable=broad-exception-caught
-    except Exception:
+    except Exception as e:
         level_is_debug = log.isEnabledFor(logging.DEBUG)
-        more_info = "" if level_is_debug else ". Use the DEBUG verbosity level to show more information"
-        log.exception("Error while generating code for %s%s", definition_file.name, more_info, exc_info=level_is_debug)
+        more_info = "" if level_is_debug else f". {e}. Use the DEBUG verbosity level to show more information"
+        log.exception(
+            "Error while generating code for %s%s",
+            definition_file.name,
+            more_info,
+            exc_info=level_is_debug,
+        )
+        sys.exit(1)
 
 
 @run_cli.command()

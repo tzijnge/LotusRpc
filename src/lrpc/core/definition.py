@@ -1,7 +1,7 @@
 import hashlib
 import lzma
 from pathlib import Path
-from typing import cast
+from typing import TypeAliasType, cast
 
 import yaml
 from pydantic import TypeAdapter
@@ -18,6 +18,11 @@ from .stream import LrpcStream
 from .struct import LrpcStruct, LrpcStructDict
 from .var import LrpcVarDict
 
+UserProperties = TypeAliasType(
+    "UserProperties",
+    "dict[str, UserProperties] | list[UserProperties] | str | int | float | bool | None",
+)
+
 
 class LrpcDefDict(TypedDict):
     name: str
@@ -26,6 +31,7 @@ class LrpcDefDict(TypedDict):
     enums: NotRequired[list[LrpcEnumDict]]
     constants: NotRequired[list[LrpcConstantDict]]
     settings: NotRequired[RpcSettingsDict]
+    user_properties: NotRequired[UserProperties]
 
 
 # pylint: disable=invalid-name
@@ -83,6 +89,8 @@ class LrpcDef:
         self._constants = []
         if "constants" in raw:
             self._constants.extend([LrpcConstant(c) for c in raw["constants"]])
+
+        self._user_properties = raw.get("user_properties", None)
 
     def _init_all_vars(self, raw: LrpcDefDict, struct_names: list[str], enum_names: list[str]) -> None:
         for service in raw["services"]:
@@ -159,6 +167,8 @@ class LrpcDef:
 
         if visit_meta_service:
             self._meta_service.accept(visitor)
+
+        visitor.visit_lrpc_user_properties(self.user_properties())
 
         visitor.visit_lrpc_def_end()
 
@@ -247,3 +257,6 @@ class LrpcDef:
                 return c.value()
 
         raise ValueError(f"No constant {name} in LRPC definition {self.name()}")
+
+    def user_properties(self) -> UserProperties:
+        return self._user_properties

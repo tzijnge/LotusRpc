@@ -1,4 +1,5 @@
 from lrpc.core import LrpcFun, LrpcService, LrpcStream, LrpcVar
+from lrpc.core.definition import UserProperties
 from lrpc.visitors import LrpcVisitor
 
 
@@ -53,6 +54,19 @@ class StringifyVisitor(LrpcVisitor):
 
     def visit_lrpc_function_param_end(self) -> None:
         self._add_param_end()
+
+    def visit_lrpc_user_properties(self, user_properties: UserProperties) -> None:
+        if user_properties is None:
+            return
+
+        if not isinstance(user_properties, dict):
+            raise NotImplementedError(f"Stringify user properties of type {type(user_properties)}")
+
+        self._insert_separator()
+        self.result += "user_properties: "
+
+        up_strings = [f"{{{up_k}: {up_v}}}" for up_k, up_v in user_properties.items()]
+        self.result += ", ".join(up_strings)
 
     def _insert_separator(self) -> None:
         if len(self.result) != 0:

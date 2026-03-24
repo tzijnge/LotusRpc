@@ -345,13 +345,29 @@
           "description": "Size of the server side transmit buffer in bytes"
         }
       }
+    },
+    "user_properties_decl": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": true
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      ],
+      "description": "User properties, not used by LotusRPC"
     }
   },
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Lotus RPC",
   "description": "JSON Schema for Lotus RPC, a RPC code generation tool",
   "type": "object",
-  "additionalProperties": true,
+  "additionalProperties": false,
   "required": [
     "name",
     "services"
@@ -397,6 +413,9 @@
         "$ref": "#/$defs/const_decl"
       },
       "description": "A list of custom constants"
+    },
+    "user_properties": {
+      "$ref": "#/$defs/user_properties_decl"
     }
   }
 }

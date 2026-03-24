@@ -11,6 +11,53 @@
       "minimum": 0,
       "maximum": 255
     },
+    "int8": {
+      "type": "integer",
+      "description": "Signed 8-bit integer (-128 to 127)",
+      "minimum": -128,
+      "maximum": 127
+    },
+    "uint16": {
+      "type": "integer",
+      "description": "Unsigned 16-bit integer (0-65535)",
+      "minimum": 0,
+      "maximum": 65535
+    },
+    "int16": {
+      "type": "integer",
+      "description": "Signed 16-bit integer (-32768 to 32767)",
+      "minimum": -32768,
+      "maximum": 32767
+    },
+    "uint32": {
+      "type": "integer",
+      "description": "Unsigned 32-bit integer (0-4294967295)",
+      "minimum": 0,
+      "maximum": 4294967295
+    },
+    "int32": {
+      "type": "integer",
+      "description": "Signed 32-bit integer (-2147483648 to 2147483647)",
+      "minimum": -2147483648,
+      "maximum": 2147483647
+    },
+    "uint64": {
+      "type": "integer",
+      "description": "Unsigned 64-bit integer (0-18446744073709551615)",
+      "minimum": 0,
+      "maximum": 18446744073709551615
+    },
+    "int64": {
+      "type": "integer",
+      "description": "Signed 64-bit integer (-9223372036854775808 to 9223372036854775807)",
+      "minimum": -9223372036854775808,
+      "maximum": 9223372036854775807
+    },
+    "bytearray_hex_string": {
+      "type": "string",
+      "description": "Hex string for bytearray constants (compatible with Python bytes.fromhex)",
+      "pattern": "^\\s*([0-9a-fA-F]{2}\\s*)*$"
+    },
     "service_id": {
       "type": "integer",
       "description": "Service ID (0-254)",
@@ -158,39 +205,31 @@
     "const_decl": {
       "type": "object",
       "description": "A constant declaration",
-      "required": [
-        "name",
-        "value"
-      ],
+      "required": [ "name", "value" ],
       "additionalProperties": false,
       "properties": {
-        "name": {
-          "$ref": "#/$defs/cppid"
-        },
-        "value": {
-          "type": [
-            "number",
-            "boolean",
-            "string"
-          ]
-        },
+        "name": { "$ref": "#/$defs/cppid" },
+        "value": { },
         "cppType": {
-          "enum": [
-            "uint8_t",
-            "int8_t",
-            "uint16_t",
-            "int16_t",
-            "uint32_t",
-            "int32_t",
-            "uint64_t",
-            "int64_t",
-            "float",
-            "double",
-            "bool",
-            "string"
-          ]
+          "enum": [ "uint8_t", "int8_t", "uint16_t", "int16_t", "uint32_t", "int32_t", "uint64_t", "int64_t", "float", "double", "bool", "string", "bytearray" ]
         }
-      }
+      },
+      "allOf": [
+        { "if": { "not": { "required": [ "cppType" ] } }, "then": { "properties": { "value": { "oneOf": [ { "type": "string" }, { "type": "number" }, { "type": "boolean" } ] } } } },
+        { "if": { "required": [ "cppType" ], "properties": { "cppType": { "const": "uint8_t" } } }, "then": { "properties": { "value": { "$ref": "#/$defs/uint8" } } } },
+        { "if": { "required": [ "cppType" ], "properties": { "cppType": { "const": "int8_t" } } }, "then": { "properties": { "value": { "$ref": "#/$defs/int8" } } } },
+        { "if": { "required": [ "cppType" ], "properties": { "cppType": { "const": "uint16_t" } } }, "then": { "properties": { "value": { "$ref": "#/$defs/uint16" } } } },
+        { "if": { "required": [ "cppType" ], "properties": { "cppType": { "const": "int16_t" } } }, "then": { "properties": { "value": { "$ref": "#/$defs/int16" } } } },
+        { "if": { "required": [ "cppType" ], "properties": { "cppType": { "const": "uint32_t" } } }, "then": { "properties": { "value": { "$ref": "#/$defs/uint32" } } } },
+        { "if": { "required": [ "cppType" ], "properties": { "cppType": { "const": "int32_t" } } }, "then": { "properties": { "value": { "$ref": "#/$defs/int32" } } } },
+        { "if": { "required": [ "cppType" ], "properties": { "cppType": { "const": "uint64_t" } } }, "then": { "properties": { "value": { "$ref": "#/$defs/uint64" } } } },
+        { "if": { "required": [ "cppType" ], "properties": { "cppType": { "const": "int64_t" } } }, "then": { "properties": { "value": { "$ref": "#/$defs/int64" } } } },
+        { "if": { "required": [ "cppType" ], "properties": { "cppType": { "const": "string" } } }, "then": { "properties": { "value": { "oneOf": [ { "type": "string" }, { "type": "number" }, { "type": "boolean" } ] } } } },
+        { "if": { "required": [ "cppType" ], "properties": { "cppType": { "const": "bool" } } }, "then": { "properties": { "value": { "type": "boolean" } } } },
+        { "if": { "required": [ "cppType" ], "properties": { "cppType": { "const": "float" } } }, "then": { "properties": { "value": { "type": "number" } } } },
+        { "if": { "required": [ "cppType" ], "properties": { "cppType": { "const": "double" } } }, "then": { "properties": { "value": { "type": "number" } } } },
+        { "if": { "required": [ "cppType" ], "properties": { "cppType": { "const": "bytearray" } } }, "then": { "properties": { "value": { "$ref": "#/$defs/bytearray_hex_string" } } } }
+      ]
     },
     "function_decl": {
       "type": "object",

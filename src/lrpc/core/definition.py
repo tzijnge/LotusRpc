@@ -1,5 +1,7 @@
 import hashlib
 import lzma
+
+# pylint: disable = unused-import
 from collections.abc import Iterable  # noqa: TC003
 from pathlib import Path
 from typing import cast

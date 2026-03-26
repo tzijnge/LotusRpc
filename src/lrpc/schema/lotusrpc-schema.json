@@ -345,22 +345,6 @@
           "description": "Size of the server side transmit buffer in bytes"
         }
       }
-    },
-    "user_properties_decl": {
-      "oneOf": [
-        {
-          "type": "object",
-          "additionalProperties": true
-        },
-        {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": true
-          }
-        }
-      ],
-      "description": "User properties, not used by LotusRPC"
     }
   },
   "$schema": "http://json-schema.org/draft-07/schema#",
@@ -414,8 +398,8 @@
       },
       "description": "A list of custom constants"
     },
-    "user_properties": {
-      "$ref": "#/$defs/user_properties_decl"
+    "user_settings": {
+      "description": "user settings, not used by LotusRPC. Accepts any valid YAML data"
     }
   }
 }

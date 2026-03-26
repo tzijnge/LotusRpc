@@ -17,9 +17,9 @@ The LRPC definition file has the following properties:
 | [services](#services) | [enums](#enums)                     |
 |                       | [constants](#constants)             |
 |                       | [settings](#settings)               |
-|                       | [user_properties](#user-properties) |
+|                       | [user_settings](#user-settings) |
 
-It is not allowed to use additional properties at top level. This can be done under [user_properties](#user-properties).
+It is not allowed to use additional properties at top level. This can be done under [user_settings](#user-settings).
 
 ## Name
 
@@ -168,9 +168,10 @@ Example:
 ...
 # an additional property called my_prop
 # is used as an anchor with name array_size
-# The additional property is allowed at
-# the definition top-level
-my_prop: &array_size 55
+# The additional property is allowed under
+# user_settings
+user_settings:
+  my_prop: &array_size 55
 constants:
   # implicit int32_t
   - name: c0
@@ -221,9 +222,9 @@ Using the definition that is embedded on the server from the client side can be 
 * Using the `from_server` factory method of the `LrpcClient` class
 * Specifying `definition_from_server` as `always` or `once` in the [lrpcc](tools.md#lrpcc) config file.
 
-## User properties
+## User settings
 
-Section `user_properties` allows for free-format user settings in the LotusRPC definition file. The user can specify any valid YAML data structure under `user_properties`. The user properties are accessible when visiting a `LrpcDef` object with a visitor deriving from `LrpcVisitor`. This flexible approach has no specific use case for LotusRPC and and is ignored by LotusRPC internally, but allow users to include custom data in the LotusRPC definition file and use it to their own benefit. User properties may also be useful creating anchors that can be referenced in other parts of the definition, e.g. as a common array size. See [visiting LrpcDef](extending_lrpc.md#visiting-lrpcdef) for more information on extending LotusRPC.
+Section `user_settings` allows for free-format user settings in the LotusRPC definition file. The user can specify any valid YAML data structure under `user_settings`. The user settings are accessible when visiting a `LrpcDef` object with a visitor deriving from `LrpcVisitor`. This flexible approach has no specific use case for LotusRPC and and is ignored by LotusRPC internally, but allow users to include custom data in the LotusRPC definition file and use it to their own benefit. user settings may also be useful creating anchors that can be referenced in other parts of the definition, e.g. as a common array size. See [visiting LrpcDef](extending_lrpc.md#visiting-lrpcdef) for more information on extending LotusRPC.
 
 ## LrpcType
 

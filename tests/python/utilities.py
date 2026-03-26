@@ -1,7 +1,7 @@
 import json
 
 from lrpc.core import LrpcFun, LrpcService, LrpcStream, LrpcVar
-from lrpc.core.definition import UserProperties
+from lrpc.core.definition import LrpcUserSettings
 from lrpc.visitors import LrpcVisitor
 
 
@@ -57,12 +57,12 @@ class StringifyVisitor(LrpcVisitor):
     def visit_lrpc_function_param_end(self) -> None:
         self._add_param_end()
 
-    def visit_lrpc_user_properties(self, user_properties: UserProperties) -> None:
-        if user_properties is None:
+    def visit_lrpc_user_settings(self, user_settings: LrpcUserSettings) -> None:
+        if user_settings is None:
             return
 
         self._insert_separator()
-        self.result += f"user_properties: {json.dumps(user_properties)}"
+        self.result += f"user_settings: {json.dumps(user_settings)}"
 
     def _insert_separator(self) -> None:
         if len(self.result) != 0:

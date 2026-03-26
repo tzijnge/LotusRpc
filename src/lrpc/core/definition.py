@@ -6,7 +6,7 @@ from typing import cast
 
 import yaml
 from pydantic import TypeAdapter
-from typing_extensions import NotRequired, TypedDict
+from typing_extensions import NotRequired, TypeAliasType, TypedDict
 
 from lrpc.visitors import LrpcVisitor
 
@@ -19,8 +19,11 @@ from .stream import LrpcStream
 from .struct import LrpcStruct, LrpcStructDict
 from .var import LrpcVarDict
 
-PrimitiveUserProperties = bool | int | float | str
-UserProperties = Iterable[PrimitiveUserProperties] | dict[str, PrimitiveUserProperties] | None
+PrimitiveUserSettings = bool | int | float | str | None
+LrpcUserSettings = TypeAliasType(
+    "LrpcUserSettings",
+    "PrimitiveUserSettings | Iterable[LrpcUserSettings] | dict[str, LrpcUserSettings] | None",
+)
 
 
 class LrpcDefDict(TypedDict):
@@ -30,7 +33,7 @@ class LrpcDefDict(TypedDict):
     enums: NotRequired[list[LrpcEnumDict]]
     constants: NotRequired[list[LrpcConstantDict]]
     settings: NotRequired[RpcSettingsDict]
-    user_properties: NotRequired[UserProperties]
+    user_settings: NotRequired[LrpcUserSettings]
 
 
 # pylint: disable=invalid-name
@@ -89,7 +92,7 @@ class LrpcDef:
         if "constants" in raw:
             self._constants.extend([LrpcConstant(c) for c in raw["constants"]])
 
-        self._user_properties = raw.get("user_properties", None)
+        self._user_settings = raw.get("user_settings", None)
 
     def _init_all_vars(self, raw: LrpcDefDict, struct_names: list[str], enum_names: list[str]) -> None:
         for service in raw["services"]:
@@ -167,7 +170,7 @@ class LrpcDef:
         if visit_meta_service:
             self._meta_service.accept(visitor)
 
-        visitor.visit_lrpc_user_properties(self.user_properties())
+        visitor.visit_lrpc_user_settings(self.user_settings())
 
         visitor.visit_lrpc_def_end()
 
@@ -257,5 +260,5 @@ class LrpcDef:
 
         raise ValueError(f"No constant {name} in LRPC definition {self.name()}")
 
-    def user_properties(self) -> UserProperties:
-        return self._user_properties
+    def user_settings(self) -> LrpcUserSettings:
+        return self._user_settings

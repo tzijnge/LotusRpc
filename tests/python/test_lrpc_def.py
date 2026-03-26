@@ -517,7 +517,7 @@ services:
     assert lrpc_def.settings().version() == "1.2.3"
 
 
-def test_top_level_properties() -> None:
+def test_settings() -> None:
     def_str = """name: test
 settings:
   namespace: ns
@@ -1035,7 +1035,7 @@ def test_construct_without_meta_service() -> None:
         LrpcDef(raw)
 
 
-def test_no_user_properties() -> None:
+def test_no_user_settings() -> None:
     def_str = """name: test
 services:
   - name: srv1
@@ -1043,22 +1043,46 @@ services:
       - name: f1
 """
     lrpc_def = load_lrpc_def(def_str)
-    assert lrpc_def.user_properties() is None
+    assert lrpc_def.user_settings() is None
 
 
-def test_user_properties_dict() -> None:
+def test_empty_user_settings() -> None:
+    def_str = """name: test
+user_settings:
+services:
+  - name: srv1
+    functions:
+      - name: f1
+"""
+    lrpc_def = load_lrpc_def(def_str)
+    assert lrpc_def.user_settings() is None
+
+
+def test_primitive_user_settings() -> None:
+    def_str = """name: test
+user_settings: 5
+services:
+  - name: srv1
+    functions:
+      - name: f1
+"""
+    lrpc_def = load_lrpc_def(def_str)
+    assert lrpc_def.user_settings() == 5
+
+
+def test_user_settings_dict() -> None:
     def_str = """name: test
 services:
   - name: srv1
     functions:
       - name: f1
-user_properties:
+user_settings:
   red: 1
   green: 2
   blue: 3
 """
     lrpc_def = load_lrpc_def(def_str)
-    up = lrpc_def.user_properties()
+    up = lrpc_def.user_settings()
     assert isinstance(up, dict)
     assert len(up) == 3
     assert up.get("red") == 1
@@ -1066,19 +1090,19 @@ user_properties:
     assert up.get("blue") == 3
 
 
-def test_user_properties_list() -> None:
+def test_user_settings_list() -> None:
     def_str = """name: test
 services:
   - name: srv1
     functions:
       - name: f1
-user_properties:
+user_settings:
   - red: 1
   - green: 2
   - blue: 3
 """
     lrpc_def = load_lrpc_def(def_str)
-    up = lrpc_def.user_properties()
+    up = lrpc_def.user_settings()
     assert isinstance(up, list)
     assert len(up) == 3
     assert isinstance(up[0], dict)
@@ -1089,21 +1113,22 @@ user_properties:
     assert up[2].get("blue") == 3
 
 
-def test_user_properties_complex() -> None:
+def test_user_settings_complex() -> None:
     def_str = """name: test
 services:
   - name: srv1
     functions:
       - name: f1
-user_properties:
+user_settings:
   - red: 1
   - green: 2
   - others:
       white: true
       black: 123
+      orange: null
 """
     lrpc_def = load_lrpc_def(def_str)
-    up = lrpc_def.user_properties()
+    up = lrpc_def.user_settings()
     assert isinstance(up, list)
     assert len(up) == 3
     assert isinstance(up[0], dict)
@@ -1115,15 +1140,16 @@ user_properties:
     assert isinstance(others, dict)
     assert others.get("white") is True
     assert others.get("black") == 123
+    assert others.get("orange") is None
 
 
-def test_visit_user_properties() -> None:
+def test_visit_user_settings() -> None:
     def_str = """name: test
 services:
   - name: srv1
     functions:
       - name: f1
-user_properties:
+user_settings:
   red: 1
   green: 2
 """
@@ -1133,5 +1159,5 @@ user_properties:
 
     assert (
         v.result == "service[srv1]-function[f1+0]-return_end-param_end-function_end-service_end"
-        '-user_properties: {"red": 1, "green": 2}'
+        '-user_settings: {"red": 1, "green": 2}'
     )

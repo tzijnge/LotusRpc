@@ -2,7 +2,7 @@ name: "Server4"
 settings:
   namespace: "srv4"
   version: "major.minor.patch.123"
-user_properties:
+user_settings:
   some_local_variable: &array_size 55
 constants:
   - name: c0

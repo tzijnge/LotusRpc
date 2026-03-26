@@ -19,7 +19,7 @@ The LRPC definition file has the following properties:
 |                       | [settings](#settings)               |
 |                       | [user_properties](#user-properties) |
 
-At the top level it is also allowed to use additional properties. These properties are ignored by the LRPC tool, but may be useful creating anchors or for any other purpose that you may have. Remember that it's very easy to parse the definition file, so everyone is free to extend the functionality of LRPC.
+It is not allowed to use additional properties at top level. This can be done under [user_properties](#user-properties).
 
 ## Name
 
@@ -223,7 +223,7 @@ Using the definition that is embedded on the server from the client side can be 
 
 ## User properties
 
-Section `user_properties` allows for free-format user settings in the LotusRPC definition file. The user can specify any valid YAML data structure under `user_properties`. The user properties are accessible when visiting a `LrpcDef` object with a visitor deriving from `LrpcVisitor`. This flexible approach has no specific use case for LotusRPC and and is ignored by LotusRPC internally, but allow users to include custom data in the LotusRPC definition file and use it to their own benefit. See [visiting LrpcDef](extending_lrpc.md#visiting-lrpcdef) for more information on extending LotusRPC.
+Section `user_properties` allows for free-format user settings in the LotusRPC definition file. The user can specify any valid YAML data structure under `user_properties`. The user properties are accessible when visiting a `LrpcDef` object with a visitor deriving from `LrpcVisitor`. This flexible approach has no specific use case for LotusRPC and and is ignored by LotusRPC internally, but allow users to include custom data in the LotusRPC definition file and use it to their own benefit. User properties may also be useful creating anchors that can be referenced in other parts of the definition, e.g. as a common array size. See [visiting LrpcDef](extending_lrpc.md#visiting-lrpcdef) for more information on extending LotusRPC.
 
 ## LrpcType
 

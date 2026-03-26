@@ -1,3 +1,5 @@
+import json
+
 from lrpc.core import LrpcFun, LrpcService, LrpcStream, LrpcVar
 from lrpc.core.definition import UserProperties
 from lrpc.visitors import LrpcVisitor
@@ -59,14 +61,8 @@ class StringifyVisitor(LrpcVisitor):
         if user_properties is None:
             return
 
-        if not isinstance(user_properties, dict):
-            raise NotImplementedError(f"Stringify user properties of type {type(user_properties)}")
-
         self._insert_separator()
-        self.result += "user_properties: "
-
-        up_strings = [f"{{{up_k}: {up_v}}}" for up_k, up_v in user_properties.items()]
-        self.result += ", ".join(up_strings)
+        self.result += f"user_properties: {json.dumps(user_properties)}"
 
     def _insert_separator(self) -> None:
         if len(self.result) != 0:

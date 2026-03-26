@@ -1099,8 +1099,8 @@ user_properties:
   - red: 1
   - green: 2
   - others:
-    white: true
-    black: 123
+      white: true
+      black: 123
 """
     lrpc_def = load_lrpc_def(def_str)
     up = lrpc_def.user_properties()
@@ -1110,7 +1110,8 @@ user_properties:
     assert up[0].get("red") == 1
     assert isinstance(up[1], dict)
     assert up[1].get("green") == 2
-    others = up[2]
+    assert isinstance(up[2], dict)
+    others = up[2].get("others")
     assert isinstance(others, dict)
     assert others.get("white") is True
     assert others.get("black") == 123
@@ -1132,5 +1133,5 @@ user_properties:
 
     assert (
         v.result == "service[srv1]-function[f1+0]-return_end-param_end-function_end-service_end"
-        "-user_properties: {red: 1}, {green: 2}"
+        '-user_properties: {"red": 1, "green": 2}'
     )

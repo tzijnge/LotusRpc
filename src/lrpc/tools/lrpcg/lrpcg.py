@@ -1,6 +1,5 @@
 import logging
 import os
-import sys
 from pathlib import Path
 from typing import TextIO
 
@@ -100,7 +99,6 @@ def cpp(definition_file: TextIO, output: str, core: bool, warnings_as_errors: bo
             more_info,
             exc_info=level_is_debug,
         )
-        sys.exit(1)
 
 
 @run_cli.command()

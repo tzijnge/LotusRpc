@@ -1,11 +1,12 @@
 import hashlib
 import lzma
+from collections.abc import Iterable
 from pathlib import Path
 from typing import cast
 
 import yaml
 from pydantic import TypeAdapter
-from typing_extensions import NotRequired, TypeAliasType, TypedDict
+from typing_extensions import NotRequired, TypedDict
 
 from lrpc.visitors import LrpcVisitor
 
@@ -18,10 +19,8 @@ from .stream import LrpcStream
 from .struct import LrpcStruct, LrpcStructDict
 from .var import LrpcVarDict
 
-UserProperties = TypeAliasType(
-    "UserProperties",
-    "dict[str, UserProperties] | list[UserProperties] | str | int | float | bool | None",
-)
+PrimitiveUserProperties = bool | int | float | str
+UserProperties = Iterable[PrimitiveUserProperties] | dict[str, PrimitiveUserProperties] | None
 
 
 class LrpcDefDict(TypedDict):

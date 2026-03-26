@@ -1,6 +1,6 @@
 import hashlib
 import lzma
-from collections.abc import Iterable
+from collections.abc import Iterable  # noqa: TC003
 from pathlib import Path
 from typing import cast
 

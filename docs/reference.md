@@ -224,7 +224,7 @@ Using the definition that is embedded on the server from the client side can be 
 
 ## User settings
 
-Section `user_settings` allows for free-format user settings in the LotusRPC definition file. The user can specify any valid YAML data structure under `user_settings`. The user settings are accessible when visiting a `LrpcDef` object with a visitor deriving from `LrpcVisitor`. This flexible approach has no specific use case for LotusRPC and and is ignored by LotusRPC internally, but allow users to include custom data in the LotusRPC definition file and use it to their own benefit. user settings may also be useful creating anchors that can be referenced in other parts of the definition, e.g. as a common array size. See [visiting LrpcDef](extending_lrpc.md#visiting-lrpcdef) for more information on extending LotusRPC.
+Section `user_settings` allows for free-format user settings in the LotusRPC definition file. The user can specify any valid YAML data structure under `user_settings`. The user settings are accessible when visiting a `LrpcDef` object with a visitor deriving from `LrpcVisitor`. This flexible approach has no specific use case for LotusRPC and is ignored by LotusRPC internally, but allows users to include custom data in the LotusRPC definition file and use it to their own benefit. User settings may also be useful for creating anchors that can be referenced in other parts of the definition, e.g. as a common array size. See [visiting LrpcDef](extending_lrpc.md#visiting-lrpcdef) for more information on extending LotusRPC.
 
 ## LrpcType
 

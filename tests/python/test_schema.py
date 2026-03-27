@@ -1,7 +1,6 @@
 import logging
 import re
 
-import jsonschema
 import pytest
 
 from lrpc.errors import LrpcDefinitionError
@@ -783,7 +782,8 @@ services:
 
 def test_undeclared_custom_type(caplog: pytest.LogCaptureFixture) -> None:
     rpc_def = """name: test
-namespace: "a"
+settings:
+  namespace: "a"
 services:
   - name: s0
     id: 0
@@ -946,10 +946,8 @@ services:
 """
 
     caplog.set_level(logging.ERROR)
-    with pytest.raises(jsonschema.ValidationError, match=re.escape("255 is greater than the maximum of 254")) as e:
+    with pytest.raises(LrpcDefinitionError, match=re.escape("255 is greater than the maximum of 254")):
         load_def(rpc_def)
-
-    assert e.value.message == "255 is greater than the maximum of 254"
 
 
 def test_returns_alias_specified_without_returns(caplog: pytest.LogCaptureFixture) -> None:
@@ -965,3 +963,18 @@ services:
     load_def(rpc_def)
     assert_log_entries(["returns_alias specified for function without returns: srv0.f0"], caplog.text)
 
+
+def test_additional_properties_not_allowed() -> None:
+    rpc_def = """name: test
+services:
+  - name: srv0
+    functions:
+      - name: f0
+user_defined_property: 10
+"""
+
+    with pytest.raises(
+        LrpcDefinitionError,
+        match=re.escape("Additional properties are not allowed ('user_defined_property' was unexpected)"),
+    ):
+        load_def(rpc_def)

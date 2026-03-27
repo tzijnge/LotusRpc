@@ -6,6 +6,7 @@ import jsonschema
 import yaml
 
 from lrpc.core import LrpcDef, LrpcDefDict
+from lrpc.errors import LrpcDefinitionError
 from lrpc.resources.meta import meta_def_file
 from lrpc.schema import load_lrpc_schema
 from lrpc.validation import SemanticAnalyzer
@@ -42,6 +43,13 @@ class LrpcLoader(yaml.SafeLoader):
         return mapping
 
 
+def _validate_definition(def_dict: LrpcDefDict) -> None:
+    try:
+        jsonschema.validate(def_dict, load_lrpc_schema())
+    except jsonschema.ValidationError as e:
+        raise LrpcDefinitionError(e.message) from e
+
+
 def _yaml_safe_load(def_str: str | TextIO) -> LrpcDefDict:
     def_dict: LrpcDefDict = yaml.load(def_str, Loader=LrpcLoader)  # noqa: S506
     if not isinstance(def_dict, dict):
@@ -53,7 +61,7 @@ def _yaml_safe_load(def_str: str | TextIO) -> LrpcDefDict:
 def _load_meta_def_dict() -> LrpcDefDict:
     with meta_def_file() as mdf, mdf.open(encoding="utf-8") as meta_def:
         meta_def_dict = _yaml_safe_load(meta_def)
-        jsonschema.validate(meta_def_dict, load_lrpc_schema())
+        _validate_definition(meta_def_dict)
         return meta_def_dict
 
 
@@ -79,8 +87,7 @@ def load_meta_def() -> LrpcDef:
 
 
 def load_lrpc_def_from_dict(def_dict: LrpcDefDict, *, warnings_as_errors: bool) -> LrpcDef:
-    jsonschema.validate(def_dict, load_lrpc_schema())
-
+    _validate_definition(def_dict)
     lrpc_def = LrpcDef(def_dict)
     sa = SemanticAnalyzer(lrpc_def)
     sa.analyze(warnings_as_errors=warnings_as_errors)

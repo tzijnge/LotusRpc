@@ -351,7 +351,7 @@
   "title": "Lotus RPC",
   "description": "JSON Schema for Lotus RPC, a RPC code generation tool",
   "type": "object",
-  "additionalProperties": true,
+  "additionalProperties": false,
   "required": [
     "name",
     "services"
@@ -397,6 +397,9 @@
         "$ref": "#/$defs/const_decl"
       },
       "description": "A list of custom constants"
+    },
+    "user_settings": {
+      "description": "user settings, not used by LotusRPC. Accepts any valid YAML data"
     }
   }
 }

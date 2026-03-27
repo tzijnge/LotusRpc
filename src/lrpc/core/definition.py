@@ -1,11 +1,14 @@
 import hashlib
 import lzma
+
+# pylint: disable = unused-import
+from collections.abc import Iterable  # noqa: TC003
 from pathlib import Path
 from typing import cast
 
 import yaml
 from pydantic import TypeAdapter
-from typing_extensions import NotRequired, TypedDict
+from typing_extensions import NotRequired, TypeAliasType, TypedDict
 
 from lrpc.visitors import LrpcVisitor
 
@@ -18,6 +21,12 @@ from .stream import LrpcStream
 from .struct import LrpcStruct, LrpcStructDict
 from .var import LrpcVarDict
 
+LrpcUserSetting = bool | int | float | str | None
+LrpcUserSettings = TypeAliasType(
+    "LrpcUserSettings",
+    "LrpcUserSetting | Iterable[LrpcUserSettings] | dict[str, LrpcUserSettings] | None",
+)
+
 
 class LrpcDefDict(TypedDict):
     name: str
@@ -26,6 +35,7 @@ class LrpcDefDict(TypedDict):
     enums: NotRequired[list[LrpcEnumDict]]
     constants: NotRequired[list[LrpcConstantDict]]
     settings: NotRequired[RpcSettingsDict]
+    user_settings: NotRequired[LrpcUserSettings]
 
 
 # pylint: disable=invalid-name
@@ -83,6 +93,8 @@ class LrpcDef:
         self._constants = []
         if "constants" in raw:
             self._constants.extend([LrpcConstant(c) for c in raw["constants"]])
+
+        self._user_settings = raw.get("user_settings", None)
 
     def _init_all_vars(self, raw: LrpcDefDict, struct_names: list[str], enum_names: list[str]) -> None:
         for service in raw["services"]:
@@ -159,6 +171,8 @@ class LrpcDef:
 
         if visit_meta_service:
             self._meta_service.accept(visitor)
+
+        visitor.visit_lrpc_user_settings(self.user_settings())
 
         visitor.visit_lrpc_def_end()
 
@@ -247,3 +261,6 @@ class LrpcDef:
                 return c.value()
 
         raise ValueError(f"No constant {name} in LRPC definition {self.name()}")
+
+    def user_settings(self) -> LrpcUserSettings:
+        return self._user_settings

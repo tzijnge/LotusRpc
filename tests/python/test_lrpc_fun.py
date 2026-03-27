@@ -47,7 +47,6 @@ def test_full_notation() -> None:
     assert returns_alias == "my_return_alias"
 
 
-
 def test_get_param_by_name() -> None:
     f: LrpcFunDict = {
         "name": "f1",

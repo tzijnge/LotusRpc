@@ -21,10 +21,10 @@ from .stream import LrpcStream
 from .struct import LrpcStruct, LrpcStructDict
 from .var import LrpcVarDict
 
-PrimitiveUserSettings = bool | int | float | str | None
+LrpcUserSetting = bool | int | float | str | None
 LrpcUserSettings = TypeAliasType(
     "LrpcUserSettings",
-    "PrimitiveUserSettings | Iterable[LrpcUserSettings] | dict[str, LrpcUserSettings] | None",
+    "LrpcUserSetting | Iterable[LrpcUserSettings] | dict[str, LrpcUserSettings] | None",
 )
 
 

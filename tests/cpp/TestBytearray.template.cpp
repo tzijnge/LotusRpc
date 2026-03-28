@@ -35,9 +35,9 @@ public:
 namespace
 {
     template <typename... Ts>
-    std::vector<LRPC_BYTE_TYPE> makeBytes(Ts &&...args) noexcept
+    std::vector<lrpc::byte> makeBytes(Ts &&...args) noexcept
     {
-        return {static_cast<LRPC_BYTE_TYPE>(std::forward<Ts>(args))...};
+        return {static_cast<lrpc::byte>(std::forward<Ts>(args))...};
     }
 }
 
@@ -86,12 +86,12 @@ TEST_F(TEST_BYTEARRAY_CLASS, array)
     {
         EXPECT_EQ(2, ba.size());
         EXPECT_EQ(3, ba.at(0).size());
-        EXPECT_EQ(0x11, ba.at(0).at(0));
-        EXPECT_EQ(0x22, ba.at(0).at(1));
-        EXPECT_EQ(0x33, ba.at(0).at(2));
+        EXPECT_EQ(lrpc::byte(0x11), ba.at(0).at(0));
+        EXPECT_EQ(lrpc::byte(0x22), ba.at(0).at(1));
+        EXPECT_EQ(lrpc::byte(0x33), ba.at(0).at(2));
         EXPECT_EQ(2, ba.at(1).size());
-        EXPECT_EQ(0x44, ba.at(1).at(0));
-        EXPECT_EQ(0x55, ba.at(1).at(1));
+        EXPECT_EQ(lrpc::byte(0x44), ba.at(1).at(0));
+        EXPECT_EQ(lrpc::byte(0x55), ba.at(1).at(1));
 
         return lrpc::span<const lrpc::bytearray>{r0};
     };
@@ -111,18 +111,18 @@ TEST_F(TEST_BYTEARRAY_CLASS, custom)
     const auto handler = [ba4, ba5, ba6, ba7](const test_ba::BytearrayStruct &bas)
     {
         EXPECT_EQ(2, bas.f0.size());
-        EXPECT_EQ(0x11, bas.f0.at(0));
-        EXPECT_EQ(0x22, bas.f0.at(1));
+        EXPECT_EQ(lrpc::byte(0x11), bas.f0.at(0));
+        EXPECT_EQ(lrpc::byte(0x22), bas.f0.at(1));
         EXPECT_TRUE(bas.f1.has_value());
-        EXPECT_EQ(0x33, bas.f1.value().at(0));
-        EXPECT_EQ(0x44, bas.f1.value().at(1));
-        EXPECT_EQ(0x55, bas.f1.value().at(2));
+        EXPECT_EQ(lrpc::byte(0x33), bas.f1.value().at(0));
+        EXPECT_EQ(lrpc::byte(0x44), bas.f1.value().at(1));
+        EXPECT_EQ(lrpc::byte(0x55), bas.f1.value().at(2));
         EXPECT_EQ(2, bas.f2.size());
         EXPECT_EQ(1, bas.f2.at(0).size());
-        EXPECT_EQ(0x66, bas.f2.at(0).at(0));
+        EXPECT_EQ(lrpc::byte(0x66), bas.f2.at(0).at(0));
         EXPECT_EQ(2, bas.f2.at(1).size());
-        EXPECT_EQ(0x77, bas.f2.at(1).at(0));
-        EXPECT_EQ(0x78, bas.f2.at(1).at(1));
+        EXPECT_EQ(lrpc::byte(0x77), bas.f2.at(1).at(0));
+        EXPECT_EQ(lrpc::byte(0x78), bas.f2.at(1).at(1));
 
         return test_ba::BytearrayStruct{ba4, lrpc::optional<lrpc::bytearray>{ba5}, {ba6, ba7}};
     };
@@ -166,12 +166,12 @@ TEST_F(TEST_BYTEARRAY_CLASS, client_array)
     {
         EXPECT_EQ(2, ba.size());
         EXPECT_EQ(3, ba.at(0).size());
-        EXPECT_EQ(0x11, ba.at(0).at(0));
-        EXPECT_EQ(0x22, ba.at(0).at(1));
-        EXPECT_EQ(0x33, ba.at(0).at(2));
+        EXPECT_EQ(lrpc::byte(0x11), ba.at(0).at(0));
+        EXPECT_EQ(lrpc::byte(0x22), ba.at(0).at(1));
+        EXPECT_EQ(lrpc::byte(0x33), ba.at(0).at(2));
         EXPECT_EQ(2, ba.at(1).size());
-        EXPECT_EQ(0x44, ba.at(1).at(0));
-        EXPECT_EQ(0x55, ba.at(1).at(1));
+        EXPECT_EQ(lrpc::byte(0x44), ba.at(1).at(0));
+        EXPECT_EQ(lrpc::byte(0x55), ba.at(1).at(1));
     };
 
     EXPECT_CALL(service, client_array(testing::_)).WillOnce(testing::Invoke(handler));
@@ -184,18 +184,18 @@ TEST_F(TEST_BYTEARRAY_CLASS, client_custom)
     const auto handler = [](const test_ba::BytearrayStruct &bas)
     {
         EXPECT_EQ(2, bas.f0.size());
-        EXPECT_EQ(0x11, bas.f0.at(0));
-        EXPECT_EQ(0x22, bas.f0.at(1));
+        EXPECT_EQ(lrpc::byte(0x11), bas.f0.at(0));
+        EXPECT_EQ(lrpc::byte(0x22), bas.f0.at(1));
         EXPECT_TRUE(bas.f1.has_value());
-        EXPECT_EQ(0x33, bas.f1.value().at(0));
-        EXPECT_EQ(0x44, bas.f1.value().at(1));
-        EXPECT_EQ(0x55, bas.f1.value().at(2));
+        EXPECT_EQ(lrpc::byte(0x33), bas.f1.value().at(0));
+        EXPECT_EQ(lrpc::byte(0x44), bas.f1.value().at(1));
+        EXPECT_EQ(lrpc::byte(0x55), bas.f1.value().at(2));
         EXPECT_EQ(2, bas.f2.size());
         EXPECT_EQ(1, bas.f2.at(0).size());
-        EXPECT_EQ(0x66, bas.f2.at(0).at(0));
+        EXPECT_EQ(lrpc::byte(0x66), bas.f2.at(0).at(0));
         EXPECT_EQ(2, bas.f2.at(1).size());
-        EXPECT_EQ(0x77, bas.f2.at(1).at(0));
-        EXPECT_EQ(0x78, bas.f2.at(1).at(1));
+        EXPECT_EQ(lrpc::byte(0x77), bas.f2.at(1).at(0));
+        EXPECT_EQ(lrpc::byte(0x78), bas.f2.at(1).at(1));
     };
 
     EXPECT_CALL(service, client_custom(testing::_)).WillOnce(testing::Invoke(handler));

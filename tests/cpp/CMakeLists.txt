@@ -76,6 +76,7 @@ add_executable(UnitTests
                 TestBytearray_unsigned_char.cpp
                 TestBytearray_int8_t.cpp
                 TestBytearray_uint8_t.cpp
+                TestBytearray_etl_byte.cpp
                 TestRetrieveDefinition.cpp ${CMAKE_CURRENT_SOURCE_DIR}/generated/RetrieveDefinition/RetrieveDefinition.hpp
                 TestServerErrors.cpp)
 

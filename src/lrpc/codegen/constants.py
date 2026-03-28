@@ -61,7 +61,7 @@ class ConstantsFileVisitor(LrpcVisitor):
             v = f'"{str_value}"'
         elif constant.cpp_type() == "bytearray":
             ba_value = typing.cast(bytes, constant.value())
-            t = f"lrpc::array<LRPC_BYTE_TYPE, {len(ba_value)}>"
+            t = f"lrpc::array<lrpc::byte, {len(ba_value)}>"
             v = ", ".join(hex(b) for b in ba_value)
         else:
             t = constant.cpp_type()

@@ -58,7 +58,7 @@ This type was added because in the generated C++ code `bytearray` is more effici
 LotusRPC defines the following type aliases and uses them internally.
 
 * `LRPC_BYTE_TYPE`. Type that LotusRPC uses internally to represent a byte. Defaults to `uint8_t` but can be defined to any other single-byte type,
-* `lrpc::bytearray`. Alias for `etl::span<const LRPC_BYTE_TYPE>`
+* `lrpc::bytearray`. Alias for `etl::span<const lrpc::byte>`
 * `lrpc::string_view`. Alias for `etl::string_view`
 * `lrpc::span`. Alias for `etl::span`
 * `lrpc::array`. Alias for `std::array`

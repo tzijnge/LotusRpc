@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cstdint>
+#include <etl/byte.h>
 #include <etl/optional.h>
 #include <etl/span.h>
 #include <etl/string_view.h>
@@ -17,7 +18,9 @@ namespace lrpc
 
     static_assert(sizeof(LRPC_BYTE_TYPE) == 1, "sizeof(LRPC_BYTE_TYPE) must be exactly 1");
 
-    using bytearray = etl::span<const LRPC_BYTE_TYPE>;
+    using byte = LRPC_BYTE_TYPE;
+
+    using bytearray = etl::span<const byte>;
 
     using string_view = etl::string_view;
 

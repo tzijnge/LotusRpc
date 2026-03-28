@@ -1,5 +1,9 @@
+from typing import Literal
+
 from pydantic import TypeAdapter
 from typing_extensions import NotRequired, TypedDict
+
+LrpcByteType = Literal["uint8_t", "int8_t", "char", "char8_t", "unsigned char", "signed char", "etl::byte"]
 
 
 class RpcSettingsDict(TypedDict):
@@ -9,6 +13,7 @@ class RpcSettingsDict(TypedDict):
     namespace: NotRequired[str]
     rx_buffer_size: NotRequired[int]
     tx_buffer_size: NotRequired[int]
+    byte_type: NotRequired[LrpcByteType]
 
 
 # pylint: disable=invalid-name
@@ -25,6 +30,7 @@ class RpcSettings:
         self._namespace = raw.get("namespace", None)
         self._rx_buffer_size = raw.get("rx_buffer_size", 256)
         self._tx_buffer_size = raw.get("tx_buffer_size", 256)
+        self._byte_type: LrpcByteType = raw.get("byte_type", "uint8_t")
 
     def version(self) -> str | None:
         return self._version
@@ -43,3 +49,6 @@ class RpcSettings:
 
     def tx_buffer_size(self) -> int:
         return self._tx_buffer_size
+
+    def byte_type(self) -> LrpcByteType:
+        return self._byte_type

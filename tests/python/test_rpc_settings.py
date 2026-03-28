@@ -14,6 +14,7 @@ def test_empty() -> None:
     assert settings.namespace() is None
     assert settings.rx_buffer_size() == 256
     assert settings.tx_buffer_size() == 256
+    assert settings.byte_type() == "uint8_t"
 
 
 def test_all_settings() -> None:
@@ -24,6 +25,7 @@ def test_all_settings() -> None:
         "namespace": "my_app",
         "rx_buffer_size": 512,
         "tx_buffer_size": 1024,
+        "byte_type": "char8_t",
     }
     settings = RpcSettings(s)
 
@@ -33,6 +35,7 @@ def test_all_settings() -> None:
     assert settings.namespace() == "my_app"
     assert settings.rx_buffer_size() == 512
     assert settings.tx_buffer_size() == 1024
+    assert settings.byte_type() == "char8_t"
 
 
 def test_version_only() -> None:
@@ -45,6 +48,7 @@ def test_version_only() -> None:
     assert settings.namespace() is None
     assert settings.rx_buffer_size() == 256
     assert settings.tx_buffer_size() == 256
+    assert settings.byte_type() == "char8_t"
 
 
 def test_definition_hash_length_only() -> None:
@@ -57,6 +61,7 @@ def test_definition_hash_length_only() -> None:
     assert settings.namespace() is None
     assert settings.rx_buffer_size() == 256
     assert settings.tx_buffer_size() == 256
+    assert settings.byte_type() == "char8_t"
 
 
 def test_embed_definition_only() -> None:
@@ -69,6 +74,7 @@ def test_embed_definition_only() -> None:
     assert settings.namespace() is None
     assert settings.rx_buffer_size() == 256
     assert settings.tx_buffer_size() == 256
+    assert settings.byte_type() == "char8_t"
 
 
 def test_namespace_only() -> None:
@@ -81,6 +87,7 @@ def test_namespace_only() -> None:
     assert settings.namespace() == "my::namespace"
     assert settings.rx_buffer_size() == 256
     assert settings.tx_buffer_size() == 256
+    assert settings.byte_type() == "char8_t"
 
 
 def test_buffer_sizes_only() -> None:
@@ -93,6 +100,20 @@ def test_buffer_sizes_only() -> None:
     assert settings.namespace() is None
     assert settings.rx_buffer_size() == 512
     assert settings.tx_buffer_size() == 1024
+    assert settings.byte_type() == "char8_t"
+
+
+def test_byte_type_only() -> None:
+    s: RpcSettingsDict = {"byte_type": "etl::byte"}
+    settings = RpcSettings(s)
+
+    assert settings.version() is None
+    assert settings.definition_hash_length() == 64
+    assert settings.embed_definition() is False
+    assert settings.namespace() is None
+    assert settings.rx_buffer_size() == 256
+    assert settings.tx_buffer_size() == 256
+    assert settings.byte_type() == "etl::byte"
 
 
 def test_validation_extra_fields() -> None:
@@ -153,6 +174,15 @@ def test_validation_wrong_type_rx_buffer_size() -> None:
 def test_validation_wrong_type_tx_buffer_size() -> None:
     s = {
         "tx_buffer_size": "1024",
+    }
+
+    with pytest.raises(ValidationError):
+        RpcSettings(s)  # type: ignore[arg-type]
+
+
+def test_validation_wrong_byte_type() -> None:
+    s = {
+        "byte_type": "int",
     }
 
     with pytest.raises(ValidationError):

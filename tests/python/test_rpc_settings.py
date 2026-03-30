@@ -48,7 +48,7 @@ def test_version_only() -> None:
     assert settings.namespace() is None
     assert settings.rx_buffer_size() == 256
     assert settings.tx_buffer_size() == 256
-    assert settings.byte_type() == "char8_t"
+    assert settings.byte_type() == "uint8_t"
 
 
 def test_definition_hash_length_only() -> None:
@@ -61,7 +61,7 @@ def test_definition_hash_length_only() -> None:
     assert settings.namespace() is None
     assert settings.rx_buffer_size() == 256
     assert settings.tx_buffer_size() == 256
-    assert settings.byte_type() == "char8_t"
+    assert settings.byte_type() == "uint8_t"
 
 
 def test_embed_definition_only() -> None:
@@ -74,7 +74,7 @@ def test_embed_definition_only() -> None:
     assert settings.namespace() is None
     assert settings.rx_buffer_size() == 256
     assert settings.tx_buffer_size() == 256
-    assert settings.byte_type() == "char8_t"
+    assert settings.byte_type() == "uint8_t"
 
 
 def test_namespace_only() -> None:
@@ -87,7 +87,7 @@ def test_namespace_only() -> None:
     assert settings.namespace() == "my::namespace"
     assert settings.rx_buffer_size() == 256
     assert settings.tx_buffer_size() == 256
-    assert settings.byte_type() == "char8_t"
+    assert settings.byte_type() == "uint8_t"
 
 
 def test_buffer_sizes_only() -> None:
@@ -100,7 +100,7 @@ def test_buffer_sizes_only() -> None:
     assert settings.namespace() is None
     assert settings.rx_buffer_size() == 512
     assert settings.tx_buffer_size() == 1024
-    assert settings.byte_type() == "char8_t"
+    assert settings.byte_type() == "uint8_t"
 
 
 def test_byte_type_only() -> None:

@@ -2,16 +2,18 @@ import re
 import struct
 import sys
 from importlib.metadata import version
-from pathlib import Path
 
 import pytest
 
 from lrpc.client import LrpcClient
-from lrpc.utils import load_lrpc_def_from_url
 from tests.embedded_definition import embedded_definition_for_testing
+
+from .utilities import load_test_definition
 
 if sys.version_info >= (3, 12):
     import array
+
+lrpc_def = load_test_definition("test_lrpc_encode_decode.lrpc.yaml")
 
 
 class FakeTransport:
@@ -27,10 +29,6 @@ class FakeTransport:
     def write(self, data: bytes) -> None:
         # stub
         pass
-
-
-def_url = Path(__file__).resolve().parent.joinpath("test_lrpc_encode_decode.lrpc.yaml")
-lrpc_def = load_lrpc_def_from_url(def_url, warnings_as_errors=False)
 
 
 # pylint: disable = too-many-public-methods
@@ -435,7 +433,7 @@ class TestLrpcClient:
         assert "Server mismatch detected. Details client vs server:" in caplog.messages
         assert f"LotusRPC version: {lrpc_version} vs {lrpc_version}" in caplog.messages
         assert "Definition version: [disabled] vs [disabled]" in caplog.messages
-        assert "Definition hash: 99ceeaa08c6373b4... vs [wrong hash]..." in caplog.messages
+        assert "Definition hash: 8eb0476e674c5990... vs [wrong hash]..." in caplog.messages
 
     def test_check_server_version_mismatch_lrpc_version(self, caplog: pytest.LogCaptureFixture) -> None:
         def_version = lrpc_def.settings().version() or ""
@@ -451,7 +449,7 @@ class TestLrpcClient:
         assert "Server mismatch detected. Details client vs server:" in caplog.messages
         assert f"LotusRPC version: {version('lotusrpc')} vs [wrong version]" in caplog.messages
         assert "Definition version: [disabled] vs [disabled]" in caplog.messages
-        assert "Definition hash: 99ceeaa08c6373b4... vs 99ceeaa08c6373b4..." in caplog.messages
+        assert "Definition hash: 8eb0476e674c5990... vs 8eb0476e674c5990..." in caplog.messages
 
     def test_check_server_version_mismatch_def_version(self, caplog: pytest.LogCaptureFixture) -> None:
         def_version = "[wrong version]"
@@ -467,7 +465,7 @@ class TestLrpcClient:
         assert "Server mismatch detected. Details client vs server:" in caplog.messages
         assert f"LotusRPC version: {lrpc_version} vs {lrpc_version}" in caplog.messages
         assert "Definition version: [disabled] vs [wrong version]" in caplog.messages
-        assert "Definition hash: 99ceeaa08c6373b4... vs 99ceeaa08c6373b4..." in caplog.messages
+        assert "Definition hash: 8eb0476e674c5990... vs 8eb0476e674c5990..." in caplog.messages
 
     @staticmethod
     def test_from_server_when_not_embedded() -> None:

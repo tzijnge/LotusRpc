@@ -1,5 +1,6 @@
 import logging
 import os
+from collections.abc import Iterable
 from pathlib import Path
 from typing import TextIO
 
@@ -18,7 +19,7 @@ from lrpc.codegen import (
 from lrpc.core import LrpcDef
 from lrpc.resources.cpp import export_to as export_resources_to
 from lrpc.schema import export_lrpc_schema
-from lrpc.utils import load_lrpc_def_from_file
+from lrpc.utils import DefinitionLoader
 from lrpc.visitors import PlantUmlVisitor
 
 logging.basicConfig(format="[LRPCG] %(levelname)-8s: %(message)s", level=logging.INFO)
@@ -70,6 +71,22 @@ def run_cli() -> None:
 @run_cli.command()
 @click.option("-d", "--definition_file", help="LRPC definition file", required=True, type=click.File("r"))
 @click.option("-o", "--output", help="Path to put the generated files", required=False, default=".", type=click.Path())
+@click.option(
+    "-oa",
+    "--overlay_add",
+    help="Path to overlay file (merge: add)",
+    required=False,
+    multiple=True,
+    type=click.Path(),
+)
+@click.option(
+    "-or",
+    "--overlay_replace",
+    help="Path to overlay file (merge: replace)",
+    required=False,
+    multiple=True,
+    type=click.Path(),
+)
 @click.option("--core/--no-core", help="Generate LRPC core files", required=False, default=True, type=bool)
 @click.option(
     "-w",
@@ -80,12 +97,26 @@ def run_cli() -> None:
     is_flag=True,
     type=bool,
 )
-def cpp(definition_file: TextIO, output: str, core: bool, warnings_as_errors: bool) -> None:  # noqa: FBT001
+def cpp(  # noqa: PLR0913
+    definition_file: TextIO,
+    output: str,
+    overlay_add: Iterable[TextIO],
+    overlay_replace: Iterable[TextIO],
+    *,
+    core: bool,
+    warnings_as_errors: bool,
+) -> None:
     """Generate C++ server code for the specified lrpc definition file"""
 
     try:
-        lrpc_def = load_lrpc_def_from_file(definition_file, warnings_as_errors=warnings_as_errors)
-        generate_rpc(lrpc_def, Path(output), generate_core=core)
+        loader = DefinitionLoader(warnings_as_errors=warnings_as_errors)
+        loader.add_overlay(definition_file, "add")
+        for overlay in overlay_add:
+            loader.add_overlay(overlay, "add")
+        for overlay in overlay_replace:
+            loader.add_overlay(overlay, "replace")
+
+        generate_rpc(loader.lrpc_def(), Path(output), generate_core=core)
         log.info("Generated LRPC code for %s in %s", definition_file.name, output)
 
     # catching general exception here is considered ok, because application will terminate
@@ -135,8 +166,9 @@ def schema(output: os.PathLike[str]) -> None:
 def puml(definition_file: TextIO, warnings_as_errors: bool, output: os.PathLike[str]) -> None:  # noqa: FBT001
     """Generate a PlantUML diagram for lrpc definition INPUT"""
 
-    lrpc_def = load_lrpc_def_from_file(definition_file, warnings_as_errors=warnings_as_errors)
-    generate_puml(lrpc_def, Path(output))
+    loader = DefinitionLoader(warnings_as_errors=warnings_as_errors)
+    loader.add_overlay(definition_file, "add")
+    generate_puml(loader.lrpc_def(), Path(output))
     log.info("Generated PlantUML diagram for %s in %s", definition_file.name, output)
 
 

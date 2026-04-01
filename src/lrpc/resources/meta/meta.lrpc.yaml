@@ -1,4 +1,3 @@
-name: meta_def
 services:
   - name: LrpcMeta
     streams:

@@ -15,7 +15,7 @@ from lrpc.client import ClientCliVisitor, LrpcClient, LrpcResponse, LrpcTranspor
 from lrpc.core.meta import MetaErrorResponseDict
 from lrpc.tools.lrpcc.lrpcc_config import CHECK_SERVER_VERSION, LrpccConfig
 from lrpc.types import LrpcType
-from lrpc.utils.load_definition import load_lrpc_def_from_url
+from lrpc.utils import load_lrpc_def
 
 # ruff: noqa: T201
 
@@ -116,13 +116,11 @@ class Lrpcc:
             self.client = LrpcClient.from_server(transport)
         elif from_server == "never":
             def_url = config.definition_url()
-            lrpc_def = load_lrpc_def_from_url(def_url, warnings_as_errors=True)
-            self.client = LrpcClient(lrpc_def, transport)
+            self.client = LrpcClient(load_lrpc_def(def_url), transport)
         else:  # once
             def_url = config.definition_url()
             if def_url.exists():
-                lrpc_def = load_lrpc_def_from_url(def_url, warnings_as_errors=True, include_meta_def=False)
-                self.client = LrpcClient(lrpc_def, transport)
+                self.client = LrpcClient(load_lrpc_def(def_url, include_meta_def=False), transport)
             else:
                 self.client = LrpcClient.from_server(transport, save_to=def_url)
 

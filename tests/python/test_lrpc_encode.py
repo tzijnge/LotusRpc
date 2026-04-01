@@ -1,20 +1,19 @@
 import re
 import struct
 import sys
-from pathlib import Path
 
 import pytest
 
 from lrpc.client import lrpc_encode
 from lrpc.core import LrpcVar
 from lrpc.types import LrpcType
-from lrpc.utils import load_lrpc_def_from_url
+
+from .utilities import load_test_definition
 
 if sys.version_info >= (3, 12):
     import array
 
-definition_file = Path(__file__).resolve().parent.joinpath("test_lrpc_encode_decode.lrpc.yaml")
-lrpc_def = load_lrpc_def_from_url(definition_file, warnings_as_errors=False)
+lrpc_def = load_test_definition("test_lrpc_encode_decode.lrpc.yaml")
 
 
 def encode_var(value: LrpcType, var: LrpcVar) -> bytes:

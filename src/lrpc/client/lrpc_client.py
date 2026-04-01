@@ -11,7 +11,7 @@ from lrpc.core.definition import LrpcDef
 from lrpc.core.meta import MetaVersionResponseDict, MetaVersionResponseValidator
 from lrpc.types import LrpcType
 from lrpc.types.lrpc_type import LrpcResponseType
-from lrpc.utils.load_definition import load_meta_def
+from lrpc.utils import load_lrpc_def
 
 from .decoder import LrpcDecoder
 from .encoder import lrpc_encode
@@ -49,8 +49,7 @@ class LrpcClient:
 
     @staticmethod
     def from_server(transport: LrpcTransport, save_to: Path | None = None) -> "LrpcClient":
-        meta_def = load_meta_def()
-        meta_client = LrpcClient(meta_def, transport)
+        meta_client = LrpcClient(load_lrpc_def("{name: test}"), transport)
         # pylint: disable = protected-access
         full_def = meta_client._retrieve_definition(save_to)
 

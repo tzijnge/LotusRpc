@@ -1,6 +1,6 @@
 pytest==9.0.2
 pytest-cov==7.0.0
-mypy==1.19.1
+mypy==1.20.0
 ruff==0.15.4
 pylint==4.0.2
 types-click-log==0.4.0.20250413

@@ -3,6 +3,7 @@ import lzma
 
 # pylint: disable = unused-import
 from collections.abc import Iterable  # noqa: TC003
+from copy import deepcopy
 from pathlib import Path
 from typing import cast
 
@@ -60,7 +61,8 @@ class LrpcDef:
         with destination.open("wt+") as dest:
             dest.write(LrpcDef._decompressed(compressed))
 
-    def __init__(self, raw: LrpcDefDict) -> None:
+    def __init__(self, raw_: LrpcDefDict) -> None:
+        raw = deepcopy(raw_)
         LrpcDefValidator.validate_python(raw, strict=True, extra="allow")
         self._definition_yaml = yaml.dump(raw, sort_keys=False)
 

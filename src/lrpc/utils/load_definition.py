@@ -1,6 +1,7 @@
 from collections.abc import Hashable
+from io import TextIOWrapper
 from pathlib import Path
-from typing import Any, Literal, TextIO
+from typing import Any, Literal
 
 import jsonschema
 import mergedeep  # type: ignore[import-untyped]
@@ -51,7 +52,7 @@ class LrpcLoader(yaml.SafeLoader):
         return mapping
 
 
-OverlayType = str | TextIO | Path
+OverlayType = str | TextIOWrapper | Path
 
 
 class DefinitionLoader:
@@ -70,7 +71,7 @@ class DefinitionLoader:
     def add_overlay(self, overlay: OverlayType, merge_strategy: MergeStrategy) -> None:
         if isinstance(overlay, str):
             self._add_from_str(overlay, merge_strategy)
-        elif isinstance(overlay, TextIO):
+        elif isinstance(overlay, TextIOWrapper):
             self._add_from_file(overlay, merge_strategy)
         elif isinstance(overlay, Path):
             self._add_from_url(overlay, merge_strategy)

@@ -46,24 +46,24 @@ class LrpcLoader(yaml.SafeLoader):
         return mapping
 
 
-OverlayType = str | TextIO | Path
+LrpcDefDefSourceType = str | TextIO | Path
 
 
 class DefinitionLoader:
     def __init__(
         self,
-        definition_base: OverlayType,
+        definition_base: LrpcDefDefSourceType,
         *,
         warnings_as_errors: bool = True,
         include_meta_def: bool = True,
     ) -> None:
-        self.set_definition_base(definition_base)
+        self._definition = self.create_definition(definition_base)
         self._warnings_as_errors = warnings_as_errors
 
         if include_meta_def:
             self._add_meta()
 
-    def add_overlay(self, overlay: OverlayType) -> None:
+    def add_overlay(self, overlay: LrpcDefDefSourceType) -> None:
         if isinstance(overlay, str):
             self._add_from_str(overlay)
         elif isinstance(overlay, TextIOWrapper):
@@ -100,13 +100,13 @@ class DefinitionLoader:
 
         return def_dict
 
-    def set_definition_base(self, definition_base: OverlayType) -> None:
+    def create_definition(self, definition_base: LrpcDefDefSourceType) -> YamlValues:
         if isinstance(definition_base, str):
-            self._definition = self._load_from_str(definition_base)
+            return self._load_from_str(definition_base)
         elif isinstance(definition_base, TextIOWrapper):
-            self._definition =  self._load_from_file(definition_base)
+            return self._load_from_file(definition_base)
         elif isinstance(definition_base, Path):
-            self._definition = self._load_from_url(definition_base)
+            return self._load_from_url(definition_base)
         else:
             raise TypeError(f"Unsupported definition base type: {type(definition_base)}")
 
@@ -115,7 +115,7 @@ class DefinitionLoader:
 
     def _load_from_url(self, def_url: Path) -> YamlValues:
         with def_url.open(encoding="utf-8") as def_file:
-             return self._load_from_file(def_file)
+            return self._load_from_file(def_file)
 
     def _load_from_file(self, def_file: TextIO) -> YamlValues:
         return self._yaml_safe_load(def_file)
@@ -136,7 +136,7 @@ class DefinitionLoader:
 
 
 def load_lrpc_def(
-    definition: OverlayType,
+    definition: LrpcDefDefSourceType,
     *,
     warnings_as_errors: bool = True,
     include_meta_def: bool = True,

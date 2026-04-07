@@ -226,6 +226,97 @@ Using the definition that is embedded on the server from the client side can be 
 
 Section `user_settings` allows for free-format user settings in the LotusRPC definition file. The user can specify any valid YAML data structure under `user_settings`. The user settings are accessible when visiting a `LrpcDef` object with a visitor deriving from `LrpcVisitor`. This flexible approach has no specific use case for LotusRPC and is ignored by LotusRPC internally, but allows users to include custom data in the LotusRPC definition file and use it to their own benefit. User settings may also be useful for creating anchors that can be referenced in other parts of the definition, e.g. as a common array size. See [visiting LrpcDef](extending_lrpc.md#visiting-lrpcdef) for more information on extending LotusRPC.
 
+## Overlay Merging
+
+LotusRPC supports merging overlay definitions on top of base definitions. This technique allows for creating variants of a definition without duplicating the entire base structure. For example, you can create platform-specific or variant-specific overlays that selectively add, remove, or replace properties from a base definition.
+
+### Merge Strategy
+
+The merging process is controlled by the `merge_strategy` property. This property can be specified at any dict level to control how that dict's properties are merged:
+
+| Strategy | Behavior                                                                   |
+|----------|---------------------------------------------------------------------------|
+| add      | Recursively merge overlay properties with base (default)                   |
+| remove   | Remove items from lists by matching their `name` property                 |
+| replace  | Replace the entire dict/list with the overlay version                     |
+
+### Null Value Stripping
+
+After merging, all `None`/`null` values are automatically removed from the result. Use this to remove properties from the final definition.
+
+### Example 1: Adding a new parameter
+
+Base definition:
+
+```yaml
+services:
+  - name: MyService
+    functions:
+      - name: DoWork
+        params:
+          - name: timeout
+            type: uint32_t
+```
+
+Overlay:
+
+```yaml
+services:
+  - name: MyService
+    functions:
+      - name: DoWork
+        params:
+          - name: retries
+            type: uint8_t
+        merge_strategy: add
+```
+
+Result: Function `DoWork` has both `timeout` and `retries` parameters.
+
+### Example 2: Removing a parameter
+
+Overlay:
+
+```yaml
+
+services:
+  - name: MyService
+    functions:
+      - name: DoWork
+        params:
+          - name: timeout
+            merge_strategy: remove
+```
+
+Result: Function `DoWork` no longer has the `timeout` parameter.
+
+### Example 3: Removing a property with null
+
+Overlay:
+
+```yaml
+services:
+  - name: MyService
+    deprecated: null
+```
+
+Result: The `deprecated` property is removed from the service.
+
+### Example 4: Replacing an entire service
+
+Overlay:
+
+```yaml
+services:
+  - name: MyService
+    functions:
+      - name: NewFunction
+        params: []
+    merge_strategy: replace
+```
+
+Result: Service `MyService` is completely replaced; previous functions are removed.
+
 ## LrpcType
 
 The LRPC definition file uses LrpcType to describe function arguments, function return values and struct fields.

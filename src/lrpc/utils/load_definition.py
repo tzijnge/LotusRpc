@@ -103,12 +103,12 @@ class DefinitionLoader:
     def create_definition(self, definition_base: LrpcDefDefSourceType) -> YamlValues:
         if isinstance(definition_base, str):
             return self._load_from_str(definition_base)
-        elif isinstance(definition_base, TextIOWrapper):
+        if isinstance(definition_base, TextIOWrapper):
             return self._load_from_file(definition_base)
-        elif isinstance(definition_base, Path):
+        if isinstance(definition_base, Path):
             return self._load_from_url(definition_base)
-        else:
-            raise TypeError(f"Unsupported definition base type: {type(definition_base)}")
+
+        raise TypeError(f"Unsupported definition base type: {type(definition_base)}")
 
     def _load_from_str(self, def_str: str) -> YamlValues:
         return self._yaml_safe_load(def_str)

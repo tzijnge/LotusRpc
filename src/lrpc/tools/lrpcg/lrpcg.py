@@ -72,17 +72,10 @@ def run_cli() -> None:
 @click.option("-d", "--definition_file", help="LRPC definition file", required=True, type=click.File("r"))
 @click.option("-o", "--output", help="Path to put the generated files", required=False, default=".", type=click.Path())
 @click.option(
-    "-oa",
-    "--overlay_add",
-    help="Path to overlay file (merge: add)",
-    required=False,
-    multiple=True,
-    type=click.Path(),
-)
-@click.option(
-    "-or",
-    "--overlay_replace",
-    help="Path to overlay file (merge: replace)",
+    "-ov",
+    "--overlay",
+    "overlays",
+    help="Path to overlay file",
     required=False,
     multiple=True,
     type=click.Path(),
@@ -97,11 +90,10 @@ def run_cli() -> None:
     is_flag=True,
     type=bool,
 )
-def cpp(  # noqa: PLR0913
+def cpp(
     definition_file: TextIO,
     output: str,
-    overlay_add: Iterable[TextIO],
-    overlay_replace: Iterable[TextIO],
+    overlays: Iterable[TextIO],
     *,
     core: bool,
     warnings_as_errors: bool,
@@ -109,12 +101,9 @@ def cpp(  # noqa: PLR0913
     """Generate C++ server code for the specified lrpc definition file"""
 
     try:
-        loader = DefinitionLoader(warnings_as_errors=warnings_as_errors)
-        loader.add_overlay(definition_file, "add")
-        for overlay in overlay_add:
-            loader.add_overlay(overlay, "add")
-        for overlay in overlay_replace:
-            loader.add_overlay(overlay, "replace")
+        loader = DefinitionLoader(definition_file, warnings_as_errors=warnings_as_errors)
+        for overlay in overlays:
+            loader.add_overlay(overlay)
 
         generate_rpc(loader.lrpc_def(), Path(output), generate_core=core)
         log.info("Generated LRPC code for %s in %s", definition_file.name, output)
@@ -166,8 +155,7 @@ def schema(output: os.PathLike[str]) -> None:
 def puml(definition_file: TextIO, warnings_as_errors: bool, output: os.PathLike[str]) -> None:  # noqa: FBT001
     """Generate a PlantUML diagram for lrpc definition INPUT"""
 
-    loader = DefinitionLoader(warnings_as_errors=warnings_as_errors)
-    loader.add_overlay(definition_file, "add")
+    loader = DefinitionLoader(definition_file, warnings_as_errors=warnings_as_errors)
     generate_puml(loader.lrpc_def(), Path(output))
     log.info("Generated PlantUML diagram for %s in %s", definition_file.name, output)
 

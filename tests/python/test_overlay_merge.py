@@ -59,6 +59,28 @@ class TestBasicPropertyOperations:
 
 class TestNestedDictOperations:
     @staticmethod
+    def test_replace_in_empty_dict() -> None:
+        base: YamlValues = {}
+        overlay: YamlValues = {"service": {"description": "A service"}}
+
+        result = lrpc_merge_definition(base, overlay, "replace")
+
+        assert result == {
+            "service": {"description": "A service"},
+        }
+
+    @staticmethod
+    def test_add_to_empty_dict() -> None:
+        base: YamlValues = {}
+        overlay: YamlValues = {"service": {"description": "A service"}}
+
+        result = lrpc_merge_definition(base, overlay, "add")
+
+        assert result == {
+            "service": {"description": "A service"},
+        }
+
+    @staticmethod
     def test_merge_nested_dicts() -> None:
         base: YamlValues = {"service": {"name": "srv0", "id": 1}}
         overlay: YamlValues = {"service": {"description": "A service"}}
@@ -763,7 +785,7 @@ class TestEdgeCases:
             },
         }
 
-        result = lrpc_merge_definition(base, overlay, default_operation="add")
+        result = lrpc_merge_definition(base, overlay, strategy="add")
 
         assert result == {"data": {"items": [1, 2, 3]}}
 

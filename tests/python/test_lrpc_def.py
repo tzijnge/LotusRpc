@@ -230,28 +230,28 @@ enums:
     enums = lrpc_def.enums()
     assert len(enums) == 3
 
-    assert enums[0].name() == "LrpcMetaError"
+    assert enums[0].name() == "MyEnum1"
     fields = enums[0].fields()
-    assert len(fields) == 2
-    assert fields[0].name() == "UnknownService"
-    assert fields[0].id() == 0
-    assert fields[1].name() == "UnknownFunctionOrStream"
-    assert fields[1].id() == 1
-
-    assert enums[1].name() == "MyEnum1"
-    fields = enums[1].fields()
     assert len(fields) == 2
     assert fields[0].name() == "f1"
     assert fields[0].id() == 111
     assert fields[1].name() == "f2"
     assert fields[1].id() == 222
 
-    assert enums[2].name() == "MyEnum2"
-    fields = enums[2].fields()
+    assert enums[1].name() == "MyEnum2"
+    fields = enums[1].fields()
     assert len(fields) == 2
     assert fields[0].name() == "f1"
     assert fields[0].id() == 0
     assert fields[1].name() == "f2"
+    assert fields[1].id() == 1
+
+    assert enums[2].name() == "LrpcMetaError"
+    fields = enums[2].fields()
+    assert len(fields) == 2
+    assert fields[0].name() == "UnknownService"
+    assert fields[0].id() == 0
+    assert fields[1].name() == "UnknownFunctionOrStream"
     assert fields[1].id() == 1
 
 
@@ -271,11 +271,11 @@ enums:
 
     enum = lrpc_def.enums()[0]
     assert enum.is_external() is True
-    assert enum.external_file() == "lrpccore/MetaError.hpp"
+    assert enum.external_file() == "a/b/c/d.hpp"
 
     enum = lrpc_def.enums()[1]
     assert enum.is_external() is True
-    assert enum.external_file() == "a/b/c/d.hpp"
+    assert enum.external_file() == "lrpccore/MetaError.hpp"
 
 
 def test_enum_with_omitted_ids() -> None:
@@ -298,8 +298,8 @@ enums:
     # Including LrpcMetaError, not tested here
     assert len(enums) == 2
 
-    assert enums[1].name() == "MyEnum1"
-    fields = enums[1].fields()
+    assert enums[0].name() == "MyEnum1"
+    fields = enums[0].fields()
     assert len(fields) == 4
     assert fields[0].name() == "f1"
     assert fields[0].id() == 0
@@ -991,7 +991,7 @@ services:
     lrpc_def1 = load_lrpc_def(def_str)
     compressed = lrpc_def1.compressed_definition()
 
-    assert len(compressed) == 388
+    assert len(compressed) == 392
 
     lrpc_def2 = LrpcDef.decompress(compressed)
 

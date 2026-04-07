@@ -1,10 +1,9 @@
 from collections.abc import Hashable
 from io import TextIOWrapper
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, TextIO, cast
 
 import jsonschema
-import mergedeep  # type: ignore[import-untyped]
 import yaml
 
 from lrpc.core import LrpcDef, LrpcDefDict
@@ -13,12 +12,7 @@ from lrpc.resources.meta import meta_def_file
 from lrpc.schema import load_lrpc_schema
 from lrpc.validation import SemanticAnalyzer
 
-MergeStrategy = Literal["add", "replace"]
-
-strategies: dict[MergeStrategy, mergedeep.Strategy] = {
-    "add": mergedeep.Strategy.TYPESAFE_ADDITIVE,
-    "replace": mergedeep.Strategy.TYPESAFE_REPLACE,
-}
+from .overlay_merge import YamlValues, merge_definition
 
 
 # pylint: disable = too-many-ancestors
@@ -52,42 +46,43 @@ class LrpcLoader(yaml.SafeLoader):
         return mapping
 
 
-OverlayType = str | TextIOWrapper | Path
+OverlayType = str | TextIO | Path
 
 
 class DefinitionLoader:
     def __init__(
         self,
+        definition_base: OverlayType,
         *,
         warnings_as_errors: bool = True,
         include_meta_def: bool = True,
     ) -> None:
+        self.set_definition_base(definition_base)
         self._warnings_as_errors = warnings_as_errors
-        self._definition: LrpcDefDict = {}  # type: ignore[typeddict-item]
 
         if include_meta_def:
             self._add_meta()
 
-    def add_overlay(self, overlay: OverlayType, merge_strategy: MergeStrategy) -> None:
+    def add_overlay(self, overlay: OverlayType) -> None:
         if isinstance(overlay, str):
-            self._add_from_str(overlay, merge_strategy)
+            self._add_from_str(overlay)
         elif isinstance(overlay, TextIOWrapper):
-            self._add_from_file(overlay, merge_strategy)
+            self._add_from_file(overlay)
         elif isinstance(overlay, Path):
-            self._add_from_url(overlay, merge_strategy)
+            self._add_from_url(overlay)
         else:
             raise TypeError(f"Unsupported overlay type: {type(overlay)}")
 
     def lrpc_def(self) -> LrpcDef:
         self._validate_definition()
-        lrpc_def = LrpcDef(self._definition)
+        lrpc_def = LrpcDef(cast(LrpcDefDict, self._definition))
         sa = SemanticAnalyzer(lrpc_def)
         sa.analyze(warnings_as_errors=self._warnings_as_errors)
 
         return lrpc_def
 
     @staticmethod
-    def _load_meta_def_dict() -> LrpcDefDict:
+    def _load_meta_def_dict() -> YamlValues:
         with meta_def_file() as mdf, mdf.open(encoding="utf-8") as meta_def:
             return DefinitionLoader._yaml_safe_load(meta_def)
 
@@ -98,28 +93,46 @@ class DefinitionLoader:
             raise LrpcDefinitionError(e.message) from e
 
     @staticmethod
-    def _yaml_safe_load(def_str: str | TextIO) -> LrpcDefDict:
-        def_dict: LrpcDefDict = yaml.load(def_str, Loader=LrpcLoader)  # noqa: S506
+    def _yaml_safe_load(def_str: str | TextIO) -> YamlValues:
+        def_dict: YamlValues = yaml.load(def_str, Loader=LrpcLoader)  # noqa: S506
         if not isinstance(def_dict, dict):
             raise TypeError("Invalid YAML input")
 
         return def_dict
 
-    def _add_from_str(self, def_str: str, merge_strategy: MergeStrategy) -> None:
-        user_def = self._yaml_safe_load(def_str)
-        mergedeep.merge(self._definition, user_def, strategy=strategies[merge_strategy])
+    def set_definition_base(self, definition_base: OverlayType) -> None:
+        if isinstance(definition_base, str):
+            self._definition = self._load_from_str(definition_base)
+        elif isinstance(definition_base, TextIOWrapper):
+            self._definition =  self._load_from_file(definition_base)
+        elif isinstance(definition_base, Path):
+            self._definition = self._load_from_url(definition_base)
+        else:
+            raise TypeError(f"Unsupported definition base type: {type(definition_base)}")
 
-    def _add_from_url(self, def_url: Path, merge_strategy: MergeStrategy) -> None:
+    def _load_from_str(self, def_str: str) -> YamlValues:
+        return self._yaml_safe_load(def_str)
+
+    def _load_from_url(self, def_url: Path) -> YamlValues:
         with def_url.open(encoding="utf-8") as def_file:
-            self._add_from_file(def_file, merge_strategy)
+             return self._load_from_file(def_file)
 
-    def _add_from_file(self, def_file: TextIO, merge_strategy: MergeStrategy) -> None:
-        user_def = self._yaml_safe_load(def_file)
-        mergedeep.merge(self._definition, user_def, strategy=strategies[merge_strategy])
+    def _load_from_file(self, def_file: TextIO) -> YamlValues:
+        return self._yaml_safe_load(def_file)
+
+    def _add_from_str(self, def_str: str) -> None:
+        self._definition = merge_definition(self._definition, self._load_from_str(def_str))
+
+    def _add_from_url(self, def_url: Path) -> None:
+        with def_url.open(encoding="utf-8") as def_file:
+            self._add_from_file(def_file)
+
+    def _add_from_file(self, def_file: TextIO) -> None:
+        self._definition = merge_definition(self._definition, self._load_from_file(def_file))
 
     def _add_meta(self) -> None:
         meta_def_dict = self._load_meta_def_dict()
-        mergedeep.merge(self._definition, meta_def_dict, strategy=strategies["add"])
+        self._definition = merge_definition(self._definition, meta_def_dict)
 
 
 def load_lrpc_def(
@@ -128,6 +141,5 @@ def load_lrpc_def(
     warnings_as_errors: bool = True,
     include_meta_def: bool = True,
 ) -> LrpcDef:
-    loader = DefinitionLoader(warnings_as_errors=warnings_as_errors, include_meta_def=include_meta_def)
-    loader.add_overlay(definition, merge_strategy="add")
+    loader = DefinitionLoader(definition, warnings_as_errors=warnings_as_errors, include_meta_def=include_meta_def)
     return loader.lrpc_def()

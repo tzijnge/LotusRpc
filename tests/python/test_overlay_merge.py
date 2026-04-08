@@ -157,7 +157,7 @@ class TestNestedDictOperations:
     @staticmethod
     def test_replace_nested_dict() -> None:
         base: YamlValues = {"config": {"a": 1, "b": 2}}
-        overlay: YamlValues = {"config": {"c": 3, "merge_strategy": "replace"}}
+        overlay: YamlValues = {"config": {"c": 3}, "merge_strategy": "replace"}
 
         result = lrpc_merge_definition(base, overlay)
 
@@ -167,12 +167,27 @@ class TestNestedDictOperations:
 class TestListOperations:
     @staticmethod
     def test_list_add_basic_items() -> None:
-        base: YamlValues = {"items": [1, 2]}
-        overlay: YamlValues = {"items": [3], "merge_strategy": "add"}
+        base: YamlValues = {
+            "data": {
+                "items": [1, 2],
+                "metadata": "original",
+            },
+        }
+        overlay: YamlValues = {
+            "data": {
+                "items": [3],
+                "merge_strategy": "add",
+            },
+        }
 
         result = lrpc_merge_definition(base, overlay)
 
-        assert result == {"items": [1, 2, 3]}
+        assert result == {
+            "data": {
+                "items": [1, 2, 3],
+                "metadata": "original",
+            },
+        }
 
     @staticmethod
     def test_list_add_composite_items() -> None:
@@ -274,30 +289,6 @@ class TestListOperations:
         assert result == {"functions": [{"name": "func_new"}]}
 
     @staticmethod
-    def test_list_with_merge_strategy_on_list_property() -> None:
-        base: YamlValues = {
-            "data": {
-                "items": [1, 2],
-                "metadata": "original",
-            },
-        }
-        overlay: YamlValues = {
-            "data": {
-                "items": [3],
-                "merge_strategy": "add",
-            },
-        }
-
-        result = lrpc_merge_definition(base, overlay)
-
-        assert result == {
-            "data": {
-                "items": [1, 2, 3],
-                "metadata": "original",
-            },
-        }
-
-    @staticmethod
     def test_list_with_merge_strategy_on_item() -> None:
         base: YamlValues = {
             "params": [
@@ -348,6 +339,53 @@ class TestListOperations:
                 {"id": 1, "data": "a"},
                 {"id": 2, "data": "b"},
                 {"data": "c"},
+            ],
+        }
+
+    @staticmethod
+    def test_list_replace_item_by_name() -> None:
+        base: YamlValues = {
+            "functions": [
+                {"name": "func0", "type": "void", "params": []},
+                {"name": "func1", "type": "int", "params": []},
+            ],
+        }
+        overlay: YamlValues = {
+            "functions": [
+                {"name": "func0", "type": "bool", "merge_strategy": "replace"},
+            ],
+        }
+
+        result = lrpc_merge_definition(base, overlay)
+
+        assert result == {
+            "functions": [
+                {"name": "func0", "type": "bool"},
+                {"name": "func1", "type": "int", "params": []},
+            ],
+        }
+
+    @staticmethod
+    def test_list_replace_item_not_found_appends() -> None:
+        base: YamlValues = {
+            "functions": [
+                {"name": "func0", "type": "void"},
+                {"name": "func1", "type": "int"},
+            ],
+        }
+        overlay: YamlValues = {
+            "functions": [
+                {"name": "func2", "type": "bool", "merge_strategy": "replace"},
+            ],
+        }
+
+        result = lrpc_merge_definition(base, overlay)
+
+        assert result == {
+            "functions": [
+                {"name": "func0", "type": "void"},
+                {"name": "func1", "type": "int"},
+                {"name": "func2", "type": "bool"},
             ],
         }
 

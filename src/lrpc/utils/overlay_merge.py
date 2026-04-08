@@ -73,18 +73,18 @@ def _merge_dicts(
     overlay: dict[str, YamlValues],
     strategy: MergeStrategy,
 ) -> dict[str, YamlValues]:
-    current_strategy = _pop_strategy(overlay, strategy)
-
-    if current_strategy == "replace":
+    if strategy == "replace":
         return overlay
+
+    new_strategy = _pop_strategy(overlay, strategy)
     for key, overlay_value in overlay.items():
         if isinstance(overlay_value, dict):
             base_value = base.get(key, {})
-            base[key] = _merge_values(base_value, overlay_value, current_strategy)
+            base[key] = _merge_values(base_value, overlay_value, new_strategy)
         elif isinstance(overlay_value, list):
             base_value = base.get(key, [])
             if isinstance(base_value, list):
-                base[key] = _merge_values(base_value, overlay_value, current_strategy)
+                base[key] = _merge_values(base_value, overlay_value, new_strategy)
             else:
                 base[key] = overlay_value
         else:

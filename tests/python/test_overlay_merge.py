@@ -4,24 +4,40 @@ from lrpc.utils import YamlValues
 from lrpc.utils import merge_definition as lrpc_merge_definition
 
 
-class TestBasicPropertyOperations:
+class TestMergeBasicProperty:
     @staticmethod
     def test_add_basic_property() -> None:
         base: YamlValues = {"name": "test", "value": 1}
-        overlay: YamlValues = {"description": "example"}
+        overlay: YamlValues = {"description": "example", "merge_strategy": "add"}
 
         result = lrpc_merge_definition(base, overlay)
 
         assert result == {"name": "test", "value": 1, "description": "example"}
 
     @staticmethod
+    def test_add_basic_property_that_exists_in_base() -> None:
+        base: YamlValues = {"name": "test", "value": 1}
+        overlay: YamlValues = {"value": "2", "merge_strategy": "add"}
+
+        with pytest.raises(ValueError):
+            lrpc_merge_definition(base, overlay)
+
+    @staticmethod
     def test_replace_basic_property() -> None:
         base: YamlValues = {"name": "test", "value": 1}
-        overlay: YamlValues = {"value": 42}
+        overlay: YamlValues = {"value": 42, "merge_strategy": "replace"}
 
         result = lrpc_merge_definition(base, overlay)
 
         assert result == {"name": "test", "value": 42}
+
+    @staticmethod
+    def test_replace_basic_property_not_in_base() -> None:
+        base: YamlValues = {"name": "test"}
+        overlay: YamlValues = {"value": 42, "merge_strategy": "replace"}
+
+        with pytest.raises(ValueError):
+            lrpc_merge_definition(base, overlay)
 
     @staticmethod
     def test_remove_basic_property() -> None:
@@ -44,7 +60,13 @@ class TestBasicPropertyOperations:
     @staticmethod
     def test_add_multiple_basic_types() -> None:
         base: YamlValues = {"name": "test"}
-        overlay: YamlValues = {"int_val": 1, "float_val": 3.14, "bool_val": True, "str_val": "hello"}
+        overlay: YamlValues = {
+            "int_val": 1,
+            "float_val": 3.14,
+            "bool_val": True,
+            "str_val": "hello",
+            "merge_strategy": "add",
+        }
 
         result = lrpc_merge_definition(base, overlay)
 
@@ -57,13 +79,13 @@ class TestBasicPropertyOperations:
         }
 
 
-class TestNestedDictOperations:
+class TestMergeNestedDict:
     @staticmethod
     def test_replace_in_empty_dict() -> None:
         base: YamlValues = {}
-        overlay: YamlValues = {"service": {"description": "A service"}}
+        overlay: YamlValues = {"service": {"description": "A service"}, "merge_strategy": "replace"}
 
-        result = lrpc_merge_definition(base, overlay, "replace")
+        result = lrpc_merge_definition(base, overlay)
 
         assert result == {
             "service": {"description": "A service"},
@@ -72,18 +94,18 @@ class TestNestedDictOperations:
     @staticmethod
     def test_add_to_empty_dict() -> None:
         base: YamlValues = {}
-        overlay: YamlValues = {"service": {"description": "A service"}}
+        overlay: YamlValues = {"service": {"description": "A service"}, "merge_strategy": "add"}
 
-        result = lrpc_merge_definition(base, overlay, "add")
+        result = lrpc_merge_definition(base, overlay)
 
         assert result == {
             "service": {"description": "A service"},
         }
 
     @staticmethod
-    def test_merge_nested_dicts() -> None:
+    def test_merge_add_nested_dicts() -> None:
         base: YamlValues = {"service": {"name": "srv0", "id": 1}}
-        overlay: YamlValues = {"service": {"description": "A service"}}
+        overlay: YamlValues = {"service": {"description": "A service", "merge_strategy": "add"}}
 
         result = lrpc_merge_definition(base, overlay)
 
@@ -164,7 +186,7 @@ class TestNestedDictOperations:
         assert result == {"config": {"c": 3}}
 
 
-class TestListOperations:
+class TestMergeLists:
     @staticmethod
     def test_list_add_basic_items() -> None:
         base: YamlValues = {
@@ -388,6 +410,15 @@ class TestListOperations:
                 {"name": "func2", "type": "bool"},
             ],
         }
+
+    @staticmethod
+    def test_remove_items_from_list() -> None:
+        base: YamlValues = {"items": [1, 2, 3]}
+        overlay: YamlValues = {"items": [2, 3], "merge_strategy": "remove"}
+
+        result = lrpc_merge_definition(base, overlay)
+
+        assert result == {"items": [1]}
 
 
 class TestIntegrationRealisticStructures:
@@ -713,11 +744,11 @@ class TestEdgeCases:
         assert result == {"params": [{"name": "p0"}]}
 
     @staticmethod
-    def test_remove_operation_missing_item_silent_ignore() -> None:
+    def test_remove_missing_item_silently_ignored() -> None:
         base: YamlValues = {"items": [1, 2, 3]}
         overlay: YamlValues = {"items": [5, 6], "merge_strategy": "remove"}
 
-        # For basic items (int, str, etc.), remove operation tries exact match removal
+        # For basic items (int, str, etc.), remove strategy tries exact match removal
         # and silently ignores items not in base
         result = lrpc_merge_definition(base, overlay)
 
@@ -725,7 +756,7 @@ class TestEdgeCases:
         assert result == {"items": [1, 2, 3]}
 
     @staticmethod
-    def test_remove_operation_missing_named_item_silent_ignore() -> None:
+    def test_remove_missing_named_item_silently_ignored() -> None:
         base: YamlValues = {"functions": [{"name": "func0"}]}
         overlay: YamlValues = {
             "functions": [{"name": "nonexistent", "merge_strategy": "remove"}],
@@ -733,7 +764,7 @@ class TestEdgeCases:
 
         result = lrpc_merge_definition(base, overlay)
 
-        # Remove operation silently ignores non-existent items
+        # Remove strategy silently ignores non-existent items
         assert result == {"functions": [{"name": "func0"}]}
 
     @staticmethod
@@ -788,7 +819,7 @@ class TestEdgeCases:
     @staticmethod
     def test_immutability_base_unchanged() -> None:
         base: YamlValues = {"a": 1, "b": 2}
-        overlay: YamlValues = {"b": 3, "c": 4}
+        overlay: YamlValues = {"b": 3, "c": 4, "merge_strategy": "add"}
 
         result = lrpc_merge_definition(base, overlay)
 
@@ -811,7 +842,7 @@ class TestEdgeCases:
         assert result == {"a": 1, "b": 2}
 
     @staticmethod
-    def test_default_operation_inherited() -> None:
+    def test_default_strategy_is_add() -> None:
         base: YamlValues = {
             "data": {
                 "items": [1, 2],
@@ -823,16 +854,14 @@ class TestEdgeCases:
             },
         }
 
-        result = lrpc_merge_definition(base, overlay, strategy="add")
+        result = lrpc_merge_definition(base, overlay)
 
         assert result == {"data": {"items": [1, 2, 3]}}
 
     @staticmethod
-    def test_list_merge_on_none_base_type_mismatch() -> None:
+    def test_list_merge_type_mismatch() -> None:
         base: YamlValues = {"items": "not a list"}
         overlay: YamlValues = {"items": [1, 2], "merge_strategy": "add"}
 
-        result = lrpc_merge_definition(base, overlay)
-
-        # Type mismatch: overlay list replaces the base string value
-        assert result == {"items": [1, 2]}
+        with pytest.raises(TypeError):
+            lrpc_merge_definition(base, overlay)

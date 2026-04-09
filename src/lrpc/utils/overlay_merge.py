@@ -4,13 +4,12 @@ from typing import Literal, cast, get_args
 YamlValue = bool | int | float | str | None
 YamlValues = YamlValue | list["YamlValues"] | dict[str, "YamlValues"]
 
-MergeStrategy = Literal["add", "remove", "replace"]
+MergeStrategy = Literal["add", "remove", "replace", "unspecified"]
 
 
 def merge_definition(
     base: YamlValues,
     overlay: YamlValues,
-    strategy: MergeStrategy = "add",
 ) -> YamlValues:
     if not isinstance(base, dict):
         raise TypeError("base must be a dict")
@@ -20,7 +19,7 @@ def merge_definition(
     base_copy = deepcopy(base)
     overlay_copy = deepcopy(overlay)
 
-    return _strip_nulls(_merge_values(base_copy, overlay_copy, strategy))
+    return _strip_nulls(_merge_dicts(base_copy, overlay_copy, "unspecified"))
 
 
 def _merge_values(base: YamlValues, overlay: YamlValues, strategy: MergeStrategy) -> YamlValues:
@@ -35,6 +34,101 @@ def _merge_values(base: YamlValues, overlay: YamlValues, strategy: MergeStrategy
         return _merge_lists(base, overlay, strategy)
 
     return overlay
+
+
+def _merge_dicts(
+    base: dict[str, YamlValues],
+    overlay: dict[str, YamlValues],
+    strategy: MergeStrategy,
+) -> dict[str, YamlValues]:
+    if strategy == "replace":
+        return overlay
+
+    new_strategy = _pop_strategy(overlay, strategy)
+    for key, overlay_value in overlay.items():
+        if isinstance(overlay_value, (dict, list)):
+            base_value = base.get(key, type(overlay_value)())
+            if type(base_value) is not type(overlay_value):
+                raise TypeError(f"Type mismatch for {key}: {type(base_value)} vs. {type(overlay_value)}")
+            base[key] = _merge_values(base_value, overlay_value, new_strategy)
+        else:
+            if new_strategy == "unspecified" and overlay_value is not None:
+                raise ValueError(f"Unable to merge {key} without merge strategy")
+
+            # TODO:more checks
+            # if new_strategy == "add" and key in base:
+            # raise ValueError(f"Unable to add {key} overlay because it exists in base")
+            # add: base[key] is new
+            # replace: base[key] is replaced
+            # remove: base[key] is assigned value None
+            base[key] = overlay_value
+    return base
+
+
+def _merge_lists(base: list[YamlValues], overlay: list[YamlValues], strategy: MergeStrategy) -> list[YamlValues]:
+    if strategy == "replace":
+        return overlay
+    if strategy == "remove":
+        return _remove_items_from_list(base, overlay)
+
+    return _merge_items_into_list(base, overlay)
+
+
+def _merge_items_into_list(base: list[YamlValues], overlay: list[YamlValues]) -> list[YamlValues]:
+    for overlay_item in overlay:
+        if _is_named_composite(overlay_item):
+            # type of overlay_item verified in _is_composite_name
+            item_strategy = _pop_strategy(overlay_item, "add")  # type: ignore[arg-type]
+            item_name = _get_name(overlay_item)  # type: ignore[arg-type]
+            base = _merge_named_items(base, overlay_item, item_name, item_strategy)
+        else:
+            base.append(overlay_item)
+    return base
+
+
+def _remove_items_from_list(base: list[YamlValues], overlay: list[YamlValues]) -> list[YamlValues]:
+    for overlay_item in overlay:
+        if _is_named_composite(overlay_item):
+            # type of overlay_item verified in _is_composite_name
+            name = _get_name(overlay_item)  # type: ignore[arg-type]
+            base = [item for item in base if not _composite_has_name(item, name)]
+        elif overlay_item in base:
+            base.remove(overlay_item)
+
+    return base
+
+
+def _merge_named_items(
+    base: list[YamlValues],
+    overlay_item: YamlValues,
+    overlay_item_name: str,
+    strategy: MergeStrategy,
+) -> list[YamlValues]:
+    if strategy == "remove":
+        return [base_item for base_item in base if not _composite_has_name(base_item, overlay_item_name)]
+
+    if strategy == "replace":
+        for i, base_item in enumerate(base):
+            if _composite_has_name(base_item, overlay_item_name):
+                base[i] = overlay_item
+                return base
+        base.append(overlay_item)
+        return base
+
+    for i, base_item in enumerate(base):
+        if _composite_has_name(base_item, overlay_item_name):
+            base[i] = _merge_values(base_item, overlay_item, strategy)
+            return base
+    base.append(overlay_item)
+    return base
+
+
+def _strip_nulls(value: YamlValues) -> YamlValues:
+    if isinstance(value, dict):
+        return {k: _strip_nulls(v) for k, v in value.items() if v is not None}
+    if isinstance(value, (list, tuple)):
+        return [_strip_nulls(v) for v in value if v is not None]
+    return value
 
 
 def _pop_strategy(item: dict[str, YamlValues], default: MergeStrategy = "add") -> MergeStrategy:
@@ -66,93 +160,3 @@ def _is_named_composite(item: YamlValues) -> bool:
 
 def _composite_has_name(item: YamlValues, expected_name: str) -> bool:
     return isinstance(item, dict) and (_get_name(item) == expected_name)
-
-
-def _merge_dicts(
-    base: dict[str, YamlValues],
-    overlay: dict[str, YamlValues],
-    strategy: MergeStrategy,
-) -> dict[str, YamlValues]:
-    if strategy == "replace":
-        return overlay
-
-    new_strategy = _pop_strategy(overlay, strategy)
-    for key, overlay_value in overlay.items():
-        if isinstance(overlay_value, dict):
-            base_value = base.get(key, {})
-            base[key] = _merge_values(base_value, overlay_value, new_strategy)
-        elif isinstance(overlay_value, list):
-            base_value = base.get(key, [])
-            if isinstance(base_value, list):
-                base[key] = _merge_values(base_value, overlay_value, new_strategy)
-            else:
-                base[key] = overlay_value
-        else:
-            base[key] = overlay_value
-    return base
-
-
-def _merge_lists(base: list[YamlValues], overlay: list[YamlValues], strategy: MergeStrategy) -> list[YamlValues]:
-    if strategy == "replace":
-        return overlay
-    if strategy == "remove":
-        return _remove_items_from_list(base, overlay)
-
-    return _merge_items_into_list(base, overlay)
-
-
-def _merge_items_into_list(base: list[YamlValues], overlay: list[YamlValues]) -> list[YamlValues]:
-    for overlay_item in overlay:
-        if _is_named_composite(overlay_item):
-            # type of overlay_item verified in _is_composite_name
-            item_strategy = _pop_strategy(overlay_item, "add")  # type: ignore[arg-type]
-            item_name = _get_name(overlay_item)  # type: ignore[arg-type]
-            base = _apply_item_strategy(base, overlay_item, item_name, item_strategy)
-        else:
-            base.append(overlay_item)
-    return base
-
-
-def _apply_item_strategy(
-    base: list[YamlValues],
-    overlay_item: YamlValues,
-    overlay_item_name: str,
-    strategy: MergeStrategy,
-) -> list[YamlValues]:
-    if strategy == "remove":
-        return [base_item for base_item in base if not _composite_has_name(base_item, overlay_item_name)]
-
-    if strategy == "replace":
-        for i, base_item in enumerate(base):
-            if _composite_has_name(base_item, overlay_item_name):
-                base[i] = overlay_item
-                return base
-        base.append(overlay_item)
-        return base
-
-    for i, base_item in enumerate(base):
-        if _composite_has_name(base_item, overlay_item_name):
-            base[i] = _merge_values(base_item, overlay_item, strategy)
-            return base
-    base.append(overlay_item)
-    return base
-
-
-def _remove_items_from_list(base: list[YamlValues], overlay: list[YamlValues]) -> list[YamlValues]:
-    for overlay_item in overlay:
-        if _is_named_composite(overlay_item):
-            # type of overlay_item verified in _is_composite_name
-            name = _get_name(overlay_item)  # type: ignore[arg-type]
-            base = [item for item in base if not _composite_has_name(item, name)]
-        elif overlay_item in base:
-            base.remove(overlay_item)
-
-    return base
-
-
-def _strip_nulls(value: YamlValues) -> YamlValues:
-    if isinstance(value, dict):
-        return {k: _strip_nulls(v) for k, v in value.items() if v is not None}
-    if isinstance(value, (list, tuple)):
-        return [_strip_nulls(v) for v in value if v is not None]
-    return value

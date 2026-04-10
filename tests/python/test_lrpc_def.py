@@ -524,6 +524,10 @@ settings:
   namespace: ns
   rx_buffer_size: 123
   tx_buffer_size: 456
+  version: "1.2.3"
+  definition_hash_length: 32
+  embed_definition: True
+  byte_type: "unsigned char"
 services:
   - name: s1
     functions:
@@ -533,6 +537,10 @@ services:
     assert lrpc_def.settings().namespace() == "ns"
     assert lrpc_def.settings().rx_buffer_size() == 123
     assert lrpc_def.settings().tx_buffer_size() == 456
+    assert lrpc_def.settings().version() == "1.2.3"
+    assert lrpc_def.settings().definition_hash_length() == 32
+    assert lrpc_def.settings().embed_definition() is True
+    assert lrpc_def.settings().byte_type() == "unsigned char"
 
 
 def test_definition_hash() -> None:

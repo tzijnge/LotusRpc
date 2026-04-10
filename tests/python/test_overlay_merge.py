@@ -1,3 +1,5 @@
+import re
+
 import pytest
 
 from lrpc.utils import YamlValues
@@ -19,7 +21,7 @@ class TestMergeBasicProperty:
         base: YamlValues = {"name": "test", "value": 1}
         overlay: YamlValues = {"value": "2", "merge_strategy": "add"}
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Property 'value' cannot be added because it already exists in base"):
             lrpc_merge_definition(base, overlay)
 
     @staticmethod
@@ -36,13 +38,22 @@ class TestMergeBasicProperty:
         base: YamlValues = {"name": "test"}
         overlay: YamlValues = {"value": 42, "merge_strategy": "replace"}
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Overlay property 'value' not found in base"):
             lrpc_merge_definition(base, overlay)
 
     @staticmethod
-    def test_remove_basic_property() -> None:
+    def test_remove_basic_property_assign_with_none() -> None:
         base: YamlValues = {"name": "test", "value": 1, "description": "old"}
         overlay: YamlValues = {"description": None}
+
+        result = lrpc_merge_definition(base, overlay)
+
+        assert result == {"name": "test", "value": 1}
+
+    @staticmethod
+    def test_remove_basic_property_with_strategy() -> None:
+        base: YamlValues = {"name": "test", "value": 1, "description": "old"}
+        overlay: YamlValues = {"description": "new", "merge_strategy": "remove"}
 
         result = lrpc_merge_definition(base, overlay)
 
@@ -149,7 +160,7 @@ class TestMergeNestedDict:
                 "functions": [
                     {
                         "name": "func0",
-                        "params": [{"name": "p0", "description": "first param"}],
+                        "params": [{"name": "p0", "description": "first param", "merge_strategy": "add"}],
                     },
                 ],
             },
@@ -213,12 +224,12 @@ class TestMergeLists:
 
     @staticmethod
     def test_list_add_composite_items() -> None:
-        base: YamlValues = {"items": [{"id": 1}, {"id": 2}]}
-        overlay: YamlValues = {"items": [{"id": 3}], "merge_strategy": "add"}
+        base: YamlValues = {"items": [{"name": "a", "id": 1}, {"name": "b", "id": 2}]}
+        overlay: YamlValues = {"items": [{"name": "c", "id": 3}], "merge_strategy": "add"}
 
         result = lrpc_merge_definition(base, overlay)
 
-        assert result == {"items": [{"id": 1}, {"id": 2}, {"id": 3}]}
+        assert result == {"items": [{"name": "a", "id": 1}, {"name": "b", "id": 2}, {"name": "c", "id": 3}]}
 
     @staticmethod
     def test_list_add_composite_merge_existing_by_name() -> None:
@@ -341,30 +352,6 @@ class TestMergeLists:
         }
 
     @staticmethod
-    def test_list_items_without_name() -> None:
-        base: YamlValues = {
-            "values": [
-                {"id": 1, "data": "a"},
-                {"id": 2, "data": "b"},
-            ],
-        }
-        overlay: YamlValues = {
-            # No "name" property
-            "values": [{"data": "c"}],
-            "merge_strategy": "add",
-        }
-
-        result = lrpc_merge_definition(base, overlay)
-
-        assert result == {
-            "values": [
-                {"id": 1, "data": "a"},
-                {"id": 2, "data": "b"},
-                {"data": "c"},
-            ],
-        }
-
-    @staticmethod
     def test_list_replace_item_by_name() -> None:
         base: YamlValues = {
             "functions": [
@@ -401,15 +388,8 @@ class TestMergeLists:
             ],
         }
 
-        result = lrpc_merge_definition(base, overlay)
-
-        assert result == {
-            "functions": [
-                {"name": "func0", "type": "void"},
-                {"name": "func1", "type": "int"},
-                {"name": "func2", "type": "bool"},
-            ],
-        }
+        with pytest.raises(ValueError, match=re.escape("Item func2 not found in base. Strategy is 'replace'")):
+            lrpc_merge_definition(base, overlay)
 
     @staticmethod
     def test_remove_items_from_list() -> None:
@@ -441,6 +421,7 @@ class TestIntegrationRealisticStructures:
                     "functions": [
                         {"name": "func1", "params": [], "returns": []},
                     ],
+                    "merge_strategy": "add",
                 },
             ],
         }
@@ -529,7 +510,7 @@ class TestIntegrationRealisticStructures:
                     "functions": [
                         {
                             "name": "func0",
-                            "returns": [{"name": "r0", "type": "uint32_t"}],
+                            "returns": [{"name": "r0", "type": "uint32_t", "merge_strategy": "replace"}],
                         },
                     ],
                 },
@@ -762,10 +743,8 @@ class TestEdgeCases:
             "functions": [{"name": "nonexistent", "merge_strategy": "remove"}],
         }
 
-        result = lrpc_merge_definition(base, overlay)
-
-        # Remove strategy silently ignores non-existent items
-        assert result == {"functions": [{"name": "func0"}]}
+        with pytest.raises(ValueError, match=re.escape("Item nonexistent not found in base. Strategy is 'remove'")):
+            lrpc_merge_definition(base, overlay)
 
     @staticmethod
     def test_deeply_nested_null_stripping() -> None:
@@ -819,14 +798,14 @@ class TestEdgeCases:
     @staticmethod
     def test_immutability_base_unchanged() -> None:
         base: YamlValues = {"a": 1, "b": 2}
-        overlay: YamlValues = {"b": 3, "c": 4, "merge_strategy": "add"}
+        overlay: YamlValues = {"c": 3, "d": 4, "merge_strategy": "add"}
 
         result = lrpc_merge_definition(base, overlay)
 
         # Base should be unchanged
         assert base == {"a": 1, "b": 2}
         # Result is new
-        assert result == {"a": 1, "b": 3, "c": 4}
+        assert result == {"a": 1, "b": 2, "c": 3, "d": 4}
         assert result is not base
 
     @staticmethod
@@ -842,7 +821,7 @@ class TestEdgeCases:
         assert result == {"a": 1, "b": 2}
 
     @staticmethod
-    def test_default_strategy_is_add() -> None:
+    def test_strategy_not_specified() -> None:
         base: YamlValues = {
             "data": {
                 "items": [1, 2],
@@ -854,14 +833,87 @@ class TestEdgeCases:
             },
         }
 
-        result = lrpc_merge_definition(base, overlay)
-
-        assert result == {"data": {"items": [1, 2, 3]}}
+        with pytest.raises(ValueError, match="Merge strategy not specified"):
+            lrpc_merge_definition(base, overlay)
 
     @staticmethod
-    def test_list_merge_type_mismatch() -> None:
+    def test_merge_type_mismatch() -> None:
         base: YamlValues = {"items": "not a list"}
         overlay: YamlValues = {"items": [1, 2], "merge_strategy": "add"}
 
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError, match="Unable to merge type 'str' and type 'list'"):
+            lrpc_merge_definition(base, overlay)
+
+    @staticmethod
+    def test_merge_nested_type_mismatch() -> None:
+        base: YamlValues = {"items": {"name": "a", "properties": {"name": "b"}}}
+        overlay: YamlValues = {"items": {"name": "a", "properties": ["c", "d"], "merge_strategy": "add"}}
+
+        with pytest.raises(TypeError, match="Unable to merge type 'dict' and type 'list'"):
+            lrpc_merge_definition(base, overlay)
+
+    @staticmethod
+    def test_no_merge_strategy() -> None:
+        base: YamlValues = {"items": {"name": "a", "value": 1}}
+        overlay: YamlValues = {"items": {"name": "a", "value": 2}}
+
+        with pytest.raises(ValueError, match="Unable to merge 'value' without merge strategy"):
+            lrpc_merge_definition(base, overlay)
+
+    @staticmethod
+    def test_merge_list_of_list_not_supported() -> None:
+        base: YamlValues = {"items": [[1, 2], [3, 4], [5, 6]]}
+        overlay: YamlValues = {"items": [[7, 7], [8, 8], [9, 9]], "merge_strategy": "add"}
+
+        with pytest.raises(NotImplementedError, match="Cannot merge list of list"):
+            lrpc_merge_definition(base, overlay)
+
+    @staticmethod
+    def test_unnamed_composite_item_in_list() -> None:
+        base: YamlValues = {"items": [{"value": 1}]}
+        overlay: YamlValues = {"items": [{"value": 2}], "merge_strategy": "add"}
+
+        with pytest.raises(ValueError, match="Property 'name' not found"):
+            lrpc_merge_definition(base, overlay)
+
+    @staticmethod
+    def test_composite_item_in_list_has_wrong_name_type() -> None:
+        base: YamlValues = {"items": [{"name": True, "value": 1}]}
+        overlay: YamlValues = {"items": [{"name": True, "value": 2}], "merge_strategy": "add"}
+
+        with pytest.raises(TypeError, match="Property 'name' is 'bool' instead of 'str'"):
+            lrpc_merge_definition(base, overlay)
+
+    @staticmethod
+    def test_wrong_merge_strategy_type() -> None:
+        base: YamlValues = {"name": "test1"}
+        overlay: YamlValues = {"name": "test2", "merge_strategy": 1}
+
+        with pytest.raises(TypeError, match=r"Invalid merge_strategy type. Expected 'str' but got 'int'"):
+            lrpc_merge_definition(base, overlay)
+
+    @staticmethod
+    def test_wrong_merge_strategy_value() -> None:
+        base: YamlValues = {"name": "test1"}
+        overlay: YamlValues = {"name": "test2", "merge_strategy": "quick_merge"}
+
+        error_message = re.escape("merge_strategy must be one of ('add', 'remove', 'replace', 'unspecified')")
+        with pytest.raises(ValueError, match=error_message):
+            lrpc_merge_definition(base, overlay)
+
+    @staticmethod
+    def test_merge_non_existing_in_base() -> None:
+        base: YamlValues = {"employees": [{"name": "John", "age": 22}]}
+        overlay: YamlValues = {"employees": [{"name": "Erica", "age": 23}]}
+
+        with pytest.raises(ValueError, match=re.escape("Item Erica not found in base. Strategy is 'unspecified'")):
+            lrpc_merge_definition(base, overlay)
+
+    @staticmethod
+    def test_bla() -> None:
+        base: YamlValues = {"employees": [{"name": "John", "age": 22}]}
+        # TODO: putting merge_strategy=add inside or outside the list gives same result
+        overlay: YamlValues = {"employees": [{"name": "Erica", "age": 23}]}
+
+        with pytest.raises(ValueError, match=re.escape("Item Erica not found in base. Strategy is 'unspecified'")):
             lrpc_merge_definition(base, overlay)

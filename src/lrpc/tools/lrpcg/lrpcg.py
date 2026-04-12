@@ -2,7 +2,7 @@ import logging
 import os
 from collections.abc import Iterable
 from pathlib import Path
-from typing import TextIO
+from typing import TextIO, get_args
 
 import click
 import click_log
@@ -17,6 +17,7 @@ from lrpc.codegen import (
     StructFileVisitor,
 )
 from lrpc.core import LrpcDef
+from lrpc.core.settings import LrpcByteType
 from lrpc.resources.cpp import export_to as export_resources_to
 from lrpc.schema import export_lrpc_schema
 from lrpc.utils import DefinitionLoader
@@ -34,7 +35,7 @@ def generate_rpc(lrpc_def: LrpcDef, output: Path, *, generate_core: bool) -> Non
     create_dir_if_not_exists(output)
 
     if generate_core:
-        export_resources_to(output)
+        export_resources_to(output, lrpc_def.settings().byte_type())
 
     lrpc_def.accept(ServerIncludeVisitor(output))
     lrpc_def.accept(ServiceIncludeVisitor(output))
@@ -78,7 +79,7 @@ def run_cli() -> None:
     help="Path to overlay file",
     required=False,
     multiple=True,
-    type=click.Path(),
+    type=click.File("r"),
 )
 @click.option("--core/--no-core", help="Generate LRPC core files", required=False, default=True, type=bool)
 @click.option(
@@ -107,6 +108,8 @@ def cpp(
 
         generate_rpc(loader.lrpc_def(), Path(output), generate_core=core)
         log.info("Generated LRPC code for %s in %s", definition_file.name, output)
+        for overlay in overlays:
+            log.info("Applied overlay %s", overlay.name)
 
     # catching general exception here is considered ok, because application will terminate
     # pylint: disable=broad-exception-caught
@@ -123,11 +126,19 @@ def cpp(
 
 @run_cli.command()
 @click.option("-o", "--output", help="Path to put the generated files", required=False, default=".", type=click.Path())
-def cppcore(output: os.PathLike[str]) -> None:
+@click.option(
+    "-b",
+    "--byte_type",
+    help="LotusRPC byte type",
+    required=False,
+    default="uint8_t",
+    type=click.Choice(get_args(LrpcByteType)),
+)
+def cppcore(output: os.PathLike[str], byte_type: LrpcByteType) -> None:
     """Generate C++ server core files. Generating these files separately from the rest of the server
     allows for having multiple servers in a single project without conflicting and/or duplicate files.
     Use in combination with the 'cpp' command and the '--no-core' option"""
-    export_resources_to(Path(output))
+    export_resources_to(Path(output), byte_type)
     log.info("Generated LRPC core code in %s", output)
 
 

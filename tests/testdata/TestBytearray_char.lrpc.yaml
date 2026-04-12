@@ -1,0 +1,3 @@
+merge_strategy: add
+settings:
+  byte_type: char

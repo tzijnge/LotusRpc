@@ -1,4 +1,2 @@
-#define LRPC_BYTE_TYPE etl::byte
-#define TEST_BYTEARRAY_SERVICE BytearrayService_etl_byte
-#define TEST_BYTEARRAY_CLASS TestBytearray_etl_byte
+#include "generated/Bytearray/etl_byte/Bytearray.hpp"
 #include "TestBytearray.template.cpp"

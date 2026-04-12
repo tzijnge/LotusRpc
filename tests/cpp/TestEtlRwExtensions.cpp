@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "core/lrpccore/EtlRwExtensions.hpp"
+#include "generated/core/lrpccore/EtlRwExtensions.hpp"
 #include <array>
 #if (__cplusplus == 201703L)
 // For std::byte
@@ -418,8 +418,8 @@ TEST(TestEtlRwExtensions, writeByteArray)
     lrpc::array<uint8_t, 10> storage;
     etl::byte_stream_writer writer(storage, etl::endian::little);
 
-    const lrpc::array<uint8_t, 3> a{0x11, 0x12, 0x13};
-    const lrpc::array<uint8_t, 2> b{0x14, 0x15};
+    const lrpc::array<lrpc::byte, 3> a{0x11, 0x12, 0x13};
+    const lrpc::array<lrpc::byte, 2> b{0x14, 0x15};
     lrpc::write_unchecked<lrpc::tags::bytearray_auto>(writer, a);
     lrpc::write_unchecked<lrpc::tags::bytearray_auto>(writer, b);
     lrpc::write_unchecked<lrpc::tags::bytearray_auto>(writer, {});
@@ -446,10 +446,10 @@ TEST(TestEtlRwExtensions, writeBytearrayTooBig)
     // of the size field. This does not say anything about whether
     // or not the value will fit in the transmit buffer
 
-    lrpc::array<uint8_t, 500> storage{};
+    lrpc::array<lrpc::byte, 500> storage{};
     etl::byte_stream_writer writer(storage, etl::endian::little);
 
-    lrpc::array<uint8_t, 300> a{};
+    lrpc::array<lrpc::byte, 300> a{};
     std::iota(a.begin(), a.end(), 0);
     lrpc::write_unchecked<lrpc::tags::bytearray_auto>(writer, a);
 
@@ -626,12 +626,12 @@ TEST(TestEtlRwExtensions, writeOptionalAutoString)
 TEST(TestEtlRwExtensions, writeOptionalBytearray)
 {
     lrpc::array<uint8_t, 10> storage;
-    const lrpc::array<uint8_t, 2> o1{0x11, 0x22};
+    const lrpc::array<lrpc::byte, 2> o1{0x11, 0x22};
     etl::byte_stream_writer writer(storage, etl::endian::little);
 
     lrpc::write_unchecked<lrpc::optional<lrpc::tags::bytearray_auto>>(writer, {});
-    lrpc::write_unchecked<lrpc::optional<lrpc::tags::bytearray_auto>>(writer, lrpc::span<const uint8_t>{});
-    lrpc::write_unchecked<lrpc::optional<lrpc::tags::bytearray_auto>>(writer, lrpc::span<const uint8_t>{o1});
+    lrpc::write_unchecked<lrpc::optional<lrpc::tags::bytearray_auto>>(writer, lrpc::span<const lrpc::byte>{});
+    lrpc::write_unchecked<lrpc::optional<lrpc::tags::bytearray_auto>>(writer, lrpc::span<const lrpc::byte>{o1});
 
     const auto written = writer.used_data();
     ASSERT_EQ(7, written.size());
@@ -650,11 +650,11 @@ TEST(TestEtlRwExtensions, writeOptionalBytearray)
 TEST(TestEtlRwExtensions, writeArrayOfBytearray)
 {
     lrpc::array<uint8_t, 10> storage;
-    const lrpc::array<uint8_t, 2> ba1{0x11, 0x22};
-    const lrpc::array<uint8_t, 3> ba2{0x33, 0x44, 0x55};
+    const lrpc::array<lrpc::byte, 2> ba1{0x11, 0x22};
+    const lrpc::array<lrpc::byte, 3> ba2{0x33, 0x44, 0x55};
     etl::byte_stream_writer writer(storage, etl::endian::little);
 
-    lrpc::array<lrpc::span<const uint8_t>, 2> baArray{ba1, ba2};
+    lrpc::array<lrpc::span<const lrpc::byte>, 2> baArray{ba1, ba2};
     lrpc::write_unchecked<lrpc::tags::array_n<lrpc::tags::bytearray_auto>>(writer, baArray, 2);
 
     const auto written = writer.used_data();

@@ -3,7 +3,7 @@ from typing import Literal
 from pydantic import TypeAdapter
 from typing_extensions import NotRequired, TypedDict
 
-LrpcByteType = Literal["uint8_t", "int8_t", "char", "char8_t", "unsigned char", "signed char", "etl::byte"]
+LrpcByteType = Literal["uint8_t", "int8_t", "char", "char8_t", "unsigned char", "signed char", "etl::byte", "std::byte"]
 
 
 class RpcSettingsDict(TypedDict):

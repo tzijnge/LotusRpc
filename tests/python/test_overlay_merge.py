@@ -908,12 +908,3 @@ class TestEdgeCases:
 
         with pytest.raises(ValueError, match=re.escape("Item Erica not found in base. Strategy is 'unspecified'")):
             lrpc_merge_definition(base, overlay)
-
-    @staticmethod
-    def test_bla() -> None:
-        base: YamlValues = {"employees": [{"name": "John", "age": 22}]}
-        # TODO: putting merge_strategy=add inside or outside the list gives same result
-        overlay: YamlValues = {"employees": [{"name": "Erica", "age": 23}]}
-
-        with pytest.raises(ValueError, match=re.escape("Item Erica not found in base. Strategy is 'unspecified'")):
-            lrpc_merge_definition(base, overlay)

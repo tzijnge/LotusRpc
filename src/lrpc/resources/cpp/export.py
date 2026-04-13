@@ -11,7 +11,7 @@ def create_dir_if_not_exists(target_dir: Path) -> None:
     target_dir.mkdir(parents=True, exist_ok=True)
 
 
-def export(resource: str, output: Path, substitutions: Mapping[str, str] = {}) -> None:
+def export(resource: str, output: Path, substitutions: Mapping[str, str] | None = None) -> None:
     resource_path = resources.files(__package__).joinpath(resource)
 
     with (
@@ -23,7 +23,7 @@ def export(resource: str, output: Path, substitutions: Mapping[str, str] = {}) -
         dest.write(f"// This file has been generated with LRPC version {v}\n")
 
         source_data = Template(source.read())
-        dest.write(source_data.substitute(substitutions))
+        dest.write(source_data.substitute(substitutions or {}))
 
 
 def export_to(output: Path, byte_type: LrpcByteType) -> None:

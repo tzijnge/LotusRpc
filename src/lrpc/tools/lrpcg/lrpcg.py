@@ -76,7 +76,7 @@ def run_cli() -> None:
     "-ov",
     "--overlay",
     "overlays",
-    help="Path to overlay file  (multiple possible)",
+    help="Path to overlay file (multiple possible)",
     required=False,
     multiple=True,
     type=click.File("r"),

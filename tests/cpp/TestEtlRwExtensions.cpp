@@ -300,23 +300,23 @@ TEST(TestEtlRwExtensions, readBytearray)
 
 TEST(TestEtlRwExtensions, readEtlByte)
 {
-    etl::vector<uint8_t, 4> storage{0x11, 0xAB, 0x56, 0xCD};
+    etl::vector<uint8_t, 4> storage{0x11, 0xAB};
     etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
 
     EXPECT_EQ(etl::byte(0x11), lrpc::read_unchecked<etl::byte>(reader));
     EXPECT_EQ(etl::byte(0xAB), lrpc::read_unchecked<etl::byte>(reader));
+}
 
 #if (__cplusplus == 201703L)
-    EXPECT_EQ(std::byte(0x56), lrpc::read_unchecked<std::byte>(reader));
-    EXPECT_EQ(std::byte(0xCD), lrpc::read_unchecked<std::byte>(reader));
-#endif
-}
-
 TEST(TestEtlRwExtensions, readStdByte)
 {
-    etl::vector<uint8_t, 4> storage{0x11, 0xAB, 0x56, 0xCD};
-    etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
+    etl::vector<uint8_t, 4> storage{0x56, 0xCD};
+    const etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
+
+    EXPECT_EQ(std::byte{0x56}, lrpc::read_unchecked<std::byte>(reader));
+    EXPECT_EQ(std::byte{0xCD}, lrpc::read_unchecked<std::byte>(reader));
 }
+#endif
 
 TEST(TestEtlRwExtensions, writeArithmetic)
 {
@@ -673,8 +673,8 @@ TEST(TestEtlRwExtensions, writeEtlByte)
     lrpc::array<uint8_t, 2> storage;
     etl::byte_stream_writer writer(storage, etl::endian::little);
 
-    lrpc::write_unchecked<etl::byte>(writer, etl::byte(0x11));
-    lrpc::write_unchecked<etl::byte>(writer, etl::byte(0x56));
+    lrpc::write_unchecked<etl::byte>(writer, static_cast<etl::byte>(0x11));
+    lrpc::write_unchecked<etl::byte>(writer, static_cast<etl::byte>(0x56));
 
     const auto written = writer.used_data();
     ASSERT_EQ(2, written.size());
@@ -688,8 +688,8 @@ TEST(TestEtlRwExtensions, writeStdByte)
     lrpc::array<uint8_t, 2> storage;
     etl::byte_stream_writer writer(storage, etl::endian::little);
 
-    lrpc::write_unchecked<std::byte>(writer, std::byte(0x11));
-    lrpc::write_unchecked<std::byte>(writer, std::byte(0x56));
+    lrpc::write_unchecked<std::byte>(writer, std::byte{0x11});
+    lrpc::write_unchecked<std::byte>(writer, std::byte{0x56});
 
     const auto written = writer.used_data();
     ASSERT_EQ(2, written.size());

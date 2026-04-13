@@ -49,7 +49,10 @@ class LrpcClient:
 
     @staticmethod
     def from_server(transport: LrpcTransport, save_to: Path | None = None) -> "LrpcClient":
-        meta_client = LrpcClient(load_lrpc_def("{name: test}"), transport)
+        # The meta client is constructed from a partial LRPC definition (only a name).
+        # The rest of the definition consists of the meta overlay. This is enough to
+        # retrieve the definition embedded in the server
+        meta_client = LrpcClient(load_lrpc_def("{name: RetrieveDefinition}"), transport)
         # pylint: disable = protected-access
         full_def = meta_client._retrieve_definition(save_to)
 

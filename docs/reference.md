@@ -226,29 +226,37 @@ Using the definition that is embedded on the server from the client side can be 
 
 Section `user_settings` allows for free-format user settings in the LotusRPC definition file. The user can specify any valid YAML data structure under `user_settings`. The user settings are accessible when visiting a `LrpcDef` object with a visitor deriving from `LrpcVisitor`. This flexible approach has no specific use case for LotusRPC and is ignored by LotusRPC internally, but allows users to include custom data in the LotusRPC definition file and use it to their own benefit. User settings may also be useful for creating anchors that can be referenced in other parts of the definition, e.g. as a common array size. See [visiting LrpcDef](extending_lrpc.md#visiting-lrpcdef) for more information on extending LotusRPC.
 
-## Overlay Merging
+## Definitions overlays
 
 LotusRPC supports merging overlay definitions on top of base definitions. This technique allows for creating variants of a definition without duplicating the entire base structure. For example, you can create platform-specific or variant-specific overlays that selectively add, remove, or replace properties from a base definition.
 
-### Merge Strategy
+### Overlay files
 
-The merging process is controlled by the `merge_strategy` property. This property can be specified at any dict level to control how that dict's properties are merged:
+Overlay files are YAML files like the main definition file and typically also have the _.lrpc.yaml_ extension. An overlay file follows the same structure as the main definition file but only for the slice of the main definition that is modified. Additionally it has a `merge_strategy` property to control the merge type.
 
-| Strategy | Behavior                                                                   |
-|----------|---------------------------------------------------------------------------|
-| add      | Recursively merge overlay properties with base (default)                   |
-| remove   | Remove items from lists by matching their `name` property                 |
-| replace  | Replace the entire dict/list with the overlay version                     |
+Overlay files can contain multiple [YAML documents](https://yaml.org/spec/1.2.2/#91-documents) to specify multiple (conflicting) overlay actions in a single file.
 
-### Null Value Stripping
+### Merge strategy
 
-After merging, all `None`/`null` values are automatically removed from the result. Use this to remove properties from the final definition.
+The merging process is controlled by the `merge_strategy` property. This property can be specified at any level to control how the definition properties are merged. The merge strategy is inherited from parent properties to child properties.
+
+| Strategy | Behavior                                    |
+|----------|---------------------------------------------|
+| add      | Add a property to base                      |
+| remove   | Remove a property from base                 |
+| replace  | Replace a property in base with the overlay |
+
+Remove and replace overlays on composite properties are always matched by the `name` property. When removing a basic property from a list, the property is matched by value. It is not possible to replace a basic property in a list directly, but it can be achieved by applying a remove overlay followed by an add overlay.
+
+It is also possible to remove a basic property (e.g. string, bool or int) by assigning `null`. In this case it is not necessary to provide a merge strategy.
 
 ### Example 1: Adding a new parameter
 
 Base definition:
 
 ```yaml
+settings:
+  namespace: example
 services:
   - name: MyService
     functions:
@@ -295,12 +303,11 @@ Result: Function `DoWork` no longer has the `timeout` parameter.
 Overlay:
 
 ```yaml
-services:
-  - name: MyService
-    deprecated: null
+settings:
+  namespace: null
 ```
 
-Result: The `deprecated` property is removed from the service.
+Result: The `namespace` setting is removed from the settings.
 
 ### Example 4: Replacing an entire service
 
@@ -311,7 +318,6 @@ services:
   - name: MyService
     functions:
       - name: NewFunction
-        params: []
     merge_strategy: replace
 ```
 

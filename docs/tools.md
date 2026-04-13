@@ -15,7 +15,17 @@ The `cpp` command generates all C++ files needed for the RPC server.
 
 `lrpcg cpp -d example.lrpc.yaml -o output-dir`
 
+Definition overlays can be specified with one or more `-ov` options. A single overlay may contain multiple [YAML documents](https://yaml.org/spec/1.2.2/#91-documents). For more information about definition overlays see [Definition overlays](reference.md#definitions-overlays).
+
 For more info type `lrpcg cpp --help`
+
+### Overlay merge
+
+Basic usage: `lrpcg merge -d base.lrpc.yaml -ov overlay1.lrpc.yaml -ov overlay2.lrpc.yaml -o result.lrpc.yaml`
+
+The `merge` command merges the specified overlay files into the base definition and saves the result to a new file. See the [cpp command](#c-server-side-code-generation) for details about the overlay files.
+
+For more info type `lrpcg merge --help`
 
 ### C++ server core code generation
 

@@ -30,7 +30,7 @@ using TestRetrieveDefinition = testutils::TestServerBase<test_rd::RetrieveDefini
 // TX buffer size has been chosen in the definition as 107 bytes.
 // This leaves 112 - 5 = 107 bytes for the chunk payload. This means
 // that the compressed definition is transferred from server to client
-// in 432 / 107 = 4 packets
+// in 428 / 107 = 4 packets
 
 TEST_F(TestRetrieveDefinition, retrieveDefinition)
 {

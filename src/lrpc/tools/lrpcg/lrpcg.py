@@ -76,7 +76,7 @@ def run_cli() -> None:
     "-ov",
     "--overlay",
     "overlays",
-    help="Path to overlay file",
+    help="Path to overlay file  (multiple possible)",
     required=False,
     multiple=True,
     type=click.File("r"),
@@ -99,7 +99,7 @@ def cpp(
     core: bool,
     warnings_as_errors: bool,
 ) -> None:
-    """Generate C++ server code for the specified lrpc definition file"""
+    """Generate C++ server code for the specified LRPC definition file"""
 
     try:
         loader = DefinitionLoader(definition_file, warnings_as_errors=warnings_as_errors)
@@ -108,6 +108,7 @@ def cpp(
 
         generate_rpc(loader.lrpc_def(), Path(output), generate_core=core)
         log.info("Generated LRPC code for %s in %s", definition_file.name, output)
+
         for overlay in overlays:
             log.info("Applied overlay %s", overlay.name)
 
@@ -143,6 +144,45 @@ def cppcore(output: os.PathLike[str], byte_type: LrpcByteType) -> None:
 
 
 @run_cli.command()
+@click.option("-d", "--definition_file", help="LRPC definition base file", required=True, type=click.File("r"))
+@click.option(
+    "-o",
+    "--output",
+    help="Path to the merged files",
+    required=True,
+    default=".",
+    type=click.File("w"),
+)
+@click.option(
+    "-ov",
+    "--overlay",
+    "overlays",
+    help="Path to overlay file (multiple possible)",
+    required=True,
+    multiple=True,
+    type=click.File("r"),
+)
+def merge(definition_file: TextIO, output: TextIO, overlays: Iterable[TextIO]) -> None:
+    """Merge one or more overlays into an LRPC definition base file"""
+
+    try:
+        loader = DefinitionLoader(definition_file, warnings_as_errors=True, include_meta_def=False)
+        log.info("Loaded LRPC definition base file %s", definition_file.name)
+
+        for overlay in overlays:
+            loader.add_overlay(overlay)
+            log.info("Merged overlay %s", overlay.name)
+
+        loader.save_to(output)
+        log.info("Saved merged LRPC definition to %s", output.name)
+
+    # catching general exception here is considered ok, because application will terminate
+    # pylint: disable=broad-exception-caught
+    except Exception:
+        log.exception("Error while merging LRPC overlay into %s", definition_file.name)
+
+
+@run_cli.command()
 @click.option("-o", "--output", help="Path to put the generated files", required=False, default=".", type=click.Path())
 def schema(output: os.PathLike[str]) -> None:
     """Export the schema for the LRPC definition file"""
@@ -164,7 +204,7 @@ def schema(output: os.PathLike[str]) -> None:
 )
 @click.option("-o", "--output", help="Path to put the generated files", required=False, default=".", type=click.Path())
 def puml(definition_file: TextIO, warnings_as_errors: bool, output: os.PathLike[str]) -> None:  # noqa: FBT001
-    """Generate a PlantUML diagram for lrpc definition INPUT"""
+    """Generate a PlantUML diagram for LRPC definition INPUT"""
 
     loader = DefinitionLoader(definition_file, warnings_as_errors=warnings_as_errors)
     generate_puml(loader.lrpc_def(), Path(output))

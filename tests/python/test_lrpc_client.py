@@ -433,7 +433,7 @@ class TestLrpcClient:
         assert "Server mismatch detected. Details client vs server:" in caplog.messages
         assert f"LotusRPC version: {lrpc_version} vs {lrpc_version}" in caplog.messages
         assert "Definition version: [disabled] vs [disabled]" in caplog.messages
-        assert "Definition hash: 99ceeaa08c6373b4... vs [wrong hash]..." in caplog.messages
+        assert "Definition hash: 8d9f42cd4dba8846... vs [wrong hash]..." in caplog.messages
 
     def test_check_server_version_mismatch_lrpc_version(self, caplog: pytest.LogCaptureFixture) -> None:
         def_version = lrpc_def.settings().version() or ""
@@ -449,7 +449,7 @@ class TestLrpcClient:
         assert "Server mismatch detected. Details client vs server:" in caplog.messages
         assert f"LotusRPC version: {version('lotusrpc')} vs [wrong version]" in caplog.messages
         assert "Definition version: [disabled] vs [disabled]" in caplog.messages
-        assert "Definition hash: 99ceeaa08c6373b4... vs 99ceeaa08c6373b4..." in caplog.messages
+        assert "Definition hash: 8d9f42cd4dba8846... vs 8d9f42cd4dba8846..." in caplog.messages
 
     def test_check_server_version_mismatch_def_version(self, caplog: pytest.LogCaptureFixture) -> None:
         def_version = "[wrong version]"
@@ -465,7 +465,7 @@ class TestLrpcClient:
         assert "Server mismatch detected. Details client vs server:" in caplog.messages
         assert f"LotusRPC version: {lrpc_version} vs {lrpc_version}" in caplog.messages
         assert "Definition version: [disabled] vs [wrong version]" in caplog.messages
-        assert "Definition hash: 99ceeaa08c6373b4... vs 99ceeaa08c6373b4..." in caplog.messages
+        assert "Definition hash: 8d9f42cd4dba8846... vs 8d9f42cd4dba8846..." in caplog.messages
 
     @staticmethod
     def test_from_server_when_not_embedded() -> None:
@@ -491,7 +491,7 @@ class TestLrpcClient:
 
         assert definition.name() == "RetrieveDefinition"
         assert definition.settings().namespace() == "test_rd"
-        assert definition.settings().tx_buffer_size() == 59
+        assert definition.settings().tx_buffer_size() == 112
         assert definition.settings().embed_definition() is True
         assert len(definition.services()) == 1
         s0 = definition.service_by_id(0)

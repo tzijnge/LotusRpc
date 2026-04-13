@@ -999,7 +999,7 @@ services:
     lrpc_def1 = load_lrpc_def(def_str)
     compressed = lrpc_def1.compressed_definition()
 
-    assert len(compressed) == 392
+    assert len(compressed) == 388
 
     lrpc_def2 = LrpcDef.decompress(compressed)
 

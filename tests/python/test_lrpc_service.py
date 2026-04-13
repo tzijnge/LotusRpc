@@ -13,7 +13,6 @@ def test_short_notation() -> None:
         "name": "s0",
         "id": 123,
         "functions": [{"name": "f0"}, {"name": "f1", "id": 55}, {"name": "f2"}],
-        "functions_before_streams": True,
     }
 
     # One of the goals of this test is to verify the automatic
@@ -38,7 +37,6 @@ def test_function_by_name() -> None:
         "name": "s0",
         "id": 123,
         "functions": [{"name": "f0", "id": 40}, {"name": "f1", "id": 41}],
-        "functions_before_streams": True,
     }
     service = LrpcService(s)
 
@@ -53,7 +51,6 @@ def test_function_by_id() -> None:
         "name": "s0",
         "id": 123,
         "functions": [{"name": "f0", "id": 36}, {"name": "f1", "id": 40}],
-        "functions_before_streams": True,
     }
     service = LrpcService(s)
 
@@ -75,7 +72,6 @@ def test_stream_by_id() -> None:
             {"name": "s0", "id": 36, "origin": "server"},
             {"name": "s1", "id": 40, "origin": "client"},
         ],
-        "functions_before_streams": True,
     }
     service = LrpcService(s)
 
@@ -94,7 +90,6 @@ def test_only_streams() -> None:
         "name": "srv0",
         "id": 123,
         "streams": [{"name": "s0", "id": 36, "origin": "client"}, {"name": "s1", "id": 40, "origin": "server"}],
-        "functions_before_streams": False,
     }
     service = LrpcService(s)
 
@@ -110,29 +105,53 @@ def test_functions_and_streams() -> None:
     s: LrpcServiceDict = {
         "name": "srv0",
         "id": 123,
-        "functions": [{"name": "f0", "id": 36}, {"name": "f1", "id": 40}],
-        "streams": [{"name": "s0", "id": 36, "origin": "client"}, {"name": "s1", "id": 40, "origin": "server"}],
-        "functions_before_streams": True,
+        "functions": [{"name": "f0"}, {"name": "f1"}],
+        "streams": [{"name": "s0", "origin": "client"}, {"name": "s1", "origin": "server"}],
     }
     service = LrpcService(s)
 
     functions = service.functions()
     assert len(functions) == 2
     assert functions[0].name() == "f0"
-    assert functions[0].id() == 36
+    assert functions[0].id() == 0
     assert functions[1].name() == "f1"
-    assert functions[1].id() == 40
+    assert functions[1].id() == 1
 
     streams = service.streams()
     assert len(streams) == 2
     assert streams[0].name() == "s0"
-    assert streams[0].id() == 36
+    assert streams[0].id() == 2
     assert streams[1].name() == "s1"
-    assert streams[1].id() == 40
+    assert streams[1].id() == 3
+
+
+def test_functions_and_streams_streams_first() -> None:
+    s: LrpcServiceDict = {
+        "name": "srv0",
+        "id": 123,
+        "functions": [{"name": "f0"}, {"name": "f1"}],
+        "streams": [{"name": "s0", "origin": "client"}, {"name": "s1", "origin": "server"}],
+        "functions_before_streams": False,
+    }
+    service = LrpcService(s)
+
+    streams = service.streams()
+    assert len(streams) == 2
+    assert streams[0].name() == "s0"
+    assert streams[0].id() == 0
+    assert streams[1].name() == "s1"
+    assert streams[1].id() == 1
+
+    functions = service.functions()
+    assert len(functions) == 2
+    assert functions[0].name() == "f0"
+    assert functions[0].id() == 2
+    assert functions[1].name() == "f1"
+    assert functions[1].id() == 3
 
 
 def test_fail_when_neither_functions_nor_streams() -> None:
-    s: LrpcServiceDict = {"name": "srv0", "id": 123, "functions_before_streams": True}
+    s: LrpcServiceDict = {"name": "srv0", "id": 123}
 
     with pytest.raises(ValueError, match="A service must have at least one function or stream"):
         LrpcService(s)
@@ -146,7 +165,6 @@ def test_visit_stream() -> None:
         "id": 123,
         "functions": [{"name": "f0", "id": 36}, {"name": "f1", "id": 40}],
         "streams": [{"name": "s0", "id": 36, "origin": "client"}, {"name": "s1", "id": 40, "origin": "server"}],
-        "functions_before_streams": True,
     }
     service = LrpcService(s)
 
@@ -166,7 +184,6 @@ def test_stream_by_name() -> None:
         "name": "srv0",
         "id": 123,
         "streams": [{"name": "s0", "id": 36, "origin": "client"}, {"name": "s1", "id": 40, "origin": "server"}],
-        "functions_before_streams": True,
     }
     service = LrpcService(s)
 
@@ -183,7 +200,6 @@ def test_validation_missing_name() -> None:
     s = {
         "id": 123,
         "functions": [{"name": "f0"}],
-        "functions_before_streams": True,
     }
 
     with pytest.raises(ValidationError, match=re.escape("Field required")):
@@ -193,18 +209,6 @@ def test_validation_missing_name() -> None:
 def test_validation_missing_id() -> None:
     s = {
         "name": "s0",
-        "functions": [{"name": "f0"}],
-        "functions_before_streams": True,
-    }
-
-    with pytest.raises(ValidationError, match=re.escape("Field required")):
-        LrpcService(s)  # type: ignore[arg-type]
-
-
-def test_validation_missing_functions_before_streams() -> None:
-    s = {
-        "name": "s0",
-        "id": 123,
         "functions": [{"name": "f0"}],
     }
 
@@ -217,7 +221,6 @@ def test_validation_wrong_type_name() -> None:
         "name": 123,
         "id": 123,
         "functions": [{"name": "f0"}],
-        "functions_before_streams": True,
     }
 
     with pytest.raises(ValidationError, match=re.escape("Input should be a valid string")):
@@ -229,7 +232,6 @@ def test_validation_wrong_type_id() -> None:
         "name": "s0",
         "id": "123",
         "functions": [{"name": "f0"}],
-        "functions_before_streams": True,
     }
 
     with pytest.raises(ValidationError, match=re.escape("Input should be a valid integer")):
@@ -241,7 +243,6 @@ def test_validation_additional_fields() -> None:
         "name": "s0",
         "id": 123,
         "functions": [{"name": "f0"}],
-        "functions_before_streams": True,
         "extra_field": "should_fail",
     }
 

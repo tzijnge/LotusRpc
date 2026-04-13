@@ -1,4 +1,4 @@
-from collections.abc import Hashable
+from collections.abc import Hashable, Iterator
 from io import TextIOWrapper
 from pathlib import Path
 from typing import Any, TextIO, cast
@@ -57,24 +57,21 @@ class DefinitionLoader:
         warnings_as_errors: bool = True,
         include_meta_def: bool = True,
     ) -> None:
-        self._definition = self.create_definition(definition_base)
+        self._definition = self._base_yaml_documents(definition_base)
         self._warnings_as_errors = warnings_as_errors
 
         if include_meta_def:
-            self._add_meta()
+            self._definition = merge_definition(self._definition, self._load_meta_def_dict())
 
-    def add_overlay(self, overlay: LrpcDefDefSourceType) -> None:
-        if isinstance(overlay, str):
-            self._add_from_str(overlay)
-        elif isinstance(overlay, TextIOWrapper):
-            self._add_from_file(overlay)
-        elif isinstance(overlay, Path):
-            self._add_from_url(overlay)
-        else:
-            raise TypeError(f"Unsupported overlay type: {type(overlay)}")
+    def save_to(self, file: TextIO) -> None:
+        yaml.dump(self._definition, file, sort_keys=False)
+
+    def add_overlay(self, overlay_source: LrpcDefDefSourceType) -> None:
+        for overlay in self._overlay_yaml_documents(overlay_source):
+            merge_definition(self._definition, overlay)
 
     def lrpc_def(self) -> LrpcDef:
-        self._validate_definition()
+        self._validate(self._definition)
         lrpc_def = LrpcDef(cast(LrpcDefDict, self._definition))
         sa = SemanticAnalyzer(lrpc_def)
         sa.analyze(warnings_as_errors=self._warnings_as_errors)
@@ -82,57 +79,44 @@ class DefinitionLoader:
         return lrpc_def
 
     @staticmethod
+    def _overlay_yaml_documents(overlays: LrpcDefDefSourceType) -> Iterator[YamlValues]:
+        if isinstance(overlays, (str, TextIOWrapper)):
+            return yaml.safe_load_all(overlays)
+        if isinstance(overlays, Path):
+            with overlays.open(encoding="utf-8") as overlays_file:
+                return yaml.safe_load_all(overlays_file)
+
+        raise TypeError(f"Unsupported overlay type: {type(overlays)}")
+
+    @staticmethod
+    def _base_yaml_documents(base: LrpcDefDefSourceType) -> YamlValues:
+        if isinstance(base, (str, TextIOWrapper)):
+            return DefinitionLoader._safe_load_base(base)
+        if isinstance(base, Path):
+            with base.open(encoding="utf-8") as def_file:
+                return DefinitionLoader._safe_load_base(def_file)
+
+        raise TypeError(f"Unsupported definition base type: {type(base)}")
+
+    @staticmethod
     def _load_meta_def_dict() -> YamlValues:
         with meta_def_file() as mdf, mdf.open(encoding="utf-8") as meta_def:
-            return DefinitionLoader._yaml_safe_load(meta_def)
+            return cast(YamlValues, yaml.safe_load(meta_def))
 
-    def _validate_definition(self) -> None:
+    @staticmethod
+    def _validate(definition: YamlValues) -> None:
         try:
-            jsonschema.validate(self._definition, load_lrpc_schema())
+            jsonschema.validate(definition, load_lrpc_schema())
         except jsonschema.ValidationError as e:
             raise LrpcDefinitionError(e.message) from e
 
     @staticmethod
-    def _yaml_safe_load(def_str: str | TextIO) -> YamlValues:
-        def_dict: YamlValues = yaml.load(def_str, Loader=LrpcLoader)  # noqa: S506
+    def _safe_load_base(base: str | TextIO) -> YamlValues:
+        def_dict: YamlValues = yaml.load(base, Loader=LrpcLoader)  # noqa: S506
         if not isinstance(def_dict, dict):
             raise TypeError("Invalid YAML input")
 
         return def_dict
-
-    def create_definition(self, definition_base: LrpcDefDefSourceType) -> YamlValues:
-        if isinstance(definition_base, str):
-            return self._load_from_str(definition_base)
-        if isinstance(definition_base, TextIOWrapper):
-            return self._load_from_file(definition_base)
-        if isinstance(definition_base, Path):
-            return self._load_from_url(definition_base)
-
-        raise TypeError(f"Unsupported definition base type: {type(definition_base)}")
-
-    def _load_from_str(self, def_str: str) -> YamlValues:
-        return self._yaml_safe_load(def_str)
-
-    def _load_from_url(self, def_url: Path) -> YamlValues:
-        with def_url.open(encoding="utf-8") as def_file:
-            return self._load_from_file(def_file)
-
-    def _load_from_file(self, def_file: TextIO) -> YamlValues:
-        return self._yaml_safe_load(def_file)
-
-    def _add_from_str(self, def_str: str) -> None:
-        self._definition = merge_definition(self._definition, self._load_from_str(def_str))
-
-    def _add_from_url(self, def_url: Path) -> None:
-        with def_url.open(encoding="utf-8") as def_file:
-            self._add_from_file(def_file)
-
-    def _add_from_file(self, def_file: TextIO) -> None:
-        self._definition = merge_definition(self._definition, self._load_from_file(def_file))
-
-    def _add_meta(self) -> None:
-        meta_def_dict = self._load_meta_def_dict()
-        self._definition = merge_definition(self._definition, meta_def_dict)
 
 
 def load_lrpc_def(

@@ -254,15 +254,15 @@ Overlay files can contain multiple [YAML documents](https://yaml.org/spec/1.2.2/
 
 The merging process is controlled by the `merge_strategy` property. This property can be specified at any level to control how the definition properties are merged. The merge strategy is inherited from parent properties to child properties.
 
-| Strategy | Behavior                    | Precondition                |
-|----------|-----------------------------|-----------------------------|
-| add      | Add a property to base      | Item does not exist in base |
-| remove   | Remove a property from base | Item exists in base         |
-| replace  | Replace a property in base  | Item exists in base         |
+| Strategy | Behavior                    | Precondition                    |
+|----------|-----------------------------|---------------------------------|
+| add      | Add a property to base      | Item does not exist in base[^1] |
+| remove   | Remove a property from base | Item exists in base             |
+| replace  | Replace a property in base  | Item exists in base             |
+
+[^1]: When adding a basic item to a list, the item must not exist in the base definition. When adding a composite, named item to a list, the item is added in its entirety when not item with that name exists in the base. When an item with that name does exist in the base, the merge is done recursively on the sub-properties of the composite item
 
 Add, remove and replace overlays on composite properties are always matched by the `name` property. When adding or removing a basic property from a list, the property is matched by value. It is not possible to replace a basic property in a list directly, but it can be achieved by applying a remove overlay followed by an add overlay.
-
-Adding to a named composite merges properties into an existing item if the name matches.
 
 It is also possible to remove a basic property (e.g. string, bool or int) by assigning `null`. In this case it is not necessary to provide a merge strategy.
 

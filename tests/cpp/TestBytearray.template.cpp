@@ -1,9 +1,8 @@
 #include "TestUtils.hpp"
-#include "generated/Bytearray/Bytearray.hpp"
 
 using ::testing::Return;
 
-class TEST_BYTEARRAY_SERVICE : public test_ba::bytearray_shim
+class TestBytearrayService : public test_ba::bytearray_shim
 {
 public:
     MOCK_METHOD((lrpc::bytearray), param_return, (lrpc::bytearray), (override));
@@ -35,15 +34,15 @@ public:
 namespace
 {
     template <typename... Ts>
-    std::vector<LRPC_BYTE_TYPE> makeBytes(Ts &&...args) noexcept
+    std::vector<lrpc::byte> makeBytes(Ts &&...args) noexcept
     {
-        return {static_cast<LRPC_BYTE_TYPE>(std::forward<Ts>(args))...};
+        return {static_cast<lrpc::byte>(std::forward<Ts>(args))...};
     }
 }
 
-using TEST_BYTEARRAY_CLASS = testutils::TestServerBase<test_ba::Bytearray, TEST_BYTEARRAY_SERVICE>;
+using TestBytearray = testutils::TestServerBase<test_ba::Bytearray, TestBytearrayService>;
 
-TEST_F(TEST_BYTEARRAY_CLASS, param_return)
+TEST_F(TestBytearray, param_return)
 {
     const auto p0 = makeBytes(0x11, 0x22, 0x33);
     const auto r0 = makeBytes(0x44, 0x55, 0x66);
@@ -52,7 +51,7 @@ TEST_F(TEST_BYTEARRAY_CLASS, param_return)
     EXPECT_EQ("06000003445566", response);
 }
 
-TEST_F(TEST_BYTEARRAY_CLASS, param_return_multiple)
+TEST_F(TestBytearray, param_return_multiple)
 {
     const auto p0 = makeBytes(0x11, 0x22, 0x33);
     const auto p1 = makeBytes(0x44, 0x55);
@@ -65,7 +64,7 @@ TEST_F(TEST_BYTEARRAY_CLASS, param_return_multiple)
     EXPECT_EQ("09000103616263026465", response);
 }
 
-TEST_F(TEST_BYTEARRAY_CLASS, optional)
+TEST_F(TestBytearray, optional)
 {
     const auto data0 = makeBytes(0x11, 0x22, 0x33);
     const lrpc::optional<lrpc::bytearray> p0{data0};
@@ -76,7 +75,7 @@ TEST_F(TEST_BYTEARRAY_CLASS, optional)
     EXPECT_EQ("0700020103445566", response);
 }
 
-TEST_F(TEST_BYTEARRAY_CLASS, array)
+TEST_F(TestBytearray, array)
 {
     const auto ba0 = makeBytes(0x71, 0x72);
     const auto ba1 = makeBytes(0x73, 0x74, 0x75);
@@ -86,12 +85,12 @@ TEST_F(TEST_BYTEARRAY_CLASS, array)
     {
         EXPECT_EQ(2, ba.size());
         EXPECT_EQ(3, ba.at(0).size());
-        EXPECT_EQ(0x11, ba.at(0).at(0));
-        EXPECT_EQ(0x22, ba.at(0).at(1));
-        EXPECT_EQ(0x33, ba.at(0).at(2));
+        EXPECT_EQ(lrpc::byte(0x11), ba.at(0).at(0));
+        EXPECT_EQ(lrpc::byte(0x22), ba.at(0).at(1));
+        EXPECT_EQ(lrpc::byte(0x33), ba.at(0).at(2));
         EXPECT_EQ(2, ba.at(1).size());
-        EXPECT_EQ(0x44, ba.at(1).at(0));
-        EXPECT_EQ(0x55, ba.at(1).at(1));
+        EXPECT_EQ(lrpc::byte(0x44), ba.at(1).at(0));
+        EXPECT_EQ(lrpc::byte(0x55), ba.at(1).at(1));
 
         return lrpc::span<const lrpc::bytearray>{r0};
     };
@@ -101,7 +100,7 @@ TEST_F(TEST_BYTEARRAY_CLASS, array)
     EXPECT_EQ("09000302717203737475", response);
 }
 
-TEST_F(TEST_BYTEARRAY_CLASS, custom)
+TEST_F(TestBytearray, custom)
 {
     const auto ba4 = makeBytes(0x71, 0x72, 0x73);
     const auto ba5 = makeBytes(0x74, 0x75);
@@ -111,18 +110,18 @@ TEST_F(TEST_BYTEARRAY_CLASS, custom)
     const auto handler = [ba4, ba5, ba6, ba7](const test_ba::BytearrayStruct &bas)
     {
         EXPECT_EQ(2, bas.f0.size());
-        EXPECT_EQ(0x11, bas.f0.at(0));
-        EXPECT_EQ(0x22, bas.f0.at(1));
+        EXPECT_EQ(lrpc::byte(0x11), bas.f0.at(0));
+        EXPECT_EQ(lrpc::byte(0x22), bas.f0.at(1));
         EXPECT_TRUE(bas.f1.has_value());
-        EXPECT_EQ(0x33, bas.f1.value().at(0));
-        EXPECT_EQ(0x44, bas.f1.value().at(1));
-        EXPECT_EQ(0x55, bas.f1.value().at(2));
+        EXPECT_EQ(lrpc::byte(0x33), bas.f1.value().at(0));
+        EXPECT_EQ(lrpc::byte(0x44), bas.f1.value().at(1));
+        EXPECT_EQ(lrpc::byte(0x55), bas.f1.value().at(2));
         EXPECT_EQ(2, bas.f2.size());
         EXPECT_EQ(1, bas.f2.at(0).size());
-        EXPECT_EQ(0x66, bas.f2.at(0).at(0));
+        EXPECT_EQ(lrpc::byte(0x66), bas.f2.at(0).at(0));
         EXPECT_EQ(2, bas.f2.at(1).size());
-        EXPECT_EQ(0x77, bas.f2.at(1).at(0));
-        EXPECT_EQ(0x78, bas.f2.at(1).at(1));
+        EXPECT_EQ(lrpc::byte(0x77), bas.f2.at(1).at(0));
+        EXPECT_EQ(lrpc::byte(0x78), bas.f2.at(1).at(1));
 
         return test_ba::BytearrayStruct{ba4, lrpc::optional<lrpc::bytearray>{ba5}, {ba6, ba7}};
     };
@@ -132,7 +131,7 @@ TEST_F(TEST_BYTEARRAY_CLASS, custom)
     EXPECT_EQ("0F000403717273010274750276770178", response);
 }
 
-TEST_F(TEST_BYTEARRAY_CLASS, client_single)
+TEST_F(TestBytearray, client_single)
 {
     const auto p0 = makeBytes(0x11, 0x22, 0x33);
     EXPECT_CALL(service, client_single(testutils::SPAN_EQ(p0)));
@@ -141,7 +140,7 @@ TEST_F(TEST_BYTEARRAY_CLASS, client_single)
     EXPECT_EQ("", response);
 }
 
-TEST_F(TEST_BYTEARRAY_CLASS, client_multiple)
+TEST_F(TestBytearray, client_multiple)
 {
     const auto p0 = makeBytes(0x11, 0x22, 0x33);
     const auto p1 = makeBytes(0x44, 0x55);
@@ -151,7 +150,7 @@ TEST_F(TEST_BYTEARRAY_CLASS, client_multiple)
     EXPECT_EQ("", response);
 }
 
-TEST_F(TEST_BYTEARRAY_CLASS, client_optional)
+TEST_F(TestBytearray, client_optional)
 {
     const auto data0 = makeBytes(0x11, 0x22, 0x33);
     const lrpc::optional<lrpc::bytearray> p0{data0};
@@ -160,18 +159,18 @@ TEST_F(TEST_BYTEARRAY_CLASS, client_optional)
     EXPECT_EQ("", response);
 }
 
-TEST_F(TEST_BYTEARRAY_CLASS, client_array)
+TEST_F(TestBytearray, client_array)
 {
     const auto handler = [](lrpc::span<const lrpc::bytearray> ba)
     {
         EXPECT_EQ(2, ba.size());
         EXPECT_EQ(3, ba.at(0).size());
-        EXPECT_EQ(0x11, ba.at(0).at(0));
-        EXPECT_EQ(0x22, ba.at(0).at(1));
-        EXPECT_EQ(0x33, ba.at(0).at(2));
+        EXPECT_EQ(lrpc::byte(0x11), ba.at(0).at(0));
+        EXPECT_EQ(lrpc::byte(0x22), ba.at(0).at(1));
+        EXPECT_EQ(lrpc::byte(0x33), ba.at(0).at(2));
         EXPECT_EQ(2, ba.at(1).size());
-        EXPECT_EQ(0x44, ba.at(1).at(0));
-        EXPECT_EQ(0x55, ba.at(1).at(1));
+        EXPECT_EQ(lrpc::byte(0x44), ba.at(1).at(0));
+        EXPECT_EQ(lrpc::byte(0x55), ba.at(1).at(1));
     };
 
     EXPECT_CALL(service, client_array(testing::_)).WillOnce(testing::Invoke(handler));
@@ -179,23 +178,23 @@ TEST_F(TEST_BYTEARRAY_CLASS, client_array)
     EXPECT_EQ("", response);
 }
 
-TEST_F(TEST_BYTEARRAY_CLASS, client_custom)
+TEST_F(TestBytearray, client_custom)
 {
     const auto handler = [](const test_ba::BytearrayStruct &bas)
     {
         EXPECT_EQ(2, bas.f0.size());
-        EXPECT_EQ(0x11, bas.f0.at(0));
-        EXPECT_EQ(0x22, bas.f0.at(1));
+        EXPECT_EQ(lrpc::byte(0x11), bas.f0.at(0));
+        EXPECT_EQ(lrpc::byte(0x22), bas.f0.at(1));
         EXPECT_TRUE(bas.f1.has_value());
-        EXPECT_EQ(0x33, bas.f1.value().at(0));
-        EXPECT_EQ(0x44, bas.f1.value().at(1));
-        EXPECT_EQ(0x55, bas.f1.value().at(2));
+        EXPECT_EQ(lrpc::byte(0x33), bas.f1.value().at(0));
+        EXPECT_EQ(lrpc::byte(0x44), bas.f1.value().at(1));
+        EXPECT_EQ(lrpc::byte(0x55), bas.f1.value().at(2));
         EXPECT_EQ(2, bas.f2.size());
         EXPECT_EQ(1, bas.f2.at(0).size());
-        EXPECT_EQ(0x66, bas.f2.at(0).at(0));
+        EXPECT_EQ(lrpc::byte(0x66), bas.f2.at(0).at(0));
         EXPECT_EQ(2, bas.f2.at(1).size());
-        EXPECT_EQ(0x77, bas.f2.at(1).at(0));
-        EXPECT_EQ(0x78, bas.f2.at(1).at(1));
+        EXPECT_EQ(lrpc::byte(0x77), bas.f2.at(1).at(0));
+        EXPECT_EQ(lrpc::byte(0x78), bas.f2.at(1).at(1));
     };
 
     EXPECT_CALL(service, client_custom(testing::_)).WillOnce(testing::Invoke(handler));
@@ -203,14 +202,14 @@ TEST_F(TEST_BYTEARRAY_CLASS, client_custom)
     EXPECT_EQ("", response);
 }
 
-TEST_F(TEST_BYTEARRAY_CLASS, server_single)
+TEST_F(TestBytearray, server_single)
 {
     const auto p0 = makeBytes(0x11, 0x22, 0x33);
     service.server_single_response(p0);
     EXPECT_EQ("06000A03112233", response());
 }
 
-TEST_F(TEST_BYTEARRAY_CLASS, server_multiple)
+TEST_F(TestBytearray, server_multiple)
 {
     const auto p0 = makeBytes(0x11, 0x22, 0x33);
     const auto p1 = makeBytes(0x44, 0x55);
@@ -218,14 +217,14 @@ TEST_F(TEST_BYTEARRAY_CLASS, server_multiple)
     EXPECT_EQ("09000B03112233024455", response());
 }
 
-TEST_F(TEST_BYTEARRAY_CLASS, server_optional)
+TEST_F(TestBytearray, server_optional)
 {
     const auto p0 = makeBytes(0x11, 0x22, 0x33);
     service.server_optional_response({p0});
     EXPECT_EQ("07000C0103112233", response());
 }
 
-TEST_F(TEST_BYTEARRAY_CLASS, server_array)
+TEST_F(TestBytearray, server_array)
 {
     const auto a0 = makeBytes(0x11, 0x22, 0x33);
     const auto a1 = makeBytes(0x44, 0x55);
@@ -234,7 +233,7 @@ TEST_F(TEST_BYTEARRAY_CLASS, server_array)
     EXPECT_EQ("09000D03112233024455", response());
 }
 
-TEST_F(TEST_BYTEARRAY_CLASS, server_custom)
+TEST_F(TestBytearray, server_custom)
 {
     const auto ba4 = makeBytes(0x71, 0x72, 0x73);
     const auto ba5 = makeBytes(0x74, 0x75);

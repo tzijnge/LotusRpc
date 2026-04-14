@@ -1,4 +1,8 @@
-name: meta_def
+# Meta overlay for user specified definition
+# Not fully compliant with lotusrpc-schema.json:
+#  - Does not have a 'name' property
+#  - Has a 'merge_strategy' property
+merge_strategy: add
 services:
   - name: LrpcMeta
     streams:

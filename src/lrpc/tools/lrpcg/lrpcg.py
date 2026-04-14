@@ -1,7 +1,8 @@
 import logging
 import os
+from collections.abc import Iterable
 from pathlib import Path
-from typing import TextIO
+from typing import TextIO, get_args
 
 import click
 import click_log
@@ -16,9 +17,10 @@ from lrpc.codegen import (
     StructFileVisitor,
 )
 from lrpc.core import LrpcDef
+from lrpc.core.settings import LrpcByteType
 from lrpc.resources.cpp import export_to as export_resources_to
 from lrpc.schema import export_lrpc_schema
-from lrpc.utils import load_lrpc_def_from_file
+from lrpc.utils import DefinitionLoader
 from lrpc.visitors import PlantUmlVisitor
 
 logging.basicConfig(format="[LRPCG] %(levelname)-8s: %(message)s", level=logging.INFO)
@@ -33,7 +35,7 @@ def generate_rpc(lrpc_def: LrpcDef, output: Path, *, generate_core: bool) -> Non
     create_dir_if_not_exists(output)
 
     if generate_core:
-        export_resources_to(output)
+        export_resources_to(output, lrpc_def.settings().byte_type())
 
     lrpc_def.accept(ServerIncludeVisitor(output))
     lrpc_def.accept(ServiceIncludeVisitor(output))
@@ -70,6 +72,15 @@ def run_cli() -> None:
 @run_cli.command()
 @click.option("-d", "--definition_file", help="LRPC definition file", required=True, type=click.File("r"))
 @click.option("-o", "--output", help="Path to put the generated files", required=False, default=".", type=click.Path())
+@click.option(
+    "-ov",
+    "--overlay",
+    "overlays",
+    help="Path to overlay file (multiple possible)",
+    required=False,
+    multiple=True,
+    type=click.File("r"),
+)
 @click.option("--core/--no-core", help="Generate LRPC core files", required=False, default=True, type=bool)
 @click.option(
     "-w",
@@ -80,13 +91,26 @@ def run_cli() -> None:
     is_flag=True,
     type=bool,
 )
-def cpp(definition_file: TextIO, output: str, core: bool, warnings_as_errors: bool) -> None:  # noqa: FBT001
-    """Generate C++ server code for the specified lrpc definition file"""
+def cpp(
+    definition_file: TextIO,
+    output: str,
+    overlays: Iterable[TextIO],
+    *,
+    core: bool,
+    warnings_as_errors: bool,
+) -> None:
+    """Generate C++ server code for the specified LRPC definition file"""
 
     try:
-        lrpc_def = load_lrpc_def_from_file(definition_file, warnings_as_errors=warnings_as_errors)
-        generate_rpc(lrpc_def, Path(output), generate_core=core)
+        loader = DefinitionLoader(definition_file, warnings_as_errors=warnings_as_errors)
+        for overlay in overlays:
+            loader.add_overlay(overlay)
+
+        generate_rpc(loader.lrpc_def(), Path(output), generate_core=core)
         log.info("Generated LRPC code for %s in %s", definition_file.name, output)
+
+        for overlay in overlays:
+            log.info("Applied overlay %s", overlay.name)
 
     # catching general exception here is considered ok, because application will terminate
     # pylint: disable=broad-exception-caught
@@ -103,12 +127,59 @@ def cpp(definition_file: TextIO, output: str, core: bool, warnings_as_errors: bo
 
 @run_cli.command()
 @click.option("-o", "--output", help="Path to put the generated files", required=False, default=".", type=click.Path())
-def cppcore(output: os.PathLike[str]) -> None:
+@click.option(
+    "-b",
+    "--byte_type",
+    help="LotusRPC byte type",
+    required=False,
+    default="uint8_t",
+    type=click.Choice(get_args(LrpcByteType)),
+)
+def cppcore(output: os.PathLike[str], byte_type: LrpcByteType) -> None:
     """Generate C++ server core files. Generating these files separately from the rest of the server
     allows for having multiple servers in a single project without conflicting and/or duplicate files.
     Use in combination with the 'cpp' command and the '--no-core' option"""
-    export_resources_to(Path(output))
+    export_resources_to(Path(output), byte_type)
     log.info("Generated LRPC core code in %s", output)
+
+
+@run_cli.command()
+@click.option("-d", "--definition_file", help="LRPC definition base file", required=True, type=click.File("r"))
+@click.option(
+    "-o",
+    "--output",
+    help="Path to the merged files",
+    required=True,
+    default=".",
+    type=click.File("w"),
+)
+@click.option(
+    "-ov",
+    "--overlay",
+    "overlays",
+    help="Path to overlay file (multiple possible)",
+    required=True,
+    multiple=True,
+    type=click.File("r"),
+)
+def merge(definition_file: TextIO, output: TextIO, overlays: Iterable[TextIO]) -> None:
+    """Merge one or more overlays into an LRPC definition base file"""
+
+    try:
+        loader = DefinitionLoader(definition_file, warnings_as_errors=True, include_meta_def=False)
+        log.info("Loaded LRPC definition base file %s", definition_file.name)
+
+        for overlay in overlays:
+            loader.add_overlay(overlay)
+            log.info("Merged overlay %s", overlay.name)
+
+        loader.save_to(output)
+        log.info("Saved merged LRPC definition to %s", output.name)
+
+    # catching general exception here is considered ok, because application will terminate
+    # pylint: disable=broad-exception-caught
+    except Exception:
+        log.exception("Error while merging LRPC overlay into %s", definition_file.name)
 
 
 @run_cli.command()
@@ -133,10 +204,10 @@ def schema(output: os.PathLike[str]) -> None:
 )
 @click.option("-o", "--output", help="Path to put the generated files", required=False, default=".", type=click.Path())
 def puml(definition_file: TextIO, warnings_as_errors: bool, output: os.PathLike[str]) -> None:  # noqa: FBT001
-    """Generate a PlantUML diagram for lrpc definition INPUT"""
+    """Generate a PlantUML diagram for LRPC definition INPUT"""
 
-    lrpc_def = load_lrpc_def_from_file(definition_file, warnings_as_errors=warnings_as_errors)
-    generate_puml(lrpc_def, Path(output))
+    loader = DefinitionLoader(definition_file, warnings_as_errors=warnings_as_errors)
+    generate_puml(loader.lrpc_def(), Path(output))
     log.info("Generated PlantUML diagram for %s in %s", definition_file.name, output)
 
 

@@ -1,4 +1,2 @@
-#define LRPC_BYTE_TYPE char8_t
-#define TEST_BYTEARRAY_SERVICE BytearrayService_char8_t
-#define TEST_BYTEARRAY_CLASS TestBytearray_char8_t
+#include "generated/Bytearray/char8_t/Bytearray.hpp"
 #include "TestBytearray.template.cpp"

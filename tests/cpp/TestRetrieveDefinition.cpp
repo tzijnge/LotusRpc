@@ -9,14 +9,14 @@ namespace
         MOCK_METHOD(void, f0, (), (override));
     };
 
-    constexpr size_t TxBufferSize{59};
+    constexpr size_t TxBufferSize{112};
     constexpr size_t DefStreamPacketOverhead{5};
     constexpr size_t CompressedDefSize{test_rd::lrpc_meta::CompressedDefinition.size()};
     constexpr size_t HexDigitsPerByte{2};
     constexpr size_t TxBufferSizeHex{TxBufferSize * HexDigitsPerByte};
 
     static_assert(std::is_same<test_rd::RetrieveDefinition, lrpc::Server<0, test_rd::LrpcMeta_service, 256, TxBufferSize>>::value, "Definition not as expected");
-    static_assert(CompressedDefSize == 432);
+    static_assert(CompressedDefSize == 428);
     static_assert((CompressedDefSize % (TxBufferSize - DefStreamPacketOverhead)) == 0);
 
     constexpr size_t NumberDefStreamPackets{CompressedDefSize / (TxBufferSize - DefStreamPacketOverhead)};
@@ -24,13 +24,13 @@ namespace
 
 using TestRetrieveDefinition = testutils::TestServerBase<test_rd::RetrieveDefinition, Mockservice, false>;
 
-// definition has a length of 432 bytes in compressed form
+// definition has a length of 428 bytes in compressed form
 // definition stream message from server to client has an overhead of
 // 5 bytes per chunk: message length, service ID, stream ID, chunk size, 'final' param
-// TX buffer size has been chosen in the definition as 58 bytes.
-// This leaves 59 - 5 = 54 bytes for the chunk payload. This means
+// TX buffer size has been chosen in the definition as 107 bytes.
+// This leaves 112 - 5 = 107 bytes for the chunk payload. This means
 // that the compressed definition is transferred from server to client
-// in 432 / 54 = 8 packets
+// in 428 / 107 = 4 packets
 
 TEST_F(TestRetrieveDefinition, retrieveDefinition)
 {
@@ -46,9 +46,9 @@ TEST_F(TestRetrieveDefinition, retrieveDefinition)
         const auto message = response.substr(start, TxBufferSizeHex);
 
         // length, service ID and message ID
-        EXPECT_EQ("3AFF01", message.substr(0, 6));
+        EXPECT_EQ("6FFF01", message.substr(0, 6));
         // bytearray length
-        EXPECT_EQ("36", message.substr(6, 2));
+        EXPECT_EQ("6B", message.substr(6, 2));
 
         // final parameter
         if (i == (NumberDefStreamPackets - 1))

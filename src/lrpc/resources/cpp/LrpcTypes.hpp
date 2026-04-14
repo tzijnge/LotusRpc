@@ -1,23 +1,19 @@
 #pragma once
 
+$byte_include
 #include <array>
 #include <cstdint>
+#include <cstddef>
 #include <etl/optional.h>
 #include <etl/span.h>
 #include <etl/string_view.h>
 
 namespace lrpc
 {
-    // Define the fundamental byte type used throughout LRPC.
-    // Can be overridden by defining LRPC_BYTE_TYPE before including this header.
-    // Must be exactly 1 byte in size.
-#ifndef LRPC_BYTE_TYPE
-#define LRPC_BYTE_TYPE uint8_t
-#endif
+    using byte = $byte_type;
+    static_assert(sizeof(byte) == 1, "sizeof(byte) must be exactly 1");
 
-    static_assert(sizeof(LRPC_BYTE_TYPE) == 1, "sizeof(LRPC_BYTE_TYPE) must be exactly 1");
-
-    using bytearray = etl::span<const LRPC_BYTE_TYPE>;
+    using bytearray = etl::span<const byte>;
 
     using string_view = etl::string_view;
 

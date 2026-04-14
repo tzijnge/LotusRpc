@@ -1,16 +1,15 @@
 import math
 import re
 import struct
-from pathlib import Path
 
 import pytest
 
 from lrpc.client import LrpcDecoder, lrpc_decode
 from lrpc.core import LrpcVar
-from lrpc.utils import load_lrpc_def_from_url
 
-definition_file = Path(__file__).resolve().parent.joinpath("test_lrpc_encode_decode.lrpc.yaml")
-lrpc_def = load_lrpc_def_from_url(definition_file, warnings_as_errors=False)
+from .utilities import load_test_definition
+
+lrpc_def = load_test_definition("test_lrpc_encode_decode.lrpc.yaml")
 
 
 def test_lrpc_decoder_remaining() -> None:

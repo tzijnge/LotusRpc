@@ -19,7 +19,7 @@ public:
 \t\t\tfinal = (transmitSize != lrpc_meta::DefinitionStreamChunkSize) ||
 \t\t\t\t\t(data.size() == lrpc_meta::DefinitionStreamChunkSize);
 
-\t\t\tdefinition_response(data.take<const LRPC_BYTE_TYPE>(transmitSize), final);
+\t\t\tdefinition_response(data.take<const lrpc::byte>(transmitSize), final);
 \t\t}
 \t}
 \tvoid definition_stop() override {}

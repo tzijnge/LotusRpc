@@ -262,8 +262,8 @@ namespace lrpc
 
         readSize = std::min(readSize, streamSize);
 
-        const auto ba = stream.free_data().take<const LRPC_BYTE_TYPE>(readSize);
-        (void)stream.skip<LRPC_BYTE_TYPE>(readSize);
+        const auto ba = stream.free_data().take<const lrpc::byte>(readSize);
+        (void)stream.skip<lrpc::byte>(readSize);
         return ba;
     };
 
@@ -416,7 +416,7 @@ namespace lrpc
         const size_t writeSize = std::min(stream.available_bytes(), ba_size);
         for (size_t i = 0; i < writeSize; ++i)
         {
-            stream.write_unchecked<LRPC_BYTE_TYPE>(value.at(i));
+            lrpc::write_unchecked<lrpc::byte>(stream, value.at(i));
         }
     };
 

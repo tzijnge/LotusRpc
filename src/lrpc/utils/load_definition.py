@@ -1,6 +1,7 @@
 from collections.abc import Hashable
+from io import TextIOWrapper
 from pathlib import Path
-from typing import Any, TextIO
+from typing import Any, TextIO, cast
 
 import jsonschema
 import yaml
@@ -10,6 +11,8 @@ from lrpc.errors import LrpcDefinitionError
 from lrpc.resources.meta import meta_def_file
 from lrpc.schema import load_lrpc_schema
 from lrpc.validation import SemanticAnalyzer
+
+from .overlay_merge import YamlValues, merge_definition
 
 
 # pylint: disable = too-many-ancestors
@@ -43,75 +46,85 @@ class LrpcLoader(yaml.SafeLoader):
         return mapping
 
 
-def _validate_definition(def_dict: LrpcDefDict) -> None:
-    try:
-        jsonschema.validate(def_dict, load_lrpc_schema())
-    except jsonschema.ValidationError as e:
-        raise LrpcDefinitionError(e.message) from e
+LrpcDefDefSourceType = str | TextIO | Path
 
 
-def _yaml_safe_load(def_str: str | TextIO) -> LrpcDefDict:
-    def_dict: LrpcDefDict = yaml.load(def_str, Loader=LrpcLoader)  # noqa: S506
-    if not isinstance(def_dict, dict):
-        raise TypeError("Invalid YAML input")
+class DefinitionLoader:
+    def __init__(
+        self,
+        definition_base: LrpcDefDefSourceType,
+        *,
+        warnings_as_errors: bool = True,
+        include_meta_def: bool = True,
+    ) -> None:
+        self._definition = self._base_yaml_documents(definition_base)
+        self._warnings_as_errors = warnings_as_errors
 
-    return def_dict
+        if include_meta_def:
+            self._definition = merge_definition(self._definition, self._load_meta_def_dict())
+
+    def save_to(self, file: TextIO) -> None:
+        yaml.dump(self._definition, file, sort_keys=False)
+
+    def add_overlay(self, overlay_source: LrpcDefDefSourceType) -> None:
+        if isinstance(overlay_source, Path):
+            with overlay_source.open(encoding="utf-8") as overlays_file:
+                self._overlay_yaml_documents(overlays_file)
+                return
+
+        self._overlay_yaml_documents(overlay_source)
+
+    def lrpc_def(self) -> LrpcDef:
+        self._validate(self._definition)
+        lrpc_def = LrpcDef(cast(LrpcDefDict, self._definition))
+        sa = SemanticAnalyzer(lrpc_def)
+        sa.analyze(warnings_as_errors=self._warnings_as_errors)
+
+        return lrpc_def
+
+    def _overlay_yaml_documents(self, overlays: LrpcDefDefSourceType) -> None:
+        if not isinstance(overlays, (str, TextIOWrapper)):
+            raise TypeError(f"Unsupported overlay type: {type(overlays)}")
+
+        for overlay in yaml.safe_load_all(overlays):
+            self._definition = merge_definition(self._definition, overlay)
+
+    @staticmethod
+    def _base_yaml_documents(base: LrpcDefDefSourceType) -> YamlValues:
+        if isinstance(base, (str, TextIOWrapper)):
+            return DefinitionLoader._safe_load_base(base)
+        if isinstance(base, Path):
+            with base.open(encoding="utf-8") as def_file:
+                return DefinitionLoader._safe_load_base(def_file)
+
+        raise TypeError(f"Unsupported definition base type: {type(base)}")
+
+    @staticmethod
+    def _load_meta_def_dict() -> YamlValues:
+        with meta_def_file() as mdf, mdf.open(encoding="utf-8") as meta_def:
+            return cast(YamlValues, yaml.safe_load(meta_def))
+
+    @staticmethod
+    def _validate(definition: YamlValues) -> None:
+        try:
+            jsonschema.validate(definition, load_lrpc_schema())
+        except jsonschema.ValidationError as e:
+            raise LrpcDefinitionError(e.message) from e
+
+    @staticmethod
+    def _safe_load_base(base: str | TextIO) -> YamlValues:
+        def_dict: YamlValues = yaml.load(base, Loader=LrpcLoader)  # noqa: S506
+        if not isinstance(def_dict, dict):
+            raise TypeError("Invalid YAML input")
+
+        return def_dict
 
 
-def _load_meta_def_dict() -> LrpcDefDict:
-    with meta_def_file() as mdf, mdf.open(encoding="utf-8") as meta_def:
-        meta_def_dict = _yaml_safe_load(meta_def)
-        _validate_definition(meta_def_dict)
-        return meta_def_dict
-
-
-def _merge_user_and_meta_def(user_def: LrpcDefDict, meta_def: LrpcDefDict) -> LrpcDefDict:
-    if "services" not in user_def:
-        raise AssertionError("Invalid definition")
-
-    user_def["services"].extend(meta_def["services"])
-
-    if "enums" not in meta_def:
-        raise ValueError("meta definition is expected to have an error type enum")
-
-    if "enums" in user_def:
-        user_def["enums"].extend(meta_def["enums"])
-    else:
-        user_def["enums"] = meta_def["enums"]
-
-    return user_def
-
-
-def load_meta_def() -> LrpcDef:
-    return LrpcDef(_load_meta_def_dict())
-
-
-def load_lrpc_def_from_dict(def_dict: LrpcDefDict, *, warnings_as_errors: bool) -> LrpcDef:
-    _validate_definition(def_dict)
-    lrpc_def = LrpcDef(def_dict)
-    sa = SemanticAnalyzer(lrpc_def)
-    sa.analyze(warnings_as_errors=warnings_as_errors)
-
-    return lrpc_def
-
-
-def load_lrpc_def_from_str(def_str: str, *, warnings_as_errors: bool) -> LrpcDef:
-    user_def = _yaml_safe_load(def_str)
-    user_def = _merge_user_and_meta_def(user_def, _load_meta_def_dict())
-    return load_lrpc_def_from_dict(user_def, warnings_as_errors=warnings_as_errors)
-
-
-def load_lrpc_def_from_url(def_url: Path, *, warnings_as_errors: bool, include_meta_def: bool = True) -> LrpcDef:
-    with def_url.open(encoding="utf-8") as def_file:
-        return load_lrpc_def_from_file(
-            def_file,
-            warnings_as_errors=warnings_as_errors,
-            include_meta_def=include_meta_def,
-        )
-
-
-def load_lrpc_def_from_file(def_file: TextIO, *, warnings_as_errors: bool, include_meta_def: bool = True) -> LrpcDef:
-    user_def = _yaml_safe_load(def_file)
-    if include_meta_def:
-        user_def = _merge_user_and_meta_def(user_def, _load_meta_def_dict())
-    return load_lrpc_def_from_dict(user_def, warnings_as_errors=warnings_as_errors)
+def load_lrpc_def(
+    definition: LrpcDefDefSourceType,
+    *,
+    warnings_as_errors: bool = True,
+    include_meta_def: bool = True,
+) -> LrpcDef:
+    loader = DefinitionLoader(definition, warnings_as_errors=warnings_as_errors, include_meta_def=include_meta_def)
+    return loader.lrpc_def()

@@ -115,6 +115,8 @@ packet
 +8: "0x11"
 ```
 
+LotusRPC uses `lrpc::byte` as underlying byte type for byte arrays. The actual type is configurable with the [byte_type](reference.md#settings) setting.
+
 ### Array
 
 In LotusRPC, an array always has a fixed capacity as specified in the interface definition file. The number of used elements in the array is however determined at runtime so can be less than the capacity. In addition to space for all elements, the encoded array has a single byte size field at the start. The array [12, 13, 14, 15] with capacity of 6 and is encoded as follows

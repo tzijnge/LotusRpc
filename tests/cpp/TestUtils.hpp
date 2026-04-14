@@ -8,7 +8,6 @@
 #include <sstream>
 #include <iomanip>
 #include <string>
-#include "generated/core/lrpccore/LrpcTypes.hpp"
 
 namespace testutils
 {

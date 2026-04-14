@@ -1,4 +1,2 @@
-#define LRPC_BYTE_TYPE uint8_t
-#define TEST_BYTEARRAY_SERVICE BytearrayService_uint8_t
-#define TEST_BYTEARRAY_CLASS TestBytearray_uint8_t
+#include "generated/Bytearray/uint8_t/Bytearray.hpp"
 #include "TestBytearray.template.cpp"

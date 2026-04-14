@@ -1,8 +1,15 @@
 import json
+from pathlib import Path
 
 from lrpc.core import LrpcFun, LrpcService, LrpcStream, LrpcVar
-from lrpc.core.definition import LrpcUserSettings
+from lrpc.core.definition import LrpcDef, LrpcUserSettings
+from lrpc.utils import load_lrpc_def
 from lrpc.visitors import LrpcVisitor
+
+
+def load_test_definition(definition_file_name: str) -> LrpcDef:
+    def_url = Path(__file__).parent.parent.joinpath("testdata").joinpath(definition_file_name)
+    return load_lrpc_def(def_url)
 
 
 class StringifyVisitor(LrpcVisitor):

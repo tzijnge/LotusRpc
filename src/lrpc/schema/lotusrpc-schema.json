@@ -343,6 +343,19 @@
           "type": "integer",
           "minimum": 3,
           "description": "Size of the server side transmit buffer in bytes"
+        },
+        "byte_type": {
+          "enum": [
+            "uint8_t",
+            "int8_t",
+            "char",
+            "char8_t",
+            "unsigned char",
+            "signed char",
+            "etl::byte",
+            "std::byte"
+          ],
+          "description": "Byte type to use for lrpc::bytearray. One of uint8_t, int8_t, char, char8_t, unsigned char, signed char, etl::byte, std::byte. Default uint8_t"
         }
       }
     }

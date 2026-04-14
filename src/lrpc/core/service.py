@@ -14,7 +14,7 @@ class LrpcServiceDict(TypedDict):
     id: int
     functions: NotRequired[list[LrpcFunOptionalIdDict]]
     streams: NotRequired[list[LrpcStreamOptionalIdDict]]
-    functions_before_streams: bool
+    functions_before_streams: NotRequired[bool]
 
 
 class LrpcServiceOptionalIdDict(TypedDict):
@@ -22,7 +22,7 @@ class LrpcServiceOptionalIdDict(TypedDict):
     id: NotRequired[int]
     functions: NotRequired[list[LrpcFunOptionalIdDict]]
     streams: NotRequired[list[LrpcStreamOptionalIdDict]]
-    functions_before_streams: bool
+    functions_before_streams: NotRequired[bool]
 
 
 # pylint: disable=invalid-name
@@ -36,7 +36,7 @@ class LrpcService:
         functions, streams = self._assign_function_and_stream_ids(
             raw.get("functions", []),
             raw.get("streams", []),
-            functions_before_streams=raw["functions_before_streams"],
+            functions_before_streams=raw.get("functions_before_streams", True),
         )
 
         self._name = raw["name"]

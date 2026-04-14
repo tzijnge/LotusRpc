@@ -8,16 +8,12 @@ import pytest
 from pydantic import ValidationError
 
 from lrpc.core import LrpcDef, LrpcFun, LrpcStream
-from lrpc.utils import load_lrpc_def_from_str
+from lrpc.utils import load_lrpc_def
 
 from .utilities import StringifyVisitor
 
 if TYPE_CHECKING:
     from lrpc.core.definition import LrpcDefDict
-
-
-def load_lrpc_def(def_str: str) -> LrpcDef:
-    return load_lrpc_def_from_str(def_str, warnings_as_errors=False)
 
 
 def get_function(lrpc_def: LrpcDef, service: str, fun: str) -> LrpcFun:
@@ -230,7 +226,7 @@ enums:
   - name: "MyEnum2"
     fields: [f1, f2]
 """
-    lrpc_def = load_lrpc_def(def_str)
+    lrpc_def = load_lrpc_def(def_str, warnings_as_errors=False)
     enums = lrpc_def.enums()
     assert len(enums) == 3
 
@@ -270,11 +266,16 @@ enums:
     fields: [f1, f2]
     external: a/b/c/d.hpp
 """
-    lrpc_def = load_lrpc_def(def_str)
-    enum = lrpc_def.enums()[0]
+    lrpc_def = load_lrpc_def(def_str, warnings_as_errors=False)
+    assert len(lrpc_def.enums()) == 2
 
+    enum = lrpc_def.enums()[0]
     assert enum.is_external() is True
     assert enum.external_file() == "a/b/c/d.hpp"
+
+    enum = lrpc_def.enums()[1]
+    assert enum.is_external() is True
+    assert enum.external_file() == "lrpccore/MetaError.hpp"
 
 
 def test_enum_with_omitted_ids() -> None:
@@ -292,7 +293,7 @@ enums:
         id: 222
       - name: f4
 """
-    lrpc_def = load_lrpc_def(def_str)
+    lrpc_def = load_lrpc_def(def_str, warnings_as_errors=False)
     enums = lrpc_def.enums()
     # Including LrpcMetaError, not tested here
     assert len(enums) == 2
@@ -328,7 +329,7 @@ structs:
       - name: ms1
         type: float
 """
-    lrpc_def = load_lrpc_def(def_str)
+    lrpc_def = load_lrpc_def(def_str, warnings_as_errors=False)
     structs = lrpc_def.structs()
     assert len(structs) == 2
 
@@ -361,7 +362,7 @@ structs:
     external: a/b/c/d.hpp
     external_namespace: a::b::c
 """
-    lrpc_def = load_lrpc_def(def_str)
+    lrpc_def = load_lrpc_def(def_str, warnings_as_errors=False)
     struct = lrpc_def.structs()[0]
 
     assert struct.is_external() is True
@@ -463,7 +464,7 @@ structs:
       - name: ms1
         type: float
 """
-    lrpc_def = load_lrpc_def(def_str)
+    lrpc_def = load_lrpc_def(def_str, warnings_as_errors=False)
 
     s = lrpc_def.struct("MyStruct1")
     assert s.name() == "MyStruct1"
@@ -484,7 +485,7 @@ enums:
       - name: ms1
         id: 55
 """
-    lrpc_def = load_lrpc_def(def_str)
+    lrpc_def = load_lrpc_def(def_str, warnings_as_errors=False)
 
     e = lrpc_def.enum("MyEnum1")
     assert e.name() == "MyEnum1"
@@ -523,6 +524,10 @@ settings:
   namespace: ns
   rx_buffer_size: 123
   tx_buffer_size: 456
+  version: "1.2.3"
+  definition_hash_length: 32
+  embed_definition: True
+  byte_type: "unsigned char"
 services:
   - name: s1
     functions:
@@ -532,6 +537,10 @@ services:
     assert lrpc_def.settings().namespace() == "ns"
     assert lrpc_def.settings().rx_buffer_size() == 123
     assert lrpc_def.settings().tx_buffer_size() == 456
+    assert lrpc_def.settings().version() == "1.2.3"
+    assert lrpc_def.settings().definition_hash_length() == 32
+    assert lrpc_def.settings().embed_definition() is True
+    assert lrpc_def.settings().byte_type() == "unsigned char"
 
 
 def test_definition_hash() -> None:
@@ -990,7 +999,7 @@ services:
     lrpc_def1 = load_lrpc_def(def_str)
     compressed = lrpc_def1.compressed_definition()
 
-    assert len(compressed) == 392
+    assert len(compressed) == 388
 
     lrpc_def2 = LrpcDef.decompress(compressed)
 

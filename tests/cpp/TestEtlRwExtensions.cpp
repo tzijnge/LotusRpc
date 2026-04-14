@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include "generated/core/lrpccore/EtlRwExtensions.hpp"
 #include <array>
-#if (__cplusplus == 201703L)
+#if (__cplusplus >= 201703L)
 // For std::byte
 #include <cstddef>
 #endif
@@ -307,11 +307,11 @@ TEST(TestEtlRwExtensions, readEtlByte)
     EXPECT_EQ(etl::byte(0xAB), lrpc::read_unchecked<etl::byte>(reader));
 }
 
-#if (__cplusplus == 201703L)
+#if (__cplusplus >= 201703L)
 TEST(TestEtlRwExtensions, readStdByte)
 {
     etl::vector<uint8_t, 4> storage{0x56, 0xCD};
-    const etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
+    etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
 
     EXPECT_EQ(std::byte{0x56}, lrpc::read_unchecked<std::byte>(reader));
     EXPECT_EQ(std::byte{0xCD}, lrpc::read_unchecked<std::byte>(reader));
@@ -682,7 +682,7 @@ TEST(TestEtlRwExtensions, writeEtlByte)
     EXPECT_EQ(0x56, written[1]);
 }
 
-#if (__cplusplus == 201703L)
+#if (__cplusplus >= 201703L)
 TEST(TestEtlRwExtensions, writeStdByte)
 {
     lrpc::array<uint8_t, 2> storage;

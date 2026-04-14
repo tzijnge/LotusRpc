@@ -15,7 +15,7 @@ The `cpp` command generates all C++ files needed for the RPC server.
 
 `lrpcg cpp -d example.lrpc.yaml -o output-dir`
 
-Definition overlays can be specified with one or more `-ov` options. A single overlay may contain multiple [YAML documents](https://yaml.org/spec/1.2.2/#91-documents). For more information about definition overlays see [Definition overlays](reference.md#definitions-overlays).
+Definition overlays can be specified with one or more `-ov` options. A single overlay may contain multiple [YAML documents](https://yaml.org/spec/1.2.2/#91-documents). For more information about definition overlays see [Definition overlays](reference.md#definition-overlays).
 
 For more info type `lrpcg cpp --help`
 

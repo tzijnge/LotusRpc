@@ -127,7 +127,6 @@ endfunction()
 
 
 add_test_ba_executable(char)
-add_test_ba_executable(char8_t)
 add_test_ba_executable(etl_byte)
 add_test_ba_executable(int8_t)
 add_test_ba_executable(signed_char)
@@ -135,6 +134,9 @@ add_test_ba_executable(uint8_t)
 add_test_ba_executable(unsigned_char)
 if(CMAKE_CXX_STANDARD GREATER_EQUAL 17)
   add_test_ba_executable(std_byte)
+endif()
+if(CMAKE_CXX_STANDARD GREATER_EQUAL 20)
+  add_test_ba_executable(char8_t)
 endif()
 
 

@@ -1,4 +1,4 @@
-from collections.abc import Hashable, Iterator
+from collections.abc import Hashable
 from io import TextIOWrapper
 from pathlib import Path
 from typing import Any, TextIO, cast
@@ -67,8 +67,12 @@ class DefinitionLoader:
         yaml.dump(self._definition, file, sort_keys=False)
 
     def add_overlay(self, overlay_source: LrpcDefDefSourceType) -> None:
-        for overlay in self._overlay_yaml_documents(overlay_source):
-            merge_definition(self._definition, overlay)
+        if isinstance(overlay_source, Path):
+            with overlay_source.open(encoding="utf-8") as overlays_file:
+                self._overlay_yaml_documents(overlays_file)
+                return
+
+        self._overlay_yaml_documents(overlay_source)
 
     def lrpc_def(self) -> LrpcDef:
         self._validate(self._definition)
@@ -78,15 +82,12 @@ class DefinitionLoader:
 
         return lrpc_def
 
-    @staticmethod
-    def _overlay_yaml_documents(overlays: LrpcDefDefSourceType) -> Iterator[YamlValues]:
-        if isinstance(overlays, (str, TextIOWrapper)):
-            return yaml.safe_load_all(overlays)
-        if isinstance(overlays, Path):
-            with overlays.open(encoding="utf-8") as overlays_file:
-                return yaml.safe_load_all(overlays_file)
+    def _overlay_yaml_documents(self, overlays: LrpcDefDefSourceType) -> None:
+        if not isinstance(overlays, (str, TextIOWrapper)):
+            raise TypeError(f"Unsupported overlay type: {type(overlays)}")
 
-        raise TypeError(f"Unsupported overlay type: {type(overlays)}")
+        for overlay in yaml.safe_load_all(overlays):
+            self._definition = merge_definition(self._definition, overlay)
 
     @staticmethod
     def _base_yaml_documents(base: LrpcDefDefSourceType) -> YamlValues:

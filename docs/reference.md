@@ -202,14 +202,26 @@ services:
 
 LotusRPC allows some level of customization with the following optional properties in the `settings` section in the definition file.
 
-| Property                |
-|-------------------------|
-| rx_buffer_size          |
-| tx_buffer_size          |
-| namespace               |
-| version                 |
-| definition_hash_length  |
-| embed_definition        |
+| Property               | Type/value          |
+|------------------------|---------------------|
+| rx_buffer_size         | At least 3          |
+| tx_buffer_size         | At least 3          |
+| namespace              | String              |
+| version                | String              |
+| definition_hash_length | 0 to 64             |
+| embed_definition       | Boolean             |
+| byte_type              | See byte type table |
+
+| Byte type     | Remark                                            |
+|---------------|---------------------------------------------------|
+| uint8_t       | Default                                           |
+| int8_t        |                                                   |
+| char          |                                                   |
+| char8_t       | Requires at least C++20. Not enforced by LotusRPC |
+| unsigned char |                                                   |
+| signed char   |                                                   |
+| etl::byte     |                                                   |
+| std::byte     | Requires at least C++17. Not enforced by LotusRPC |
 
 `rx_buffer_size` and `tx_buffer_size` define the receive and transmit buffer size in bytes for generated C++ server code. Default is 256. `namespace` defines the C++ namespace to generate server code in. By default the code is generated in the global namespace.
 
@@ -221,6 +233,8 @@ Using the definition that is embedded on the server from the client side can be 
 
 * Using the `from_server` factory method of the `LrpcClient` class
 * Specifying `definition_from_server` as `always` or `once` in the [lrpcc](tools.md#lrpcc) config file.
+
+`byte_type` is used to control the type that LotusRPC uses internally for [lrpc::bytearray](binary.md#bytearray).
 
 ## User settings
 
@@ -240,15 +254,17 @@ Overlay files can contain multiple [YAML documents](https://yaml.org/spec/1.2.2/
 
 The merging process is controlled by the `merge_strategy` property. This property can be specified at any level to control how the definition properties are merged. The merge strategy is inherited from parent properties to child properties.
 
-| Strategy | Behavior                                    |
-|----------|---------------------------------------------|
-| add      | Add a property to base                      |
-| remove   | Remove a property from base                 |
-| replace  | Replace a property in base with the overlay |
+| Strategy | Behavior                    | Precondition                |
+|----------|-----------------------------|-----------------------------|
+| add      | Add a property to base      | Item does not exist in base |
+| remove   | Remove a property from base | Item exists in base         |
+| replace  | Replace a property in base  | Item exists in base         |
 
-Remove and replace overlays on composite properties are always matched by the `name` property. When removing a basic property from a list, the property is matched by value. It is not possible to replace a basic property in a list directly, but it can be achieved by applying a remove overlay followed by an add overlay.
+Add, remove and replace overlays on composite properties are always matched by the `name` property. When adding or removing a basic property from a list, the property is matched by value. It is not possible to replace a basic property in a list directly, but it can be achieved by applying a remove overlay followed by an add overlay.
 
 It is also possible to remove a basic property (e.g. string, bool or int) by assigning `null`. In this case it is not necessary to provide a merge strategy.
+
+A merge fails when an overlay fails to meet the precondition.
 
 ### Example 1: Adding a new parameter
 

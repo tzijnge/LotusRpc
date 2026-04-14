@@ -47,7 +47,4 @@ def export_to(output: Path, byte_type: LrpcByteType) -> None:
 def _byte_include(byte_type: LrpcByteType) -> str:
     if byte_type == "etl::byte":
         return "#include<etl/byte.h>"
-    if byte_type == "std::byte":
-        return "#include <byte>"
-
     return ""

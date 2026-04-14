@@ -72,7 +72,7 @@ function(generate_lrpc server_name)
 
   add_custom_command(OUTPUT ${LRPC_SERVER_HEADER}
                   COMMENT "Generate Test${server_name} LRPC files"
-                  DEPENDS ${LRPC_DEF} ${LRPC_IS_BUILT}
+                  DEPENDS ${LRPC_DEF} ${LRPC_DEF_OVERLAY} ${LRPC_IS_BUILT}
                   COMMAND lrpcg cpp -d ${LRPC_DEF} ${OVERLAY_OPTION} -o ${LRPC_OUT_DIR} -w
                   COMMAND lrpcg puml -d ${LRPC_DEF} -o ${LRPC_OUT_DIR} -w)
 

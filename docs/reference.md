@@ -262,6 +262,8 @@ The merging process is controlled by the `merge_strategy` property. This propert
 
 Add, remove and replace overlays on composite properties are always matched by the `name` property. When adding or removing a basic property from a list, the property is matched by value. It is not possible to replace a basic property in a list directly, but it can be achieved by applying a remove overlay followed by an add overlay.
 
+Adding to a named composite merges properties into an existing item if the name matches.
+
 It is also possible to remove a basic property (e.g. string, bool or int) by assigning `null`. In this case it is not necessary to provide a merge strategy.
 
 A merge fails when an overlay fails to meet the precondition.
@@ -271,8 +273,9 @@ A merge fails when an overlay fails to meet the precondition.
 Base definition:
 
 ```yaml
+name: overlay_example
 settings:
-  namespace: example
+  namespace: ov_ex
 services:
   - name: MyService
     functions:

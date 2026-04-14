@@ -24,16 +24,14 @@ add_subdirectory(../../external/gtest External/gtest EXCLUDE_FROM_ALL)
 
 add_library(UnitTests_core INTERFACE)
 
-target_include_directories(UnitTests_core PRIVATE INTERFACE .)
-target_include_directories(UnitTests_core SYSTEM PRIVATE INTERFACE ${CMAKE_SOURCE_DIR}/external/etl/include)
+target_include_directories(UnitTests_core INTERFACE .)
+target_include_directories(UnitTests_core SYSTEM INTERFACE ${CMAKE_SOURCE_DIR}/external/etl/include)
 
 if(MSVC)
-  target_compile_options(UnitTests_core PRIVATE INTERFACE /W4)
+  target_compile_options(UnitTests_core INTERFACE /W4)
 else()
-  target_compile_options(UnitTests_core  PRIVATE INTERFACE -Wall -Wextra)
+  target_compile_options(UnitTests_core  INTERFACE -Wall -Wextra)
 endif()
-
-set_property(TARGET UnitTests_core PROPERTY COMPILE_WARNING_AS_ERROR ON)
 
 target_link_libraries(
   UnitTests_core
@@ -105,6 +103,8 @@ target_link_libraries(
   UnitTests_core
 )
 
+set_property(TARGET UnitTests PROPERTY COMPILE_WARNING_AS_ERROR ON)
+
 gtest_discover_tests(UnitTests XML_OUTPUT_DIR TestResults)
 
 function(add_test_ba_executable byte_type)
@@ -123,6 +123,8 @@ function(add_test_ba_executable byte_type)
     ${UNIT_TESTS_BA_EXE}
     UnitTests_core
   )
+
+  set_property(TARGET ${UNIT_TESTS_BA_EXE} PROPERTY COMPILE_WARNING_AS_ERROR ON)
 endfunction()
 
 

@@ -22,8 +22,11 @@ def export(resource: str, output: Path, substitutions: Mapping[str, str] | None 
         v = version("lotusrpc")
         dest.write(f"// This file has been generated with LRPC version {v}\n")
 
-        source_data = Template(source.read())
-        dest.write(source_data.substitute(substitutions or {}))
+        if substitutions is None:
+            dest.write(source.read())
+        else:
+            source_template = Template(source.read())
+            dest.write(source_template.substitute(substitutions))
 
 
 def export_to(output: Path, byte_type: LrpcByteType) -> None:

@@ -17,6 +17,7 @@ jobs:
   python_unit_tests:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
@@ -45,6 +46,7 @@ jobs:
     env:
       CXX_STANDARDS: "11 14 17 20 23 26"
     strategy:
+      fail-fast: false
       matrix:
         config:
           - {os: ubuntu-latest, c_compiler: gcc, cpp_compiler: g++}
@@ -66,7 +68,7 @@ jobs:
 
       - name: Set up MSVC developer environment
         if: matrix.config.c_compiler == 'cl'
-        uses: ilammy/msvc-dev-cmd@v1
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 #v1.13.0
 
       - name: Configure, build and test all C++ standards
         shell: bash
@@ -83,7 +85,7 @@ jobs:
             -DCMAKE_CXX_STANDARD=$std \
             -G Ninja
             cmake --build cmake_build_$std --config ${{env.BUILD_TYPE}} --parallel 4
-            ctest --test-dir cmake_build_$std -C ${{env.BUILD_TYPE}} --rerun-failed --output-on-failure
+            ctest --test-dir cmake_build_$std -C ${{env.BUILD_TYPE}} --output-on-failure
             echo "::endgroup::"
           done
 
@@ -91,7 +93,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BUILD_WRAPPER_OUT_DIR: bw_out
-      TOOLS_DIR: $RUNNER_TEMP/lotusrpc-tools
 
     permissions:
       checks: write
@@ -119,13 +120,13 @@ jobs:
 
       - name: Install ARM GCC
         working-directory: scripts
-        run: python install_arm_gcc.py --destination ${{env.TOOLS_DIR}}/arm-gcc
+        run: python install_arm_gcc.py --destination ${{runner.temp}}/lrpc-tools/arm-gcc
 
       - name: Build examples
         run: |
           set -e
           cmake \
-          -DTOOLCHAIN_PATH=${{env.TOOLS_DIR}}/arm-gcc/bin/ \
+          -DTOOLCHAIN_PATH=${{runner.temp}}/lrpc-tools/arm-gcc/bin/ \
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
           -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/examples/stm32_nucleo_l496/cmake/gcc-arm-none-eabi.cmake \
           -S ${{github.workspace}}/examples/stm32_nucleo_l496 \
@@ -146,8 +147,7 @@ jobs:
       - name: C++ unit tests
         working-directory: ${{github.workspace}}/cmake_build
         run: >
-          ctest -C ${{env.BUILD_TYPE}} --output-junit ../testresults/cpptestresults.xml --rerun-failed
-          --output-on-failure
+          ctest -C ${{env.BUILD_TYPE}} --output-junit ../testresults/cpptestresults.xml --output-on-failure
 
       - name: Python unit tests
         run: pytest -v --junitxml=testresults/pytestresults.xml

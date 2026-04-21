@@ -11,7 +11,11 @@ if(MSVC)
   add_link_options(/fsanitize=address)
 else()
   add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
-  add_link_options(-fsanitize=address -static-libasan)
+  add_link_options(-fsanitize=address)
+endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  add_link_options(-static-libasan)
 endif()
 
 include(GoogleTest)

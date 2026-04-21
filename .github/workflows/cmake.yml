@@ -116,7 +116,8 @@ jobs:
         run: pip install -r requirements/dev.txt
 
       - name: Install LRPC Python package
-        run: pip install .
+        #-e to make sure all analysis is done on source files and not on files in site-packages
+        run: pip install -e .
 
       - name: Install ARM GCC
         working-directory: scripts

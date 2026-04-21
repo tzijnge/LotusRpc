@@ -60,10 +60,11 @@ def test_encode_uint16_t() -> None:
     assert encode_var(0, var) == b"\x00\x00"
     assert encode_var(65535, var) == b"\xff\xff"
 
+    message_macos_310 = re.escape("ushort format requires 0 <= number <= (32767 *2 +1)")
     message_windows_310 = re.escape("ushort format requires 0 <= number <= 0xffff")
     message_windows_post_310 = re.escape("format requires 0 <= number <= 65535")
-    message_linux = re.escape("format requires 0 <= number <= (0x7fff * 2 + 1)")
-    message = message_windows_310 + "|" + message_windows_post_310 + "|" + message_linux
+    message_other = re.escape("format requires 0 <= number <= (0x7fff * 2 + 1)")
+    message = message_macos_310 + "|" + message_windows_310 + "|" + message_windows_post_310 + "|" + message_other
     with pytest.raises(struct.error, match=message):
         encode_var(-1, var)
 
@@ -85,10 +86,11 @@ def test_encode_int16_t() -> None:
     assert encode_var(-1, var) == b"\xff\xff"
     assert encode_var(-32768, var) == b"\x00\x80"
 
+    message_macos_310 = re.escape("short format requires (-32767 -1) <= number <= 32767")
     message_windows_310 = re.escape("short format requires (-32768) <= number <= 32767")
     message_windows_post_310 = re.escape("format requires -32768 <= number <= 32767")
-    message_linux = re.escape("format requires (-0x7fff - 1) <= number <= 0x7fff")
-    message = message_windows_310 + "|" + message_windows_post_310 + "|" + message_linux
+    message_other = re.escape("format requires (-0x7fff - 1) <= number <= 0x7fff")
+    message = message_macos_310 + "|" + message_windows_310 + "|" + message_windows_post_310 + "|" + message_other
     with pytest.raises(struct.error, match=message):
         encode_var(32768, var)
 

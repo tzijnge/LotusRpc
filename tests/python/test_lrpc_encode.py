@@ -143,10 +143,13 @@ def test_encode_uint64_t() -> None:
     assert encode_var(0, var) == b"\x00\x00\x00\x00\x00\x00\x00\x00"
     assert encode_var((2**64) - 1, var) == b"\xff\xff\xff\xff\xff\xff\xff\xff"
 
-    with pytest.raises(struct.error, match=re.escape("argument out of range")):
+    message_pre314 = "argument out of range"
+    message_314 = "'Q' format requires 0 <= number <= 18446744073709551615"
+    message = message_pre314 + "|" + message_314
+    with pytest.raises(struct.error, match=message):
         encode_var(-1, var)
 
-    with pytest.raises(struct.error, match=re.escape("argument out of range")):
+    with pytest.raises(struct.error, match=message):
         encode_var(2**64, var)
 
 
@@ -158,10 +161,13 @@ def test_encode_int64_t() -> None:
     assert encode_var(-1, var) == b"\xff\xff\xff\xff\xff\xff\xff\xff"
     assert encode_var(-(2**63), var) == b"\x00\x00\x00\x00\x00\x00\x00\x80"
 
-    with pytest.raises(struct.error, match=re.escape("argument out of range")):
+    message_pre314 = "argument out of range"
+    message_314 = "'q' format requires -9223372036854775808 <= number <= 9223372036854775807"
+    message = message_pre314 + "|" + message_314
+    with pytest.raises(struct.error, match=message):
         encode_var(2**63, var)
 
-    with pytest.raises(struct.error, match=re.escape("argument out of range")):
+    with pytest.raises(struct.error, match=message):
         encode_var(-(2**63) - 1, var)
 
 

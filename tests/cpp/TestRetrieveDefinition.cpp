@@ -16,8 +16,8 @@ namespace
     constexpr size_t TxBufferSizeHex{TxBufferSize * HexDigitsPerByte};
 
     static_assert(std::is_same<test_rd::RetrieveDefinition, lrpc::Server<0, test_rd::LrpcMeta_service, 256, TxBufferSize>>::value, "Definition not as expected");
-    static_assert(CompressedDefSize == 428);
-    static_assert((CompressedDefSize % (TxBufferSize - DefStreamPacketOverhead)) == 0);
+    static_assert(CompressedDefSize == 428, "Compressed definition size not as expected");
+    static_assert((CompressedDefSize % (TxBufferSize - DefStreamPacketOverhead)) == 0, "Compressed definition size not a multiple of the packet payload size");
 
     constexpr size_t NumberDefStreamPackets{CompressedDefSize / (TxBufferSize - DefStreamPacketOverhead)};
 }

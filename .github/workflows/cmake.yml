@@ -3,9 +3,9 @@ name: CMake
 on:
   # yamllint disable-line rule:truthy
   push:
-    branches: [ "*" ]
+    branches: ["*"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 permissions:
   contents: read
@@ -18,8 +18,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
-        python-version: [ "3.10", "3.11", "3.12", "3.13", "3.14" ]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
       - uses: actions/checkout@v6
@@ -45,10 +45,10 @@ jobs:
     strategy:
       matrix:
         config:
-          - { os: ubuntu-latest, c_compiler: gcc, cpp_compiler: g++ }
-          - { os: ubuntu-latest, c_compiler: clang, cpp_compiler: clang++ }
-          - { os: windows-latest, c_compiler: cl, cpp_compiler: cl }
-        cxx_standard: [ 11, 14, 17, 20, 23, 26 ]
+          - {os: ubuntu-latest, c_compiler: gcc, cpp_compiler: g++}
+          - {os: ubuntu-latest, c_compiler: clang, cpp_compiler: clang++}
+          - {os: windows-latest, c_compiler: cl, cpp_compiler: cl}
+        cxx_standard: [11, 14, 17, 20, 23, 26]
 
     steps:
       - uses: actions/checkout@v6

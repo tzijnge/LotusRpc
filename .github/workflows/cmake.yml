@@ -42,13 +42,14 @@ jobs:
 
   cpp_unit_tests:
     runs-on: ${{ matrix.config.os }}
+    env:
+      CXX_STANDARDS: "11 14 17 20 23 26"
     strategy:
       matrix:
         config:
           - {os: ubuntu-latest, c_compiler: gcc, cpp_compiler: g++}
           - {os: ubuntu-latest, c_compiler: clang, cpp_compiler: clang++}
           - {os: windows-latest, c_compiler: cl, cpp_compiler: cl}
-        cxx_standard: [11, 14, 17, 20, 23, 26]
 
     steps:
       - uses: actions/checkout@v6
@@ -67,22 +68,24 @@ jobs:
         if: matrix.config.c_compiler == 'cl'
         uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Configure unit tests
+      - name: Configure, build and test all C++ standards
         shell: bash
         run: |
-          cmake -B cmake_build \
-          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
-          -DCMAKE_C_COMPILER=${{ matrix.config.c_compiler }} \
-          -DCMAKE_CXX_COMPILER=${{ matrix.config.cpp_compiler }} \
-          -DCMAKE_CXX_STANDARD=${{ matrix.cxx_standard }} \
-          -G Ninja
-
-      - name: Build unit tests
-        run: cmake --build cmake_build --config ${{env.BUILD_TYPE}} --parallel 4
-
-      - name: C++ unit tests
-        working-directory: cmake_build
-        run: ctest -C ${{env.BUILD_TYPE}} --rerun-failed --output-on-failure
+          for std in ${{ env.CXX_STANDARDS }}; do
+            echo "::group::C++$std"
+            echo "=============================="
+            echo " Building and testing C++$std"
+            echo "=============================="
+            cmake -B cmake_build_$std \
+            -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+            -DCMAKE_C_COMPILER=${{ matrix.config.c_compiler }} \
+            -DCMAKE_CXX_COMPILER=${{ matrix.config.cpp_compiler }} \
+            -DCMAKE_CXX_STANDARD=$std \
+            -G Ninja
+            cmake --build cmake_build_$std --config ${{env.BUILD_TYPE}} --parallel 4
+            ctest --test-dir cmake_build_$std -C ${{env.BUILD_TYPE}} --rerun-failed --output-on-failure
+            echo "::endgroup::"
+          done
 
   quality_analysis:
     runs-on: ubuntu-latest

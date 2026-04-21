@@ -111,7 +111,7 @@ target_link_libraries(
 
 set_property(TARGET UnitTests PROPERTY COMPILE_WARNING_AS_ERROR ON)
 
-gtest_discover_tests(UnitTests XML_OUTPUT_DIR TestResults)
+gtest_discover_tests(UnitTests XML_OUTPUT_DIR TestResults DISCOVERY_MODE PRE_TEST)
 
 function(add_test_ba_executable byte_type)
   generate_lrpc(Bytearray ${byte_type})
@@ -123,7 +123,7 @@ function(add_test_ba_executable byte_type)
                   ${CMAKE_CURRENT_SOURCE_DIR}/generated/Bytearray/${byte_type}/Bytearray.hpp
   )
 
-  gtest_discover_tests(${UNIT_TESTS_BA_EXE} XML_OUTPUT_DIR TestResults)
+  gtest_discover_tests(${UNIT_TESTS_BA_EXE} XML_OUTPUT_DIR TestResults DISCOVERY_MODE PRE_TEST)
 
   target_link_libraries(
     ${UNIT_TESTS_BA_EXE}

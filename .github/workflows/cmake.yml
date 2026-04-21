@@ -3,7 +3,7 @@ name: CMake
 # yamllint disable-line rule:truthy
 on:
   push:
-    branches: ["*"]
+    branches: ["main"]
   pull_request:
     branches: ["main"]
 
@@ -68,6 +68,7 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Configure unit tests
+        shell: bash
         run: |
           cmake -B cmake_build \
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \

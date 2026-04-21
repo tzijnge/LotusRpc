@@ -1,53 +1,92 @@
 name: CMake
 
-on: # yamllint disable-line rule:truthy
+on:
+  # yamllint disable-line rule:truthy
   push:
-    branches: ["*"]
+    branches: [ "*" ]
   pull_request:
-    branches: ["main"]
+    branches: [ "main" ]
 
 permissions:
   contents: read
 
 env:
-  BUILD_TYPE: Release
-  TOOLS_DIR: $RUNNER_TEMP/lotusrpc-tools
+  BUILD_TYPE: Debug
 
 jobs:
-  check_python_versions:
-    runs-on: ${{ matrix.os }}
+  python_unit_tests:
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: [ "3.10", "3.11", "3.12", "3.13", "3.14" ]
 
     steps:
       - uses: actions/checkout@v6
         with:
           submodules: false
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
-      - name: "Install LotusRPC"
+
+      - name: Install Python requirements
+        run: pip install -r requirements/dev.txt
+
+      - name: Install LRPC Python package
         run: pip install .
-      - name: "Run LRPC generator"
-        run: |
-          lrpcg cpp -d tests/testdata/TestServer1.lrpc.yaml -o .
-          lrpcg cpp -d tests/testdata/TestServer2.lrpc.yaml -o .
-          lrpcg cpp -d tests/testdata/TestServer3.lrpc.yaml -o .
-          lrpcg cpp -d tests/testdata/TestServer4.lrpc.yaml -o .
-          lrpcg cpp -d tests/testdata/TestServer5.lrpc.yaml -o .
 
-      - name: Run LRPC client CLI
-        run: |
-          lrpcc --version
-          lrpcc --help
+      - name: Python unit tests
+        run: pytest -v
 
-  build_and_test:
+  cpp_unit_tests:
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      matrix:
+        config:
+          - { os: ubuntu-latest, c_compiler: gcc, cpp_compiler: g++ }
+          - { os: ubuntu-latest, c_compiler: clang, cpp_compiler: clang++ }
+          - { os: windows-latest, c_compiler: cl, cpp_compiler: cl }
+        cxx_standard: [ 11, 14, 17, 20, 23, 26 ]
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+
+      - name: Install LRPC Python package
+        run: pip install .
+
+      - name: Set up MSVC developer environment
+        if: matrix.config.c_compiler == 'cl'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Configure unit tests
+        run: |
+          cmake -B cmake_build \
+          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+          -DCMAKE_C_COMPILER=${{ matrix.config.c_compiler }} \
+          -DCMAKE_CXX_COMPILER=${{ matrix.config.cpp_compiler }} \
+          -DCMAKE_CXX_STANDARD=${{ matrix.cxx_standard }} \
+          -G Ninja
+
+      - name: Build unit tests
+        run: cmake --build cmake_build --config ${{env.BUILD_TYPE}} --parallel 4
+
+      - name: C++ unit tests
+        working-directory: cmake_build
+        run: ctest -C ${{env.BUILD_TYPE}} --rerun-failed --output-on-failure
+
+  quality_analysis:
     runs-on: ubuntu-latest
     env:
       BUILD_WRAPPER_OUT_DIR: bw_out
+      TOOLS_DIR: $RUNNER_TEMP/lotusrpc-tools
 
     permissions:
       checks: write
@@ -56,7 +95,7 @@ jobs:
     steps:
       - uses: actions/setup-python@v6
         with:
-          python-version: "3.10"
+          python-version: "3.14"
 
       - name: Checkout
         uses: actions/checkout@v6
@@ -82,7 +121,7 @@ jobs:
           set -e
           cmake \
           -DTOOLCHAIN_PATH=${{env.TOOLS_DIR}}/arm-gcc/bin/ \
-          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
           -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/examples/stm32_nucleo_l496/cmake/gcc-arm-none-eabi.cmake \
           -S ${{github.workspace}}/examples/stm32_nucleo_l496 \
           -B ${{github.workspace}}/examples/stm32_nucleo_l496/build/Release \
@@ -96,15 +135,13 @@ jobs:
 
       - name: Build unit tests with SQ
         run: >
-          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }}
-          cmake --build ${{github.workspace}}/cmake_build --config ${{env.BUILD_TYPE}}
+          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build
+          ${{github.workspace}}/cmake_build --config ${{env.BUILD_TYPE}}
 
       - name: C++ unit tests
         working-directory: ${{github.workspace}}/cmake_build
         run: >
-          ctest -C ${{env.BUILD_TYPE}}
-          --output-junit ../testresults/cpptestresults.xml
-          --rerun-failed
+          ctest -C ${{env.BUILD_TYPE}} --output-junit ../testresults/cpptestresults.xml --rerun-failed
           --output-on-failure
 
       - name: Python unit tests
@@ -127,6 +164,7 @@ jobs:
 
       - name: Code coverage on unit tests
         run: |
+          set -ex
           coverage run -a -m pytest
           coverage combine -a src/.coverage
           coverage xml

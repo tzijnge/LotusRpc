@@ -7,15 +7,14 @@ on:
   pull_request:
     branches: ["main"]
 
-permissions:
-  contents: read
-
 env:
   BUILD_TYPE: Debug
 
 jobs:
   python_unit_tests:
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -43,8 +42,8 @@ jobs:
 
   cpp_unit_tests:
     runs-on: ${{ matrix.config.os }}
-    env:
-      CXX_STANDARDS: "11 14 17 20 23 26"
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -52,6 +51,9 @@ jobs:
           - {os: ubuntu-latest, c_compiler: gcc, cpp_compiler: g++}
           - {os: ubuntu-latest, c_compiler: clang, cpp_compiler: clang++}
           - {os: windows-latest, c_compiler: cl, cpp_compiler: cl}
+        # Test all standards on main. Otherwise only the oldest and newest versions
+        # will give very low likelihood of any issue with versions in between
+        cxx_standard: ${{ github.ref == 'refs/heads/main' && fromJSON('[11, 14, 17, 20, 23, 26]') || fromJSON('[11, 26]') }}
 
     steps:
       - uses: actions/checkout@v6
@@ -70,24 +72,22 @@ jobs:
         if: matrix.config.c_compiler == 'cl'
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 #v1.13.0
 
-      - name: Configure, build and test all C++ standards
+      - name: Configure unit tests
         shell: bash
         run: |
-          for std in ${{ env.CXX_STANDARDS }}; do
-            echo "::group::C++$std"
-            echo "=============================="
-            echo " Building and testing C++$std"
-            echo "=============================="
-            cmake -B cmake_build_$std \
-            -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
-            -DCMAKE_C_COMPILER=${{ matrix.config.c_compiler }} \
-            -DCMAKE_CXX_COMPILER=${{ matrix.config.cpp_compiler }} \
-            -DCMAKE_CXX_STANDARD=$std \
-            -G Ninja
-            cmake --build cmake_build_$std --config ${{env.BUILD_TYPE}} --parallel 4
-            ctest --test-dir cmake_build_$std -C ${{env.BUILD_TYPE}} --output-on-failure
-            echo "::endgroup::"
-          done
+          cmake -B cmake_build \
+          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+          -DCMAKE_C_COMPILER=${{ matrix.config.c_compiler }} \
+          -DCMAKE_CXX_COMPILER=${{ matrix.config.cpp_compiler }} \
+          -DCMAKE_CXX_STANDARD=${{ matrix.cxx_standard }} \
+          -G Ninja
+
+      - name: Build unit tests
+        run: cmake --build cmake_build --config ${{env.BUILD_TYPE}} --parallel 4
+
+      - name: C++ unit tests
+        working-directory: cmake_build
+        run: ctest -C ${{env.BUILD_TYPE}} --output-on-failure
 
   quality_analysis:
     runs-on: ubuntu-latest
@@ -95,6 +95,7 @@ jobs:
       BUILD_WRAPPER_OUT_DIR: bw_out
 
     permissions:
+      contents: read
       checks: write
       pull-requests: write
 
@@ -116,7 +117,7 @@ jobs:
         run: pip install -r requirements/dev.txt
 
       - name: Install LRPC Python package
-        #-e to make sure all analysis is done on source files and not on files in site-packages
+        # -e to make sure all analysis is done on source files and not on files in site-packages
         run: pip install -e .
 
       - name: Install ARM GCC

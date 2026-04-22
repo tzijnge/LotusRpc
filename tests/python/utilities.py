@@ -1,10 +1,31 @@
 import json
+import re
 from pathlib import Path
 
 from lrpc.core import LrpcFun, LrpcService, LrpcStream, LrpcVar
 from lrpc.core.definition import LrpcDef, LrpcUserSettings
 from lrpc.utils import load_lrpc_def
 from lrpc.visitors import LrpcVisitor
+
+
+def number_out_of_range_pattern(low: int, high: int) -> str:
+    variants = [
+        "argument out of range",
+        f"{low} <= number <= {high}",
+    ]
+    if low == 0 and high == 65535:
+        variants += [
+            re.escape("0 <= number <= (32767 *2 +1)"),
+            "0 <= number <= 0xffff",
+            re.escape("0 <= number <= (0x7fff * 2 + 1)"),
+        ]
+    elif low == -32768 and high == 32767:
+        variants += [
+            re.escape("(-32767 -1) <= number <= 32767"),
+            re.escape("(-32768) <= number <= 32767"),
+            re.escape("(-0x7fff - 1) <= number <= 0x7fff"),
+        ]
+    return "|".join(variants)
 
 
 def load_test_definition(definition_file_name: str) -> LrpcDef:

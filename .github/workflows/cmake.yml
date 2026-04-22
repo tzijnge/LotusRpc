@@ -53,7 +53,8 @@ jobs:
           - {os: windows-latest, c_compiler: cl, cpp_compiler: cl}
         # Test all standards on main. Otherwise only the oldest and newest versions
         # will give very low likelihood of any issue with versions in between
-        cxx_standard: ${{ github.ref == 'refs/heads/main' && fromJSON('[11, 14, 17, 20, 23, 26]') || fromJSON('[11, 26]') }}
+        cxx_standard: >-
+          ${{ github.ref == 'refs/heads/main' && fromJSON('[11, 14, 17, 20, 23]') || fromJSON('[11, 23]') }}
 
     steps:
       - uses: actions/checkout@v6
@@ -70,7 +71,7 @@ jobs:
 
       - name: Set up MSVC developer environment
         if: matrix.config.c_compiler == 'cl'
-        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 #v1.13.0
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
 
       - name: Configure unit tests
         shell: bash

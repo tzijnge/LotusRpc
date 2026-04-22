@@ -1,6 +1,9 @@
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_CXX_STANDARD 11)
+if(NOT DEFINED CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 11)
+endif()
 set(BUILD_GMOCK ON)
 set(gtest_force_shared_crt on)
 
@@ -9,7 +12,11 @@ if(MSVC)
   add_link_options(/fsanitize=address)
 else()
   add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
-  add_link_options(-fsanitize=address -static-libasan)
+  add_link_options(-fsanitize=address)
+endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  add_link_options(-static-libasan)
 endif()
 
 include(GoogleTest)
@@ -105,7 +112,7 @@ target_link_libraries(
 
 set_property(TARGET UnitTests PROPERTY COMPILE_WARNING_AS_ERROR ON)
 
-gtest_discover_tests(UnitTests XML_OUTPUT_DIR TestResults)
+gtest_discover_tests(UnitTests XML_OUTPUT_DIR TestResults DISCOVERY_MODE PRE_TEST)
 
 function(add_test_ba_executable byte_type)
   generate_lrpc(Bytearray ${byte_type})
@@ -117,7 +124,7 @@ function(add_test_ba_executable byte_type)
                   ${CMAKE_CURRENT_SOURCE_DIR}/generated/Bytearray/${byte_type}/Bytearray.hpp
   )
 
-  gtest_discover_tests(${UNIT_TESTS_BA_EXE} XML_OUTPUT_DIR TestResults)
+  gtest_discover_tests(${UNIT_TESTS_BA_EXE} XML_OUTPUT_DIR TestResults DISCOVERY_MODE PRE_TEST)
 
   target_link_libraries(
     ${UNIT_TESTS_BA_EXE}

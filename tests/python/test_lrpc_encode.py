@@ -8,7 +8,7 @@ from lrpc.client import lrpc_encode
 from lrpc.core import LrpcVar
 from lrpc.types import LrpcType
 
-from .utilities import load_test_definition
+from .utilities import load_test_definition, number_out_of_range_pattern
 
 if sys.version_info >= (3, 12):
     import array
@@ -26,10 +26,10 @@ def test_encode_uint8_t() -> None:
     assert encode_var(0, var) == b"\x00"
     assert encode_var(255, var) == b"\xff"
 
-    with pytest.raises(struct.error, match="format requires 0 <= number <= 255"):
+    with pytest.raises(struct.error, match=number_out_of_range_pattern(0, 255)):
         encode_var(-1, var)
 
-    with pytest.raises(struct.error, match="format requires 0 <= number <= 255"):
+    with pytest.raises(struct.error, match=number_out_of_range_pattern(0, 255)):
         encode_var(256, var)
 
     with pytest.raises(TypeError, match="Type error for v1: expected bool, int, float or str, but got <class 'set'>"):
@@ -44,10 +44,10 @@ def test_encode_int8_t() -> None:
     assert encode_var(-1, var) == b"\xff"
     assert encode_var(-128, var) == b"\x80"
 
-    with pytest.raises(struct.error, match="format requires -128 <= number <= 127"):
+    with pytest.raises(struct.error, match=number_out_of_range_pattern(-128, 127)):
         encode_var(128, var)
 
-    with pytest.raises(struct.error, match="format requires -128 <= number <= 127"):
+    with pytest.raises(struct.error, match=number_out_of_range_pattern(-128, 127)):
         encode_var(-129, var)
 
     with pytest.raises(TypeError, match="Type error for v1: expected bool, int, float or str, but got <class 'tuple'>"):
@@ -60,13 +60,10 @@ def test_encode_uint16_t() -> None:
     assert encode_var(0, var) == b"\x00\x00"
     assert encode_var(65535, var) == b"\xff\xff"
 
-    message_windows = re.escape("format requires 0 <= number <= 65535")
-    message_linux = re.escape("format requires 0 <= number <= (0x7fff * 2 + 1)")
-    message = message_windows + "|" + message_linux
-    with pytest.raises(struct.error, match=message):
+    with pytest.raises(struct.error, match=number_out_of_range_pattern(0, 65535)):
         encode_var(-1, var)
 
-    with pytest.raises(struct.error, match=message):
+    with pytest.raises(struct.error, match=number_out_of_range_pattern(0, 65535)):
         encode_var(65536, var)
 
     with pytest.raises(
@@ -84,13 +81,10 @@ def test_encode_int16_t() -> None:
     assert encode_var(-1, var) == b"\xff\xff"
     assert encode_var(-32768, var) == b"\x00\x80"
 
-    message_windows = re.escape("format requires -32768 <= number <= 32767")
-    message_linux = re.escape("format requires (-0x7fff - 1) <= number <= 0x7fff")
-    message = message_windows + "|" + message_linux
-    with pytest.raises(struct.error, match=message):
+    with pytest.raises(struct.error, match=number_out_of_range_pattern(-32768, 32767)):
         encode_var(32768, var)
 
-    with pytest.raises(struct.error, match=message):
+    with pytest.raises(struct.error, match=number_out_of_range_pattern(-32768, 32767)):
         encode_var(-32769, var)
 
     with pytest.raises(
@@ -106,13 +100,10 @@ def test_encode_uint32_t() -> None:
     assert encode_var(0, var) == b"\x00\x00\x00\x00"
     assert encode_var((2**32) - 1, var) == b"\xff\xff\xff\xff"
 
-    message_windows = re.escape("argument out of range")
-    message_linux = re.escape("'I' format requires 0 <= number <= 4294967295")
-    message = message_windows + "|" + message_linux
-    with pytest.raises(struct.error, match=message):
+    with pytest.raises(struct.error, match=number_out_of_range_pattern(0, 4294967295)):
         encode_var(-1, var)
 
-    with pytest.raises(struct.error, match=message):
+    with pytest.raises(struct.error, match=number_out_of_range_pattern(0, 4294967295)):
         encode_var(2**32, var)
 
     with pytest.raises(struct.error, match=re.escape("required argument is not an integer")):
@@ -127,13 +118,10 @@ def test_encode_int32_t() -> None:
     assert encode_var(-1, var) == b"\xff\xff\xff\xff"
     assert encode_var(-(2**31), var) == b"\x00\x00\x00\x80"
 
-    message_windows = re.escape("argument out of range")
-    message_linux = re.escape("'i' format requires -2147483648 <= number <= 2147483647")
-    message = message_windows + "|" + message_linux
-    with pytest.raises(struct.error, match=message):
+    with pytest.raises(struct.error, match=number_out_of_range_pattern(-2147483648, 2147483647)):
         encode_var(2**31, var)
 
-    with pytest.raises(struct.error, match=message):
+    with pytest.raises(struct.error, match=number_out_of_range_pattern(-2147483648, 2147483647)):
         encode_var(-(2**31) - 1, var)
 
 
@@ -143,10 +131,10 @@ def test_encode_uint64_t() -> None:
     assert encode_var(0, var) == b"\x00\x00\x00\x00\x00\x00\x00\x00"
     assert encode_var((2**64) - 1, var) == b"\xff\xff\xff\xff\xff\xff\xff\xff"
 
-    with pytest.raises(struct.error, match=re.escape("argument out of range")):
+    with pytest.raises(struct.error, match=number_out_of_range_pattern(0, 18446744073709551615)):
         encode_var(-1, var)
 
-    with pytest.raises(struct.error, match=re.escape("argument out of range")):
+    with pytest.raises(struct.error, match=number_out_of_range_pattern(0, 18446744073709551615)):
         encode_var(2**64, var)
 
 
@@ -158,10 +146,10 @@ def test_encode_int64_t() -> None:
     assert encode_var(-1, var) == b"\xff\xff\xff\xff\xff\xff\xff\xff"
     assert encode_var(-(2**63), var) == b"\x00\x00\x00\x00\x00\x00\x00\x80"
 
-    with pytest.raises(struct.error, match=re.escape("argument out of range")):
+    with pytest.raises(struct.error, match=number_out_of_range_pattern(-9223372036854775808, 9223372036854775807)):
         encode_var(2**63, var)
 
-    with pytest.raises(struct.error, match=re.escape("argument out of range")):
+    with pytest.raises(struct.error, match=number_out_of_range_pattern(-9223372036854775808, 9223372036854775807)):
         encode_var(-(2**63) - 1, var)
 
 

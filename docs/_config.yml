@@ -12,7 +12,7 @@
 
 # theme                  : "minimal-mistakes-jekyll"
 remote_theme: "mmistakes/minimal-mistakes"
-minimal_mistakes_skin: "default" # "air", "aqua", "contrast", "dark", "dirt", "neon", "mint", "plum", "sunrise"
+minimal_mistakes_skin: "air" # "air", "aqua", "contrast", "dark", "dirt", "neon", "mint", "plum", "sunrise"
 
 # Site Settings
 locale: "en-US"
@@ -28,7 +28,7 @@ repository: "tzijnge/LotusRPC"
 # teaser: # path of fallback teaser image, e.g. "/assets/images/500x300.png"
 logo: "/assets/images/icon.png"
 # masthead_title: # overrides the website title displayed in the masthead, use " " for no title
-# breadcrumbs: # true, false (default)
+breadcrumbs: true # true, false (default)
 words_per_minute: 200
 enable_copy_code_button: true
 # copyright: # "copyright" name, defaults to site.title
@@ -40,7 +40,7 @@ reCaptcha:
   secret:
 atom_feed:
   path: blank
-  hide: false
+  hide: true
 search: true
 search_full_content: true
 search_provider: lunr
@@ -53,8 +53,9 @@ algolia:
   powered_by: # true (default), false
 google:
   search_engine_id: # YOUR_SEARCH_ENGINE_ID
-  instant_search: # false (default), true
-# SEO Related
+  instant_search:
+    # false (default), true
+    # SEO Related
 google_site_verification:
 bing_site_verification:
 naver_site_verification:
@@ -68,22 +69,26 @@ facebook:
   username:
   app_id:
   publisher:
-og_image: # Open Graph/Twitter default site image
-# For specifying social profiles
+og_image:
+  # Open Graph/Twitter default site image
+  # For specifying social profiles
+
 # - https://developers.google.com/structured-data/customize/social-profiles
 social:
   type: # Person or Organization (defaults to Person)
   name: # If the user or organization name differs from the site's name
-  links: # An array of links to social media profiles
+  links:
+    # An array of links to social media profiles
 
-# Analytics
+    # Analytics
 analytics:
   provider: # false (default), "google", "google-universal", "google-gtag", "custom"
   google:
     tracking_id:
-    anonymize_ip: # true, false (default)
+    anonymize_ip:
+      # true, false (default)
 
-# Site Author
+      # Site Author
 author:
   name: "T Zijnge"
   avatar: "/assets/images/tzijnge.jpg"
@@ -110,7 +115,7 @@ author:
       icon: "fab fa-fw fa-instagram"
       # url: "https://instagram.com/"
 
-# Site Footer
+      # Site Footer
 footer:
   links:
     - label: "Twitter"
@@ -294,3 +299,7 @@ defaults:
     values:
       layout: single
       author_profile: false
+      toc: true
+      toc_sticky: true
+      sidebar:
+        nav: "docs"

@@ -1,6 +1,7 @@
 ---
 title: Extending LotusRPC
 toc: true
+toc_icon: plug
 ---
 
 ## Visiting LrpcDef
@@ -24,4 +25,4 @@ LotusRPC parses the interface definition file (_*.lrpc.yaml_) into an object of 
 
 ## Extending LRPCG
 
-It is not currently possible to add custom code generation to **lrpcg**, the LotusRPC generator tool.
+Custom code generation backends for **lrpcg** are not yet supported. The architecture allows for it, but the extension points are not yet exposed. If this is something you need, please open an issue or discussion on [GitHub](https://github.com/tzijnge/LotusRpc).

@@ -1,15 +1,23 @@
-main:
+docs:
   - title: "Getting started"
     url: /getting_started
+  - title: "Reference"
+    children:
+      - title: "Interface definition"
+        url: /reference
+      - title: "Settings"
+        url: /reference_settings
+      - title: "Overlays"
+        url: /reference_overlays
+  - title: "C++ API"
+    url: /cpp_api
   - title: "Tools"
     url: /tools
-  - title: "Reference"
-    url: /reference
   - title: "Examples"
     url: /examples
   - title: "Extending LotusRPC"
     url: /extending_lrpc
-  - title: "Frame format"
+  - title: "Protocol internals"
     url: /binary
   - title: "Meta service"
     url: /meta

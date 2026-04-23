@@ -1,6 +1,7 @@
 ---
 title: Interface definition reference
 toc: true
+toc_icon: book-open
 ---
 
 ## Introduction
@@ -16,8 +17,8 @@ The LRPC definition file has the following properties:
 | [name](#name)         | [structs](#structs)                 |
 | [services](#services) | [enums](#enums)                     |
 |                       | [constants](#constants)             |
-|                       | [settings](#settings)               |
-|                       | [user_settings](#user-settings) |
+|                       | [settings](reference_settings)      |
+|                       | [user_settings](reference_settings#user-settings) |
 
 It is not allowed to use additional properties at top level. This can be done under [user_settings](#user-settings).
 
@@ -44,7 +45,8 @@ Although [`functions`](#functions) and [`streams`](#streams) are both optional, 
 ### Service ID
 
 Every LRPC service has an identifier that is needed for proper transfer of information between two endpoints. If the service identifier is not specified, LRPC will generate one. When starting out with a fresh RPC, it's usually not necessary to specify service IDs. Later on it may be useful to explicitly specify a service ID for backwards compatibility.
-> **_NOTE:_**  The most efficient code is generated when service IDs are contiguous and start at 0. This is the default when no IDs are specified.
+**Note:** The most efficient code is generated when service IDs are contiguous and start at 0. This is the default when no IDs are specified.
+{: .notice--info}
 
 The service ID is [encoded](binary.md#uintx_t) in an 8-bit field and ID 255 is reserved for the [LotusRPC meta service](meta.md). This means that a user service can have any ID in the range of 0 to 254.
 
@@ -198,149 +200,13 @@ services:
 ...
 ```
 
-## Settings
+## Settings and user settings
 
-LotusRPC allows some level of customization with the following optional properties in the `settings` section in the definition file.
-
-| Property               | Type/value          |
-|------------------------|---------------------|
-| rx_buffer_size         | At least 3          |
-| tx_buffer_size         | At least 3          |
-| namespace              | String              |
-| version                | String              |
-| definition_hash_length | 0 to 64             |
-| embed_definition       | Boolean             |
-| byte_type              | See byte type table |
-
-| Byte type     | Remark                                            |
-|---------------|---------------------------------------------------|
-| uint8_t       | Default                                           |
-| int8_t        |                                                   |
-| char          |                                                   |
-| char8_t       | Requires at least C++20. Not enforced by LotusRPC |
-| unsigned char |                                                   |
-| signed char   |                                                   |
-| etl::byte     |                                                   |
-| std::byte     | Requires at least C++17. Not enforced by LotusRPC |
-
-`rx_buffer_size` and `tx_buffer_size` define the receive and transmit buffer size in bytes for generated C++ server code. Default is 256. `namespace` defines the C++ namespace to generate server code in. By default the code is generated in the global namespace.
-
-`version` is used to identify the definition with a user-defined version. When specified, it is used by LotusRPC to detect a mismatch between the client and the server (through the [version](meta.md#version) function in the meta service). Another way to detect differences between client and server is to use the definition hash. By default, [lrpcg](tools.md#lrpcg) calculates the sha3-256 hash of the definition file when generating code. This results in a 64-character hash string on the server that is used to detect a mismatch between the client and the server (through the [version](meta.md#version) function in the meta service). `definition_hash_length` is used to truncate the hash string to anything less than 64.
-
-It is possible to embed the LotusRPC definition file in the generated server code. This is enabled by setting `embed_definition` to `true`. When not specified, the definition is not embedded. The definition file is compressed by [lrpcg](tools.md#lrpcg) and included in the generated code as a constant array of `uint8_t`.
-
-Using the definition that is embedded on the server from the client side can be done with
-
-* Using the `from_server` factory method of the `LrpcClient` class
-* Specifying `definition_from_server` as `always` or `once` in the [lrpcc](tools.md#lrpcc) config file.
-
-`byte_type` is used to control the type that LotusRPC uses internally for [lrpc::bytearray](binary.md#bytearray).
-
-## User settings
-
-Section `user_settings` allows for free-format user settings in the LotusRPC definition file. The user can specify any valid YAML data structure under `user_settings`. The user settings are accessible when visiting a `LrpcDef` object with a visitor deriving from `LrpcVisitor`. This flexible approach has no specific use case for LotusRPC and is ignored by LotusRPC internally, but allows users to include custom data in the LotusRPC definition file and use it to their own benefit. User settings may also be useful for creating anchors that can be referenced in other parts of the definition, e.g. as a common array size. See [visiting LrpcDef](extending_lrpc.md#visiting-lrpcdef) for more information on extending LotusRPC.
+Settings are documented on the [Settings reference](reference_settings) page.
 
 ## Definition overlays
 
-LotusRPC supports merging overlay definitions on top of base definitions. This technique allows for creating variants of a definition without duplicating the entire base structure. For example, you can create platform-specific or variant-specific overlays that selectively add, remove, or replace properties from a base definition.
-
-### Overlay files
-
-Overlay files are YAML files like the main definition file and typically also have the _.lrpc.yaml_ extension. An overlay file follows the same structure as the main definition file but only for the slice of the main definition that is modified. Additionally it has a `merge_strategy` property to control the merge type.
-
-Overlay files can contain multiple [YAML documents](https://yaml.org/spec/1.2.2/#91-documents) to specify multiple (conflicting) overlay actions in a single file.
-
-### Merge strategy
-
-The merging process is controlled by the `merge_strategy` property. This property can be specified at any level to control how the definition properties are merged. The merge strategy is inherited from parent properties to child properties.
-
-| Strategy | Behavior                    | Precondition                    |
-|----------|-----------------------------|---------------------------------|
-| add      | Add a property to base      | Item does not exist in base[^1] |
-| remove   | Remove a property from base | Item exists in base             |
-| replace  | Replace a property in base  | Item exists in base             |
-
-[^1]: When adding a basic item to a list, the item must not exist in the base definition. When adding a composite, named item to a list, the item is added in its entirety when no item with that name exists in the base. When an item with that name does exist in the base, the merge is done recursively on the sub-properties of the composite item
-
-Add, remove and replace overlays on composite properties are always matched by the `name` property. When adding or removing a basic property from a list, the property is matched by value. It is not possible to replace a basic property in a list directly, but it can be achieved by applying a remove overlay followed by an add overlay.
-
-It is also possible to remove a basic property (e.g. string, bool or int) by assigning `null`. In this case it is not necessary to provide a merge strategy.
-
-A merge fails when an overlay fails to meet the precondition.
-
-### Example 1: Adding a new parameter
-
-Base definition:
-
-```yaml
-name: overlay_example
-settings:
-  namespace: ov_ex
-services:
-  - name: MyService
-    functions:
-      - name: DoWork
-        params:
-          - name: timeout
-            type: uint32_t
-```
-
-Overlay:
-
-```yaml
-services:
-  - name: MyService
-    functions:
-      - name: DoWork
-        params:
-          - name: retries
-            type: uint8_t
-        merge_strategy: add
-```
-
-Result: Function `DoWork` has both `timeout` and `retries` parameters.
-
-### Example 2: Removing a parameter
-
-Overlay:
-
-```yaml
-
-services:
-  - name: MyService
-    functions:
-      - name: DoWork
-        params:
-          - name: timeout
-            merge_strategy: remove
-```
-
-Result: Function `DoWork` no longer has the `timeout` parameter.
-
-### Example 3: Removing a property with null
-
-Overlay:
-
-```yaml
-settings:
-  namespace: null
-```
-
-Result: The `namespace` setting is removed from the settings.
-
-### Example 4: Replacing an entire service
-
-Overlay:
-
-```yaml
-services:
-  - name: MyService
-    functions:
-      - name: NewFunction
-    merge_strategy: replace
-```
-
-Result: Service `MyService` is completely replaced; previous functions are removed.
+Definition overlays are documented on the [Overlays reference](reference_overlays) page.
 
 ## LrpcType
 
@@ -357,7 +223,7 @@ A LrpcType has the following properties:
 
 ### LrpcType.type
 
-See section [data types](index.md#supported-data-types)
+See the [supported data types](index#supported-data-types) table on the home page, and the [C++ type mapping](cpp_api#type-mapping) for the generated code equivalents.
 
 ### LrpcType.count
 

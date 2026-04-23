@@ -1,6 +1,7 @@
 ---
 title: Tools
 toc: true
+toc_icon: tools
 ---
 
 ## LRPCG
@@ -15,7 +16,7 @@ The `cpp` command generates all C++ files needed for the RPC server.
 
 `lrpcg cpp -d example.lrpc.yaml -o output-dir`
 
-Definition overlays can be specified with one or more `-ov` options. A single overlay may contain multiple [YAML documents](https://yaml.org/spec/1.2.2/#91-documents). For more information about definition overlays see [Definition overlays](reference.md#definition-overlays).
+Definition overlays can be specified with one or more `-ov` options. A single overlay may contain multiple [YAML documents](https://yaml.org/spec/1.2.2/#91-documents). For more information about definition overlays see [Definition overlays](reference_overlays).
 
 For more info type `lrpcg cpp --help`
 
@@ -57,9 +58,11 @@ For more info type `lrpcg puml --help`
 
 Example: Given an LRPC definition with a function **add** inside the service **math**, taking two integers and returning one integer, the function can be called from the PC with the following command
 
-> lrpcc math add 3 7
+``` bash
+lrpcc math add 3 7
+```
 
-and the result will printed to the console.
+and the result will be printed to the console.
 
 In order to work, `lrpcc` needs the following information
 

@@ -1,6 +1,7 @@
 ---
 title: Interface definition schema
 toc: true
+toc_icon: tag
 ---
 ## A schema for LotusRPC definition files
 
@@ -16,5 +17,5 @@ There are two ways to get the LotusRPC schema on your PC
 ## Using the schema in VS Code
 
 * Install the [YAML](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) extension
-* In the global or local settings.json, add the following entry: `"yaml.schemas": { "/path/to/LotusRpc/generator/lotusrpc-schema.json": "*.lrpc.yaml"}`
+* In the global or local settings.json, add the following entry: `"yaml.schemas": { "/path/to/lotusrpc-schema.json": "*.lrpc.yaml"}` — replace `/path/to/` with the directory you used in the `lrpcg schema -o` command above
 * Now every file with `.lrpc.yaml` extension will get code completion and validation in VS Code

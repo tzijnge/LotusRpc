@@ -12,12 +12,12 @@ The LRPC definition is written in YAML and therefore benefits from all the featu
 
 The LRPC definition file has the following properties:
 
-| Required              | Optional                            |
-|-----------------------|-------------------------------------|
-| [name](#name)         | [structs](#structs)                 |
-| [services](#services) | [enums](#enums)                     |
-|                       | [constants](#constants)             |
-|                       | [settings](reference_settings)      |
+| Required              | Optional                                          |
+|-----------------------|---------------------------------------------------|
+| [name](#name)         | [structs](#structs)                               |
+| [services](#services) | [enums](#enums)                                   |
+|                       | [constants](#constants)                           |
+|                       | [settings](reference_settings)                    |
 |                       | [user_settings](reference_settings#user-settings) |
 
 It is not allowed to use additional properties at top level. This can be done under [user_settings](#user-settings).

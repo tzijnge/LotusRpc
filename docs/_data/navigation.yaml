@@ -9,17 +9,21 @@ docs:
         url: /reference_settings
       - title: "Overlays"
         url: /reference_overlays
+      - title: "Schema"
+        url: /schema
   - title: "C++ API"
     url: /cpp_api
   - title: "Tools"
     url: /tools
   - title: "Examples"
     url: /examples
-  - title: "Extending LotusRPC"
-    url: /extending_lrpc
-  - title: "Protocol internals"
-    url: /binary
-  - title: "Meta service"
-    url: /meta
+  - title: "Advanced"
+    children:
+      - title: "Meta service"
+        url: /meta
+      - title: "Protocol internals"
+        url: /binary
+      - title: "Extending LotusRPC"
+        url: /extending_lrpc
   - title: "Release notes"
     url: /CHANGES

@@ -8,15 +8,15 @@ toc_icon: sliders-h
 
 LotusRPC allows some level of customization through the optional `settings` section in the definition file.
 
-| Property               | Type/value          | Default |
-|------------------------|---------------------|---------|
-| rx_buffer_size         | At least 3          | 256     |
-| tx_buffer_size         | At least 3          | 256     |
-| namespace              | String              | (global namespace) |
-| version                | String              | (empty) |
-| definition_hash_length | 0 to 64             | 64      |
-| embed_definition       | Boolean             | false   |
-| byte_type              | See table below     | uint8_t |
+| Property               | Type/value      | Default            |
+|------------------------|-----------------|--------------------|
+| rx_buffer_size         | At least 3      | 256                |
+| tx_buffer_size         | At least 3      | 256                |
+| namespace              | String          | (global namespace) |
+| version                | String          | (empty)            |
+| definition_hash_length | 0 to 64         | 64                 |
+| embed_definition       | Boolean         | false              |
+| byte_type              | See table below | uint8_t            |
 
 ### rx_buffer_size / tx_buffer_size
 
@@ -47,16 +47,16 @@ The embedded definition can be retrieved by the client in two ways:
 
 Controls the element type that LotusRPC uses internally for `lrpc::bytearray`. See [Protocol internals — Bytearray](binary#bytearray) for encoding details.
 
-| Byte type     | Remark                                            |
-|---------------|---------------------------------------------------|
-| `uint8_t`     | Default                                           |
-| `int8_t`      |                                                   |
-| `char`        |                                                   |
-| `char8_t`     | Requires at least C++20. Not enforced by LotusRPC |
-| `unsigned char` |                                                 |
-| `signed char` |                                                   |
-| `etl::byte`   |                                                   |
-| `std::byte`   | Requires at least C++17. Not enforced by LotusRPC |
+| Byte type       | Remark                                            |
+|-----------------|---------------------------------------------------|
+| `uint8_t`       | Default                                           |
+| `int8_t`        |                                                   |
+| `char`          |                                                   |
+| `char8_t`       | Requires at least C++20. Not enforced by LotusRPC |
+| `unsigned char` |                                                   |
+| `signed char`   |                                                   |
+| `etl::byte`     |                                                   |
+| `std::byte`     | Requires at least C++17. Not enforced by LotusRPC |
 
 ## User settings
 
@@ -82,14 +82,14 @@ services:
 
 LotusRPC defines the following type aliases in the generated C++ code:
 
-| Alias | Underlying type | Notes |
-|-------|----------------|-------|
-| `LRPC_BYTE_TYPE` | `uint8_t` (default) | Configurable via `byte_type` setting |
-| `lrpc::bytearray` | `etl::span<const lrpc::byte>` | View over a byte buffer |
-| `lrpc::string_view` | `etl::string_view` | View over a string buffer |
-| `lrpc::span` | `etl::span` | Generic span |
-| `lrpc::array` | `std::array` | Fixed-size array |
-| `lrpc::optional` | `etl::optional` | Optional value |
+| Alias               | Underlying type               | Notes                                |
+|---------------------|-------------------------------|--------------------------------------|
+| `LRPC_BYTE_TYPE`    | `uint8_t` (default)           | Configurable via `byte_type` setting |
+| `lrpc::bytearray`   | `etl::span<const lrpc::byte>` | View over a byte buffer              |
+| `lrpc::string_view` | `etl::string_view`            | View over a string buffer            |
+| `lrpc::span`        | `etl::span`                   | Generic span                         |
+| `lrpc::array`       | `std::array`                  | Fixed-size array                     |
+| `lrpc::optional`    | `etl::optional`               | Optional value                       |
 
 ## Parameter and return value ownership
 
@@ -98,13 +98,13 @@ In LotusRPC, incoming bytes are decoded from the server receive buffer and forwa
 **Note:** Returning a reference of any kind to a local variable leads to undefined behavior in C++. The ownership rules below follow the same principle.
 {: .notice--warning}
 
-| Type | Parameter semantics | Return semantics |
-|------|--------------------|--------------------|
-| Scalar (`(u)intN_t`, `bool`, `float`, `double`, enum) | Passed by value | Returned by value |
-| Struct | Decoded into a local copy, passed by `const&` | Returned by value |
-| String (fixed or auto) | `lrpc::string_view` into the receive buffer | `lrpc::string_view` — caller must ensure the viewed string outlives the function |
-| Array | Decoded into a local copy (for alignment), passed as `lrpc::span` | `lrpc::span` — same lifetime rules as string |
-| Bytearray | `lrpc::bytearray` (span) into the receive buffer | `lrpc::bytearray` — same lifetime rules as string |
+| Type                                                  | Parameter semantics                                               | Return semantics                                                                 |
+|-------------------------------------------------------|-------------------------------------------------------------------|----------------------------------------------------------------------------------|
+| Scalar (`(u)intN_t`, `bool`, `float`, `double`, enum) | Passed by value                                                   | Returned by value                                                                |
+| Struct                                                | Decoded into a local copy, passed by `const&`                     | Returned by value                                                                |
+| String (fixed or auto)                                | `lrpc::string_view` into the receive buffer                       | `lrpc::string_view` — caller must ensure the viewed string outlives the function |
+| Array                                                 | Decoded into a local copy (for alignment), passed as `lrpc::span` | `lrpc::span` — same lifetime rules as string                                     |
+| Bytearray                                             | `lrpc::bytearray` (span) into the receive buffer                  | `lrpc::bytearray` — same lifetime rules as string                                |
 
 For strings, arrays and bytearrays: the parameter can be used safely inside the function, but must be copied if needed beyond the call. Struct fields that are strings or bytearrays follow the same rules as standalone strings/bytearrays.
 

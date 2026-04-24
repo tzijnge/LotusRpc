@@ -86,16 +86,16 @@ See [Getting started](getting_started) for a complete walkthrough.
 
 ## Supported data types
 
-| Category | Types |
-|----------|-------|
-| Integer  | `uint8_t`, `int8_t`, `uint16_t`, `int16_t`, `uint32_t`, `int32_t`, `uint64_t`, `int64_t` |
-| Float    | `float`, `double` |
-| Bool     | `bool` |
-| String   | `string` (auto size), `string_N` (fixed size N) |
-| Bytearray | `bytearray` — flexible-length byte buffer |
-| Array    | Any type with `count: N` (N ≥ 2) |
-| Optional | Any type with `count: ?` |
-| Struct   | Composite user-defined type |
-| Enum     | User-defined enumeration, translated to `enum class` |
+| Category  | Types                                                                                    |
+|-----------|------------------------------------------------------------------------------------------|
+| Integer   | `uint8_t`, `int8_t`, `uint16_t`, `int16_t`, `uint32_t`, `int32_t`, `uint64_t`, `int64_t` |
+| Float     | `float`, `double`                                                                        |
+| Bool      | `bool`                                                                                   |
+| String    | `string` (auto size), `string_N` (fixed size N)                                          |
+| Bytearray | `bytearray` — flexible-length byte buffer                                                |
+| Array     | Any type with `count: N` (N ≥ 2)                                                         |
+| Optional  | Any type with `count: ?`                                                                 |
+| Struct    | Composite user-defined type                                                              |
+| Enum      | User-defined enumeration, translated to `enum class`                                     |
 
 For details on each type and the C++ mappings, see the [C++ API reference](cpp_api) and the [interface definition reference](reference).

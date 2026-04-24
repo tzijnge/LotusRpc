@@ -24,11 +24,11 @@ lrpcg cpp -d base.lrpc.yaml -ov overlay1.lrpc.yaml -ov overlay2.lrpc.yaml -o gen
 
 The `merge_strategy` property controls how overlay properties are applied. It is inherited from parent to child properties.
 
-| Strategy  | Behavior                     | Precondition                    |
-|-----------|------------------------------|---------------------------------|
-| `add`     | Add a property to the base   | Item does not exist in base[^1] |
-| `remove`  | Remove a property from base  | Item exists in base             |
-| `replace` | Replace a property in base   | Item exists in base             |
+| Strategy  | Behavior                    | Precondition                    |
+|-----------|-----------------------------|---------------------------------|
+| `add`     | Add a property to the base  | Item does not exist in base[^1] |
+| `remove`  | Remove a property from base | Item exists in base             |
+| `replace` | Replace a property in base  | Item exists in base             |
 
 [^1]: When adding a composite named item to a list, the item is added in full if no item with that name exists in the base. When an item with that name does exist, the merge is applied recursively to sub-properties.
 

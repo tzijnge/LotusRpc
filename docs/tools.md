@@ -97,36 +97,90 @@ The field `definition_from_server` is optional with allowed values `never` (defa
 
 * `never`: `lrpcc` will not retrieve an embedded definition from the server. Definition must be specified in `definition_url`
 * `always`: `lrpcc` will always retrieve the embedded definition from the server. Field `definition_url` is ignored
-* `once`: `lrpcc` will look for a definition file in the location specified by `definition_url`. If it is not found, it retrieves the embedded definition from the server and saves it in the location specified by `definition_url`. This option can be convenient when it takes long to retrieve the definition from the server, but must not be used in combination with the [definition hash](meta.md#version) and `check_server_version=true`. This is because the file hash of the definition retrieved from the server will be different from the hash computed during generation of the server code, even if the content is logically the same.
+* `once`: `lrpcc` will look for a definition file in the location specified by `definition_url`. If it is not found, it retrieves the embedded definition from the server and saves it in the location specified by `definition_url`. This option can be convenient when it takes long to retrieve the definition from the server, but must not be used in combination with the [definition hash](meta#version) and `check_server_version=true`. This is because the file hash of the definition retrieved from the server will be different from the hash computed during generation of the server code, even if the content is logically the same.
 
 The field `definition_url` is required when `definition_from_server` is `once` or `never`. It is the path of the LRPC definition file and can be relative to _lrpcc.config.yaml_ or an absolute path.
 
 The fields `transport_type` and `transport_params` are required. The subfields of `transport_params` are passed as keyword arguments to the transport class. `lrpcc` uses [pyserial](https://pythonhosted.org/pyserial/) for serial communication, so the `transport_params` can be any of the constructor parameters of the [serial.Serial](https://pythonhosted.org/pyserial/pyserial_api.html#serial.Serial) class.
 
-`lrpcc` currently only supports the serial transport type, but it's easy to write your own transport. See [Extending LRPC](extending_lrpc.md).
+`lrpcc` currently only supports the serial transport type, but it's easy to write your own transport. See [Extending LRPC](extending_lrpc).
 
 ### Sending parameters with LRPCC
 
-Sending function parameters with `lrpcc` is easy, just add every parameter on the command line. Here's a cheat sheet:
+Each positional parameter on the command line maps to a function parameter in definition order. Here is a cheat sheet covering all types:
 
 ``` bash
-lrpcc s f0 123                     #int
-lrpcc s f1 123.456                 #float/double
-lrpcc s f2 -123                    #signed int
-lrpcc s f3 my_string               #string
-lrpcc s f3 "my string with spaces" #string
-lrpcc s f4 false                   #bool
-lrpcc s f4 1                       #bool
-lrpcc s f4 yes                     #bool
-lrpcc s f5 MONDAY                  #enum
-lrpcc s f6 "01AABB"                #bytearray
-lrpcc s f7 _                       #optional
-lrpcc s f7 my_string               #optional
-lrpcc s f8 1 2 3 4                 #array of 4
+lrpcc s fn 123                       # integer
+lrpcc s fn 123.456                   # float / double
+lrpcc s fn -- -123                   # negative number (see note below)
+lrpcc s fn my_string                 # string
+lrpcc s fn "my string with spaces"   # string with spaces
+lrpcc s fn false                     # bool
+lrpcc s fn 1                         # bool
+lrpcc s fn yes                       # bool
+lrpcc s fn MONDAY                    # enum — must be a valid field name
+lrpcc s fn "01AABB"                  # bytearray
+lrpcc s fn _                         # optional — absent (no value)
+lrpcc s fn my_string                 # optional — present (same syntax as the underlying type)
+lrpcc s fn 1 2 3 4                   # array with count: 4
+lrpcc s fn "{a: 1, b: hello}"        # struct as YAML (see below)
 ```
 
-Parameters that have an optional value can be entered the same as the underlying type. If the optional does not have a value use a single underscore
+**Negative numbers** — the shell and Click both try to interpret leading `-` as a flag name. Place `--` before the value to stop option parsing:
 
-Bytearray parameters can be entered as a sting of hexadecimal characters as described by the Python function [`bytes.fromhex`](https://docs.python.org/3/library/stdtypes.html#bytearray.fromhex)
+``` bash
+lrpcc s fn -- -42
+lrpcc s fn -- -1.5
+```
 
-Struct parameters are not supported.
+**Booleans** — the following values are accepted (all case-insensitive):
+
+| True                     | False                     |
+|--------------------------|---------------------------|
+| `true`, `1`, `yes`, `on` | `false`, `0`, `no`, `off` |
+
+**Bytearrays** — pass an even number of hex digits, optionally separated by whitespace. Case-insensitive. An empty string (`""`) sends a zero-length bytearray. Maximum 255 bytes.
+
+``` bash
+lrpcc s fn "01AABB"      # three bytes
+lrpcc s fn "01 aa bb"    # same — spaces and lowercase are fine
+lrpcc s fn ""            # empty bytearray (0 bytes)
+```
+
+Hex digits are validated according to the Python [`bytes.fromhex`](https://docs.python.org/3/library/stdtypes.html#bytearray.fromhex) rules.
+
+**Optionals** — use `_` for an absent value. If the underlying string value itself starts and ends with underscores (i.e. consists entirely of underscores), prepend one extra `_` to escape it:
+
+``` bash
+lrpcc s fn _             # absent
+lrpcc s fn hello         # present, value is "hello"
+lrpcc s fn __            # present, value is "_"
+lrpcc s fn ___           # present, value is "__"
+lrpcc s fn _abc          # present, value is "_abc" (no escaping needed — mixed chars)
+```
+
+**Arrays** — pass exactly as many values as the `count` in the definition. Too few or too many is an error.
+
+``` bash
+lrpcc s fn 10 20 30      # array with count: 3
+```
+
+**Structs** — pass as a YAML flow mapping. Field names and order must match the definition. Quote the whole argument to prevent shell word splitting:
+
+``` bash
+lrpcc s fn "{x: 1, y: 2}"
+lrpcc s fn "{name: hello, value: 42}"
+lrpcc s fn "{label: 'two words', count: 5}"   # quote field values that contain spaces
+```
+
+**Streams** — streaming commands have extra flags not present on regular functions:
+
+``` bash
+# Server stream: --start (default) begins the stream, --stop ends it
+lrpcc s my_server_stream --start
+lrpcc s my_server_stream --stop
+
+# Finite client stream: --final marks the last message
+lrpcc s my_client_stream data_value
+lrpcc s my_client_stream last_value --final
+```

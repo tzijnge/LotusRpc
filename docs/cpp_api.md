@@ -112,18 +112,18 @@ protected:
 
 The table below shows how LRPC definition types map to C++ types in function parameters and return values.
 
-| LRPC type | C++ parameter type | C++ return type |
-|-----------|-------------------|-----------------|
-| `uint8_t`, `int8_t`, etc. | by value | by value |
-| `float`, `double` | by value | by value |
-| `bool` | by value | by value |
-| enum | by value | by value |
-| struct | `const MyStruct&` | `MyStruct` (by value) |
-| `string` / `string_N` | `lrpc::string_view` | `lrpc::string_view` |
-| `bytearray` | `lrpc::bytearray` | `lrpc::bytearray` |
-| array (count N) | `lrpc::span<const T>` | `lrpc::span<const T>` |
-| optional | `lrpc::optional<T>` | `lrpc::optional<T>` |
-| multiple returns | — | `std::tuple<T1, T2, ...>` |
+| LRPC type                 | C++ parameter type    | C++ return type           |
+|---------------------------|-----------------------|---------------------------|
+| `uint8_t`, `int8_t`, etc. | by value              | by value                  |
+| `float`, `double`         | by value              | by value                  |
+| `bool`                    | by value              | by value                  |
+| enum                      | by value              | by value                  |
+| struct                    | `const MyStruct&`     | `MyStruct` (by value)     |
+| `string` / `string_N`     | `lrpc::string_view`   | `lrpc::string_view`       |
+| `bytearray`               | `lrpc::bytearray`     | `lrpc::bytearray`         |
+| array (count N)           | `lrpc::span<const T>` | `lrpc::span<const T>`     |
+| optional                  | `lrpc::optional<T>`   | `lrpc::optional<T>`       |
+| multiple returns          | —                     | `std::tuple<T1, T2, ...>` |
 
 **Lifetime note:** `lrpc::string_view`, `lrpc::bytearray` and `lrpc::span` are non-owning views. As parameters they are valid for the duration of the function call. As return values, the viewed data must remain valid until LotusRPC has finished encoding it into the transmit buffer.
 {: .notice--warning}
@@ -132,13 +132,13 @@ For a detailed explanation of ownership semantics, see [Settings reference — O
 
 ### Type aliases
 
-| Alias | Underlying type |
-|-------|----------------|
-| `lrpc::string_view` | `etl::string_view` |
-| `lrpc::bytearray` | `etl::span<const lrpc::byte>` |
-| `lrpc::span<T>` | `etl::span<T>` |
-| `lrpc::array<T, N>` | `std::array<T, N>` |
-| `lrpc::optional<T>` | `etl::optional<T>` |
+| Alias               | Underlying type               |
+|---------------------|-------------------------------|
+| `lrpc::string_view` | `etl::string_view`            |
+| `lrpc::bytearray`   | `etl::span<const lrpc::byte>` |
+| `lrpc::span<T>`     | `etl::span<T>`                |
+| `lrpc::array<T, N>` | `std::array<T, N>`            |
+| `lrpc::optional<T>` | `etl::optional<T>`            |
 
 ## Functions
 

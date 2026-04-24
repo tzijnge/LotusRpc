@@ -43,10 +43,10 @@ lrpcg cpp -d math.lrpc.yaml -o generated/
 
 This creates `generated/math/` with the following files:
 
-| File              | Purpose                                        |
-|-------------------|------------------------------------------------|
-| `math.hpp`        | Top-level include                              |
-| `calc_shim.hpp`   | Abstract base class for the `calc` service     |
+| File            | Purpose                                    |
+|-----------------|--------------------------------------------|
+| `math.hpp`      | Top-level include                          |
+| `calc_shim.hpp` | Abstract base class for the `calc` service |
 
 ### 3. Implement the server
 

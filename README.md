@@ -4,8 +4,6 @@
 
 [![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=tzijnge_LotusRpc)](https://sonarcloud.io/summary/new_code?id=tzijnge_LotusRpc)
 
-> ⚠ **_WARNING:_** This project is work in progress
-
 RPC framework for embedded systems based on [ETL](https://github.com/ETLCPP/etl). Define your interface once in YAML; LotusRPC generates all C++ server code and a Python client. No dynamic memory allocations, no exceptions, no RTTI.
 
 ```mermaid

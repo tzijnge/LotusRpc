@@ -28,11 +28,11 @@ The C++ namespace to generate server code in. By default, code is generated in t
 
 ### version
 
-A user-defined version string for the definition. When specified, LotusRPC uses it to detect mismatches between client and server (via the [version](meta#version) function in the meta service).
+A user-defined version string for the definition. When specified, LotusRPC uses it to detect mismatches between client and server (via the [version](meta.md#version) function in the meta service).
 
 ### definition_hash_length
 
-By default, `lrpcg` computes a sha3-256 hash of the definition file during code generation. The resulting 64-character string is embedded in the server and used to detect client/server mismatches via the [version](meta#version) function. Set `definition_hash_length` to truncate the hash to any length from 0 to 64.
+By default, `lrpcg` computes a sha3-256 hash of the definition file during code generation. The resulting 64-character string is embedded in the server and used to detect client/server mismatches via the [version](meta.md#version) function. Set `definition_hash_length` to truncate the hash to any length from 0 to 64.
 
 ### embed_definition
 
@@ -41,11 +41,11 @@ When set to `true`, `lrpcg` compresses the definition file and embeds it in the 
 The embedded definition can be retrieved by the client in two ways:
 
 - Call the `from_server` factory method of the `LrpcClient` class
-- Set `definition_from_server` to `always` or `once` in the [lrpcc](tools#lrpcc) config file
+- Set `definition_from_server` to `always` or `once` in the [lrpcc](tools.md#lrpcc) config file
 
 ### byte_type
 
-Controls the element type that LotusRPC uses internally for `lrpc::bytearray`. See [Protocol internals — Bytearray](binary#bytearray) for encoding details.
+Controls the element type that LotusRPC uses internally for `lrpc::bytearray`. See [Protocol internals — Bytearray](binary.md#bytearray) for encoding details.
 
 | Byte type       | Remark                                            |
 |-----------------|---------------------------------------------------|
@@ -60,7 +60,7 @@ Controls the element type that LotusRPC uses internally for `lrpc::bytearray`. S
 
 ## User settings
 
-The `user_settings` section allows free-format data in the definition file. Any valid YAML structure is accepted under `user_settings`. LotusRPC ignores this section internally but makes it available when visiting a `LrpcDef` object with a custom `LrpcVisitor`. See [Extending LotusRPC](extending_lrpc#visiting-lrpcdef) for details.
+The `user_settings` section allows free-format data in the definition file. Any valid YAML structure is accepted under `user_settings`. LotusRPC ignores this section internally but makes it available when visiting a `LrpcDef` object with a custom `LrpcVisitor`. See [Extending LotusRPC](extending_lrpc.md#visiting-lrpcdef) for details.
 
 A common use for `user_settings` is to define anchors that can be referenced elsewhere in the definition — for example, a shared array size:
 

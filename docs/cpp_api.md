@@ -128,7 +128,7 @@ The table below shows how LRPC definition types map to C++ types in function par
 **Lifetime note:** `lrpc::string_view`, `lrpc::bytearray` and `lrpc::span` are non-owning views. As parameters they are valid for the duration of the function call. As return values, the viewed data must remain valid until LotusRPC has finished encoding it into the transmit buffer.
 {: .notice--warning}
 
-For a detailed explanation of ownership semantics, see [Settings reference — Ownership](reference_settings#parameter-and-return-value-ownership).
+For a detailed explanation of ownership semantics, see [Settings reference — Ownership](reference_settings.md#parameter-and-return-value-ownership).
 
 ### Type aliases
 

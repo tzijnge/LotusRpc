@@ -26,12 +26,12 @@ pip install lotusrpc
 
 This installs two command-line tools:
 
-- [**lrpcg**](tools#lrpcg) — the code generator
-- [**lrpcc**](tools#lrpcc) — the CLI client for talking to a running server
+- [**lrpcg**](tools.md#lrpcg) — the code generator
+- [**lrpcc**](tools.md#lrpcc) — the CLI client for talking to a running server
 
 ## Write an interface definition
 
-A LotusRPC interface definition file describes services, functions, streams, structs, enums and constants in YAML. LotusRPC provides a [JSON schema](schema) so editors with schema support offer code completion and inline validation.
+A LotusRPC interface definition file describes services, functions, streams, structs, enums and constants in YAML. LotusRPC provides a [JSON schema](schema.md) so editors with schema support offer code completion and inline validation.
 
 Here is a minimal example:
 
@@ -50,7 +50,7 @@ services:
           - { name: result, type: int32_t }
 ```
 
-Save this as `example.lrpc.yaml`. The full reference for all definition options is in the [interface definition reference](reference).
+Save this as `example.lrpc.yaml`. The full reference for all definition options is in the [interface definition reference](reference.md).
 
 ## Generate code
 
@@ -221,10 +221,12 @@ transport = serial.Serial(port="COM3", baudrate=115200, timeout=2)
 client = LrpcClient(lrpc_def, transport)
 
 for response in client.communicate("math", "add", a=3, b=7):
-    print(response["result"])   # prints: 10
+    print(response.payload["result"])   # prints: 10
 ```
 
 `communicate` is a generator. For regular functions it yields exactly once; for streams it yields zero or more times.
+
+For the full Python client API — streams, error responses, `encode`/`decode`, version checking — see the [Python client API reference](python_client.md).
 
 ## Streams
 
@@ -262,7 +264,7 @@ sequenceDiagram
     Client ->> Server: message 3 [final=true]
 ```
 
-For details on the generated C++ API for streams, see the [C++ API reference](cpp_api#streams).
+For details on the generated C++ API for streams, see the [C++ API reference](cpp_api.md#streams).
 
 ## Troubleshooting
 
@@ -281,16 +283,16 @@ Also verify that the device is powered, the firmware is running, and `registerSe
 
 ### lrpcc reports a version mismatch warning
 
-The definition file used by the client does not match the one used to generate the server code. Regenerate the server code with `lrpcg cpp`, rebuild and re-flash the firmware, then retry. For a full explanation of what gets compared and what the warning means, see [Version mismatch behavior](meta#version-mismatch-behavior).
+The definition file used by the client does not match the one used to generate the server code. Regenerate the server code with `lrpcg cpp`, rebuild and re-flash the firmware, then retry. For a full explanation of what gets compared and what the warning means, see [Version mismatch behavior](meta.md#version-mismatch-behavior).
 
 ### "Unknown service" or "Unknown function" errors in the error stream
 
-Same root cause as a version mismatch — the compiled server does not know the service or function the client is calling. Regenerate and rebuild. See [Calling an unknown function or service](meta#calling-an-unknown-function-or-service) for details on how the server responds.
+Same root cause as a version mismatch — the compiled server does not know the service or function the client is calling. Regenerate and rebuild. See [Calling an unknown function or service](meta.md#calling-an-unknown-function-or-service) for details on how the server responds.
 
 ### Messages are truncated or never sent
 
-The encoded message exceeds the configured buffer size. Increase `tx_buffer_size` (server → client) or `rx_buffer_size` (client → server) in the [settings](reference_settings#rx_buffer_size--tx_buffer_size) section of your definition, then regenerate.
+The encoded message exceeds the configured buffer size. Increase `tx_buffer_size` (server → client) or `rx_buffer_size` (client → server) in the [settings](reference_settings.md#rx_buffer_size--tx_buffer_size) section of your definition, then regenerate.
 
 ### Code generation fails with a validation error
 
-The definition file contains an error that the schema validator caught. Run `lrpcg schema -o .` to export the schema, then open your definition in an editor with YAML schema support (see [Interface definition schema](schema)) for inline highlighting of the problem.
+The definition file contains an error that the schema validator caught. Run `lrpcg schema -o .` to export the schema, then open your definition in an editor with YAML schema support (see [Interface definition schema](schema.md)) for inline highlighting of the problem.

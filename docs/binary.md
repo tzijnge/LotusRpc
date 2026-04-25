@@ -119,7 +119,7 @@ packet
 +8: "0x11"
 ```
 
-LotusRPC uses `lrpc::byte` as underlying byte type for byte arrays. The actual type is configurable with the [byte_type](reference_settings#byte_type) setting.
+LotusRPC uses `lrpc::byte` as underlying byte type for byte arrays. The actual type is configurable with the [byte_type](reference_settings.md#byte_type) setting.
 
 ### Array
 

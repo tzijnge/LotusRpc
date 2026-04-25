@@ -11,6 +11,8 @@ toc_icon: plug
 
 LotusRPC parses the interface definition file (_*.lrpc.yaml_) into an object of type `LrpcDef`. The visitor pattern is used for various internal operations to separate traversal of the `LrpcDef` data structure and the operations done on that data. It is possible to create a custom visitor and hook into the `LrpcDef` data structure. Simply derive from `LrpcVisitor`, implement the visit methods you are interested in and pass the visitor to `LrpcDef.accept()`.
 
+For the full visitor API — traversal order, all visit methods, domain object attributes, and a worked example — see the [Python visitor API reference](python_visitor.md).
+
 ## Extending LRPCC
 
 **lrpcc** is the client CLI app for LotusRPC and can work with different transport layers. A serial port transport layer is included with LotusRPC, but it's easy to make **lrpcc** work with your own transport layer by following these steps:

@@ -36,7 +36,6 @@ LotusRPC is an RPC framework for embedded systems. Here are the release notes.
 ⚠ **Breaking change:** C++ service shims no longer get a `_ServiceShim` postfix — the suffix is now simply `_shim`.
 {: .notice--warning}
 
-
 ## lotusrpc 0.9.7 (2025-11-16)
 
 ### Features

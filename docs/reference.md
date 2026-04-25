@@ -17,10 +17,10 @@ The LRPC definition file has the following properties:
 | [name](#name)         | [structs](#structs)                               |
 | [services](#services) | [enums](#enums)                                   |
 |                       | [constants](#constants)                           |
-|                       | [settings](reference_settings)                    |
-|                       | [user_settings](reference_settings#user-settings) |
+|                       | [settings](reference_settings.md)                    |
+|                       | [user_settings](reference_settings.md#user-settings) |
 
-It is not allowed to use additional properties at top level. This can be done under [user_settings](#user-settings).
+It is not allowed to use additional properties at top level. This can be done under [user_settings](reference_settings.md#user-settings).
 
 ## Name
 
@@ -202,11 +202,11 @@ services:
 
 ## Settings and user settings
 
-Settings are documented on the [Settings reference](reference_settings) page.
+Settings are documented on the [Settings reference](reference_settings.md) page.
 
 ## Definition overlays
 
-Definition overlays are documented on the [Overlays reference](reference_overlays) page.
+Definition overlays are documented on the [Overlays reference](reference_overlays.md) page.
 
 ## LrpcType
 
@@ -223,7 +223,7 @@ A LrpcType has the following properties:
 
 ### LrpcType.type
 
-See the [supported data types](index#supported-data-types) table on the home page, and the [C++ type mapping](cpp_api#type-mapping) for the generated code equivalents.
+See the [supported data types](index.md#supported-data-types) table on the home page, and the [C++ type mapping](cpp_api.md#type-mapping) for the generated code equivalents.
 
 ### LrpcType.count
 

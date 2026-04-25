@@ -13,6 +13,12 @@ docs:
         url: /schema
   - title: "C++ API"
     url: /cpp_api
+  - title: "Python API"
+    children:
+      - title: "Client"
+        url: /python_client
+      - title: "Visitor"
+        url: /python_visitor
   - title: "Tools"
     url: /tools
   - title: "Examples"

@@ -14,8 +14,6 @@ jobs:
           pip install -r requirements/dev.txt
           pip install -r requirements/package.txt
       - name: Linkspector
-        id: linkspector
-        continue-on-error: true
         uses: umbrelladocs/action-linkspector@652f85bc57bb1e7d4327260decc10aa68f7694c3
         with:
           github_token: ${{ secrets.github_token }}
@@ -24,8 +22,6 @@ jobs:
           fail_on_error: true
           config_file: .github/workflows/config/.linkspector.yml
       - name: Ruff
-        id: ruff
-        continue-on-error: true
         uses: benny123tw/action-ruff@226d241bdf7205e6e048f1407d21bd69a64b7298
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -34,8 +30,6 @@ jobs:
           fail_level: any
           changed_files: false
       - name: MyPy
-        id: mypy
-        continue-on-error: true
         uses: tsuyoshicho/action-mypy@v5
         with:
           github_token: ${{ secrets.github_token }}
@@ -43,8 +37,6 @@ jobs:
           level: error
           fail_on_error: true
       - name: PyLint
-        id: pylint
-        continue-on-error: true
         uses: dciborow/action-pylint@0.1.0
         with:
           github_token: ${{ secrets.github_token }}
@@ -53,16 +45,12 @@ jobs:
           glob_pattern: src
           fail_on_error: true
       - name: yamllint
-        id: yamllint
-        continue-on-error: true
         uses: reviewdog/action-yamllint@v1.21.0
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review
           fail_level: any
       - name: markdownlint
-        id: markdownlint
-        continue-on-error: true
         uses: reviewdog/action-markdownlint@v0.26.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -70,14 +58,9 @@ jobs:
           fail_level: any
           markdownlint_flags: ". -i external -i changes -i examples/stm32_nucleo_l496/**/License.md"
       - name: towncrier
-        id: towncrier
-        continue-on-error: true
         uses: tzijnge/action-towncrier@0.9.3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
           fail_level: any
           compare_with: "origin/${{ github.base_ref }}"
-      - name: Check results
-        if: contains(steps.*.outcome, 'failure')
-        run: exit 1

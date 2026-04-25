@@ -10,7 +10,7 @@ title_separator: "-"
 subtitle: "RPC for embedded C++. [Don't write, generate!]"
 name: "T Zijnge"
 description: >
-  Documentation of the LotusRPC framework — generate C++ 
+  Documentation of the LotusRPC framework — generate C++
   server code and a Python client from a single YAML definition
 repository: "tzijnge/LotusRPC"
 logo: "/assets/images/icon.png"

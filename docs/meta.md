@@ -67,7 +67,7 @@ The `version` function takes no arguments and returns three fields that together
 
 `lrpcc` calls `version()` on startup and compares all three fields against the client-side values. If any field differs, it logs a warning before continuing:
 
-```
+``` batch
 Server mismatch detected. Details client vs server:
   LotusRPC version : 0.10.0 vs 0.9.7
   Definition version : 1.2 vs 1.1

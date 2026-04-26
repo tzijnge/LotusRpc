@@ -275,6 +275,7 @@ pip installs command-line tools into a directory that may not be on your `PATH`.
 ### Server does not respond
 
 Check `lrpcc.config.yaml`:
+
 - **Port name** — on Windows use `COM3` style; on Linux `/dev/ttyUSB0` or similar.
 - **Baudrate** — must match the baudrate configured on the device.
 - **Timeout** — increase it if the device is slow to respond.

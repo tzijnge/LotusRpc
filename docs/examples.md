@@ -142,6 +142,6 @@ for resp in client.communicate("calc", "multiply", a=6, b=7):
 
 A complete embedded example running on the STM32 Nucleo L496 board is available [in the repository](https://github.com/tzijnge/LotusRpc/tree/main/examples/stm32_nucleo_l496). It demonstrates:
 
-- An LRPC definition file
+- An LotusRPC definition file
 - CMake integration for code generation
 - Using the generated code in a bare-metal C++ project with HAL

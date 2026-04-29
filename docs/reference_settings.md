@@ -40,7 +40,7 @@ When set to `true`, `lrpcg` compresses the definition file and embeds it in the 
 
 The embedded definition can be retrieved by the client in two ways:
 
-- Call the `from_server` factory method of the `LrpcClient` class
+- Call the [from_server](python_client.md#from_server) factory method of the `LrpcClient` class
 - Set `definition_from_server` to `always` or `once` in the [lrpcc](tools.md#lrpcc) config file
 
 ### byte_type
@@ -84,7 +84,7 @@ LotusRPC defines the following type aliases in the generated C++ code:
 
 | Alias               | Underlying type               | Notes                                |
 |---------------------|-------------------------------|--------------------------------------|
-| `LRPC_BYTE_TYPE`    | `uint8_t` (default)           | Configurable via `byte_type` setting |
+| `lrpc::byte`        | `uint8_t` (default)           | Configurable via `byte_type` setting |
 | `lrpc::bytearray`   | `etl::span<const lrpc::byte>` | View over a byte buffer              |
 | `lrpc::string_view` | `etl::string_view`            | View over a string buffer            |
 | `lrpc::span`        | `etl::span`                   | Generic span                         |

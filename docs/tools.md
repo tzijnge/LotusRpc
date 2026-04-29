@@ -54,9 +54,9 @@ For more info type `lrpcg puml --help`
 
 ## LRPCC
 
-`lrpcc` is the LRPC client tool. A common use case of LRPC is to control a device running an LRPC server from a PC. This means the user must implement an LRPC client on the PC. `lrpcc` makes this very easy by constructing a client at runtime from the definition file and present itself as a CLI tool. `lrpcc` is installed as a command line tool with LRPC and can be called from any location.
+`lrpcc` is the LotusRPC client tool. A common use case of LotusRPC is to control a device running an LotusRPC server from a PC. This means the user must implement an LotusRPC client on the PC. `lrpcc` makes this very easy by constructing a client at runtime from the definition file and present itself as a CLI tool. `lrpcc` is installed as a command line tool with LotusRPC and can be called from any location.
 
-Example: Given an LRPC definition with a function **add** inside the service **math**, taking two integers and returning one integer, the function can be called from the PC with the following command
+Example: Given an LotusRPC definition with a function **add** inside the service **math**, taking two integers and returning one integer, the function can be called from the PC with the following command
 
 ``` bash
 lrpcc math add 3 7
@@ -66,10 +66,10 @@ and the result will be printed to the console.
 
 In order to work, `lrpcc` needs the following information
 
-* Location of the LRPC definition file
+* Location of the LotusRPC definition file
 * Information about the transport layer between PC and device
 
-Since the command line arguments for `lrpcc` are reserved for the communication with the device, this information must be supplied by the user in the form of a configuration file with name _lrpcc.config.yaml_. `lrpcc` looks for this file in the current working directory and all subdirectories recursively and uses the first one it encounters. This means that you can put the `lrpcc` configuration file anywhere in your project structure and call `lrpcc` from your project root. Alternatively, you can have various different configurations and possibly different LRPC definitions in various subdirectories of your project. You can use any of them by simply navigating to the directory and call `lrpcc` from there.
+Since the command line arguments for `lrpcc` are reserved for the communication with the device, this information must be supplied by the user in the form of a configuration file with name _lrpcc.config.yaml_. `lrpcc` looks for this file in the current working directory and all subdirectories recursively and uses the first one it encounters. This means that you can put the `lrpcc` configuration file anywhere in your project structure and call `lrpcc` from your project root. Alternatively, you can have various different configurations and possibly different LotusRPC definitions in various subdirectories of your project. You can use any of them by simply navigating to the directory and call `lrpcc` from there.
 
 `lrpcc` constructs a command line application with [Click](https://palletsprojects.com/p/click/). This means that you can easily retrieve help about all available commands by just adding the `--help` flag.
 
@@ -99,11 +99,11 @@ The field `definition_from_server` is optional with allowed values `never` (defa
 * `always`: `lrpcc` will always retrieve the embedded definition from the server. Field `definition_url` is ignored
 * `once`: `lrpcc` will look for a definition file in the location specified by `definition_url`. If it is not found, it retrieves the embedded definition from the server and saves it in the location specified by `definition_url`. This option can be convenient when it takes long to retrieve the definition from the server, but must not be used in combination with the [definition hash](meta.md#version) and `check_server_version=true`. This is because the file hash of the definition retrieved from the server will be different from the hash computed during generation of the server code, even if the content is logically the same.
 
-The field `definition_url` is required when `definition_from_server` is `once` or `never`. It is the path of the LRPC definition file and can be relative to _lrpcc.config.yaml_ or an absolute path.
+The field `definition_url` is required when `definition_from_server` is `once` or `never`. It is the path of the LotusRPC definition file and can be relative to _lrpcc.config.yaml_ or an absolute path.
 
 The fields `transport_type` and `transport_params` are required. The subfields of `transport_params` are passed as keyword arguments to the transport class. `lrpcc` uses [pyserial](https://pythonhosted.org/pyserial/) for serial communication, so the `transport_params` can be any of the constructor parameters of the [serial.Serial](https://pythonhosted.org/pyserial/pyserial_api.html#serial.Serial) class.
 
-`lrpcc` currently only supports the serial transport type, but it's easy to write your own transport. See [Extending LRPC](extending_lrpc.md).
+`lrpcc` currently only supports the serial transport type, but it's easy to write your own transport. See [Extending LotusRPC](extending_lrpc.md).
 
 ### Sending parameters with LRPCC
 

@@ -20,7 +20,11 @@ docs:
       - title: "Visitor"
         url: /python_visitor
   - title: "Tools"
-    url: /tools
+    children:
+      - title: "lrpcg"
+        url: /lrpcg
+      - title: "lrpcc"
+        url: /lrpcc
   - title: "Examples"
     url: /examples
   - title: "Advanced"

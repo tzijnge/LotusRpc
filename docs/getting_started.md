@@ -26,8 +26,8 @@ pip install lotusrpc
 
 This installs two command-line tools:
 
-- [**lrpcg**](tools.md#lrpcg) — the code generator
-- [**lrpcc**](tools.md#lrpcc) — the CLI client for talking to a running server
+- [**lrpcg**](lrpcg.md) — the code generator
+- [**lrpcc**](lrpcc.md) — the CLI client for talking to a running server
 
 ## Write an interface definition
 

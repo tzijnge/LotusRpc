@@ -41,7 +41,7 @@ When set to `true`, `lrpcg` compresses the definition file and embeds it in the 
 The embedded definition can be retrieved by the client in two ways:
 
 - Call the [from_server](python_client.md#from_server) factory method of the `LrpcClient` class
-- Set `definition_from_server` to `always` or `once` in the [lrpcc](tools.md#lrpcc) config file
+- Set `definition_from_server` to `always` or `once` in the [lrpcc](lrpcc.md) config file
 
 ### byte_type
 

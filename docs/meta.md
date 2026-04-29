@@ -99,7 +99,7 @@ If the server has [`embed_definition: true`](reference_settings.md#embed_definit
 definition_from_server: always   # always fetch from server; definition_url is ignored
 ```
 
-See [`definition_from_server`](tools.md#lrpcc) in the tools reference for the `once` and `never` modes and their trade-offs.
+See [`definition_from_server`](lrpcc.md) in the lrpcc reference for the `once` and `never` modes and their trade-offs.
 
 ### Definition
 

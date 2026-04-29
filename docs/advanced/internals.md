@@ -48,7 +48,7 @@ For a function with no parameters, the payload of the message from client to ser
 
 ### (u)int**x**_t
 
-For all integral types (u)int**x**_t, the size of the field is **x**/4 bytes
+For all integral types (u)int**x**_t, the size of the field is **x**/8 bytes
 
 ### Float
 

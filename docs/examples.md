@@ -50,10 +50,14 @@ This creates `generated/math/` with the following files:
 
 ### 3. Implement the server
 
-#### CalcService.hpp
+**main.cpp** — implement the service shim, subclass the server to provide the transport, then register services and feed incoming bytes:
 
 ``` cpp
 #include "math/math.hpp"
+
+// Replace with your platform's transmit and receive routines.
+extern "C" void platform_write(const uint8_t* data, size_t len);
+extern "C" bool platform_read(uint8_t* out);
 
 class CalcService : public ex::calc_shim
 {
@@ -68,23 +72,12 @@ protected:
         return a * b;
     }
 };
-```
-
-**main.cpp** — subclass the server to provide the transport, then register services and feed incoming bytes:
-
-``` cpp
-#include "math/math.hpp"
-#include "CalcService.hpp"
-
-// Replace the UART calls with whatever your platform uses.
-extern "C" void uart_write(const uint8_t* data, size_t len);
-extern "C" bool uart_read_byte(uint8_t* out);
 
 class MathServer : public ex::math
 {
     void lrpcTransmit(lrpc::span<const uint8_t> bytes) override
     {
-        uart_write(bytes.data(), bytes.size());
+        platform_write(bytes.data(), bytes.size());
     }
 };
 
@@ -98,7 +91,7 @@ int main()
     while (true)
     {
         uint8_t byte;
-        if (uart_read_byte(&byte))
+        if (platform_read(&byte))
         {
             server.lrpcReceive(byte);
         }

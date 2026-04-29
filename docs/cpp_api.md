@@ -73,7 +73,7 @@ void lrpcReceive(uint8_t byte);
 
 Feeds incoming bytes to the server. Call from your receive interrupt or polling loop. LotusRPC handles framing internally — pass bytes as they arrive.
 
-## Service shim class
+## Service class
 
 For each service in the definition, `lrpcg` generates a shim class. You derive from it and implement its pure virtual methods. For a service named `math` with one function `add(int32_t a, int32_t b) -> int32_t`:
 

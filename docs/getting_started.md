@@ -232,7 +232,7 @@ sequenceDiagram
     Client ->> Server: message 3 [final=true]
 ```
 
-For details on the generated C++ API for streams, see the [C++ API reference](cpp_api.md#streams).
+For details on the generated C++ API for streams, see the [C++ API reference](cpp_api.md#service-class).
 
 ### Example
 

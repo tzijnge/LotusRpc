@@ -45,10 +45,10 @@ Define your interface once in YAML. LotusRPC generates everything else: the C++ 
 
 ## Key features
 
-- **No dynamic memory** — stack-only, no heap, no exceptions, no RTTI
+- **Suitable for embedded** — no dynamic memory, no exceptions, no RTTI
 - **Transport agnostic** — serial, Bluetooth, TCP — any byte-oriented channel works
 - **YAML definitions** — definition files use the `.lrpc.yaml` extension by convention; schema-validated, editor-friendly, easy to parse or extend
-- **Code generation** — `lrpcg` produces all C++ server and client code in one command
+- **Code generation** — `lrpcg` produces all C++ server code in one command
 - **CLI client** — `lrpcc` lets any team member call remote functions without writing code
 - **Streams** — client-to-server and server-to-client data streams, finite or infinite
 - **C++11 compatible** — works on any platform with a modern C++ compiler

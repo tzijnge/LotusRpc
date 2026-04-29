@@ -10,11 +10,20 @@ LotusRPC is designed to connect two devices in a [client-server model](https://e
 
 Being an [RPC](https://en.wikipedia.org/wiki/Remote_procedure_call), communication between client and server is modelled as _function_ calls that originate from the client and execute on the server. Like functions in a programming language, an RPC function call can have any number of arguments and return any number of values.
 
-A device may perform several logically unrelated tasks. In LotusRPC, a group of related functions is called a _service_. A LotusRPC _interface_ consists of at least one service, and each service consists of at least one function or stream.
+A device typically handles several distinct responsibilities — for example, a sensor node might manage its hardware configuration, expose measurement data, and control an indicator LED. Each of these responsibilities forms a natural group of related operations. In LotusRPC, such a group is called a _service_. A complete LotusRPC _interface_ describes all the services a device exposes, and each service contains at least one function or stream.
 
 LotusRPC does not include a transport layer. It is transport-agnostic: any platform that can send and receive bytes over any channel can use LotusRPC. Threading and async behavior are similarly out of scope and left to the user.
 
 Apart from function calls, LotusRPC supports data _streams_ — sequences of one-way messages with no return value. Streams can flow from client to server or from server to client, and can be finite or infinite.
+
+The interface a device exposes is described in an _interface definition file_: a YAML file with the `.lrpc.yaml` extension. It lists the services, and for each service the functions and streams it contains, along with their parameter and return types. This file is the single source of truth that both the C++ code generator and the Python client use — keeping server and client automatically in sync.
+
+## What LotusRPC provides
+
+LotusRPC is a Python package with two main components:
+
+1. **Code generator** — takes an interface definition and generates the C++ server code that runs on the embedded device.
+2. **Python client** — a Python library and CLI tool for communicating with a running server from a PC or host system.
 
 ## Installation
 
@@ -60,7 +69,7 @@ Run `lrpcg` with the `cpp` subcommand and point it at your definition file:
 lrpcg cpp -d example.lrpc.yaml -o generated/
 ```
 
-This creates a set of header files in `generated/example/`. The most important ones are:
+This creates a set of header files in _generated/example/_. The most important ones are:
 
 | File            | Purpose                                    |
 |-----------------|--------------------------------------------|
@@ -74,10 +83,10 @@ This creates a set of header files in `generated/example/`. The most important o
 
 ### Implement a service
 
-Include `math_shim.hpp` and derive your own class from `ex::math_shim`. The shim declares one pure virtual function per RPC function — implement them with your business logic:
+Include _example.hpp_ (or _math\_shim.hpp_) and derive your own class from `ex::math_shim`. The shim declares one pure virtual function per RPC function — implement them with your business logic:
 
 ``` cpp
-#include "example/math_shim.hpp"
+#include "example/example.hpp"
 
 class MathService : public ex::math_shim
 {
@@ -124,69 +133,23 @@ void on_byte_received(uint8_t byte)
 
 ### CMake integration
 
-The pattern below wraps the generated headers and ETL in a single INTERFACE library. Any target that calls `target_link_libraries(... lrpc_example)` automatically gets code generation as a build dependency, the generated include paths, and the ETL headers — one line instead of repeating the setup per target.
+Use `add_custom_command` to run `lrpcg` as part of the build. Listing the definition file in `DEPENDS` ensures the headers are regenerated whenever it changes. Adding the generated header to the `add_executable` sources wires the dependency into the build graph automatically.
 
 ``` cmake
-cmake_minimum_required(VERSION 3.14)
-project(MyApp)
+set(CMAKE_CXX_STANDARD 11)
 
-# ── Fetch ETL (header-only, LotusRPC's only C++ dependency) ──────────────────
-include(FetchContent)
-FetchContent_Declare(etl
-    GIT_REPOSITORY https://github.com/ETLCPP/etl
-    GIT_TAG        20.45.0
-)
-FetchContent_MakeAvailable(etl)
+set(LRPC_DEF ${CMAKE_CURRENT_SOURCE_DIR}/example.lrpc.yaml)
+set(LRPC_OUT ${CMAKE_CURRENT_SOURCE_DIR}/generated)
 
-# ── Code generation ───────────────────────────────────────────────────────────
-set(LRPC_GENERATED ${CMAKE_CURRENT_SOURCE_DIR}/generated)
-set(LRPC_DEF       ${CMAKE_CURRENT_SOURCE_DIR}/example.lrpc.yaml)
-
-# Core files: static, not definition-specific — only re-runs when missing
 add_custom_command(
-    OUTPUT  ${LRPC_GENERATED}/lrpccore/Server.hpp
-    COMMAND lrpcg cppcore -o ${LRPC_GENERATED}
-    COMMENT "Generate LotusRPC core files"
-)
-
-# Interface files: re-runs automatically when the definition changes
-add_custom_command(
-    OUTPUT  ${LRPC_GENERATED}/example/example.hpp
-    COMMAND lrpcg cpp -d ${LRPC_DEF} -o ${LRPC_GENERATED}
+    OUTPUT  ${LRPC_OUT}/example/example.hpp
+    COMMAND lrpcg cpp -d ${LRPC_DEF} -o ${LRPC_OUT}
     DEPENDS ${LRPC_DEF}
-    COMMENT "Generate LotusRPC interface files"
 )
 
-# Named target that gates on both generated outputs
-add_custom_target(lrpc_generate_example
-    DEPENDS
-        ${LRPC_GENERATED}/lrpccore/Server.hpp
-        ${LRPC_GENERATED}/example/example.hpp
-)
-
-# ── INTERFACE library ─────────────────────────────────────────────────────────
-# Bundles generation dependency + include paths so any target that links
-# lrpc_example picks up everything with a single target_link_libraries call.
-add_library(lrpc_example INTERFACE)
-add_dependencies(lrpc_example lrpc_generate_example)
-target_include_directories(lrpc_example INTERFACE
-    ${LRPC_GENERATED}
-    ${etl_SOURCE_DIR}/include
-)
-
-# ── Targets ───────────────────────────────────────────────────────────────────
-add_executable(MyApp main.cpp)
-target_link_libraries(MyApp PRIVATE lrpc_example)
-target_compile_features(MyApp PRIVATE cxx_std_11)
-
-# A second target (host-side unit tests, another firmware variant, …) gets
-# the same generated headers and ETL paths for free:
-# add_executable(MyAppTests tests/math_service_test.cpp)
-# target_link_libraries(MyAppTests PRIVATE lrpc_example gtest_main)
+add_executable(MyApp main.cpp ${LRPC_OUT}/example/example.hpp)
+target_include_directories(MyApp PRIVATE ${LRPC_OUT})
 ```
-
-**Tip:** Commit the `generated/` folder to source control if you want the generated headers available without running `lrpcg` (e.g. on CI machines without Python installed).
-{: .notice--info}
 
 ## Use the client
 
@@ -225,11 +188,11 @@ transport = serial.Serial(port="COM3", baudrate=115200, timeout=2)
 
 client = LrpcClient(lrpc_def, transport)
 
-for response in client.communicate("math", "add", a=3, b=7):
-    print(response.payload["result"])   # prints: 10
+response = client.communicate_single("math", "add", a=3, b=7)
+print(response.payload["result"])   # prints: 10
 ```
 
-`communicate` is a generator. For regular functions it yields exactly once; for streams it yields zero or more times.
+`communicate_single` is a convenience wrapper around `communicate` that returns the first response directly. Use `communicate` when receiving stream response messages — it is a generator that yields one response per message received from the server.
 
 For the full Python client API — streams, error responses, `encode`/`decode`, version checking — see the [Python client API reference](python-api/client.md).
 
@@ -270,6 +233,39 @@ sequenceDiagram
 ```
 
 For details on the generated C++ API for streams, see the [C++ API reference](cpp_api.md#streams).
+
+### Example
+
+Extend the `math` service from earlier with a finite server stream:
+
+``` yaml
+name: example
+settings:
+  namespace: ex
+services:
+  - name: math
+    functions:
+      - name: add
+        params:
+          - { name: a, type: int32_t }
+          - { name: b, type: int32_t }
+        returns:
+          - { name: result, type: int32_t }
+    streams:
+      - name: results
+        origin: server
+        finite: true
+        params:
+          - { name: value, type: int32_t }
+```
+
+Receive all messages from the stream using `communicate`:
+
+``` python
+# print each value returned from the server
+for response in client.communicate("math", "results"):
+    print(response.payload["value"])
+```
 
 ## Troubleshooting
 

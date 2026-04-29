@@ -17,7 +17,7 @@ from lrpc.core import LrpcDef, LrpcService, LrpcFun, LrpcStream, LrpcVar
 from lrpc.core import LrpcStruct, LrpcEnum, LrpcEnumField, LrpcConstant, RpcSettings
 ```
 
-For walking the entire definition tree, see [Python visitor API](py_api_visitor.md).
+For walking the entire definition tree, see [Python visitor API](visitor.md).
 
 ## Loading a definition
 
@@ -34,9 +34,9 @@ The `definition` argument accepts a file path (`str` or `Path`), a raw YAML stri
 | Parameter            | Default | Description                                                     |
 |----------------------|---------|-----------------------------------------------------------------|
 | `warnings_as_errors` | `True`  | Raise an error when the definition produces validation warnings |
-| `include_meta_def`   | `True`  | Include the built-in [meta service](adv_meta.md) in the definition  |
+| `include_meta_def`   | `True`  | Include the built-in [meta service](../advanced/meta.md) in the definition  |
 
-For definitions that use [overlays](reference_overlays.md), use `DefinitionLoader` — see [Python client API](py_api_client.md#loading-a-definition).
+For definitions that use [overlays](../reference/overlays.md), use `DefinitionLoader` — see [Python client API](client.md#loading-a-definition).
 
 ## Object model
 
@@ -70,7 +70,7 @@ Function parameters, return values, and struct fields are all `LrpcVar` objects.
 | `constant(name)`                    | value                   | Value of a named constant                       |
 | `user_settings()`                   | any                     | Contents of the `user_settings` YAML section    |
 
-To traverse every element in order, pass a visitor to `accept()` — see [Python visitor API](py_api_visitor.md).
+To traverse every element in order, pass a visitor to `accept()` — see [Python visitor API](visitor.md).
 
 ## RpcSettings
 
@@ -84,7 +84,7 @@ To traverse every element in order, pass a visitor to `accept()` — see [Python
 | `embed_definition()`       | `bool`          | Whether the definition is embedded in the server |
 | `byte_type()`              | `str`           | The element type used for `lrpc::byte`           |
 
-See [Settings reference](reference_settings.md) for the meaning and allowed values of each setting.
+See [Settings reference](../reference/settings.md) for the meaning and allowed values of each setting.
 
 ## LrpcService
 

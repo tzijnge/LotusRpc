@@ -11,7 +11,7 @@ toc_icon: plug
 
 LotusRPC parses the interface definition file (_*.lrpc.yaml_) into an object of type `LrpcDef`. The visitor pattern is used for various internal operations to separate traversal of the `LrpcDef` data structure and the operations done on that data. It is possible to create a custom visitor and hook into the `LrpcDef` data structure. Simply derive from `LrpcVisitor`, implement the visit methods you are interested in and pass the visitor to `LrpcDef.accept()`.
 
-For the full visitor API — traversal order and all visit methods — see the [Python visitor API](py_api_visitor.md). For the attributes of the objects passed to visit methods, see the [Python definition model](py_api_definition.md).
+For the full visitor API — traversal order and all visit methods — see the [Python visitor API](../python-api/visitor.md). For the attributes of the objects passed to visit methods, see the [Python definition model](../python-api/definition.md).
 
 ## Extending LRPCC
 

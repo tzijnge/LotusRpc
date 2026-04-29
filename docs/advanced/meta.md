@@ -13,7 +13,7 @@ A LotusRPC connection between client and server contains one service that is not
 
 ## Implementation details
 
-The meta service has a [service ID](reference_definition.md#service-id) of 255. It is not possible to use this ID for any user services.
+The meta service has a [service ID](../reference/definition.md#service-id) of 255. It is not possible to use this ID for any user services.
 
 The meta service is named `LrpcMeta` and internally treated like any other service. It is therefore not possible to create a user service with that name.
 
@@ -55,8 +55,8 @@ The `version` function takes no arguments and returns three fields that together
 
 | Field             | Type   | Content                                                                                                                                                                                                                    |
 |-------------------|--------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `definition`      | string | User-supplied version string from [`settings.version`](reference_settings.md#version). Empty string if not set.                                                                                                               |
-| `definition_hash` | string | SHA3-256 of the rendered YAML definition file (UTF-8), as a 64-character hex string. Optionally truncated — see [`definition_hash_length`](reference_settings.md#definition_hash_length). Empty string if length is set to 0. |
+| `definition`      | string | User-supplied version string from [`settings.version`](../reference/settings.md#version). Empty string if not set.                                                                                                               |
+| `definition_hash` | string | SHA3-256 of the rendered YAML definition file (UTF-8), as a 64-character hex string. Optionally truncated — see [`definition_hash_length`](../reference/settings.md#definition_hash_length). Empty string if length is set to 0. |
 | `lrpc`            | string | Version of the LotusRPC package used to run `lrpcg` when generating the server code.                                                                                                                                       |
 
 `definition_hash` is the strongest signal: it changes whenever any part of the definition changes, regardless of whether the user set a `version` string. The hash is computed from the complete YAML as LotusRPC parses it, so whitespace-only edits that don't change the parsed content do not change the hash.
@@ -93,16 +93,16 @@ The `error` message is delivered through the same transport as any other respons
 
 ### Staying in sync with `definition_from_server`
 
-If the server has [`embed_definition: true`](reference_settings.md#embed_definition) set, `lrpcc` can retrieve the definition directly from the server at startup, eliminating the possibility of a client/server definition drift:
+If the server has [`embed_definition: true`](../reference/settings.md#embed_definition) set, `lrpcc` can retrieve the definition directly from the server at startup, eliminating the possibility of a client/server definition drift:
 
 ```yaml
 definition_from_server: always   # always fetch from server; definition_url is ignored
 ```
 
-See [`definition_from_server`](tools_lrpcc.md) in the lrpcc reference for the `once` and `never` modes and their trade-offs.
+See [`definition_from_server`](../tools/lrpcc.md) in the lrpcc reference for the `once` and `never` modes and their trade-offs.
 
 ### Definition
 
-The `definition` stream (finite, origin: server) in the meta service returns the embedded definition in chunks as big as possible with the current [tx_buffer_size](reference_settings.md#rx_buffer_size--tx_buffer_size) setting. Each chunk is of type [bytearray](reference_definition.md#lrpctype).
+The `definition` stream (finite, origin: server) in the meta service returns the embedded definition in chunks as big as possible with the current [tx_buffer_size](../reference/settings.md#rx_buffer_size--tx_buffer_size) setting. Each chunk is of type [bytearray](../reference/definition.md#lrpctype).
 
-For more info on embedding the definition in the server, see the [settings reference](reference_settings.md#embed_definition).
+For more info on embedding the definition in the server, see the [settings reference](../reference/settings.md#embed_definition).

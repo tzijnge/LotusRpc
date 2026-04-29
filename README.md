@@ -101,9 +101,7 @@ lrpcc calc add 3 7   # result = 10
 Full documentation is at **[tzijnge.github.io/LotusRpc](https://tzijnge.github.io/LotusRpc/)**, including:
 
 - [Getting started](https://tzijnge.github.io/LotusRpc/getting_started) — complete walkthrough
-- [C++ API reference](https://tzijnge.github.io/test_jekyll/cpp_api) — generated server and shim classes
-- [Interface definition reference](https://tzijnge.github.io/LotusRpc/reference) — all YAML options
+- [Interface definition reference](https://tzijnge.github.io/LotusRpc/reference/definition) — all YAML options
+- [C++ API reference](https://tzijnge.github.io/LotusRpc/cpp_api) — generated server and shim classes
+- [Python API](https://tzijnge.github.io/LotusRpc/python-api/client) — client library and definition model
 - [Examples](https://tzijnge.github.io/LotusRpc/examples) — math service and STM32 example
-
-> [!CAUTION]
-> Link to cpp_api must be updated to project LotusRPC.

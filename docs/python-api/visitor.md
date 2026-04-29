@@ -23,7 +23,7 @@ from lrpc.utils import load_lrpc_def
 lrpc_def = load_lrpc_def("example.lrpc.yaml")   # path, YAML string, or file object
 ```
 
-For more information on loading a definition file see [Python API — Client](py_api_client.md#loading-a-definition)
+For more information on loading a definition file see [Python API — Client](client.md#loading-a-definition)
 
 ## Running a visitor
 
@@ -33,7 +33,7 @@ Pass a visitor instance to `LrpcDef.accept()`:
 lrpc_def.accept(visitor)
 ```
 
-By default, `accept` also traverses the built-in [meta service](adv_meta.md). To skip it:
+By default, `accept` also traverses the built-in [meta service](../advanced/meta.md). To skip it:
 
 ``` python
 lrpc_def.accept(visitor, visit_meta_service=False)
@@ -92,7 +92,7 @@ The table is ordered by traversal sequence — `accept` calls methods top to bot
 For a _client_ stream the `params` are the message fields; `returns` is empty. For a _server_ stream, `params` is `[start]` (the implicit start/stop boolean) and `returns` are the message fields. The visitor calls `visit_lrpc_stream_param` for `params` and `visit_lrpc_stream_return` for `returns` in both cases.
 {: .notice--info}
 
-The types passed as arguments to visit methods are documented in the [Python definition model](py_api_definition.md) reference.
+The types passed as arguments to visit methods are documented in the [Python definition model](definition.md) reference.
 
 ## Example
 
@@ -121,7 +121,7 @@ lrpc_def = load_lrpc_def("example.lrpc.yaml")
 lrpc_def.accept(DefinitionSummary(), visit_meta_service=False)
 ```
 
-Output for the `example.lrpc.yaml` from [Getting started](getting_started.md#write-an-interface-definition):
+Output for the `example.lrpc.yaml` from [Getting started](../getting_started.md#write-an-interface-definition):
 
 ``` text
 Service: math (ID 0)

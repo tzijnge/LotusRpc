@@ -41,7 +41,7 @@ graph TD
 
 Define your interface once in YAML. LotusRPC generates everything else: the C++ server class, all serialization and framing code, and the service shim with one pure-virtual function per RPC call. You write two classes: wire `lrpcTransmit` to your hardware, and implement your business logic in the service shim. LotusRPC handles the rest.
 
-[Get started](getting_started.md){: .btn .btn--primary .btn--large} &nbsp; [Reference](reference_definition.md){: .btn .btn--primary .btn--large} &nbsp; [C++ API](cpp_api.md){: .btn .btn--primary .btn--large} &nbsp; [Python API](py_api_client.md){: .btn .btn--primary .btn--large} &nbsp; [Examples](examples.md){: .btn .btn--primary .btn--large}
+[Get started](getting_started.md){: .btn .btn--primary .btn--large} &nbsp; [Reference](reference/definition.md){: .btn .btn--primary .btn--large} &nbsp; [C++ API](cpp_api.md){: .btn .btn--primary .btn--large} &nbsp; [Python API](python-api/client.md){: .btn .btn--primary .btn--large} &nbsp; [Examples](examples.md){: .btn .btn--primary .btn--large}
 
 ## Key features
 
@@ -95,4 +95,4 @@ See [Getting started](getting_started.md) for a complete walkthrough.
 | Struct    | Composite user-defined type                                                              |
 | Enum      | User-defined enumeration, translated to `enum class`                                     |
 
-For details on each type and the C++ mappings, see the [C++ API reference](cpp_api.md) and the [interface definition reference](reference_definition.md).
+For details on each type and the C++ mappings, see the [C++ API reference](cpp_api.md) and the [interface definition reference](reference/definition.md).

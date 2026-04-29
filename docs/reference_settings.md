@@ -45,7 +45,7 @@ The embedded definition can be retrieved by the client in two ways:
 
 ### byte_type
 
-Controls the element type that LotusRPC uses internally for `lrpc::bytearray`. See [Protocol internals — Bytearray](binary.md#bytearray) for encoding details.
+Controls `lrpc::byte` alias used internally for `lrpc::bytearray`. See [C++ API — Type aliases](cpp_api.md#type-aliases) and [Protocol internals — Bytearray](binary.md#bytearray) for details.
 
 | Byte type       | Remark                                            |
 |-----------------|---------------------------------------------------|
@@ -78,50 +78,3 @@ services:
             count: *array_size
 ```
 
-## Type aliases
-
-LotusRPC defines the following type aliases in the generated C++ code:
-
-| Alias               | Underlying type               | Notes                                |
-|---------------------|-------------------------------|--------------------------------------|
-| `lrpc::byte`        | `uint8_t` (default)           | Configurable via `byte_type` setting |
-| `lrpc::bytearray`   | `etl::span<const lrpc::byte>` | View over a byte buffer              |
-| `lrpc::string_view` | `etl::string_view`            | View over a string buffer            |
-| `lrpc::span`        | `etl::span`                   | Generic span                         |
-| `lrpc::array`       | `std::array`                  | Fixed-size array                     |
-| `lrpc::optional`    | `etl::optional`               | Optional value                       |
-
-## Parameter and return value ownership
-
-In LotusRPC, incoming bytes are decoded from the server receive buffer and forwarded to your function implementation as arguments. Return values are encoded back into the server transmit buffer. LotusRPC uses value semantics as much as possible, with a few exceptions for efficiency.
-
-**Note:** Returning a reference of any kind to a local variable leads to undefined behavior in C++. The ownership rules below follow the same principle.
-{: .notice--warning}
-
-| Type                                                  | Parameter semantics                                               | Return semantics                                                                 |
-|-------------------------------------------------------|-------------------------------------------------------------------|----------------------------------------------------------------------------------|
-| Scalar (`(u)intN_t`, `bool`, `float`, `double`, enum) | Passed by value                                                   | Returned by value                                                                |
-| Struct                                                | Decoded into a local copy, passed by `const&`                     | Returned by value                                                                |
-| String (fixed or auto)                                | `lrpc::string_view` into the receive buffer                       | `lrpc::string_view` — caller must ensure the viewed string outlives the function |
-| Array                                                 | Decoded into a local copy (for alignment), passed as `lrpc::span` | `lrpc::span` — same lifetime rules as string                                     |
-| Bytearray                                             | `lrpc::bytearray` (span) into the receive buffer                  | `lrpc::bytearray` — same lifetime rules as string                                |
-
-For strings, arrays and bytearrays: the parameter can be used safely inside the function, but must be copied if needed beyond the call. Struct fields that are strings or bytearrays follow the same rules as standalone strings/bytearrays.
-
-## Multiple return values
-
-A function can return any number of values. In the generated C++ code, multiple return values are expressed as a `std::tuple`. To improve readability when the tuple type is complex, use `returns_alias` to give the return type a short name:
-
-``` yaml
-functions:
-  - name: get_log
-    returns_alias: LogChunk
-    returns:
-      - name: entries
-        type: string_64
-        count: 5
-      - name: count
-        type: uint32_t
-```
-
-The generated C++ function signature becomes `LogChunk get_log()` instead of the verbose tuple type.

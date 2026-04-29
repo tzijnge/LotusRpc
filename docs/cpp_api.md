@@ -114,20 +114,33 @@ The table below shows how LotusRPC definition types map to C++ types in function
 | optional                  | `lrpc::optional<T>`   | `lrpc::optional<T>`       |
 | multiple returns          | —                     | `std::tuple<T1, T2, ...>` |
 
-**Lifetime note:** `lrpc::string_view`, `lrpc::bytearray` and `lrpc::span` are non-owning views. As parameters they are valid for the duration of the function call. As return values, the viewed data must remain valid until LotusRPC has finished encoding it into the transmit buffer.
+### Ownership and lifetimes
+
+In LotusRPC, incoming bytes are decoded from the server receive buffer and forwarded to your function implementation as arguments. Return values are encoded back into the server transmit buffer. LotusRPC uses value semantics as much as possible, with a few exceptions for efficiency.
+
+**Note:** Returning a reference of any kind to a local variable leads to undefined behavior in C++. The ownership rules below follow the same principle.
 {: .notice--warning}
 
-For a detailed explanation of ownership semantics, see [Settings reference — Ownership](reference_settings.md#parameter-and-return-value-ownership).
+| Type                                                  | Parameter semantics                                               | Return semantics                                                                 |
+|-------------------------------------------------------|-------------------------------------------------------------------|----------------------------------------------------------------------------------|
+| Scalar (`(u)intN_t`, `bool`, `float`, `double`, enum) | Passed by value                                                   | Returned by value                                                                |
+| Struct                                                | Decoded into a local copy, passed by `const&`                     | Returned by value                                                                |
+| String (fixed or auto)                                | `lrpc::string_view` into the receive buffer                       | `lrpc::string_view` — caller must ensure the viewed string outlives the function |
+| Array                                                 | Decoded into a local copy (for alignment), passed as `lrpc::span` | `lrpc::span` — same lifetime rules as string                                     |
+| Bytearray                                             | `lrpc::bytearray` (span) into the receive buffer                  | `lrpc::bytearray` — same lifetime rules as string                                |
+
+For strings, arrays and bytearrays: the parameter can be used safely inside the function, but must be copied if needed beyond the call. Struct fields that are strings or bytearrays follow the same rules as standalone strings/bytearrays.
 
 ### Type aliases
 
-| Alias               | Underlying type               |
-|---------------------|-------------------------------|
-| `lrpc::string_view` | `etl::string_view`            |
-| `lrpc::bytearray`   | `etl::span<const lrpc::byte>` |
-| `lrpc::span<T>`     | `etl::span<T>`                |
-| `lrpc::array<T, N>` | `std::array<T, N>`            |
-| `lrpc::optional<T>` | `etl::optional<T>`            |
+| Alias               | Underlying type               | Notes                                |
+|---------------------|-------------------------------|--------------------------------------|
+| `lrpc::byte`        | `uint8_t` (default)           | Configurable via `byte_type` setting |
+| `lrpc::bytearray`   | `etl::span<const lrpc::byte>` | View over a byte buffer              |
+| `lrpc::string_view` | `etl::string_view`            | View over a string buffer            |
+| `lrpc::span<T>`     | `etl::span<T>`                | Generic span                         |
+| `lrpc::array<T, N>` | `std::array<T, N>`            | Fixed-size array                     |
+| `lrpc::optional<T>` | `etl::optional<T>`            | Optional value                       |
 
 ## Functions
 

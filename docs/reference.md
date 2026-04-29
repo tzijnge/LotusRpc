@@ -68,6 +68,22 @@ A function has the following properties:
 
 It is possible to define an alias for the combined function returns with `returns_alias`. For functions with multiple, complex return values this can significantly improve readability of generated C++ code. The alias must be a valid C++ identifier and not collide with any of the function parameter or return names.
 
+Example:
+
+``` yaml
+functions:
+  - name: get_log
+    returns_alias: LogChunk
+    returns:
+      - name: entries
+        type: string_64
+        count: 5
+      - name: count
+        type: uint32_t
+```
+
+See [C++ API — Multiple return values](cpp_api.md#multiple-return-values) for the generated code.
+
 ### Streams
 
 Streams are similar to functions, but they don't have any return values. In fact, there is no response to stream data at all. Stream data can consist of any number of items. Data can be streamed from client to server of vice versa (determined by `origin`), but a data stream is always initiated by the client. While `params` in a function are always from client to server, in a stream the direction of `params` depends on the direction of the stream.

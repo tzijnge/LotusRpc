@@ -12,11 +12,11 @@ The LotusRPC definition is written in YAML and therefore benefits from all the f
 
 The LotusRPC definition file has the following properties:
 
-| Required              | Optional                                          |
-|-----------------------|---------------------------------------------------|
-| [name](#name)         | [structs](#structs)                               |
-| [services](#services) | [enums](#enums)                                   |
-|                       | [constants](#constants)                           |
+| Required              | Optional                                   |
+|-----------------------|--------------------------------------------|
+| [name](#name)         | [structs](#structs)                        |
+| [services](#services) | [enums](#enums)                            |
+|                       | [constants](#constants)                    |
 |                       | [settings](settings.md)                    |
 |                       | [user_settings](settings.md#user-settings) |
 
@@ -240,7 +240,7 @@ A LrpcType has the following properties:
 
 ### LrpcType.type
 
-See the [supported data types](index.md#supported-data-types) table on the home page, and the [C++ type mapping](../cpp_api.md#type-mapping) for the generated code equivalents.
+See the [supported data types](../index.md#supported-data-types) table on the home page, and the [C++ type mapping](../cpp_api.md#type-mapping) for the generated code equivalents.
 
 ### LrpcType.count
 

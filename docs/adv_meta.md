@@ -13,7 +13,7 @@ A LotusRPC connection between client and server contains one service that is not
 
 ## Implementation details
 
-The meta service has a [service ID](reference.md#service-id) of 255. It is not possible to use this ID for any user services.
+The meta service has a [service ID](reference_definition.md#service-id) of 255. It is not possible to use this ID for any user services.
 
 The meta service is named `LrpcMeta` and internally treated like any other service. It is therefore not possible to create a user service with that name.
 
@@ -99,10 +99,10 @@ If the server has [`embed_definition: true`](reference_settings.md#embed_definit
 definition_from_server: always   # always fetch from server; definition_url is ignored
 ```
 
-See [`definition_from_server`](lrpcc.md) in the lrpcc reference for the `once` and `never` modes and their trade-offs.
+See [`definition_from_server`](tools_lrpcc.md) in the lrpcc reference for the `once` and `never` modes and their trade-offs.
 
 ### Definition
 
-The `definition` stream (finite, origin: server) in the meta service returns the embedded definition in chunks as big as possible with the current [tx_buffer_size](reference_settings.md#rx_buffer_size--tx_buffer_size) setting. Each chunk is of type [bytearray](reference.md#lrpctype).
+The `definition` stream (finite, origin: server) in the meta service returns the embedded definition in chunks as big as possible with the current [tx_buffer_size](reference_settings.md#rx_buffer_size--tx_buffer_size) setting. Each chunk is of type [bytearray](reference_definition.md#lrpctype).
 
 For more info on embedding the definition in the server, see the [settings reference](reference_settings.md#embed_definition).

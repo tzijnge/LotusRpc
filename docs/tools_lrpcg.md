@@ -4,6 +4,8 @@ toc: true
 toc_icon: tools
 ---
 
+`lrpcg` is the LotusRPC code generator. It takes a YAML interface definition file and generates all C++ server code needed to run an LotusRPC server. `lrpcg` is installed as a command line tool with LotusRPC and can be called from any location.
+
 Basic usage: `lrpcg cpp -d example.lrpc.yaml -o output-dir`
 
 For more info type `lrpcg --help`
@@ -36,7 +38,7 @@ For more info type `lrpcg cppcore --help`
 
 ## Schema export
 
-The `schema` command exports the [LotusRPC definition schema](schema.md) to the specified directory.
+The `schema` command exports the [LotusRPC definition schema](reference_schema.md) to the specified directory.
 
 `lrpcg schema -o output-dir`
 

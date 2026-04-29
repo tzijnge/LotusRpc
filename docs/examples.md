@@ -55,13 +55,16 @@ This creates `generated/math/` with the following files:
 ``` cpp
 #include "math/math.hpp"
 
-class CalcService : public ex::calc_shim {
+class CalcService : public ex::calc_shim
+{
 protected:
-    int32_t add(int32_t a, int32_t b) override {
+    int32_t add(int32_t a, int32_t b) override
+    {
         return a + b;
     }
 
-    int32_t multiply(int32_t a, int32_t b) override {
+    int32_t multiply(int32_t a, int32_t b) override
+    {
         return a * b;
     }
 };
@@ -77,8 +80,10 @@ protected:
 extern "C" void uart_write(const uint8_t* data, size_t len);
 extern "C" bool uart_read_byte(uint8_t* out);
 
-class MathServer : public ex::math {
-    void lrpcTransmit(lrpc::span<const uint8_t> bytes) override {
+class MathServer : public ex::math
+{
+    void lrpcTransmit(lrpc::span<const uint8_t> bytes) override
+    {
         uart_write(bytes.data(), bytes.size());
     }
 };
@@ -86,12 +91,15 @@ class MathServer : public ex::math {
 CalcService calc;
 MathServer server;
 
-int main() {
+int main()
+{
     server.registerService(calc);
 
-    while (true) {
+    while (true)
+    {
         uint8_t byte;
-        if (uart_read_byte(&byte)) {
+        if (uart_read_byte(&byte))
+        {
             server.lrpcReceive(byte);
         }
     }

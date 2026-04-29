@@ -41,13 +41,13 @@ graph TD
 
 Define your interface once in YAML. LotusRPC generates everything else: the C++ server class, all serialization and framing code, and the service shim with one pure-virtual function per RPC call. You write two classes: wire `lrpcTransmit` to your hardware, and implement your business logic in the service shim. LotusRPC handles the rest.
 
-[Get started](getting_started.md){: .btn .btn--primary .btn--large} &nbsp; [Reference](reference.md){: .btn .btn--primary .btn--large} &nbsp; [C++ API](cpp_api.md){: .btn .btn--primary .btn--large} &nbsp; [Python API](python_client.md){: .btn .btn--primary .btn--large} &nbsp; [Examples](examples.md){: .btn .btn--primary .btn--large}
+[Get started](getting_started.md){: .btn .btn--primary .btn--large} &nbsp; [Reference](reference_definition.md){: .btn .btn--primary .btn--large} &nbsp; [C++ API](cpp_api.md){: .btn .btn--primary .btn--large} &nbsp; [Python API](py_api_client.md){: .btn .btn--primary .btn--large} &nbsp; [Examples](examples.md){: .btn .btn--primary .btn--large}
 
 ## Key features
 
 - **No dynamic memory** — stack-only, no heap, no exceptions, no RTTI
 - **Transport agnostic** — serial, Bluetooth, TCP — any byte-oriented channel works
-- **YAML definitions** — schema-validated, editor-friendly, easy to parse or extend
+- **YAML definitions** — definition files use the `.lrpc.yaml` extension by convention; schema-validated, editor-friendly, easy to parse or extend
 - **Code generation** — `lrpcg` produces all C++ server and client code in one command
 - **CLI client** — `lrpcc` lets any team member call remote functions without writing code
 - **Streams** — client-to-server and server-to-client data streams, finite or infinite
@@ -95,4 +95,4 @@ See [Getting started](getting_started.md) for a complete walkthrough.
 | Struct    | Composite user-defined type                                                              |
 | Enum      | User-defined enumeration, translated to `enum class`                                     |
 
-For details on each type and the C++ mappings, see the [C++ API reference](cpp_api.md) and the [interface definition reference](reference.md).
+For details on each type and the C++ mappings, see the [C++ API reference](cpp_api.md) and the [interface definition reference](reference_definition.md).

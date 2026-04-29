@@ -4,36 +4,38 @@ docs:
   - title: "Reference"
     children:
       - title: "Interface definition"
-        url: /reference
+        url: /reference_definition
       - title: "Settings"
         url: /reference_settings
       - title: "Overlays"
         url: /reference_overlays
       - title: "Schema"
-        url: /schema
+        url: /reference_schema
   - title: "C++ API"
     url: /cpp_api
   - title: "Python API"
     children:
       - title: "Client"
-        url: /python_client
+        url: /py_api_client
+      - title: "Definition model"
+        url: /py_api_definition
       - title: "Visitor"
-        url: /python_visitor
+        url: /py_api_visitor
   - title: "Tools"
     children:
       - title: "lrpcg"
-        url: /lrpcg
+        url: /tools_lrpcg
       - title: "lrpcc"
-        url: /lrpcc
+        url: /tools_lrpcc
   - title: "Examples"
     url: /examples
   - title: "Advanced"
     children:
       - title: "Meta service"
-        url: /meta
+        url: /adv_meta
       - title: "Protocol internals"
-        url: /binary
+        url: /adv_internals
       - title: "Extending LotusRPC"
-        url: /extending_lrpc
+        url: /adv_extending_lrpc
   - title: "Release notes"
     url: /CHANGES

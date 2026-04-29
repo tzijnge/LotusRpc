@@ -26,12 +26,12 @@ pip install lotusrpc
 
 This installs two command-line tools:
 
-- [**lrpcg**](lrpcg.md) — the code generator
-- [**lrpcc**](lrpcc.md) — the CLI client for talking to a running server
+- [**lrpcg**](tools_lrpcg.md) — the code generator
+- [**lrpcc**](tools_lrpcc.md) — the CLI client for talking to a running server
 
 ## Write an interface definition
 
-A LotusRPC interface definition file describes services, functions, streams, structs, enums and constants in YAML. LotusRPC provides a [JSON schema](schema.md) so editors with schema support offer code completion and inline validation.
+A LotusRPC interface definition file describes services, functions, streams, structs, enums and constants in YAML. LotusRPC provides a [JSON schema](reference_schema.md) so editors with schema support offer code completion and inline validation.
 
 Here is a minimal example:
 
@@ -50,7 +50,7 @@ services:
           - { name: result, type: int32_t }
 ```
 
-Save this as `example.lrpc.yaml`. The full reference for all definition options is in the [interface definition reference](reference.md).
+Save this as `example.lrpc.yaml`. By convention, LotusRPC definition files use the `.lrpc.yaml` extension — this convention is followed throughout the documentation. The full reference for all definition options is in the [interface definition reference](reference_definition.md).
 
 ## Generate code
 
@@ -79,9 +79,11 @@ Include `math_shim.hpp` and derive your own class from `ex::math_shim`. The shim
 ``` cpp
 #include "example/math_shim.hpp"
 
-class MathService : public ex::math_shim {
+class MathService : public ex::math_shim
+{
 protected:
-    int32_t add(int32_t a, int32_t b) override {
+    int32_t add(int32_t a, int32_t b) override
+    {
         return a + b;
     }
 };
@@ -94,8 +96,10 @@ Include `example.hpp` and derive from the generated server class `ex::example`. 
 ``` cpp
 #include "example/example.hpp"
 
-class MyServer : public ex::example {
-    void lrpcTransmit(lrpc::span<const uint8_t> bytes) override {
+class MyServer : public ex::example
+{
+    void lrpcTransmit(lrpc::span<const uint8_t> bytes) override
+    {
         // Write bytes to your UART / SPI / socket / ...
         uart_write(bytes.data(), bytes.size());
     }
@@ -112,7 +116,8 @@ MyServer server;
 server.registerService(math);
 
 // In your receive interrupt or polling loop:
-void on_byte_received(uint8_t byte) {
+void on_byte_received(uint8_t byte)
+{
     server.lrpcReceive(byte);
 }
 ```
@@ -226,7 +231,7 @@ for response in client.communicate("math", "add", a=3, b=7):
 
 `communicate` is a generator. For regular functions it yields exactly once; for streams it yields zero or more times.
 
-For the full Python client API — streams, error responses, `encode`/`decode`, version checking — see the [Python client API reference](python_client.md).
+For the full Python client API — streams, error responses, `encode`/`decode`, version checking — see the [Python client API reference](py_api_client.md).
 
 ## Streams
 
@@ -284,11 +289,11 @@ Also verify that the device is powered, the firmware is running, and `registerSe
 
 ### lrpcc reports a version mismatch warning
 
-The definition file used by the client does not match the one used to generate the server code. Regenerate the server code with `lrpcg cpp`, rebuild and re-flash the firmware, then retry. For a full explanation of what gets compared and what the warning means, see [Version mismatch behavior](meta.md#version-mismatch-behavior).
+The definition file used by the client does not match the one used to generate the server code. Regenerate the server code with `lrpcg cpp`, rebuild and re-flash the firmware, then retry. For a full explanation of what gets compared and what the warning means, see [Version mismatch behavior](adv_meta.md#version-mismatch-behavior).
 
 ### "Unknown service" or "Unknown function" errors in the error stream
 
-Same root cause as a version mismatch — the compiled server does not know the service or function the client is calling. Regenerate and rebuild. See [Calling an unknown function or service](meta.md#calling-an-unknown-function-or-service) for details on how the server responds.
+Same root cause as a version mismatch — the compiled server does not know the service or function the client is calling. Regenerate and rebuild. See [Calling an unknown function or service](adv_meta.md#calling-an-unknown-function-or-service) for details on how the server responds.
 
 ### Messages are truncated or never sent
 
@@ -296,4 +301,4 @@ The encoded message exceeds the configured buffer size. Increase `tx_buffer_size
 
 ### Code generation fails with a validation error
 
-The definition file contains an error that the schema validator caught. Run `lrpcg schema -o .` to export the schema, then open your definition in an editor with YAML schema support (see [Interface definition schema](schema.md)) for inline highlighting of the problem.
+The definition file contains an error that the schema validator caught. Run `lrpcg schema -o .` to export the schema, then open your definition in an editor with YAML schema support (see [Interface definition schema](reference_schema.md)) for inline highlighting of the problem.

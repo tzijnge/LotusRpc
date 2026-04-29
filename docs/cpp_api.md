@@ -30,7 +30,8 @@ The top-level include exposes a type alias for the fully configured server:
 
 ``` cpp
 // example.hpp (generated)
-namespace ex {
+namespace ex
+{
     using example = lrpc::Server<...>;
 }
 ```
@@ -46,8 +47,10 @@ virtual void lrpcTransmit(lrpc::span<const uint8_t> bytes) = 0;
 You **must** subclass the generated server and implement this method. LotusRPC calls it whenever it has a frame ready to send to the client. Wire it to your hardware transmit routine (UART, SPI, TCP socket, etc.).
 
 ``` cpp
-class MyServer : public ex::example {
-    void lrpcTransmit(lrpc::span<const uint8_t> bytes) override {
+class MyServer : public ex::example
+{
+    void lrpcTransmit(lrpc::span<const uint8_t> bytes) override
+    {
         uart_write(bytes.data(), bytes.size());
     }
 };
@@ -78,8 +81,10 @@ For a service named `math` with one function `add(int32_t a, int32_t b) -> int32
 
 ``` cpp
 // math_shim.hpp (generated)
-namespace ex {
-    class math_shim : public lrpc::Service {
+namespace ex
+{
+    class math_shim : public lrpc::Service
+    {
     protected:
         virtual int32_t add(int32_t a, int32_t b) = 0;
     };
@@ -89,9 +94,11 @@ namespace ex {
 Your implementation:
 
 ``` cpp
-class MathService : public ex::math_shim {
+class MathService : public ex::math_shim
+{
 protected:
-    int32_t add(int32_t a, int32_t b) override {
+    int32_t add(int32_t a, int32_t b) override
+    {
         return a + b;
     }
 };
@@ -101,18 +108,17 @@ protected:
 
 The table below shows how LotusRPC definition types map to C++ types in function parameters and return values.
 
-| LotusRPC type                 | C++ parameter type    | C++ return type           |
-|---------------------------|-----------------------|---------------------------|
-| `uint8_t`, `int8_t`, etc. | by value              | by value                  |
-| `float`, `double`         | by value              | by value                  |
-| `bool`                    | by value              | by value                  |
-| enum                      | by value              | by value                  |
-| struct                    | `const MyStruct&`     | `MyStruct` (by value)     |
-| `string` / `string_N`     | `lrpc::string_view`   | `lrpc::string_view`       |
-| `bytearray`               | `lrpc::bytearray`     | `lrpc::bytearray`         |
-| array (count N)           | `lrpc::span<const T>` | `lrpc::span<const T>`     |
-| optional                  | `lrpc::optional<T>`   | `lrpc::optional<T>`       |
-| multiple returns          | —                     | `std::tuple<T1, T2, ...>` |
+| LotusRPC type               | C++ type                  |
+|-----------------------------|---------------------------|
+| `(u)intx_t`                 | `(u)intx_t`               |
+| `bool`, `float`, `double`   | `bool`, `float`, `double` |
+| enum                        | `enum class`              |
+| struct                      | C++ struct                |
+| string (fixed or auto size) | `lrpc::string_view`       |
+| byte array`                 | `lrpc::bytearray`         |
+| array (count N)             | `lrpc::span<const T>`     |
+| optional                    | `lrpc::optional<T>`       |
+| multiple returns            | `std::tuple<T1, T2, ...>` |
 
 ### Ownership and lifetimes
 
@@ -121,13 +127,15 @@ In LotusRPC, incoming bytes are decoded from the server receive buffer and forwa
 **Note:** Returning a reference of any kind to a local variable leads to undefined behavior in C++. The ownership rules below follow the same principle.
 {: .notice--warning}
 
-| Type                                                  | Parameter semantics                                               | Return semantics                                                                 |
-|-------------------------------------------------------|-------------------------------------------------------------------|----------------------------------------------------------------------------------|
-| Scalar (`(u)intN_t`, `bool`, `float`, `double`, enum) | Passed by value                                                   | Returned by value                                                                |
-| Struct                                                | Decoded into a local copy, passed by `const&`                     | Returned by value                                                                |
-| String (fixed or auto)                                | `lrpc::string_view` into the receive buffer                       | `lrpc::string_view` — caller must ensure the viewed string outlives the function |
-| Array                                                 | Decoded into a local copy (for alignment), passed as `lrpc::span` | `lrpc::span` — same lifetime rules as string                                     |
-| Bytearray                                             | `lrpc::bytearray` (span) into the receive buffer                  | `lrpc::bytearray` — same lifetime rules as string                                |
+| Type                        | Parameter semantics                                               | Return semantics                                                                 |
+|-----------------------------|-------------------------------------------------------------------|----------------------------------------------------------------------------------|
+| `(u)intx_t`                 | Passed by value                                                   | Returned by value                                                                |
+| `bool`, `float`, `double`   | Passed by value                                                   | Returned by value                                                                |
+| enum                        | Passed by value                                                   | Returned by value                                                                |
+| Struct                      | Decoded into a local copy, passed by `const&`                     | Returned by value                                                                |
+| String (fixed or auto size) | `lrpc::string_view` into the receive buffer                       | `lrpc::string_view` — caller must ensure the viewed string outlives the function |
+| Array                       | Decoded into a local copy (for alignment), passed as `lrpc::span` | `lrpc::span` — same lifetime rules as string                                     |
+| Bytearray                   | `lrpc::bytearray` (span) into the receive buffer                  | `lrpc::bytearray` — same lifetime rules as string                                |
 
 For strings, arrays and bytearrays: the parameter can be used safely inside the function, but must be copied if needed beyond the call. Struct fields that are strings or bytearrays follow the same rules as standalone strings/bytearrays.
 
@@ -162,7 +170,10 @@ virtual float get_temperature() = 0;
 Implementation:
 
 ``` cpp
-float get_temperature() override { return read_sensor(); }
+float get_temperature() override
+{
+    return read_sensor();
+}
 ```
 
 ### Multiple return values
@@ -186,7 +197,8 @@ virtual Status get_status() = 0;
 Implementation:
 
 ``` cpp
-Status get_status() override {
+Status get_status() override
+{
     return {0, "OK"};
 }
 ```
@@ -219,9 +231,10 @@ void log_data_requestStop();
 Implementation:
 
 ``` cpp
-void log_data(lrpc::string_view entry, bool final) override {
+void log_data(lrpc::string_view entry, bool final) override
+{
     store_log(entry);
-    if (final) flush_log();
+    if (final) { flush_log(); }
 }
 ```
 
@@ -253,17 +266,20 @@ void sensor_data_response(uint16_t value);
 Implementation:
 
 ``` cpp
-void sensor_data() override {
+void sensor_data() override
+{
     streaming_ = true;
 }
 
-void sensor_data_stop() override {
+void sensor_data_stop() override
+{
     streaming_ = false;
 }
 
 // Somewhere in your application loop:
-void on_new_measurement(uint16_t v) {
-    if (streaming_) sensor_data_response(v);
+void on_new_measurement(uint16_t v)
+{
+    if (streaming_) { sensor_data_response(v); }
 }
 ```
 
@@ -309,10 +325,18 @@ services:
 ``` cpp
 #include "math/math.hpp"
 
-class CalcService : public ex::calc_shim {
+class CalcService : public ex::calc_shim
+{
 protected:
-    int32_t add(int32_t a, int32_t b) override { return a + b; }
-    int32_t multiply(int32_t a, int32_t b) override { return a * b; }
+    int32_t add(int32_t a, int32_t b) override
+    {
+        return a + b;
+    }
+
+    int32_t multiply(int32_t a, int32_t b) override
+    {
+        return a * b;
+    }
 };
 ```
 
@@ -321,8 +345,10 @@ protected:
 ``` cpp
 #include "math/math.hpp"
 
-class MathServer : public ex::math {
-    void lrpcTransmit(lrpc::span<const uint8_t> bytes) override {
+class MathServer : public ex::math
+{
+    void lrpcTransmit(lrpc::span<const uint8_t> bytes) override
+    {
         HAL_UART_Transmit(&huart1, bytes.data(), bytes.size(), HAL_MAX_DELAY);
     }
 };
@@ -330,13 +356,16 @@ class MathServer : public ex::math {
 CalcService calc;
 MathServer server;
 
-int main() {
+int main()
+{
     hw_init();
     server.registerService(calc);
 
-    while (true) {
+    while (true)
+    {
         uint8_t byte;
-        if (HAL_UART_Receive(&huart1, &byte, 1, 0) == HAL_OK) {
+        if (HAL_UART_Receive(&huart1, &byte, 1, 0) == HAL_OK)
+        {
             server.lrpcReceive(byte);
         }
     }

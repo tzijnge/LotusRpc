@@ -49,7 +49,7 @@ Every LotusRPC service has an identifier that is needed for proper transfer of i
 **Note:** The most efficient code is generated when service IDs are contiguous and start at 0. This is the default when no IDs are specified.
 {: .notice--info}
 
-The service ID is [encoded](binary.md#uintx_t) in an 8-bit field and ID 255 is reserved for the [LotusRPC meta service](meta.md). This means that a user service can have any ID in the range of 0 to 254.
+The service ID is [encoded](adv_internals.md#uintx_t) in an 8-bit field and ID 255 is reserved for the [LotusRPC meta service](adv_meta.md). This means that a user service can have any ID in the range of 0 to 254.
 
 ### Functions
 
@@ -98,7 +98,7 @@ A stream has the following properties:
 
 `name` is the name of the stream. It must be a valid C++ identifier. `origin` determines the direction of the stream. It can be either _client_ or _server_. `id` is the stream identifier, similar to the [service ID](#service-id). `params` is a list of parameters. Every item in `params` is a [LrpcType](#lrpctype).
 
-Sometimes a stream can produce an infinite amount of messages, for example a sensor data stream from server to client. In this case the client starts the stream and stops the stream when needed. In other cases a stream is limited by design, for example retrieving all log messages stored on a device. In this case it's useful for the receiving side to know when the last message has been received. LotusRPC can help in this situation if the `finite` property is set to true, but it does come at a small cost. Every message gets an implicit boolean parameter (one byte) that is only true for the final message. The [LotusRPC client CLI](lrpcc.md) uses this information to gracefully terminate a streaming session
+Sometimes a stream can produce an infinite amount of messages, for example a sensor data stream from server to client. In this case the client starts the stream and stops the stream when needed. In other cases a stream is limited by design, for example retrieving all log messages stored on a device. In this case it's useful for the receiving side to know when the last message has been received. LotusRPC can help in this situation if the `finite` property is set to true, but it does come at a small cost. Every message gets an implicit boolean parameter (one byte) that is only true for the final message. The [LotusRPC client CLI](tools_lrpcc.md) uses this information to gracefully terminate a streaming session
 
 When a service contains both functions and streams, automatic ID assignment depends on which is specified first.
 
@@ -177,7 +177,7 @@ LotusRPC supports defining constants in the `constants` property. A constant can
 
 `name` is the name of the constant. `value` is the value of the constant. The type of the constant is deduced from its value, but it's possible to explicitly specify the type that the constant should have in the generated C++ code. E.g. the value 111 will by default be given the type _int32_t_, but when the `cppType` is _uint8_t_, it will get that type. As another example, the value 3.14 will by default be given the type _float_, but it can also be a string constant when the `cppType` is _string_. The latter could alternatively be achieved by prefixing the value with _!!str_. This forces the YAML parser to treat the value as a string and is unrelated to LotusRPC.
 
-From Python, the value of a constant in the definition can be obtained with the function `LrpcDef.constant`.
+From Python, the value of a constant in the definition can be obtained with [`LrpcDef.constant`](py_api_definition.md#lrpcdef).
 
 There is currently no other use case for constants than to provide a single source of truth for constants that are needed on both the client side and the server side. Notably, it is not (yet) possible to reference a constant in other parts of the definition, e.g. as the size of an array. To achieve this kind of behavior, the _anchor_ and _alias_ features of yaml may be used.
 

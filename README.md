@@ -32,6 +32,9 @@ pip install lotusrpc
 
 **Define your interface** (`math.lrpc.yaml`):
 
+> [!NOTE]
+> By convention, LotusRPC definition files use the `.lrpc.yaml` extension.
+
 ```yaml
 name: math
 settings:
@@ -58,17 +61,23 @@ lrpcg cpp -d math.lrpc.yaml -o generated/
 ```cpp
 #include "math/math.hpp"
 
-class CalcService : public ex::calc_shim {
+class CalcService : public ex::calc_shim
+{
 protected:
-    int32_t add(int32_t a, int32_t b) override { return a + b; }
+    int32_t add(int32_t a, int32_t b) override
+    {
+        return a + b;
+    }
 };
 ```
 
 Subclass the generated server to provide a transport, register your service, and feed incoming bytes:
 
 ```cpp
-class MathServer : public ex::math {
-    void lrpcTransmit(lrpc::span<const uint8_t> bytes) override {
+class MathServer : public ex::math
+{
+    void lrpcTransmit(lrpc::span<const uint8_t> bytes) override
+    {
         uart_write(bytes.data(), bytes.size());  // your hardware here
     }
 };

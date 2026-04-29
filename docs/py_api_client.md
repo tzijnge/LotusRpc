@@ -18,7 +18,7 @@ from lrpc.utils import load_lrpc_def
 
 ## Loading a definition
 
-Both `LrpcClient` and the helper functions need an `LrpcDef` object parsed from the interface definition file. The simplest way is `load_lrpc_def`:
+Both `LrpcClient` and the helper functions need an `LrpcDef` object parsed from the interface definition file. The simplest way is `load_lrpc_def`. For the full `LrpcDef` API see the [Python definition model](py_api_definition.md) reference.
 
 ``` python
 from lrpc.utils import load_lrpc_def
@@ -40,7 +40,7 @@ class LrpcTransport(Protocol):
 
 `read` must block until `count` bytes are available and return them. On timeout it should return an empty `bytes` object — `LrpcClient` raises `TimeoutError` in that case. `pyserial`'s `serial.Serial` satisfies this protocol directly.
 
-For a custom transport, see [Extending LotusRPC](extending_lrpc.md).
+For a custom transport, see [Extending LotusRPC](adv_extending_lrpc.md).
 
 ## LrpcClient
 
@@ -180,7 +180,7 @@ class LrpcResponse:
 | optional (present) | underlying value |
 | optional (absent) | `None` |
 
-**Error responses** are delivered when the server cannot find the requested service or function — for example when the client and server definitions have drifted. `is_error_response` is `True` and `payload` contains `type`, `p1`, and `p2` from the meta error stream. `lrpcc` logs these as warnings; a custom client should inspect `is_error_response` before using the payload. See [Calling an unknown function or service](meta.md#calling-an-unknown-function-or-service).
+**Error responses** are delivered when the server cannot find the requested service or function — for example when the client and server definitions have drifted. `is_error_response` is `True` and `payload` contains `type`, `p1`, and `p2` from the meta error stream. `lrpcc` logs these as warnings; a custom client should inspect `is_error_response` before using the payload. See [Calling an unknown function or service](adv_meta.md#calling-an-unknown-function-or-service).
 
 ## DefinitionLoader
 

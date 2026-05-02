@@ -6,4 +6,4 @@ click-log==0.4.0
 pyserial==3.5  # optional for lrpcc serial transport
 typing-extensions==4.15.0
 colorama==0.4.6
-pydantic==2.12.5
+pydantic==2.13.3

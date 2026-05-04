@@ -60,7 +60,7 @@ LrpcClient(lrpc_def: LrpcDef, transport: LrpcTransport)
 LrpcClient.from_server(transport: LrpcTransport, save_to: Path | None = None) -> LrpcClient
 ```
 
-Class method. Retrieves the embedded definition from the server and constructs a client from it. The server must have [`embed_definition: true`](../reference/settings.md#embed_definition) set. Raises `ValueError` if no definition is found on the server.
+Static method. Retrieves the embedded definition from the server and constructs a client from it. The server must have [`embed_definition: true`](../reference/settings.md#embed_definition) set. Raises `ValueError` if no definition is found on the server.
 
 If `save_to` is given, the retrieved definition is written to that path as a YAML file.
 
@@ -180,7 +180,7 @@ class LrpcResponse:
 | optional (present) | underlying value |
 | optional (absent) | `None` |
 
-**Error responses** are delivered when the server cannot find the requested service or function — for example when the client and server definitions have drifted. `is_error_response` is `True` and `payload` contains `type`, `p1`, and `p2` from the meta error stream. `lrpcc` logs these as warnings; a custom client should inspect `is_error_response` before using the payload. See [Calling an unknown function or service](../advanced/meta.md#calling-an-unknown-function-or-service).
+**Error responses** are delivered when the server cannot find the requested service or function — for example when the client and server definitions have drifted. `is_error_response` is `True` and `payload` contains the meta error fields (`type`, `p1`, `p2`, `p3`, `message`). `lrpcc` logs these as warnings; a custom client should inspect `is_error_response` before using the payload. See [Calling an unknown function or service](../advanced/meta.md#calling-an-unknown-function-or-service).
 
 ## DefinitionLoader
 

@@ -176,7 +176,7 @@ Run `lrpcc --help` for a full list of available services and functions.
 
 ### Custom Python client
 
-To communicate from your own Python code, create an `LrpcClient` and call `communicate`:
+To communicate from your own Python code, create an `LrpcClient` and call `communicate_single`:
 
 ``` python
 from lrpc.client import LrpcClient
@@ -263,7 +263,7 @@ Receive all messages from the stream using `communicate`:
 
 ``` python
 # print each value returned from the server
-for response in client.communicate("math", "results"):
+for response in client.communicate("math", "results", start=True):
     print(response.payload["value"])
 ```
 

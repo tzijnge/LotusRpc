@@ -26,7 +26,7 @@ For the full visitor API — traversal order and all visit methods — see the [
     * `transport_type: my_transport`
     * `transport_params` is a list of parameters that is passed to your `Transport` class constructor
 
-**lrpcc** will first try to load a user supplied transport layer as specified in _lrpcc.config.yaml_. If no transport layer is found it will try to load a built-in transport layer with the same name.
+**lrpcc** will first try to load a user-supplied transport layer as specified in _lrpcc.config.yaml_. If no transport layer is found it will try to load a built-in transport layer with the same name.
 
 ## Extending LRPCG
 

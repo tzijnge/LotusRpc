@@ -44,7 +44,7 @@ The following sections detail the encoding of all types supported by LotusRPC.
 
 ### No parameters or no return values
 
-For a function with no parameters, the payload of the message from client to server has size 0. Likewise, a function with no return values has a payload of 0 bytes for the message from client to server.
+For a function with no parameters, the payload of the message from client to server has size 0. Likewise, a function with no return values has a payload of 0 bytes for the message from server to client.
 
 ### (u)int**x**_t
 

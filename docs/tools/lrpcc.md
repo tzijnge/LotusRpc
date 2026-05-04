@@ -51,7 +51,7 @@ The field `definition_from_server` is optional with allowed values `never` (defa
 
 The field `definition_url` is required when `definition_from_server` is `once` or `never`. It is the path of the LotusRPC definition file and can be relative to _lrpcc.config.yaml_ or an absolute path.
 
-The fields `transport_type` and `transport_params` are required. The subfields of `transport_params` are passed as keyword arguments to the transport class. `lrpcc` uses [pyserial](https://pythonhosted.org/pyserial/) for serial communication, so the `transport_params` can be any of the constructor parameters of the [serial.Serial](https://pythonhosted.org/pyserial/pyserial_api.html#serial.Serial) class.
+The fields `transport_type` and `transport_params` are required. The subfields of `transport_params` are passed as keyword arguments to the transport class. `lrpcc` uses [pyserial](https://www.pyserial.com/docs/) for serial communication, so the `transport_params` can be any of the constructor parameters of the [serial.Serial](https://www.pyserial.com/docs/api-reference#serialserial-constructor) class.
 
 `lrpcc` currently only supports the serial transport type, but it's easy to write your own transport. See [Extending LotusRPC](../advanced/extending-lrpc.md).
 
@@ -97,7 +97,7 @@ lrpcc s fn "01 aa bb"    # same — spaces and lowercase are fine
 lrpcc s fn ""            # empty bytearray (0 bytes)
 ```
 
-Hex digits are validated according to the Python [`bytes.fromhex`](https://docs.python.org/3/library/stdtypes.html#bytearray.fromhex) rules.
+Hex digits are validated according to the Python [`bytes.fromhex`](https://docs.python.org/3/library/stdtypes.html#bytes.fromhex) rules.
 
 **Optionals** — use `_` for an absent value. If the underlying string value itself starts and ends with underscores (i.e. consists entirely of underscores), prepend one extra `_` to escape it:
 

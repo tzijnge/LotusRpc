@@ -31,10 +31,10 @@ lrpc_def = load_lrpc_def("example.lrpc.yaml")
 
 The `definition` argument accepts a file path (`str` or `Path`), a raw YAML string, or an open file object (`TextIO`).
 
-| Parameter            | Default | Description                                                     |
-|----------------------|---------|-----------------------------------------------------------------|
-| `warnings_as_errors` | `True`  | Raise an error when the definition produces validation warnings |
-| `include_meta_def`   | `True`  | Include the built-in [meta service](../advanced/meta.md) in the definition  |
+| Parameter            | Default | Description                                                                |
+|----------------------|---------|----------------------------------------------------------------------------|
+| `warnings_as_errors` | `True`  | Raise an error when the definition produces validation warnings            |
+| `include_meta_def`   | `True`  | Include the built-in [meta service](../advanced/meta.md) in the definition |
 
 For definitions that use [overlays](../reference/overlays.md), use `DefinitionLoader` — see [Python client API](client.md#loading-a-definition).
 
@@ -52,23 +52,23 @@ Function parameters, return values, and struct fields are all `LrpcVar` objects.
 
 ## LrpcDef
 
-| Method                              | Returns                 | Description                                     |
-|-------------------------------------|-------------------------|-------------------------------------------------|
-| `name()`                            | `str`                   | Definition name                                 |
-| `settings()`                        | `RpcSettings`           | Definition settings                             |
-| `definition_hash()`                 | `Optional[str]`         | SHA3-256 hash of the definition file            |
-| `services()`                        | `list[LrpcService]`     | User services (excluding meta)                  |
-| `service_by_name(name)`             | `Optional[LrpcService]` | Look up a service by name                       |
-| `service_by_id(id)`                 | `Optional[LrpcService]` | Look up a service by ID                         |
-| `function(service_name, fn_name)`   | `Optional[LrpcFun]`     | Look up a function by service and function name |
-| `stream(service_name, stream_name)` | `Optional[LrpcStream]`  | Look up a stream by service and stream name     |
-| `structs()`                         | `list[LrpcStruct]`      | All structs                                     |
-| `struct(name)`                      | `LrpcStruct`            | Look up a struct by name                        |
-| `enums()`                           | `list[LrpcEnum]`        | All enums                                       |
-| `enum(name)`                        | `LrpcEnum`              | Look up an enum by name                         |
-| `constants()`                       | `list[LrpcConstant]`    | All constants                                   |
-| `constant(name)`                    | value                   | Value of a named constant                       |
-| `user_settings()`                   | any                     | Contents of the `user_settings` YAML section    |
+| Method                                  | Returns                 | Description                                     |
+|-----------------------------------------|-------------------------|-------------------------------------------------|
+| `name()`                                | `str`                   | Definition name                                 |
+| `settings()`                            | `RpcSettings`           | Definition settings                             |
+| `definition_hash()`                     | `Optional[str]`         | SHA3-256 hash of the definition file            |
+| `services()`                            | `list[LrpcService]`     | User services (excluding meta)                  |
+| `service_by_name(name)`                 | `Optional[LrpcService]` | Look up a service by name                       |
+| `service_by_id(id)`                     | `Optional[LrpcService]` | Look up a service by ID                         |
+| `function(service_name, function_name)` | `Optional[LrpcFun]`     | Look up a function by service and function name |
+| `stream(service_name, stream_name)`     | `Optional[LrpcStream]`  | Look up a stream by service and stream name     |
+| `structs()`                             | `list[LrpcStruct]`      | All structs                                     |
+| `struct(name)`                          | `LrpcStruct`            | Look up a struct by name                        |
+| `enums()`                               | `list[LrpcEnum]`        | All enums                                       |
+| `enum(name)`                            | `LrpcEnum`              | Look up an enum by name                         |
+| `constants()`                           | `list[LrpcConstant]`    | All constants                                   |
+| `constant(name)`                        | value                   | Value of a named constant                       |
+| `user_settings()`                       | any                     | Contents of the `user_settings` YAML section    |
 
 To traverse every element in order, pass a visitor to `accept()` — see [Python visitor API](visitor.md).
 

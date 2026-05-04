@@ -4,13 +4,13 @@ toc: true
 toc_icon: tools
 ---
 
-`lrpcg` is the LotusRPC code generator. It takes a YAML interface definition file and generates all C++ server code needed to run an LotusRPC server. `lrpcg` is installed as a command line tool with LotusRPC and can be called from any location.
+`lrpcg` is the LotusRPC code generator. It takes a YAML interface definition file and generates all C++ server code needed to run a LotusRPC server. `lrpcg` is installed as a command-line tool with LotusRPC and can be called from any location.
 
 Basic usage: `lrpcg cpp -d example.lrpc.yaml -o output-dir`
 
 For more info type `lrpcg --help`
 
-## C++ server side code generation
+## C++ server-side code generation
 
 The `cpp` command generates all C++ files needed for the RPC server.
 
@@ -48,6 +48,6 @@ For more info type `lrpcg schema --help`
 
 The `puml` command transforms your LotusRPC definition file into a PlantUML diagram. The output of this command is a _.puml_ file that can be rendered to an image with PlantUML. This can be useful for documentation purposes
 
-`lrpcg puml -o output-dir`
+`lrpcg puml -d example.lrpc.yaml -o output-dir`
 
 For more info type `lrpcg puml --help`

@@ -252,7 +252,7 @@ The table below shows how LotusRPC definition types map to C++ types in function
 | enum                        | `enum class`              |
 | struct                      | C++ struct                |
 | string (fixed or auto size) | `lrpc::string_view`       |
-| byte array`                 | `lrpc::bytearray`         |
+| byte array                  | `lrpc::bytearray`         |
 | array (count N)             | `lrpc::span<const T>`     |
 | optional                    | `lrpc::optional<T>`       |
 | multiple returns            | `std::tuple<T1, T2, ...>` |

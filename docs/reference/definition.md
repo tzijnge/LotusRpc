@@ -87,7 +87,7 @@ See [C++ API — Multiple return values](../cpp_api.md#multiple-return-values) f
 
 ### Streams
 
-Streams are similar to functions, but they don't have any return values. In fact, there is no response to stream data at all. Stream data can consist of any number of items. Data can be streamed from client to server of vice versa (determined by `origin`), but a data stream is always initiated by the client. While `params` in a function are always from client to server, in a stream the direction of `params` depends on the direction of the stream.
+Streams are similar to functions, but they don't have any return values. In fact, there is no response to stream data at all. Stream data can consist of any number of items. Data can be streamed from client to server or vice versa (determined by `origin`), but a data stream is always initiated by the client. While `params` in a function are always from client to server, in a stream the direction of `params` depends on the direction of the stream.
 
 A stream has the following properties:
 

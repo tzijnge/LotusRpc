@@ -10,7 +10,7 @@ LotusRPC supports merging overlay definitions on top of a base definition. This 
 
 ## Overlay files
 
-Overlay files are YAML files like the main definition file and typically also carry the `.lrpc.yaml` extension. An overlay follows the same structure as the base definition, but only describes the slice that is being modified. Every overlay (or section of an overlay) must also include a `merge_strategy` property.
+Overlay files are YAML files like the main definition file and typically also carry the `.lrpc.yaml` extension. An overlay follows the same structure as the base definition, but only describes the slice that is being modified. Overlay sections generally use a `merge_strategy` property (inherited from parent to child), except scalar removals where assigning `null` is sufficient.
 
 Overlay files can contain multiple [YAML documents](https://yaml.org/spec/1.2.2/#91-documents) to specify several overlay actions in a single file.
 

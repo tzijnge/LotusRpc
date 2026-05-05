@@ -10,36 +10,31 @@ RPC framework for embedded systems. Generates C++ server code and a Python clien
 
 ``` mermaid
 graph TD
-    DEF["example.lrpc.yaml\nYAML interface definition"]
-    LRPCG("lrpcg cpp")
-
-    subgraph GEN["Generated C++"]
-        SRV_GEN["Server class\nframing · serialization · dispatch"]
-        SHIM_GEN["Service shim\none pure-virtual function per RPC call"]
+    subgraph EMB["`**Embedded** · Server · C++`"]
+        direction LR
+        CORE["`**LRPC Core**<br>framing · serialization · dispatch`"]
+        SERVICE["`**Service shim classes**<br>one pure-virtual function per RPC call<br>Derive and implement yourself`"]
+        SERVER["`**Server shim class**<br>Derive and implement the transport layer yourself`"]
     end
 
-    subgraph IMPL["Your implementation — two classes"]
-        MY_SRV["MyServer\nlrpcTransmit → UART · SPI · TCP · …"]
-        MY_SVC["MyService\nadd() · get_temperature() · …"]
+    subgraph PC["`**PC** · Client · Python`"]
+        direction LR
+        CLI["`**CLI client tool**<br>lrpcc`"]
+        CUSTOM["Custom application"]
     end
 
-    TRANSPORT("Transport\nserial · Bluetooth · TCP · …")
+    DEF["`**Interface Definition**<br>*.lrpc.yaml`"]
 
-    subgraph CLIENT["Client — PC · Python"]
-        CLI["lrpcc\nCLI tool, no code needed"]
-        LIB["LrpcClient\ncustom Python code"]
-    end
+    DEF -.- |Runtime interpretation| PC
+    DEF -.- |"Code generation (lrpcg)"| EMB
 
-    DEF -->|"lrpcg cpp -d"| LRPCG
-    LRPCG --> GEN
-    DEF -.->|also used by| CLIENT
-    SRV_GEN -->|"inherit"| MY_SRV
-    SHIM_GEN -->|"inherit + implement"| MY_SVC
-    MY_SRV <-->|"lrpcReceive / lrpcTransmit"| TRANSPORT
-    TRANSPORT <-->|"function calls + responses"| CLIENT
+    PC <--> |"Function calls\nover any byte transport"| EMB
+    CLI ~~~ |or| CUSTOM
+    CORE ~~~ |and| SERVICE
+    SERVICE ~~~ |and| SERVER
 ```
 
-Define your interface once in YAML. LotusRPC generates everything else: the C++ server class, all serialization and framing code, and the service shim with one pure-virtual function per RPC call. You write two classes: wire `lrpcTransmit` to your hardware, and implement your business logic in the service shim. LotusRPC handles the rest.
+Define your interface once in YAML. LotusRPC generates all serialization, framing and function dispatching code. You wire the server class to your transport layer and your business by simply implementing abstract functions. LotusRPC handles the rest.
 
 [Get started](getting_started.md){: .btn .btn--primary .btn--large} &nbsp; [Reference](reference/definition.md){: .btn .btn--primary .btn--large} &nbsp; [C++ API](cpp_api.md){: .btn .btn--primary .btn--large} &nbsp; [Python API](python-api/client.md){: .btn .btn--primary .btn--large} &nbsp; [Examples](examples.md){: .btn .btn--primary .btn--large}
 

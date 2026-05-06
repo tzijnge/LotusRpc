@@ -22,6 +22,16 @@ message("Build type: " ${CMAKE_BUILD_TYPE})
 
 enable_language(C CXX ASM)
 
+include(FetchContent)
+
+FetchContent_Declare(
+  etl
+  URL      https://github.com/ETLCPP/etl/archive/refs/tags/20.47.1.tar.gz
+  URL_HASH SHA256=ea4cff73a18106c2fbae35b9200f8099d1a08ed70ffcca392c4264c3825eedb3
+)
+
+FetchContent_MakeAvailable(etl)
+
 add_executable(${CMAKE_PROJECT_NAME})
 
 add_subdirectory(cmake/stm32cubemx)
@@ -45,10 +55,6 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     ${LRPC_SERVER_HEADER}
 )
 
-target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-    ${CMAKE_SOURCE_DIR}/../../external/etl/include
-)
-
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE)
 
 target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
@@ -64,4 +70,5 @@ list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES ob)
 # Add linked libraries
 target_link_libraries(${CMAKE_PROJECT_NAME}
     stm32cubemx
+    etl::etl
 )

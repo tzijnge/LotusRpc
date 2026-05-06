@@ -35,6 +35,8 @@ namespace lrpc
             registerService(metaService);
         }
 
+        virtual ~Server() = default;
+
         void transmit(const uint8_t serviceId, const uint8_t functionOrStreamId) override
         {
             static const auto cb = [](Writer &) {};
@@ -69,6 +71,15 @@ namespace lrpc
             {
                 lrpcReceive(b);
             }
+        }
+
+        template <typename TContainer,
+                  typename = decltype(etl::declval<TContainer>().data(),
+                                      etl::declval<TContainer>().size(),
+                                      void())>
+        void lrpcReceive(TContainer&& bytes)
+        {
+            lrpcReceive(lrpc::span<const uint8_t>(bytes.data(), bytes.size()));
         }
 
         void lrpcReceive(const uint8_t byte)

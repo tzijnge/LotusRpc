@@ -450,7 +450,7 @@ TEST(TestEtlRwExtensions, writeBytearrayTooBig)
     etl::byte_stream_writer writer(storage, etl::endian::little);
 
     lrpc::array<lrpc::byte, 300> a{};
-    std::iota(a.begin(), a.end(), 0);
+    std::iota(a.begin(), a.end(), lrpc::byte{0});
     lrpc::write_unchecked<lrpc::tags::bytearray_auto>(writer, a);
 
     const auto written = writer.used_data();

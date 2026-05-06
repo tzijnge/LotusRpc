@@ -1,59 +1,79 @@
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 if(NOT DEFINED CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 11)
 endif()
+
+option(ENABLE_ASAN "Enable AddressSanitizer" ON)
+
+if(ENABLE_ASAN)
+  if(MSVC)
+    add_compile_options(/fsanitize=address /Zi)
+    add_link_options(/fsanitize=address)
+  else()
+    add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=address)
+  endif()
+
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    add_link_options(-static-libasan)
+  endif()
+endif()
+
 set(BUILD_GMOCK ON)
-set(gtest_force_shared_crt on)
+set(gtest_force_shared_crt ON)
 
-if(MSVC)
-  add_compile_options(/fsanitize=address /Zi)
-  add_link_options(/fsanitize=address)
-else()
-  add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
-  add_link_options(-fsanitize=address)
-endif()
+include(FetchContent)
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  add_link_options(-static-libasan)
-endif()
-
-include(GoogleTest)
-mark_as_advanced(
-    BUILD_GMOCK BUILD_GTEST
-    gmock_build_tests gtest_build_samples gtest_build_tests
-    gtest_disable_pthreads
-    gtest_hide_internal_symbols
+FetchContent_Declare(
+  googletest
+  URL      https://github.com/google/googletest/archive/refs/tags/v1.17.0.tar.gz
+  URL_HASH SHA256=65fab701d9829d38cb77c14acdc431d2108bfdbf8979e40eb8ae567edf10b27c
 )
 
-add_subdirectory(../../external/gtest External/gtest EXCLUDE_FROM_ALL)
+FetchContent_Declare(
+  etl
+  URL      https://github.com/ETLCPP/etl/archive/refs/tags/20.47.1.tar.gz
+  URL_HASH SHA256=ea4cff73a18106c2fbae35b9200f8099d1a08ed70ffcca392c4264c3825eedb3
+)
+
+FetchContent_MakeAvailable(googletest etl)
+
+mark_as_advanced(
+  BUILD_GMOCK BUILD_GTEST
+  gmock_build_tests gtest_build_samples gtest_build_tests
+  gtest_disable_pthreads
+  gtest_hide_internal_symbols
+)
+
+include(GoogleTest)
+include(${CMAKE_SOURCE_DIR}/cmake/CompilerWarnings.cmake)
+
+# set(Python3_FIND_REGISTRY NEVER)
+# set(Python3_FIND_STRATEGY LOCATION)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
 add_library(UnitTests_core INTERFACE)
 
 target_include_directories(UnitTests_core INTERFACE .)
-target_include_directories(UnitTests_core SYSTEM INTERFACE ${CMAKE_SOURCE_DIR}/external/etl/include)
-
-if(MSVC)
-  target_compile_options(UnitTests_core INTERFACE /W4)
-else()
-  target_compile_options(UnitTests_core  INTERFACE -Wall -Wextra)
-endif()
+target_set_warnings(UnitTests_core INTERFACE)
 
 target_link_libraries(
   UnitTests_core
-  INTERFACE gtest
-  gmock
-  gtest_main
+  INTERFACE
+    gtest
+    gmock
+    gtest_main
+    etl::etl
 )
 
 set(LRPC_IS_BUILT ${CMAKE_BINARY_DIR}/lrpc_is_built)
-file(GLOB_RECURSE LRPC_PY_SRC_FILES ${CMAKE_SOURCE_DIR}/src/lrpc/*.py
-                                    ${CMAKE_SOURCE_DIR}/**/lotusrpc-schema.json
-                                    ${CMAKE_SOURCE_DIR}/**/meta.lrpc.yaml)
+file(GLOB_RECURSE LRPC_PY_SRC_FILES
+  ${CMAKE_SOURCE_DIR}/src/lrpc/*.py
+  ${CMAKE_SOURCE_DIR}/**/lotusrpc-schema.json
+  ${CMAKE_SOURCE_DIR}/**/meta.lrpc.yaml
+)
 
 add_custom_command(OUTPUT ${LRPC_IS_BUILT}
-                  COMMAND pip install --upgrade --no-deps --force-reinstall ${CMAKE_SOURCE_DIR}
+                  COMMAND ${Python3_EXECUTABLE} -m pip install --force-reinstall ${CMAKE_SOURCE_DIR}
                   COMMAND ${CMAKE_COMMAND} -E touch ${LRPC_IS_BUILT}
                   COMMENT "Build LRPC Python package"
                   DEPENDS ${LRPC_PY_SRC_FILES})
@@ -61,7 +81,7 @@ add_custom_command(OUTPUT ${LRPC_IS_BUILT}
 add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/core/lrpccore/EtlRwExtensions.hpp
                   COMMENT "Generate LRPC server core"
                   DEPENDS ${LRPC_IS_BUILT}
-                  COMMAND lrpcg cppcore -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/core -b uint8_t)
+                  COMMAND ${Python3_EXECUTABLE} -m lrpc.tools.lrpcg.lrpcg cppcore -o ${CMAKE_CURRENT_SOURCE_DIR}/generated/core -b uint8_t)
 
 
 function(generate_lrpc server_name)
@@ -69,19 +89,21 @@ function(generate_lrpc server_name)
   set(LRPC_DEF ${CMAKE_SOURCE_DIR}/tests/testdata/Test${server_name}.lrpc.yaml)
 
   set(OVERLAY_OPTION "")
+  set(OVERLAY_DEPENDS "")
   if(ARGC GREATER 1)
     set(LRPC_OUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/generated/${server_name}/${ARGV1})
     set(LRPC_DEF_OVERLAY ${CMAKE_SOURCE_DIR}/tests/testdata/Test${server_name}_${ARGV1}.lrpc.yaml)
     set(OVERLAY_OPTION "-ov" "${LRPC_DEF_OVERLAY}")
+    set(OVERLAY_DEPENDS "${LRPC_DEF_OVERLAY}")
   endif()
 
   set(LRPC_SERVER_HEADER ${LRPC_OUT_DIR}/${server_name}.hpp)
 
   add_custom_command(OUTPUT ${LRPC_SERVER_HEADER}
                   COMMENT "Generate Test${server_name} LRPC files"
-                  DEPENDS ${LRPC_DEF} ${LRPC_DEF_OVERLAY} ${LRPC_IS_BUILT}
-                  COMMAND lrpcg cpp -d ${LRPC_DEF} ${OVERLAY_OPTION} -o ${LRPC_OUT_DIR} -w
-                  COMMAND lrpcg puml -d ${LRPC_DEF} -o ${LRPC_OUT_DIR} -w)
+                  DEPENDS ${LRPC_DEF} ${OVERLAY_DEPENDS} ${LRPC_IS_BUILT}
+                  COMMAND ${Python3_EXECUTABLE} -m lrpc.tools.lrpcg.lrpcg cpp -d ${LRPC_DEF} ${OVERLAY_OPTION} -o ${LRPC_OUT_DIR} -w
+                  COMMAND ${Python3_EXECUTABLE} -m lrpc.tools.lrpcg.lrpcg puml -d ${LRPC_DEF} -o ${LRPC_OUT_DIR} -w)
 
 endfunction()
 
@@ -149,9 +171,7 @@ if(CMAKE_CXX_STANDARD GREATER_EQUAL 20)
 endif()
 
 
-
-# Copy MSVC AddressSanitizer runtime DLL to the output directory
-if(MSVC)
+if(ENABLE_ASAN AND MSVC)
   get_filename_component(CXX_COMPILER_DIR "${CMAKE_CXX_COMPILER}" DIRECTORY)
 
   if(CXX_COMPILER_DIR MATCHES "x64")

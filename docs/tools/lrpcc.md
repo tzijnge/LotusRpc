@@ -4,9 +4,9 @@ toc: true
 toc_icon: tools
 ---
 
-`lrpcc` is the LotusRPC client tool. A common use case of LotusRPC is to control a device running an LotusRPC server from a PC. This means the user must implement an LotusRPC client on the PC. `lrpcc` makes this very easy by constructing a client at runtime from the definition file and present itself as a CLI tool. `lrpcc` is installed as a command line tool with LotusRPC and can be called from any location.
+`lrpcc` is the LotusRPC client tool. A common use case of LotusRPC is to control a device running a LotusRPC server from a PC. This means the user must implement a LotusRPC client on the PC. `lrpcc` makes this very easy by constructing a client at runtime from the definition file and present itself as a CLI tool. `lrpcc` is installed as a command line tool with LotusRPC and can be called from any location.
 
-Example: Given an LotusRPC definition with a function **add** inside the service **math**, taking two integers and returning one integer, the function can be called from the PC with the following command
+Example: Given a LotusRPC definition with a function **add** inside the service **math**, taking two integers and returning one integer, the function can be called from the PC with the following command
 
 ``` bash
 lrpcc math add 3 7
@@ -43,7 +43,7 @@ The field `log_level` is optional with a default value of `INFO`. If used, it sh
 
 The field `check_server_version` is optional with a default value of `true`. It determines whether or not to perform a server version check. If there is any detectable mismatch between the server and the client a warning message will be printed (if the `log_level` is `WARNING` or lower). This can help detect issues early, but it also incurs additional communication between client and server that may not fit the application.
 
-The field `definition_from_server` is optional with allowed values `never` (default), `always` and `once`. Here's what these value mean:
+The field `definition_from_server` is optional with allowed values `never` (default), `always` and `once`. Here's what these values mean:
 
 * `never`: `lrpcc` will not retrieve an embedded definition from the server. Definition must be specified in `definition_url`
 * `always`: `lrpcc` will always retrieve the embedded definition from the server. Field `definition_url` is ignored

@@ -46,7 +46,7 @@ For more info type `lrpcg schema --help`
 
 ## PlantUML diagram
 
-The `puml` command transforms your LotusRPC definition file into a PlantUML diagram. The output of this command is a _.puml_ file that can be rendered to an image with PlantUML. This can be useful for documentation purposes
+The `puml` command transforms your LotusRPC definition file into a PlantUML diagram. The output of this command is a _.puml_ file that can be rendered to an image with PlantUML. This can be useful for documentation purposes.
 
 `lrpcg puml -d example.lrpc.yaml -o output-dir`
 

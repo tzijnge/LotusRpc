@@ -2,8 +2,7 @@ dirs:
     - docs
     - changes
 files:
-    # TODO: #248 TZ: Enable checking of README.md
-    # - README.md
+    - README.md
     - CHANGES.md
 ignorePatterns:
     # Apparently cppreference block link checking tools

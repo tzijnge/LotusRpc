@@ -3,6 +3,7 @@
 #include <etl/vector.h>
 #include "LrpcTypes.hpp"
 #include "Service.hpp"
+#include <utility>
 
 namespace lrpc
 {

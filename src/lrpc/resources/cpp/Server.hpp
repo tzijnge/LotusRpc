@@ -21,7 +21,7 @@ namespace lrpc
             void invoke(Service::Reader &reader) override
             {
                 const auto data = reader.data();
-                const auto serviceId = data.at(1);
+                const auto serviceId = static_cast<uint8_t>(data.at(1));
                 const auto functionOrStreamId = static_cast<uint8_t>(data.at(2));
                 server().error(LrpcMetaError::UnknownService, serviceId, functionOrStreamId);
             };

@@ -74,8 +74,8 @@ namespace lrpc
         }
 
         template <typename TContainer,
-                  typename = decltype(etl::declval<TContainer>().data(),
-                                      etl::declval<TContainer>().size(),
+                  typename = decltype(std::declval<TContainer>().data(),
+                                      std::declval<TContainer>().size(),
                                       void())>
         void lrpcReceive(TContainer &&bytes)
         {

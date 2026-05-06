@@ -67,8 +67,12 @@ Registers a service instance with the server. Call once per service before proce
 ### lrpcReceive
 
 ``` cpp
-void lrpcReceive(lrpc::span<const uint8_t> bytes);
-void lrpcReceive(uint8_t byte);
+void lrpcReceive(uint8_t byte);                    // single byte
+void lrpcReceive(lrpc::span<const uint8_t> bytes); // span of bytes (lvalue container implicitly converted to span)
+
+template <typename TContainer>
+void lrpcReceive(TContainer &&bytes);              // temporary container of bytes
+
 ```
 
 Feeds incoming bytes to the server. Call from your receive interrupt or polling loop. LotusRPC handles framing internally — pass bytes as they arrive.

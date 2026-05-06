@@ -253,7 +253,7 @@ TEST_F(TestServer1, decodeF20)
 // Decode function f21 which return two uint8_t args
 TEST_F(TestServer1, decodef21)
 {
-    EXPECT_CALL(service, f21()).WillOnce(Return(std::tuple<uint8_t, uint8_t>{0x7B, 0x6F}));
+    EXPECT_CALL(service, f21()).WillOnce(Return(std::tuple<uint8_t, uint8_t>{uint8_t{0x7B}, uint8_t{0x6F}}));
     const auto response = receive("020015");
     EXPECT_EQ("0400157B6F", response);
 }

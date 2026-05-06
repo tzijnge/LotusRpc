@@ -15,6 +15,8 @@ namespace lrpc
 
         using ParamWriter = etl::delegate<void(Writer &)>;
 
+        virtual ~IServer() = default;
+
         virtual void transmit(const uint8_t serviceId, const uint8_t functionOrStreamId) = 0;
         virtual void transmit(const uint8_t serviceId, const uint8_t functionOrStreamId, const ParamWriter writeParams) = 0;
 

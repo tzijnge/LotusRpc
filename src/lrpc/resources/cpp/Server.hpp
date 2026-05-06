@@ -3,6 +3,7 @@
 #include <etl/vector.h>
 #include "LrpcTypes.hpp"
 #include "Service.hpp"
+#include <utility>
 
 namespace lrpc
 {
@@ -21,8 +22,8 @@ namespace lrpc
             void invoke(Service::Reader &reader) override
             {
                 const auto data = reader.data();
-                const auto serviceId = data.at(1);
-                const auto functionOrStreamId = data.at(2);
+                const auto serviceId = static_cast<uint8_t>(data.at(1));
+                const auto functionOrStreamId = static_cast<uint8_t>(data.at(2));
                 server().error(LrpcMetaError::UnknownService, serviceId, functionOrStreamId);
             };
         };
@@ -34,6 +35,8 @@ namespace lrpc
             serviceNotFound.linkServer(*this);
             registerService(metaService);
         }
+
+        virtual ~Server() = default;
 
         void transmit(const uint8_t serviceId, const uint8_t functionOrStreamId) override
         {
@@ -71,9 +74,18 @@ namespace lrpc
             }
         }
 
-        void lrpcReceive(const uint8_t byte)
+        template <typename TContainer,
+                  typename = decltype(std::declval<TContainer>().data(),
+                                      std::declval<TContainer>().size(),
+                                      void())>
+        void lrpcReceive(TContainer &&bytes)
         {
-            receiveBuffer.push_back(byte);
+            lrpcReceive(lrpc::span<const uint8_t>(bytes.data(), bytes.size()));
+        }
+
+        void lrpcReceive(const uint8_t byte_)
+        {
+            receiveBuffer.push_back(byte_);
 
             if (messageIsComplete())
             {
@@ -139,7 +151,7 @@ namespace lrpc
             const auto s = w.size_bytes();
             if (s != 0)
             {
-                *w.begin() = static_cast<uint8_t>(s - 1);
+                *w.begin() = static_cast<char>(s - 1);
             }
         }
     };

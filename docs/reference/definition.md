@@ -250,4 +250,4 @@ See the [supported data types](../index.md#supported-data-types) table on the ho
 
 ### LrpcType.count
 
-Specifying `count` as a number (at least 2) turns the LotusRPC type into an array of that size. Specifying `count` as `?` turns the LotusRPC type into an optional. If `count` is omitted, the type specified by `type` is used without any modifications.
+Specifying `count` as a number (at least 1) turns the LotusRPC type into an array of that size. Specifying `count` as `?` turns the LotusRPC type into an optional. If `count` is omitted, the type specified by `type` is used without any modifications.

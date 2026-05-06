@@ -1170,3 +1170,20 @@ user_settings:
         v.result == "service[srv1]-function[f1+0]-return_end-param_end-function_end-service_end"
         '-user_settings: {"red": 1, "green": 2}'
     )
+
+
+def test_additional_properties_not_allowed() -> None:
+    raw: LrpcDefDict = {
+        "user_defined_property": 10,  # type: ignore[typeddict-unknown-key]
+        "name": "test",
+        "services": [
+            {"name": "srv0", "functions": [{"name": "f0"}]},
+            {"name": "LrpcMeta", "functions": [{"name": "f0"}]},
+        ],
+    }
+
+    with pytest.raises(
+        ValueError,
+        match=re.escape("Extra inputs are not permitted [type=extra_forbidden"),
+    ):
+        LrpcDef(raw)

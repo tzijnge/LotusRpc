@@ -4,7 +4,7 @@ toc: true
 toc_icon: tools
 ---
 
-`lrpcc` is the LotusRPC client tool. A common use case of LotusRPC is to control a device running a LotusRPC server from a PC. This means the user must implement a LotusRPC client on the PC. `lrpcc` makes this very easy by constructing a client at runtime from the definition file and present itself as a CLI tool. `lrpcc` is installed as a command line tool with LotusRPC and can be called from any location.
+`lrpcc` is the LotusRPC client tool. A common use case of LotusRPC is to control a device running a LotusRPC server from a PC. This means the user must implement a LotusRPC client on the PC. `lrpcc` makes this very easy by constructing a client at runtime from the definition file and presenting it as a CLI tool. `lrpcc` is installed as a command line tool with LotusRPC and can be called from any location.
 
 Example: Given a LotusRPC definition with a function **add** inside the service **math**, taking two integers and returning one integer, the function can be called from the PC with the following command
 
@@ -47,7 +47,7 @@ The field `definition_from_server` is optional with allowed values `never` (defa
 
 * `never`: `lrpcc` will not retrieve an embedded definition from the server. Definition must be specified in `definition_url`
 * `always`: `lrpcc` will always retrieve the embedded definition from the server. Field `definition_url` is ignored
-* `once`: `lrpcc` will look for a definition file in the location specified by `definition_url`. If it is not found, it retrieves the embedded definition from the server and saves it in the location specified by `definition_url`. This option can be convenient when it takes long to retrieve the definition from the server, but must not be used in combination with the [definition hash](../advanced/meta.md#version) and `check_server_version=true`. This is because the file hash of the definition retrieved from the server will be different from the hash computed during generation of the server code, even if the content is logically the same.
+* `once`: `lrpcc` will look for a definition file in the location specified by `definition_url`. If it is not found, it retrieves the embedded definition from the server and saves it in the location specified by `definition_url`. This option can be convenient when it takes a long time to retrieve the definition from the server, but must not be used in combination with the [definition hash](../advanced/meta.md#version) and `check_server_version=true`. This is because the file hash of the definition retrieved from the server will be different from the hash computed during generation of the server code, even if the content is logically the same.
 
 The field `definition_url` is required when `definition_from_server` is `once` or `never`. It is the path of the LotusRPC definition file and can be relative to _lrpcc.config.yaml_ or an absolute path.
 

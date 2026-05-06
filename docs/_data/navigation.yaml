@@ -1,17 +1,45 @@
-main:
+docs:
   - title: "Getting started"
     url: /getting_started
-  - title: "Tools"
-    url: /tools
   - title: "Reference"
     url: /reference
+    children:
+      - title: "Interface definition"
+        url: /reference/definition
+      - title: "Settings"
+        url: /reference/settings
+      - title: "Overlays"
+        url: /reference/overlays
+      - title: "Schema"
+        url: /reference/schema
+  - title: "C++ API"
+    url: /cpp_api
+  - title: "Python API"
+    url: /python-api
+    children:
+      - title: "Client"
+        url: /python-api/client
+      - title: "Definition model"
+        url: /python-api/definition
+      - title: "Visitor"
+        url: /python-api/visitor
+  - title: "Tools"
+    url: /tools
+    children:
+      - title: "lrpcg"
+        url: /tools/lrpcg
+      - title: "lrpcc"
+        url: /tools/lrpcc
   - title: "Examples"
     url: /examples
-  - title: "Extending LotusRPC"
-    url: /extending_lrpc
-  - title: "Frame format"
-    url: /binary
-  - title: "Meta service"
-    url: /meta
+  - title: "Advanced"
+    url: /advanced
+    children:
+      - title: "Meta service"
+        url: /advanced/meta
+      - title: "Protocol internals"
+        url: /advanced/internals
+      - title: "Extending LotusRPC"
+        url: /advanced/extending-lrpc
   - title: "Release notes"
     url: /CHANGES

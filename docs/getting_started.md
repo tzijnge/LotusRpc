@@ -1,92 +1,221 @@
 ---
 title: Getting started
 toc: true
+toc_icon: rocket
 ---
 
 ## Concepts and terminology
 
-LotusRPC is designed to connect two devices in a [client-server model](https://en.wikipedia.org/wiki/Client%E2%80%93server_model). The server is typically a small embedded system that performs some task. The client can be a PC, phone or another small embedded system that is interested in information or a service that the server provides.
-Being an [RPC](https://en.wikipedia.org/wiki/Remote_procedure_call), the communication between the client and the server is modeled as _function_ calls originating from the client and executed on the server. Like function calls in a programming language, a function call in LotusRPC can have any number of arguments and return any number of values. The number of function parameters and return values depends on the definition of the function.
-A device may be capable of doing several logically or functionally unrelated tasks. In LotusRPC, a group of related tasks is called a _service_. A LotusRPC _interface_ consists of at least one service and each service consists of at least one function.
-LotusRPC provides a number of basic data types that are very similar (or map very wel to) types in languages such as C++, Python and many other languages. Additionally it is possible to define custom enumerations and compose new types from other types.
-Apart from function calls, LotusRPC also supports data streams from client to server or from server to client. A data stream is modelled as a sequence of function calls without a return value (not even void). In other words, it is a fire and forget function call in which the data is transferred from one side to the other as function arguments.
-A LotusRPC interface is described in an interface definition file. LotusRPC itself is a Python package that generates server and client side code from the definition file.
-LotusRPC does not include a transport layer to deliver data over a certain communication channel. It is outside the scope of LotusRPC because it is too diverse and would be to complex to maintain any relevant form of support. Instead LotusRPC is a generic and platform independent way of transforming function calls into a set of bytes and vice versa. Therefore any platform that can send and receive bytes over any communication channel can use LotusRPC.
-With a similar reasoning, LotusRPC does not support threading or async behavior. If desired, it is left to the user to integrate LotusRPC in a threaded environment
+LotusRPC is designed to connect two devices in a [client-server model](https://en.wikipedia.org/wiki/Client%E2%80%93server_model). The server is typically a small embedded system that performs some task. The client can be a PC, phone or another small embedded system.
+
+Being an [RPC](https://en.wikipedia.org/wiki/Remote_procedure_call), communication between client and server is modelled as _function_ calls that originate from the client and execute on the server. Like functions in a programming language, an RPC function call can have any number of arguments and return any number of values.
+
+A device typically handles several distinct responsibilities — for example, a sensor node might manage its hardware configuration, expose measurement data, and control an indicator LED. Each of these responsibilities forms a natural group of related operations. In LotusRPC, such a group is called a _service_. A complete LotusRPC _interface_ describes all the services a device exposes, and each service contains at least one function or stream.
+
+LotusRPC does not include a transport layer. It is transport-agnostic: any platform that can send and receive bytes over any channel can use LotusRPC. Threading and async behavior are similarly out of scope and left to the user.
+
+Apart from function calls, LotusRPC supports data _streams_ — sequences of one-way messages with no return value. Streams can flow from client to server or from server to client, and can be finite or infinite.
+
+The interface a device exposes is described in an _interface definition file_: a YAML file with the `.lrpc.yaml` extension. It lists the services, and for each service the functions and streams it contains, along with their parameter and return types. This file is the single source of truth that both the C++ code generator and the Python client use — keeping server and client automatically in sync.
+
+## What LotusRPC provides
+
+LotusRPC is a Python package with two main components:
+
+1. **Code generator** — takes an interface definition and generates the C++ server code that runs on the embedded device.
+2. **Python client** — a Python library and CLI tool for communicating with a running server from a PC or host system.
 
 ## Installation
 
-Install LotusRPC from [PyPI](https://pypi.org/project/lotusrpc/) with ```pip install lotusrpc```. This makes **lrpcg**, the LotusRPC generator tool available in your Python installation. If Python is added to the path, you can use the generator tool by simply typing `lrpcg` in a terminal. Command line help is provided to get started.
+Install LotusRPC from [PyPI](https://pypi.org/project/lotusrpc/) with:
 
-## Write interface definition
+``` bash
+pip install lotusrpc
+```
 
-A LotusRPC interface definition file is a hierarchical description of an interface. At the top level it consists of a services, structs, enums and constants. Each service consists of functions and streams. Each function contains parameters and return values. Each stream contains only parameters, no matter the direction of the stream.
-LotusRPC uses the YAML file format to describe an interface. This may not be the most compact or readable at first glance, but it will quickly become familiar and this approach has many advantages. First of all for the development of LotusRPC, but also for its users. Think of
+This installs two command-line tools:
 
-* Syntax highlighting
-* Code completion and error checking (LotusRPC provides a schema)
-* Section folding
-* Easy parsing in other tooling or languages for whatever purpose you can come up with
+- [**lrpcg**](tools/lrpcg.md) — the code generator
+- [**lrpcc**](tools/lrpcc.md) — the CLI client for talking to a running server
+
+## Write an interface definition
+
+A LotusRPC interface definition file describes services, functions, streams, structs, enums and constants in YAML. LotusRPC provides a [JSON schema](reference/schema.md) so editors with schema support offer code completion and inline validation.
+
+Here is a minimal example:
+
+``` yaml
+name: example
+settings:
+  namespace: ex
+services:
+  - name: math
+    functions:
+      - name: add
+        params:
+          - { name: a, type: int32_t }
+          - { name: b, type: int32_t }
+        returns:
+          - { name: result, type: int32_t }
+```
+
+Save this as `example.lrpc.yaml`. By convention, LotusRPC definition files use the `.lrpc.yaml` extension — this convention is followed throughout the documentation. The full reference for all definition options is in the [interface definition reference](reference/definition.md).
 
 ## Generate code
 
-To generate server side C++ code from an interface definition file, run `lrpcg` with the _cpp_ command and provide the path to the definition file. LotusRPC will make sure there are no syntactic and semantic errors in the definition and generate the code. It can be as simple as:
-```lrpcg cpp -f my_definition.yaml```
-Since code generation is just a command on the terminal, it should be easy to integrate in any existing build system.
+Run `lrpcg` with the `cpp` subcommand and point it at your definition file:
 
-### CMake
-
-To generate code in CMake as a pre-build step you can use the following snippet
-
-``` cmake
-set(LRPC_OUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/generated)
-set(LRPC_DEF ${CMAKE_CURRENT_SOURCE_DIR}/my_interface.lrpc.yaml)
-
-add_custom_command(OUTPUT my_interface.hpp
-                COMMENT "Generate LRPC files"
-                DEPENDS ${LRPC_DEF}
-                COMMAND lrpcg cpp -d ${LRPC_DEF} -o ${LRPC_OUT_DIR} -w)
-
-set_directory_properties(PROPERTIES ADDITIONAL_CLEAN_FILES ${LRCP_OUT_DIR})
-
-add_executable(MyApp main.cpp ${LRCP_OUT_DIR}/my_interface.hpp)
-
-target_include_directories(MyApp PRIVATE ${LRPC_OUT_DIR})
+``` bash
+lrpcg cpp -d example.lrpc.yaml -o generated/
 ```
 
-In this example, _my_interface_ is added as a source file to the application. Since this file is generated with **lrpcg** and does not exist initially, we need a custom command to tell CMake how to create it. Since the custom command depends on the interface definition file, the code will be regenerated automatically if a modification to the interface is made.
-Not that **lrpcg** generates many more files than just _my_interface.hpp_, but since they are all header files, they don't have to be added explicitly to the executable.
+This creates a set of header files in _generated/example/_. The most important ones are:
 
-## Use RPC (server side)
+| File            | Purpose                                    |
+|-----------------|--------------------------------------------|
+| `example.hpp`   | Top-level include — pulls in everything    |
+| `math_shim.hpp` | Abstract base class for the `math` service |
 
-Include the file `<out-dir>/example/battery_shim.hpp` in your project. Derive your own service class from `ex::battery_shim` and implement all pure virtual functions. These are the remote procedures that are called when issuing a function call on the client. Implement these functions as desired.
+**Tip:** Since code generation is a single shell command it integrates naturally into any build system. See [the CMake snippet below](#cmake-integration).
+{: .notice--info}
 
-Include the file `<out-dir>/example/example.hpp` in your project. This file gives access to the LRPC server class called `ex::example`. Instantiate your service class(es) and register them to the server with `ex::example::registerService`. Feed incoming bytes to the server by calling the `ex::example::decode` function. You are responsible for making sure this data is correct.
+## Implement the server (C++)
 
-### Using streams
+### Implement a service
 
-Streams are LotusRpc's way of sending many messages in one direction with as little latency as possible. This means that, other than with normal function calls, there is no response to a message.
+Include _example.hpp_ (or _math\_shim.hpp_) and derive your own class from `ex::math_shim`. The shim declares one pure virtual function per RPC function — implement them with your business logic:
 
-LotusRpc has two main types of streams. A stream originating from the server and a stream originating from the client. In both cases the client is considered the master in the system; it determines when to start and stop a stream. LotusRpc also makes distinction between finite streams and infinite streams. All cases are covered below with a sequence diagram.
+``` cpp
+#include "example/example.hpp"
 
-In the case of a client to server stream, the client just starts sending messages and the server will have to handle them. The client can stop sending at any time. Alternatively, the server can send a `requestStop` message to the client to indicate that it does not want to receive any more data. This message is optional and it is left up to the client application what to do with this message. I.e., LotusRpc only provides the infrastructure, but does not enforce any particular behavior.
+class MathService : public ex::math_shim
+{
+protected:
+    int32_t add(int32_t a, int32_t b) override
+    {
+        return a + b;
+    }
+};
+```
+
+### Instantiate the server
+
+Include `example.hpp` and derive from the generated server class `ex::example`. You must implement `lrpcTransmit`, the pure virtual method that LotusRPC calls whenever it has bytes to send back to the client. Wire it to your hardware's transmit routine:
+
+``` cpp
+#include "example/example.hpp"
+
+class MyServer : public ex::example
+{
+    void lrpcTransmit(lrpc::span<const uint8_t> bytes) override
+    {
+        // Write bytes to your UART / SPI / socket / ...
+        uart_write(bytes.data(), bytes.size());
+    }
+};
+```
+
+### Connect everything
+
+Register your service(s) and feed incoming bytes to the server. LotusRPC handles framing — call `lrpcReceive` with each byte as it arrives, or pass a whole span at once:
+
+``` cpp
+MathService math;
+MyServer server;
+server.registerService(math);
+
+// In your receive interrupt or polling loop:
+void on_byte_received(uint8_t byte)
+{
+    server.lrpcReceive(byte);
+}
+```
+
+### CMake integration
+
+Use `add_custom_command` to run `lrpcg` as part of the build. Listing the definition file in `DEPENDS` ensures the headers are regenerated whenever it changes. Adding the generated header to the `add_executable` sources wires the dependency into the build graph automatically.
+
+``` cmake
+set(CMAKE_CXX_STANDARD 11)
+
+set(LRPC_DEF ${CMAKE_CURRENT_SOURCE_DIR}/example.lrpc.yaml)
+set(LRPC_OUT ${CMAKE_CURRENT_SOURCE_DIR}/generated)
+
+add_custom_command(
+    OUTPUT  ${LRPC_OUT}/example/example.hpp
+    COMMAND lrpcg cpp -d ${LRPC_DEF} -o ${LRPC_OUT}
+    DEPENDS ${LRPC_DEF}
+)
+
+add_executable(MyApp main.cpp ${LRPC_OUT}/example/example.hpp)
+target_include_directories(MyApp PRIVATE ${LRPC_OUT})
+```
+
+## Use the client
+
+### lrpcc (CLI)
+
+On a PC with Python, use **lrpcc** to talk to the server without writing any code. Create an `lrpcc.config.yaml` in your project:
+
+``` yaml
+definition_url: 'example.lrpc.yaml'
+transport_type: serial
+transport_params:
+  port: COM3
+  baudrate: 115200
+  timeout: 2
+```
+
+Then call functions directly from the terminal:
+
+``` bash
+lrpcc math add 3 7   # prints: result = 10
+```
+
+Run `lrpcc --help` for a full list of available services and functions.
+
+### Custom Python client
+
+To communicate from your own Python code, create an `LrpcClient` and call `communicate_single`:
+
+``` python
+from lrpc.client import LrpcClient
+from lrpc.utils import load_lrpc_def
+import serial
+
+lrpc_def = load_lrpc_def("example.lrpc.yaml")
+transport = serial.Serial(port="COM3", baudrate=115200, timeout=2)
+
+client = LrpcClient(lrpc_def, transport)
+
+response = client.communicate_single("math", "add", a=3, b=7)
+print(response.payload["result"])   # prints: 10
+```
+
+`communicate_single` is a convenience wrapper around `communicate` that returns the first response directly. Use `communicate` when receiving stream response messages — it is a generator that yields one response per message received from the server.
+
+For the full Python client API — streams, error responses, `encode`/`decode`, version checking — see the [Python client API reference](python-api/client.md).
+
+## Streams
+
+Streams are LotusRPC's way of sending many messages in one direction with minimal latency — unlike regular functions, there is no response to each message.
+
+LotusRPC has two stream directions (always initiated by the client) and two stream modes (finite or infinite):
+
+**Client stream** — client sends data, server receives it. The server can optionally send a `requestStop` message.
 
 ``` mermaid
 sequenceDiagram
-    title: Basic client stream
-
     Client ->> Server: message 1
     Client ->> Server: message 2
     Client ->> Server: message n
-    Server ->> Client: requestStop
+    Server ->> Client: requestStop (optional)
 ```
 
-In case of a server to client stream, the client starts the stream by sending the `start` command. It can stop the stream at any time by sending the `stop` command. Again, LotusRpc provides the infrastructure for starting and stopping a stream, but is left up to the server and client applications how to handle these commands. LotusRpc does not enforce actual starting and stopping. In fact, the server could start sending stream data without even receiving a `start` command.
+**Server stream** — client starts the stream; server sends data back; client stops the stream when done.
 
 ``` mermaid
 sequenceDiagram
-    title: Basic server stream
-
     Client ->> Server: start
     Server ->> Client: message 1
     Note over Server, Client: ...
@@ -94,52 +223,78 @@ sequenceDiagram
     Client ->> Server: stop
 ```
 
-Both stream variants can be finite or infinite (default). In case of a finite stream, the stream message gets an additional boolean parameter called `final` to indicate if a message is the last one in the stream (`final` is true) or not (`final` is false). This allows the receiving side to take appropriate action upon receiving the last message in the stream.
+**Finite streams** add an implicit `final` boolean to every message so the receiving side knows when the last message has arrived:
 
 ``` mermaid
 sequenceDiagram
-    title: Finite client stream
-
     Client ->> Server: message 1 [final=false]
     Client ->> Server: message 2 [final=false]
     Client ->> Server: message 3 [final=true]
 ```
 
-``` mermaid
-sequenceDiagram
-    title: Finite server stream
+For details on the generated C++ API for streams, see the [C++ API reference](cpp_api.md#service-class).
 
-    Client ->> Server: start
-    Server ->> Client: message 1 [final=false]
-    Note over Server, Client: ...
-    Server ->> Client: message n [final=true]
+### Example
+
+Extend the `math` service from earlier with a finite server stream:
+
+``` yaml
+name: example
+settings:
+  namespace: ex
+services:
+  - name: math
+    functions:
+      - name: add
+        params:
+          - { name: a, type: int32_t }
+          - { name: b, type: int32_t }
+        returns:
+          - { name: result, type: int32_t }
+    streams:
+      - name: results
+        origin: server
+        finite: true
+        params:
+          - { name: value, type: int32_t }
 ```
 
-## Use RPC (client side)
+Receive all messages from the stream using `communicate`:
 
-### lrpcc
-
-On a client that runs Python it is very easy to communicate with a server. LotusRPC includes the **lrpcc** tool for this, the LotusRPC CLI. Like **lrpcg**, this tool is available in your Python installation after installing LotusRPC. The **lrpcc** tool does not require any code generation, just the interface definition file and a suitable transport implementation. Because command line arguments are reserved for communication with the server, these have to be provided in a configuration file (**lrpcc** will help you create one if it's not there). With the configuration file in place you can just type `lrpcc --help` to get a list of services in the interface. Suppose there is a _math_ service in the interface, just type `lrpcc math --help` to get a list of functions in the service. Suppose there is a function _add_ in the _math_ service, just type `lrpcc math add --help` to get more info about the usage of this function. Type `lrpcc math add 5 7` to call the _add_ function on the server. If the server knows how to add two numbers, the number 12 is then printed to the screen.
-
-### Custom client code
-
-To communicate with a server from custom Python code, use the following approach.
-
-* Create an `lrpc.client.LrpcClient` object.
-* Call the `communicate` method on the client. It takes the service name and the function/stream name as arguments. It also takes the function/stream parameters as keyword arguments. `communicate` is a generator that yields for every response from the server. For functions this is always exactly once, but for streams it may be 0 or more times.
-
-Here's an example that prints the value 13
-
-``` Python
-from lrpc.client import LrpcClient
-from lrpc.utils import load_lrpc_def_from_url
-import serial
-
-lrpc_def = load_lrpc_def_from_url(def_url, warnings_as_errors=True)
-transport = serial.Serial()
-
-client = LrpcClient(lrpc_def, transport)
-
-for response in client.communicate("math_service", "add", v1=10, v2=3):
-    print(response["sum"])
+``` python
+# print each value returned from the server
+for response in client.communicate("math", "results", start=True):
+    print(response.payload["value"])
 ```
+
+## Troubleshooting
+
+### `lrpcg` or `lrpcc` not found after install
+
+pip installs command-line tools into a directory that may not be on your `PATH`. On Linux/macOS check `~/.local/bin`; on Windows check the `Scripts` folder inside your Python installation or virtual environment. Add the relevant directory to your `PATH` and retry.
+
+### Server does not respond
+
+Check `lrpcc.config.yaml`:
+
+- **Port name** — on Windows use `COM3` style; on Linux `/dev/ttyUSB0` or similar.
+- **Baudrate** — must match the baudrate configured on the device.
+- **Timeout** — increase it if the device is slow to respond.
+
+Also verify that the device is powered, the firmware is running, and `registerService` has been called before the main loop starts.
+
+### lrpcc reports a version mismatch warning
+
+The definition file used by the client does not match the one used to generate the server code. Regenerate the server code with `lrpcg cpp`, rebuild and re-flash the firmware, then retry. For a full explanation of what gets compared and what the warning means, see [Version mismatch behavior](advanced/meta.md#version-mismatch-behavior).
+
+### "Unknown service" or "Unknown function" errors in the error stream
+
+Same root cause as a version mismatch — the compiled server does not know the service or function the client is calling. Regenerate and rebuild. See [Calling an unknown function or service](advanced/meta.md#calling-an-unknown-function-or-service) for details on how the server responds.
+
+### Messages are truncated or never sent
+
+The encoded message exceeds the configured buffer size. Increase `tx_buffer_size` (server → client) or `rx_buffer_size` (client → server) in the [settings](reference/settings.md#rx_buffer_size--tx_buffer_size) section of your definition, then regenerate.
+
+### Code generation fails with a validation error
+
+The definition file contains an error that the schema validator caught. Run `lrpcg schema -o .` to export the schema, then open your definition in an editor with YAML schema support (see [Interface definition schema](reference/schema.md)) for inline highlighting of the problem.

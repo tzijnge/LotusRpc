@@ -63,7 +63,7 @@ class LrpcDef:
 
     def __init__(self, raw_: LrpcDefDict) -> None:
         raw = deepcopy(raw_)
-        LrpcDefValidator.validate_python(raw, strict=True, extra="allow")
+        LrpcDefValidator.validate_python(raw, strict=True, extra="forbid")
         self._definition_yaml = yaml.dump(raw, sort_keys=False)
 
         self._name = raw["name"]

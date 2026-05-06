@@ -4,49 +4,104 @@
 
 [![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=tzijnge_LotusRpc)](https://sonarcloud.io/summary/new_code?id=tzijnge_LotusRpc)
 
-> ⚠ **_WARNING:_**  This project is work in progress
+RPC framework for embedded systems based on [ETL](https://github.com/ETLCPP/etl). Define your interface once in YAML; LotusRPC generates all C++ server code and a Python client. No dynamic memory allocations, no exceptions, no RTTI.
 
-LotusRPC is an RPC framework for embedded systems based on [ETL](https://github.com/ETLCPP/etl). It generates C++ code with no dynamic memory allocations, no exceptions, no RTTI, etc. Code generator and client side CLI application in a simple Python package.
-
-## Installation
-
-Install from [PyPI](https://pypi.org/project/lotusrpc/) with ```pip install lotusrpc```
-
-## Basic usage
-
-Installing the Python package installs the `lrpcg` tool on your system. This is the LotusRPC generator. It also installs the `lrpcc` tool on your system. This is the LotusRpc CLI client.
-
-Your RPC interface is specified in a YAML file
-
-File name: _example.lrpc.yaml_
-
-``` yaml
-services:
-  - name: battery
-    functions:
-      - name: get
-        params:
-          - name: option
-            type: "@VoltageScales"
-        returns:
-          - name: voltage
-            type: double
-enums:
-  - name: VoltageScales
-    fields:
-        name: microvolts
-        name: millivolts
-        name: volts
+```mermaid
+graph LR
+    C["Client\nPC · Python"] <-->|"function call / return"| T["Transport\nserial · BT · TCP · …"]
+    T <-->|bytes| S["Server\nMCU · C++"]
 ```
 
-Generate server side code by simply running this command
+## Features
 
-```lrpcg cpp -d example.lrpc.yaml -o output-dir```
+- **No dynamic memory** — stack-only, no heap, no exceptions, no RTTI
+- **Transport agnostic** — any byte-oriented channel (serial, Bluetooth, TCP, …)
+- **YAML definitions** — schema-validated, editor-friendly, easy to parse or extend
+- **Code generation** — `lrpcg` produces all C++ server code in one command
+- **CLI client** — `lrpcc` lets any team member call remote functions without writing code
+- **Streams** — client-to-server and server-to-client data streams, finite or infinite
+- **C++11 compatible** — works on any platform with a modern C++ compiler
 
-Give the generated code a meaningful implementation and hook it up to a transport layer. Flash your embedded device. Then use `lrpcc` to communicate with your device and print the result to the console
+## Quick start
 
-```lrpcc battery get microvolts```
+**Install:**
+
+```bash
+pip install lotusrpc
+```
+
+**Define your interface** (`math.lrpc.yaml`):
+
+> [!NOTE]
+> By convention, LotusRPC definition files use the `.lrpc.yaml` extension.
+
+```yaml
+name: math
+settings:
+  namespace: ex
+services:
+  - name: calc
+    functions:
+      - name: add
+        params:
+          - { name: a, type: int32_t }
+          - { name: b, type: int32_t }
+        returns:
+          - { name: result, type: int32_t }
+```
+
+**Generate C++ server code:**
+
+```bash
+lrpcg cpp -d math.lrpc.yaml -o generated/
+```
+
+**Implement the server** — derive from the generated shim and implement the pure virtual function:
+
+```cpp
+#include "math/math.hpp"
+
+class CalcService : public ex::calc_shim
+{
+protected:
+    int32_t add(int32_t a, int32_t b) override
+    {
+        return a + b;
+    }
+};
+```
+
+Subclass the generated server to provide a transport, register your service, and feed incoming bytes:
+
+```cpp
+class MathServer : public ex::math
+{
+    void lrpcTransmit(lrpc::span<const uint8_t> bytes) override
+    {
+        uart_write(bytes.data(), bytes.size());  // your hardware here
+    }
+};
+
+CalcService calc;
+MathServer server;
+server.registerService(calc);
+
+// In your receive loop:
+server.lrpcReceive(incoming_byte);
+```
+
+**Call from the command line:**
+
+```bash
+lrpcc calc add 3 7   # result = 10
+```
 
 ## Documentation
 
-Please find more detailed information on the [LotusRPC documentation pages](https://tzijnge.github.io/LotusRpc/)
+Full documentation is at **[tzijnge.github.io/LotusRpc](https://tzijnge.github.io/LotusRpc/)**, including:
+
+- [Getting started](https://tzijnge.github.io/LotusRpc/getting_started) — complete walkthrough
+- [Interface definition reference](https://tzijnge.github.io/LotusRpc/reference/definition) — all YAML options
+- [C++ API reference](https://tzijnge.github.io/LotusRpc/cpp_api) — generated server and shim classes
+- [Python API](https://tzijnge.github.io/LotusRpc/python-api/client) — client library and definition model
+- [Examples](https://tzijnge.github.io/LotusRpc/examples) — math service and STM32 example

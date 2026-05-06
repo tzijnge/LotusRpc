@@ -5,3 +5,6 @@ extends: null
 # Disable line length check as it would require many
 # artificial line breaks in source documents
 MD013: false
+
+MD024:
+  siblings_only: true

@@ -43,7 +43,6 @@ function(target_set_warnings target access)
     -Wimplicit-fallthrough
     -Wundef
     -fno-common
-    -Wpadded
   )
 
   set(GCC_WARNINGS

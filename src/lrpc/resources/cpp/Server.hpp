@@ -22,7 +22,7 @@ namespace lrpc
             {
                 const auto data = reader.data();
                 const auto serviceId = data.at(1);
-                const auto functionOrStreamId = data.at(2);
+                const auto functionOrStreamId = static_cast<uint8_t>(data.at(2));
                 server().error(LrpcMetaError::UnknownService, serviceId, functionOrStreamId);
             };
         };
@@ -77,14 +77,14 @@ namespace lrpc
                   typename = decltype(etl::declval<TContainer>().data(),
                                       etl::declval<TContainer>().size(),
                                       void())>
-        void lrpcReceive(TContainer&& bytes)
+        void lrpcReceive(TContainer &&bytes)
         {
             lrpcReceive(lrpc::span<const uint8_t>(bytes.data(), bytes.size()));
         }
 
-        void lrpcReceive(const uint8_t byte)
+        void lrpcReceive(const uint8_t byte_)
         {
-            receiveBuffer.push_back(byte);
+            receiveBuffer.push_back(byte_);
 
             if (messageIsComplete())
             {
@@ -150,7 +150,7 @@ namespace lrpc
             const auto s = w.size_bytes();
             if (s != 0)
             {
-                *w.begin() = static_cast<uint8_t>(s - 1);
+                *w.begin() = static_cast<char>(s - 1);
             }
         }
     };

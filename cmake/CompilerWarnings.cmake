@@ -41,13 +41,13 @@ function(target_set_warnings target access)
     -Wdouble-promotion
     -Wformat=2
     -Wimplicit-fallthrough
+    -Wmisleading-indentation
     -Wundef
     -fno-common
   )
 
   set(GCC_WARNINGS
     ${CLANG_WARNINGS}
-    -Wmisleading-indentation
     -Wduplicated-cond
     -Wduplicated-branches
     -Wlogical-op

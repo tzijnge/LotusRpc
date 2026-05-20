@@ -60,9 +60,9 @@ namespace
         MOCK_METHOD(uint64_t, f44, (), (override));
         MOCK_METHOD(void, stream0, (lrpc::bytearray, bool), (override));
     };
-}
 
-using TestServer1 = testutils::TestServerBase<ts1::Server1, Mockservice>;
+    using TestServer1 = testutils::TestServerBase<ts1::Server1, Mockservice>;
+}
 
 static_assert(std::is_same<ts1::Server1, lrpc::Server<0, ts1::LrpcMeta_service, 100, 200>>::value, "RX and/or TX buffer size are unequal to the definition file");
 

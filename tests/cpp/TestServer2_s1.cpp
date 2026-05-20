@@ -23,9 +23,9 @@ namespace
         MOCK_METHOD(void, f9, (const StringStruct2 &a), (override));
         MOCK_METHOD(StringStruct2, f10, (), (override));
     };
-}
 
-using TestServer2_s1 = testutils::TestServerBase<Server2, MockS01Service>;
+    using TestServer2_s1 = testutils::TestServerBase<Server2, MockS01Service>;
+}
 
 // Decode void function with array of strings param
 TEST_F(TestServer2_s1, decodeF0)

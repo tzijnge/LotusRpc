@@ -39,9 +39,9 @@ namespace
     {
         return {static_cast<lrpc::byte>(std::forward<Ts>(args))...};
     }
-}
 
-using TestBytearray = testutils::TestServerBase<test_ba::Bytearray, TestBytearrayService>;
+    using TestBytearray = testutils::TestServerBase<test_ba::Bytearray, TestBytearrayService>;
+}
 
 TEST_F(TestBytearray, param_return)
 {

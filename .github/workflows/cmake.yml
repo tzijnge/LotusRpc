@@ -137,7 +137,12 @@ jobs:
           --parallel 10
 
       - name: Configure unit tests
-        run: cmake -B ${{github.workspace}}/cmake_build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DENABLE_CLANG_TIDY=ON
+        run: >
+          cmake -B ${{github.workspace}}/cmake_build
+          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+          -DCMAKE_C_COMPILER=clang
+          -DCMAKE_CXX_COMPILER=clang++
+          -DENABLE_CLANG_TIDY=ON
 
       - name: Build unit tests with SQ
         run: >

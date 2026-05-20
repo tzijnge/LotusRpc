@@ -16,7 +16,7 @@ def assert_func(func: LrpcFunDict, expected: str) -> None:
 
 def test_no_params_no_returns() -> None:
     func: LrpcFunDict = {"name": "test_func", "id": 42}
-    expected = """void test_func_shim(Reader&)
+    expected = """void test_func_shim(Reader& /*reader*/)
 {
 \ttest_func();
 \tserver().transmit(id(), 42);
@@ -32,9 +32,9 @@ def test_single_param() -> None:
         "id": 43,
         "params": [{"name": "a", "type": "uint8_t"}],
     }
-    expected = """void test_func_shim(Reader& r)
+    expected = """void test_func_shim(Reader& reader)
 {
-\tconst auto a = lrpc::read_unchecked<uint8_t>(r);
+\tconst auto a = lrpc::read_unchecked<uint8_t>(reader);
 \ttest_func(a);
 \tserver().transmit(id(), 43);
 }
@@ -52,10 +52,10 @@ def test_two_params() -> None:
             {"name": "b", "type": "uint16_t"},
         ],
     }
-    expected = """void test_func_shim(Reader& r)
+    expected = """void test_func_shim(Reader& reader)
 {
-\tconst auto a = lrpc::read_unchecked<uint8_t>(r);
-\tconst auto b = lrpc::read_unchecked<uint16_t>(r);
+\tconst auto a = lrpc::read_unchecked<uint8_t>(reader);
+\tconst auto b = lrpc::read_unchecked<uint16_t>(reader);
 \ttest_func(a, b);
 \tserver().transmit(id(), 43);
 }
@@ -70,7 +70,7 @@ def test_single_return() -> None:
         "id": 43,
         "returns": [{"name": "a", "type": "uint8_t"}],
     }
-    expected = """void test_func_shim(Reader&)
+    expected = """void test_func_shim(Reader& /*reader*/)
 {
 \tconst auto a = test_func();
 \tconst auto _lrpc_paramWriter = [&a](Writer &writer)
@@ -93,7 +93,7 @@ def test_two_returns() -> None:
             {"name": "b", "type": "uint16_t"},
         ],
     }
-    expected = """void test_func_shim(Reader&)
+    expected = """void test_func_shim(Reader& /*reader*/)
 {
 \tconst auto a_b = test_func();
 \tconst auto _lrpc_paramWriter = [&a_b](Writer &writer)
@@ -114,10 +114,10 @@ def test_array_param() -> None:
         "id": 43,
         "params": [{"name": "x", "type": "uint8_t", "count": 2}],
     }
-    expected = """void test_func_shim(Reader& r)
+    expected = """void test_func_shim(Reader& reader)
 {
 \tlrpc::array<uint8_t, 2> x;
-\tlrpc::read_unchecked<lrpc::tags::array_n<uint8_t>>(r, x, 2);
+\tlrpc::read_unchecked<lrpc::tags::array_n<uint8_t>>(reader, x, 2);
 \ttest_func(x);
 \tserver().transmit(id(), 43);
 }
@@ -132,9 +132,9 @@ def test_fixed_size_string_param() -> None:
         "id": 43,
         "params": [{"name": "x", "type": "string_2"}],
     }
-    expected = """void test_func_shim(Reader& r)
+    expected = """void test_func_shim(Reader& reader)
 {
-\tconst auto x = lrpc::read_unchecked<lrpc::tags::string_n>(r, 2);
+\tconst auto x = lrpc::read_unchecked<lrpc::tags::string_n>(reader, 2);
 \ttest_func(x);
 \tserver().transmit(id(), 43);
 }
@@ -149,10 +149,10 @@ def test_array_of_fixed_size_string_param() -> None:
         "id": 43,
         "params": [{"name": "x", "type": "string_2", "count": 3}],
     }
-    expected = """void test_func_shim(Reader& r)
+    expected = """void test_func_shim(Reader& reader)
 {
 \tlrpc::array<lrpc::string_view, 3> x;
-\tlrpc::read_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(r, x, 3, 2);
+\tlrpc::read_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(reader, x, 3, 2);
 \ttest_func(x);
 \tserver().transmit(id(), 43);
 }
@@ -167,7 +167,7 @@ def test_array_return() -> None:
         "id": 43,
         "returns": [{"name": "x", "type": "uint8_t", "count": 2}],
     }
-    expected = """void test_func_shim(Reader&)
+    expected = """void test_func_shim(Reader& /*reader*/)
 {
 \tconst auto x = test_func();
 \tconst auto _lrpc_paramWriter = [&x](Writer &writer)
@@ -187,7 +187,7 @@ def test_fixed_size_string_return() -> None:
         "id": 43,
         "returns": [{"name": "x", "type": "string_2"}],
     }
-    expected = """void test_func_shim(Reader&)
+    expected = """void test_func_shim(Reader& /*reader*/)
 {
 \tconst auto x = test_func();
 \tconst auto _lrpc_paramWriter = [&x](Writer &writer)
@@ -207,7 +207,7 @@ def test_array_of_fixed_size_string_return() -> None:
         "id": 43,
         "returns": [{"name": "x", "type": "string_2", "count": 3}],
     }
-    expected = """void test_func_shim(Reader&)
+    expected = """void test_func_shim(Reader& /*reader*/)
 {
 \tconst auto x = test_func();
 \tconst auto _lrpc_paramWriter = [&x](Writer &writer)
@@ -236,13 +236,13 @@ def test_many_params_and_returns() -> None:
             {"name": "r2", "type": "string_20", "count": 5},
         ],
     }
-    expected = """void test_func_shim(Reader& r)
+    expected = """void test_func_shim(Reader& reader)
 {
-\tconst auto p0 = lrpc::read_unchecked<uint8_t>(r);
+\tconst auto p0 = lrpc::read_unchecked<uint8_t>(reader);
 \tlrpc::array<uint8_t, 2> p1;
-\tlrpc::read_unchecked<lrpc::tags::array_n<uint8_t>>(r, p1, 2);
+\tlrpc::read_unchecked<lrpc::tags::array_n<uint8_t>>(reader, p1, 2);
 \tlrpc::array<lrpc::string_view, 3> p2;
-\tlrpc::read_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(r, p2, 3, 10);
+\tlrpc::read_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(reader, p2, 3, 10);
 \tconst auto r0_r1_r2 = test_func(p0, p1, p2);
 \tconst auto _lrpc_paramWriter = [&r0_r1_r2](Writer &writer)
 \t{
@@ -267,7 +267,7 @@ def test_returns_alias() -> None:
         ],
         "returns_alias": "a_and_b",
     }
-    expected = """void test_func_shim(Reader&)
+    expected = """void test_func_shim(Reader& /*reader*/)
 {
 \tconst auto _a_and_b = test_func();
 \tconst auto _lrpc_paramWriter = [&_a_and_b](Writer &writer)

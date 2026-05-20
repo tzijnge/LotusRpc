@@ -82,6 +82,7 @@ TEST_F(TestBytearray, array)
     const auto ba1 = makeBytes(0x73, 0x74, 0x75);
     const std::vector<lrpc::bytearray> r0{ba0, ba1};
 
+    // NOLINTNEXTLINE(bugprone-exception-escape)
     const auto handler = [r0](lrpc::span<const lrpc::bytearray> ba)
     {
         EXPECT_EQ(2, ba.size());

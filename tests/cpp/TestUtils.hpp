@@ -24,6 +24,7 @@ namespace testutils
 #endif
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
+    // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
     MATCHER_P(SPAN_EQ, e, "Equality matcher for lrpc::span")
     {
         if (e.size() != arg.size())
@@ -43,6 +44,7 @@ namespace testutils
     }
 
     // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
+    // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
     MATCHER_P(OPT_SPAN_EQ, e, "Equality matcher for lrpc::optional of lrpc::span")
     {
         if (e.has_value() != arg.has_value())
@@ -88,7 +90,7 @@ namespace testutils
 
         for (auto i = 0U; i < numberBytes; i += 1)
         {
-            const auto r = etl::to_arithmetic<uint8_t>(hex.substr(i * 2, 2), etl::hex);
+            const auto r = etl::to_arithmetic<uint8_t>(hex.substr(i * 2U, 2U), etl::hex);
             if (r.has_value())
             {
                 bytes.emplace_back(r.value());

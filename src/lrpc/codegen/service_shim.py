@@ -55,7 +55,6 @@ class ServiceShimVisitor(LrpcVisitor):
             self._write_server_stream_responses(server_streams)
             self._write_client_stream_stop_requests(client_streams)
 
-            # self._file.label("protected")
             self._write_function_declarations(functions)
             self._write_function_shims(functions)
 

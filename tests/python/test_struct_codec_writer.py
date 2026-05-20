@@ -30,9 +30,9 @@ def test_encoder_single_field_intrinsic() -> None:
         ],
     }
     expected = """template<>
-inline void write_unchecked<test_struct>(etl::byte_stream_writer& writer, const test_struct& obj)
+inline void write_unchecked<test_struct>(etl::byte_stream_writer& writer, const test_struct& value)
 {
-\tlrpc::write_unchecked<uint8_t>(writer, obj.f1);
+\tlrpc::write_unchecked<uint8_t>(writer, value.f1);
 }
 """
 
@@ -47,9 +47,9 @@ def test_encoder_single_field_auto_string() -> None:
         ],
     }
     expected = """template<>
-inline void write_unchecked<test_struct>(etl::byte_stream_writer& writer, const test_struct& obj)
+inline void write_unchecked<test_struct>(etl::byte_stream_writer& writer, const test_struct& value)
 {
-\tlrpc::write_unchecked<lrpc::tags::string_auto>(writer, obj.f1);
+\tlrpc::write_unchecked<lrpc::tags::string_auto>(writer, value.f1);
 }
 """
 
@@ -64,9 +64,9 @@ def test_encoder_single_field_fixed_size_string() -> None:
         ],
     }
     expected = """template<>
-inline void write_unchecked<test_struct>(etl::byte_stream_writer& writer, const test_struct& obj)
+inline void write_unchecked<test_struct>(etl::byte_stream_writer& writer, const test_struct& value)
 {
-\tlrpc::write_unchecked<lrpc::tags::string_n>(writer, obj.f1, 2);
+\tlrpc::write_unchecked<lrpc::tags::string_n>(writer, value.f1, 2);
 }
 """
 
@@ -81,9 +81,9 @@ def test_encoder_single_field_array() -> None:
         ],
     }
     expected = """template<>
-inline void write_unchecked<test_struct>(etl::byte_stream_writer& writer, const test_struct& obj)
+inline void write_unchecked<test_struct>(etl::byte_stream_writer& writer, const test_struct& value)
 {
-\tlrpc::write_unchecked<lrpc::tags::array_n<uint8_t>>(writer, obj.f1, 2);
+\tlrpc::write_unchecked<lrpc::tags::array_n<uint8_t>>(writer, value.f1, 2);
 }
 """
 
@@ -98,9 +98,9 @@ def test_encoder_single_field_array_of_fixed_size_string() -> None:
         ],
     }
     expected = """template<>
-inline void write_unchecked<test_struct>(etl::byte_stream_writer& writer, const test_struct& obj)
+inline void write_unchecked<test_struct>(etl::byte_stream_writer& writer, const test_struct& value)
 {
-\tlrpc::write_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(writer, obj.f1, 2, 3);
+\tlrpc::write_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(writer, value.f1, 2, 3);
 }
 """
 
@@ -115,9 +115,9 @@ def test_encoder_single_field_custom_no_namespace() -> None:
         ],
     }
     expected = """template<>
-inline void write_unchecked<test_struct>(etl::byte_stream_writer& writer, const test_struct& obj)
+inline void write_unchecked<test_struct>(etl::byte_stream_writer& writer, const test_struct& value)
 {
-\tlrpc::write_unchecked<MyType>(writer, obj.f1);
+\tlrpc::write_unchecked<MyType>(writer, value.f1);
 }
 """
 
@@ -132,9 +132,9 @@ def test_encoder_single_field_custom_in_namespace() -> None:
         ],
     }
     expected = """template<>
-inline void write_unchecked<ns1::test_struct>(etl::byte_stream_writer& writer, const ns1::test_struct& obj)
+inline void write_unchecked<ns1::test_struct>(etl::byte_stream_writer& writer, const ns1::test_struct& value)
 {
-\tlrpc::write_unchecked<ns1::MyType>(writer, obj.f1);
+\tlrpc::write_unchecked<ns1::MyType>(writer, value.f1);
 }
 """
 
@@ -149,9 +149,9 @@ def test_encoder_single_field_array_of_custom_in_namespace() -> None:
         ],
     }
     expected = """template<>
-inline void write_unchecked<ns1::test_struct>(etl::byte_stream_writer& writer, const ns1::test_struct& obj)
+inline void write_unchecked<ns1::test_struct>(etl::byte_stream_writer& writer, const ns1::test_struct& value)
 {
-\tlrpc::write_unchecked<lrpc::tags::array_n<ns1::MyType>>(writer, obj.f1, 2);
+\tlrpc::write_unchecked<lrpc::tags::array_n<ns1::MyType>>(writer, value.f1, 2);
 }
 """
 
@@ -166,9 +166,9 @@ def test_encoder_single_field_optional_of_custom_no_namespace() -> None:
         ],
     }
     expected = """template<>
-inline void write_unchecked<test_struct>(etl::byte_stream_writer& writer, const test_struct& obj)
+inline void write_unchecked<test_struct>(etl::byte_stream_writer& writer, const test_struct& value)
 {
-\tlrpc::write_unchecked<lrpc::optional<MyType>>(writer, obj.f1);
+\tlrpc::write_unchecked<lrpc::optional<MyType>>(writer, value.f1);
 }
 """
 
@@ -183,9 +183,9 @@ def test_encoder_single_field_optional_of_custom_in_namespace() -> None:
         ],
     }
     expected = """template<>
-inline void write_unchecked<ns1::test_struct>(etl::byte_stream_writer& writer, const ns1::test_struct& obj)
+inline void write_unchecked<ns1::test_struct>(etl::byte_stream_writer& writer, const ns1::test_struct& value)
 {
-\tlrpc::write_unchecked<lrpc::optional<ns1::MyType>>(writer, obj.f1);
+\tlrpc::write_unchecked<lrpc::optional<ns1::MyType>>(writer, value.f1);
 }
 """
 
@@ -202,11 +202,11 @@ def test_encoder_three_fields() -> None:
         ],
     }
     expected = """template<>
-inline void write_unchecked<ns1::test_struct>(etl::byte_stream_writer& writer, const ns1::test_struct& obj)
+inline void write_unchecked<ns1::test_struct>(etl::byte_stream_writer& writer, const ns1::test_struct& value)
 {
-\tlrpc::write_unchecked<lrpc::optional<ns1::MyType>>(writer, obj.f1);
-\tlrpc::write_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(writer, obj.f2, 3, 2);
-\tlrpc::write_unchecked<bool>(writer, obj.f3);
+\tlrpc::write_unchecked<lrpc::optional<ns1::MyType>>(writer, value.f1);
+\tlrpc::write_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(writer, value.f2, 3, 2);
+\tlrpc::write_unchecked<bool>(writer, value.f3);
 }
 """
 
@@ -223,9 +223,9 @@ def test_decoder_single_field_intrinsic() -> None:
     expected = """template<>
 inline test_struct read_unchecked<test_struct>(etl::byte_stream_reader& reader)
 {
-\ttest_struct obj;
-\tobj.f1 = lrpc::read_unchecked<uint8_t>(reader);
-\treturn obj;
+\ttest_struct value {};
+\tvalue.f1 = lrpc::read_unchecked<uint8_t>(reader);
+\treturn value;
 }
 """
 
@@ -242,9 +242,9 @@ def test_decoder_single_field_auto_string() -> None:
     expected = """template<>
 inline test_struct read_unchecked<test_struct>(etl::byte_stream_reader& reader)
 {
-\ttest_struct obj;
-\tobj.f1 = lrpc::read_unchecked<lrpc::tags::string_auto>(reader);
-\treturn obj;
+\ttest_struct value {};
+\tvalue.f1 = lrpc::read_unchecked<lrpc::tags::string_auto>(reader);
+\treturn value;
 }
 """
 
@@ -261,9 +261,9 @@ def test_decoder_single_field_fixed_size_string() -> None:
     expected = """template<>
 inline test_struct read_unchecked<test_struct>(etl::byte_stream_reader& reader)
 {
-\ttest_struct obj;
-\tobj.f1 = lrpc::read_unchecked<lrpc::tags::string_n>(reader, 2);
-\treturn obj;
+\ttest_struct value {};
+\tvalue.f1 = lrpc::read_unchecked<lrpc::tags::string_n>(reader, 2);
+\treturn value;
 }
 """
 
@@ -280,9 +280,9 @@ def test_decoder_single_field_array() -> None:
     expected = """template<>
 inline test_struct read_unchecked<test_struct>(etl::byte_stream_reader& reader)
 {
-\ttest_struct obj;
-\tlrpc::read_unchecked<lrpc::tags::array_n<uint8_t>>(reader, obj.f1, 2);
-\treturn obj;
+\ttest_struct value {};
+\tlrpc::read_unchecked<lrpc::tags::array_n<uint8_t>>(reader, value.f1, 2);
+\treturn value;
 }
 """
 
@@ -299,9 +299,9 @@ def test_decoder_single_field_array_of_fixed_size_string() -> None:
     expected = """template<>
 inline test_struct read_unchecked<test_struct>(etl::byte_stream_reader& reader)
 {
-\ttest_struct obj;
-\tlrpc::read_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(reader, obj.f1, 2, 3);
-\treturn obj;
+\ttest_struct value {};
+\tlrpc::read_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(reader, value.f1, 2, 3);
+\treturn value;
 }
 """
 
@@ -318,9 +318,9 @@ def test_decoder_single_field_custom_no_namespace() -> None:
     expected = """template<>
 inline test_struct read_unchecked<test_struct>(etl::byte_stream_reader& reader)
 {
-\ttest_struct obj;
-\tobj.f1 = lrpc::read_unchecked<MyType>(reader);
-\treturn obj;
+\ttest_struct value {};
+\tvalue.f1 = lrpc::read_unchecked<MyType>(reader);
+\treturn value;
 }
 """
 
@@ -337,9 +337,9 @@ def test_decoder_single_field_custom_in_namespace() -> None:
     expected = """template<>
 inline ns1::test_struct read_unchecked<ns1::test_struct>(etl::byte_stream_reader& reader)
 {
-\tns1::test_struct obj;
-\tobj.f1 = lrpc::read_unchecked<ns1::MyType>(reader);
-\treturn obj;
+\tns1::test_struct value {};
+\tvalue.f1 = lrpc::read_unchecked<ns1::MyType>(reader);
+\treturn value;
 }
 """
 
@@ -356,9 +356,9 @@ def test_decoder_single_field_array_of_custom_in_namespace() -> None:
     expected = """template<>
 inline ns1::test_struct read_unchecked<ns1::test_struct>(etl::byte_stream_reader& reader)
 {
-\tns1::test_struct obj;
-\tlrpc::read_unchecked<lrpc::tags::array_n<ns1::MyType>>(reader, obj.f1, 2);
-\treturn obj;
+\tns1::test_struct value {};
+\tlrpc::read_unchecked<lrpc::tags::array_n<ns1::MyType>>(reader, value.f1, 2);
+\treturn value;
 }
 """
 
@@ -375,9 +375,9 @@ def test_decoder_single_field_optional_of_custom_no_namespace() -> None:
     expected = """template<>
 inline test_struct read_unchecked<test_struct>(etl::byte_stream_reader& reader)
 {
-\ttest_struct obj;
-\tobj.f1 = lrpc::read_unchecked<lrpc::optional<MyType>>(reader);
-\treturn obj;
+\ttest_struct value {};
+\tvalue.f1 = lrpc::read_unchecked<lrpc::optional<MyType>>(reader);
+\treturn value;
 }
 """
 
@@ -394,9 +394,9 @@ def test_decoder_single_field_optional_of_custom_in_namespace() -> None:
     expected = """template<>
 inline ns1::test_struct read_unchecked<ns1::test_struct>(etl::byte_stream_reader& reader)
 {
-\tns1::test_struct obj;
-\tobj.f1 = lrpc::read_unchecked<lrpc::optional<ns1::MyType>>(reader);
-\treturn obj;
+\tns1::test_struct value {};
+\tvalue.f1 = lrpc::read_unchecked<lrpc::optional<ns1::MyType>>(reader);
+\treturn value;
 }
 """
 
@@ -415,11 +415,11 @@ def test_decoder_three_fields() -> None:
     expected = """template<>
 inline ns1::test_struct read_unchecked<ns1::test_struct>(etl::byte_stream_reader& reader)
 {
-\tns1::test_struct obj;
-\tobj.f1 = lrpc::read_unchecked<lrpc::optional<ns1::MyType>>(reader);
-\tlrpc::read_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(reader, obj.f2, 3, 2);
-\tobj.f3 = lrpc::read_unchecked<bool>(reader);
-\treturn obj;
+\tns1::test_struct value {};
+\tvalue.f1 = lrpc::read_unchecked<lrpc::optional<ns1::MyType>>(reader);
+\tlrpc::read_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(reader, value.f2, 3, 2);
+\tvalue.f3 = lrpc::read_unchecked<bool>(reader);
+\treturn value;
 }
 """
 

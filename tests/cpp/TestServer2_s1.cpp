@@ -7,7 +7,7 @@
 using ::testing::Return;
 
 // NOLINTNEXTLINE(misc-use-anonymous-namespace)
-class MockS01Service : public s01_shim
+class MockServer2S01 : public s01_shim
 {
     public:
         MOCK_METHOD(void, f0, (lrpc::span<const lrpc::string_view> p0), (override));
@@ -23,7 +23,7 @@ class MockS01Service : public s01_shim
         MOCK_METHOD(StringStruct2, f10, (), (override));
 };
 
-using TestServer2_s1 = testutils::TestServerBase<Server2, MockS01Service>;
+using TestServer2_s1 = testutils::TestServerBase<Server2, MockServer2S01>;
 
 // Decode void function with array of strings param
 TEST_F(TestServer2_s1, decodeF0)

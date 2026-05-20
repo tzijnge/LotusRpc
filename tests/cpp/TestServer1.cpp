@@ -9,7 +9,7 @@
 
 using ::testing::Return;
 // NOLINTNEXTLINE(misc-use-anonymous-namespace)
-class Mockservice : public ts1::s0_shim
+class MockServer1S0 : public ts1::s0_shim
 {
     public:
         MOCK_METHOD(void, f0, (), (override));
@@ -60,7 +60,7 @@ class Mockservice : public ts1::s0_shim
         MOCK_METHOD(void, stream0, (lrpc::bytearray, bool), (override));
 };
 
-using TestServer1 = testutils::TestServerBase<ts1::Server1, Mockservice>;
+using TestServer1 = testutils::TestServerBase<ts1::Server1, MockServer1S0>;
 
 static_assert(std::is_same<ts1::Server1, lrpc::Server<0, ts1::LrpcMeta_service, 100, 200>>::value, "RX and/or TX buffer size are unequal to the definition file");
 

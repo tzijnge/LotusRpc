@@ -5,7 +5,7 @@
 #include <type_traits>
 
 // NOLINTNEXTLINE(misc-use-anonymous-namespace)
-class MockS00Service : public s00_shim
+class MockServer2S00 : public s00_shim
 {
     public:
         MOCK_METHOD(void, f0, (bool p0, lrpc::string_view p1), (override));
@@ -13,7 +13,7 @@ class MockS00Service : public s00_shim
         MOCK_METHOD(void, f2, (lrpc::string_view p0, lrpc::string_view p1), (override));
     };
 
-using TestServer2 = testutils::TestServerBase<Server2, MockS00Service>;
+using TestServer2 = testutils::TestServerBase<Server2, MockServer2S00>;
 
 static_assert(std::is_same<Server2, lrpc::Server<1, LrpcMeta_service, 100, 256>>::value, "RX and/or TX buffer size are unequal to the definition file");
 

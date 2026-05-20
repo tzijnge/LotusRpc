@@ -8,7 +8,7 @@
 #include <iomanip>
 
 // NOLINTNEXTLINE(misc-use-anonymous-namespace)
-class S00Service : public srv3::s00_shim
+class MockServerErrorsS00 : public srv3::s00_shim
 {
     public:
         uint8_t f0(const uint8_t p1) override
@@ -18,7 +18,7 @@ class S00Service : public srv3::s00_shim
     };
 
 // NOLINTNEXTLINE(misc-use-anonymous-namespace)
-class S01Service : public srv3::s01_shim
+class MockServerErrorsS01 : public srv3::s01_shim
 {
     public:
         uint16_t f0(const uint16_t p1) override
@@ -55,9 +55,9 @@ class TestServerErrors : public ::testing::Test, public srv3::Server3
         // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         std::string transmitted;
         // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
-        S00Service service00;
+        MockServerErrorsS00 service00;
         // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
-        S01Service service01;
+        MockServerErrorsS01 service01;
     };
 
 TEST_F(TestServerErrors, decodeUnknownServiceLessThanMaxServiceId)

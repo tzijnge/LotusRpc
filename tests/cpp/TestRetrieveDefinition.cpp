@@ -6,7 +6,7 @@
 #include <type_traits>
 
 // NOLINTNEXTLINE(misc-use-anonymous-namespace)
-class Mockservice : public test_rd::s0_shim
+class MockRetrieveDefinitionS0 : public test_rd::s0_shim
 {
     public:
         MOCK_METHOD(void, f0, (), (override));
@@ -27,7 +27,7 @@ namespace
     constexpr size_t NumberDefStreamPackets{CompressedDefSize / (TxBufferSize - DefStreamPacketOverhead)};
 }
 
-using TestRetrieveDefinition = testutils::TestServerBase<test_rd::RetrieveDefinition, Mockservice, false>;
+using TestRetrieveDefinition = testutils::TestServerBase<test_rd::RetrieveDefinition, MockRetrieveDefinitionS0, false>;
 
 // definition has a length of 428 bytes in compressed form
 // definition stream message from server to client has an overhead of

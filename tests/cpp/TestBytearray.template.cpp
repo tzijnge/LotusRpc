@@ -3,7 +3,7 @@
 using ::testing::Return;
 
 // NOLINTNEXTLINE(misc-use-anonymous-namespace)
-class TestBytearrayService : public test_ba::bytearray_shim
+class MockBytearray : public test_ba::bytearray_shim
 {
     public:
         MOCK_METHOD((lrpc::bytearray), param_return, (lrpc::bytearray), (override));
@@ -41,7 +41,7 @@ namespace
     }
 }
 
-using TestBytearray = testutils::TestServerBase<test_ba::Bytearray, TestBytearrayService>;
+using TestBytearray = testutils::TestServerBase<test_ba::Bytearray, MockBytearray>;
 
 TEST_F(TestBytearray, param_return)
 {

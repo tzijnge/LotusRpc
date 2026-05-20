@@ -120,12 +120,6 @@ namespace testutils
     template <typename Server, typename Service, bool AutoReset = true>
     class TestServerBase : public Server, public ::testing::Test
     {
-    protected:
-        void SetUp() final
-        {
-            Server::registerService(service);
-        }
-
     public:
         void lrpcTransmit(lrpc::span<const uint8_t> bytes) override
         {
@@ -151,5 +145,11 @@ namespace testutils
         std::vector<uint8_t> responseBuffer;
         // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         Service service;
+
+    protected:
+        void SetUp() final
+        {
+            Server::registerService(service);
+        }
     };
 }

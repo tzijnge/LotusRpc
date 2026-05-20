@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 
 struct MyStruct1
 {
@@ -7,7 +8,7 @@ struct MyStruct1
     double f1;
 
     // Additional static members and functions are ok in an external struct, but they are ignored by LRPC
-    static int abc;
+    static uint8_t abc;
 
     double getF1() const
     {

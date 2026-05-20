@@ -146,6 +146,7 @@ jobs:
           -DCMAKE_C_COMPILER=clang-19
           -DCMAKE_CXX_COMPILER=clang++-19
           -DENABLE_CLANG_TIDY=ON
+          -G Ninja
 
       - name: Build unit tests with SQ and Clang-tidy
         run: >

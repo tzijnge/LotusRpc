@@ -36,7 +36,7 @@ namespace lrpc
             registerService(metaService);
         }
 
-        virtual ~Server() = default;
+        ~Server() override = default;
 
         void transmit(const uint8_t serviceId, const uint8_t functionOrStreamId) override
         {
@@ -46,15 +46,18 @@ namespace lrpc
 
         void transmit(const uint8_t serviceId, const uint8_t functionOrStreamId, const ParamWriter writeParams) override
         {
-            auto w = Writer{sendBuffer, etl::endian::little};
+            auto writer = Writer{sendBuffer, etl::endian::little};
 
-            createHeader(w, serviceId, functionOrStreamId);
-            writeParams(w);
-            updateHeaderMessageSize(w);
+            createHeader(writer, serviceId, functionOrStreamId);
+            writeParams(writer);
+            updateHeaderMessageSize(writer);
 
-            const auto b = reinterpret_cast<const uint8_t *>(w.cbegin());
-            const auto e = reinterpret_cast<const uint8_t *>(w.cend());
-            lrpcTransmit({b, e});
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+            const auto* const begin = reinterpret_cast<const uint8_t *>(writer.cbegin());
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+            const auto* const end = reinterpret_cast<const uint8_t *>(writer.cend());
+
+            lrpcTransmit({begin, end});
         }
 
         void registerService(Service &service)
@@ -68,9 +71,9 @@ namespace lrpc
 
         void lrpcReceive(lrpc::span<const uint8_t> bytes)
         {
-            for (const auto b : bytes)
+            for (const auto _byte : bytes)
             {
-                lrpcReceive(b);
+                lrpcReceive(_byte);
             }
         }
 
@@ -78,7 +81,7 @@ namespace lrpc
                   typename = decltype(std::declval<TContainer>().data(),
                                       std::declval<TContainer>().size(),
                                       void())>
-        void lrpcReceive(TContainer &&bytes)
+        void lrpcReceive(const TContainer &bytes)
         {
             lrpcReceive(lrpc::span<const uint8_t>(bytes.data(), bytes.size()));
         }
@@ -118,7 +121,7 @@ namespace lrpc
         Service *service(const uint8_t serviceId)
         {
             // integer overflow for meta service intended
-            const uint8_t serviceIndex = static_cast<uint8_t>(serviceId + 1U);
+            const auto serviceIndex = static_cast<uint8_t>(serviceId + 1U);
 
             if (serviceIndex < services.size())
             {
@@ -139,19 +142,19 @@ namespace lrpc
             service(serviceId)->invoke(reader);
         }
 
-        static void createHeader(Writer &w, const uint8_t serviceId, const uint8_t functionOrStreamId)
+        static void createHeader(Writer &writer, const uint8_t serviceId, const uint8_t functionOrStreamId)
         {
-            w.write_unchecked<uint8_t>(0);         // placeholder for message size
-            w.write_unchecked<uint8_t>(serviceId); // service ID
-            w.write_unchecked<uint8_t>(functionOrStreamId);
+            writer.write_unchecked<uint8_t>(0);         // placeholder for message size
+            writer.write_unchecked<uint8_t>(serviceId); // service ID
+            writer.write_unchecked<uint8_t>(functionOrStreamId);
         }
 
-        static void updateHeaderMessageSize(Writer &w)
+        static void updateHeaderMessageSize(Writer &writer)
         {
-            const auto s = w.size_bytes();
-            if (s != 0)
+            const auto messageSize = writer.size_bytes();
+            if (messageSize != 0)
             {
-                *w.begin() = static_cast<char>(s - 1);
+                *writer.begin() = static_cast<char>(messageSize - 1);
             }
         }
     };

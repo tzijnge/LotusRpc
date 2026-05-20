@@ -24,6 +24,7 @@ class EnumFileVisitor(LrpcVisitor):
 
         write_file_banner(self._file)
         self._write_include_guard()
+        self._file.write("#include <cstdint>")
 
         if self._descriptor.is_external():
             self._write_external_enum_include()
@@ -79,15 +80,16 @@ class EnumFileVisitor(LrpcVisitor):
             )
 
             with (
-                self._file.block(f"constexpr void CheckEnum(const {self._name()} v)"),
-                self._file.block("switch (v)"),
+                self._file.block(f"constexpr void CheckEnum(const {self._name()} value)"),
+                self._file.block("switch (value)"),
             ):
                 for f in self._descriptor.fields():
-                    self._file.write(f"case {self._name()}::{f.name()}: break;")
+                    self._file.write(f"case {self._name()}::{f.name()}:")
+                self._file.write("default: break;")
 
     def _write_enum(self) -> None:
         n = self._descriptor.name()
-        with self._file.block(f"enum class {n}", ";"):
+        with self._file.block(f"enum class {n} : uint8_t", ";"):
             for f in self._descriptor.fields():
                 self._file.write(f"{f.name()} = {f.id()},")
 

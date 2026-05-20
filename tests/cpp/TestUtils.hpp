@@ -23,6 +23,7 @@ namespace testutils
 #pragma warning(disable : 4100)
 #endif
 
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
     MATCHER_P(SPAN_EQ, e, "Equality matcher for lrpc::span")
     {
         if (e.size() != arg.size())
@@ -33,7 +34,7 @@ namespace testutils
         const auto size = e.size();
         for (size_t i = 0; i < size; ++i)
         {
-            if (e[i] != arg[i])
+            if (e.at(i) != arg.at(i))
             {
                 return false;
             }
@@ -41,6 +42,7 @@ namespace testutils
         return true;
     }
 
+    // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
     MATCHER_P(OPT_SPAN_EQ, e, "Equality matcher for lrpc::optional of lrpc::span")
     {
         if (e.has_value() != arg.has_value())
@@ -116,12 +118,13 @@ namespace testutils
     template <typename Server, typename Service, bool AutoReset = true>
     class TestServerBase : public Server, public ::testing::Test
     {
-    public:
+    protected:
         void SetUp() final
         {
             Server::registerService(service);
         }
 
+    public:
         void lrpcTransmit(lrpc::span<const uint8_t> bytes) override
         {
             if (AutoReset)
@@ -142,8 +145,9 @@ namespace testutils
             return testutils::bytesToHex(responseBuffer);
         }
 
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         std::vector<uint8_t> responseBuffer;
-
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         Service service;
     };
 }

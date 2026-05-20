@@ -73,9 +73,9 @@ def test_single_return() -> None:
     expected = """void test_func_shim(Reader&)
 {
 \tconst auto a = test_func();
-\tconst auto _lrpc_paramWriter = [&a](Writer &w)
+\tconst auto _lrpc_paramWriter = [&a](Writer &writer)
 \t{
-\t\tlrpc::write_unchecked<uint8_t>(w, a);
+\t\tlrpc::write_unchecked<uint8_t>(writer, a);
 \t};
 \tserver().transmit(id(), 43, _lrpc_paramWriter);
 }
@@ -96,10 +96,10 @@ def test_two_returns() -> None:
     expected = """void test_func_shim(Reader&)
 {
 \tconst auto a_b = test_func();
-\tconst auto _lrpc_paramWriter = [&a_b](Writer &w)
+\tconst auto _lrpc_paramWriter = [&a_b](Writer &writer)
 \t{
-\t\tlrpc::write_unchecked<uint8_t>(w, std::get<0>(a_b));
-\t\tlrpc::write_unchecked<uint16_t>(w, std::get<1>(a_b));
+\t\tlrpc::write_unchecked<uint8_t>(writer, std::get<0>(a_b));
+\t\tlrpc::write_unchecked<uint16_t>(writer, std::get<1>(a_b));
 \t};
 \tserver().transmit(id(), 43, _lrpc_paramWriter);
 }
@@ -170,9 +170,9 @@ def test_array_return() -> None:
     expected = """void test_func_shim(Reader&)
 {
 \tconst auto x = test_func();
-\tconst auto _lrpc_paramWriter = [&x](Writer &w)
+\tconst auto _lrpc_paramWriter = [&x](Writer &writer)
 \t{
-\t\tlrpc::write_unchecked<lrpc::tags::array_n<uint8_t>>(w, x, 2);
+\t\tlrpc::write_unchecked<lrpc::tags::array_n<uint8_t>>(writer, x, 2);
 \t};
 \tserver().transmit(id(), 43, _lrpc_paramWriter);
 }
@@ -190,9 +190,9 @@ def test_fixed_size_string_return() -> None:
     expected = """void test_func_shim(Reader&)
 {
 \tconst auto x = test_func();
-\tconst auto _lrpc_paramWriter = [&x](Writer &w)
+\tconst auto _lrpc_paramWriter = [&x](Writer &writer)
 \t{
-\t\tlrpc::write_unchecked<lrpc::tags::string_n>(w, x, 2);
+\t\tlrpc::write_unchecked<lrpc::tags::string_n>(writer, x, 2);
 \t};
 \tserver().transmit(id(), 43, _lrpc_paramWriter);
 }
@@ -210,9 +210,9 @@ def test_array_of_fixed_size_string_return() -> None:
     expected = """void test_func_shim(Reader&)
 {
 \tconst auto x = test_func();
-\tconst auto _lrpc_paramWriter = [&x](Writer &w)
+\tconst auto _lrpc_paramWriter = [&x](Writer &writer)
 \t{
-\t\tlrpc::write_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(w, x, 3, 2);
+\t\tlrpc::write_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(writer, x, 3, 2);
 \t};
 \tserver().transmit(id(), 43, _lrpc_paramWriter);
 }
@@ -244,11 +244,11 @@ def test_many_params_and_returns() -> None:
 \tlrpc::array<lrpc::string_view, 3> p2;
 \tlrpc::read_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(r, p2, 3, 10);
 \tconst auto r0_r1_r2 = test_func(p0, p1, p2);
-\tconst auto _lrpc_paramWriter = [&r0_r1_r2](Writer &w)
+\tconst auto _lrpc_paramWriter = [&r0_r1_r2](Writer &writer)
 \t{
-\t\tlrpc::write_unchecked<uint8_t>(w, std::get<0>(r0_r1_r2));
-\t\tlrpc::write_unchecked<lrpc::tags::array_n<uint8_t>>(w, std::get<1>(r0_r1_r2), 4);
-\t\tlrpc::write_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(w, std::get<2>(r0_r1_r2), 5, 20);
+\t\tlrpc::write_unchecked<uint8_t>(writer, std::get<0>(r0_r1_r2));
+\t\tlrpc::write_unchecked<lrpc::tags::array_n<uint8_t>>(writer, std::get<1>(r0_r1_r2), 4);
+\t\tlrpc::write_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(writer, std::get<2>(r0_r1_r2), 5, 20);
 \t};
 \tserver().transmit(id(), 43, _lrpc_paramWriter);
 }
@@ -270,10 +270,10 @@ def test_returns_alias() -> None:
     expected = """void test_func_shim(Reader&)
 {
 \tconst auto _a_and_b = test_func();
-\tconst auto _lrpc_paramWriter = [&_a_and_b](Writer &w)
+\tconst auto _lrpc_paramWriter = [&_a_and_b](Writer &writer)
 \t{
-\t\tlrpc::write_unchecked<uint8_t>(w, std::get<0>(_a_and_b));
-\t\tlrpc::write_unchecked<uint16_t>(w, std::get<1>(_a_and_b));
+\t\tlrpc::write_unchecked<uint8_t>(writer, std::get<0>(_a_and_b));
+\t\tlrpc::write_unchecked<uint16_t>(writer, std::get<1>(_a_and_b));
 \t};
 \tserver().transmit(id(), 250, _lrpc_paramWriter);
 }

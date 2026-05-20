@@ -1,5 +1,9 @@
 #include "generated/RetrieveDefinition/RetrieveDefinition.hpp"
 #include "TestUtils.hpp"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+#include <cstddef>
+#include <type_traits>
 
 namespace
 {

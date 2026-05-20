@@ -1,14 +1,11 @@
 #pragma once
 #include <array>
 
-namespace ext
+namespace ext::test
 {
-    namespace test
+    struct MyStruct2
     {
-        struct MyStruct2
-        {
-            float f1{};
-            std::array<bool, 7> f2{};
-        };
-    }
+        float f1{};
+        std::array<bool, 7> f2{};
+    };
 }

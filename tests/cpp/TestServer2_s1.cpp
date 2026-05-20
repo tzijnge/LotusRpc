@@ -1,23 +1,29 @@
 #include "generated/Server2/Server2.hpp"
 #include "TestUtils.hpp"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+#include <vector>
 
 using ::testing::Return;
 
-class MockS01Service : public s01_shim
+namespace
 {
-public:
-    MOCK_METHOD(void, f0, (lrpc::span<const lrpc::string_view> p0), (override));
-    MOCK_METHOD((lrpc::span<const lrpc::string_view>), f1, (), (override));
-    MOCK_METHOD(void, f2, (lrpc::optional<lrpc::string_view> p01), (override));
-    MOCK_METHOD(void, f3, (lrpc::optional<lrpc::string_view> p01), (override));
-    MOCK_METHOD((lrpc::optional<lrpc::string_view>), f4, (), (override));
-    MOCK_METHOD(void, f5, (const StringStruct &a), (override));
-    MOCK_METHOD(StringStruct, f6, (), (override));
-    MOCK_METHOD((lrpc::string_view), f7, (lrpc::string_view p0), (override));
-    MOCK_METHOD(void, f8, (lrpc::span<const lrpc::string_view> p0), (override));
-    MOCK_METHOD(void, f9, (const StringStruct2 &a), (override));
-    MOCK_METHOD(StringStruct2, f10, (), (override));
-};
+    class MockS01Service : public s01_shim
+    {
+    public:
+        MOCK_METHOD(void, f0, (lrpc::span<const lrpc::string_view> p0), (override));
+        MOCK_METHOD((lrpc::span<const lrpc::string_view>), f1, (), (override));
+        MOCK_METHOD(void, f2, (lrpc::optional<lrpc::string_view> p01), (override));
+        MOCK_METHOD(void, f3, (lrpc::optional<lrpc::string_view> p01), (override));
+        MOCK_METHOD((lrpc::optional<lrpc::string_view>), f4, (), (override));
+        MOCK_METHOD(void, f5, (const StringStruct &a), (override));
+        MOCK_METHOD(StringStruct, f6, (), (override));
+        MOCK_METHOD((lrpc::string_view), f7, (lrpc::string_view p0), (override));
+        MOCK_METHOD(void, f8, (lrpc::span<const lrpc::string_view> p0), (override));
+        MOCK_METHOD(void, f9, (const StringStruct2 &a), (override));
+        MOCK_METHOD(StringStruct2, f10, (), (override));
+    };
+}
 
 using TestServer2_s1 = testutils::TestServerBase<Server2, MockS01Service>;
 

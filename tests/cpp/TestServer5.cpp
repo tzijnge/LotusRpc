@@ -1,7 +1,11 @@
 #include "generated/Server5/Server5.hpp"
 #include "TestUtils.hpp"
+#include <cstdint>
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+#include <type_traits>
 
-namespace ts5
+namespace
 {
     class MockService0 : public srv0_shim
     {
@@ -38,11 +42,11 @@ namespace ts5
         MOCK_METHOD(void, server_finite, (), (override));
         MOCK_METHOD(void, server_finite_stop, (), (override));
     };
-}
 
-using TestServer5Srv0 = testutils::TestServerBase<Server5, ts5::MockService0>;
-using TestServer5Srv1 = testutils::TestServerBase<Server5, ts5::MockService1>;
-using TestServer5Srv2 = testutils::TestServerBase<Server5, ts5::MockService2>;
+    using TestServer5Srv0 = testutils::TestServerBase<Server5, MockService0>;
+    using TestServer5Srv1 = testutils::TestServerBase<Server5, MockService1>;
+    using TestServer5Srv2 = testutils::TestServerBase<Server5, MockService2>;
+}
 
 static_assert(std::is_same<Server5, lrpc::Server<68, LrpcMeta_service>>::value, "RX and/or TX buffer size are unequal to the definition file");
 

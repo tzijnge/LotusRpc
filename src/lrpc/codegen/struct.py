@@ -111,16 +111,20 @@ class StructFileVisitor(LrpcVisitor):
             for f in self._descriptor.fields():
                 self._write_struct_field(f)
 
-            self._file.newline()
+        self._file.newline()
 
-            with self._file.block(f"bool operator==(const {self._qualified_name()}& other) const"):
-                field_names = [f.name() for f in self._descriptor.fields()]
-                fields_equal = [f"(this->{n} == other.{n})" for n in field_names]
-                all_fields_equal = " && ".join(fields_equal)
-                self._file(f"return {all_fields_equal};")
+        with self._file.block(
+            f"inline bool operator==(const {self._qualified_name()}& first, const {self._qualified_name()}& second)",
+        ):
+            field_names = [f.name() for f in self._descriptor.fields()]
+            fields_equal = [f"(first.{n} == second.{n})" for n in field_names]
+            all_fields_equal = " && ".join(fields_equal)
+            self._file(f"return {all_fields_equal};")
 
-            with self._file.block(f"bool operator!=(const {self._qualified_name()}& other) const"):
-                self._file("return !(*this == other);")
+        with self._file.block(
+            f"inline bool operator!=(const {self._qualified_name()}& first, const {self._qualified_name()}& second)",
+        ):
+            self._file("return !(first == second);")
 
     def _write_codec(self) -> None:
         codec_writer = StructCodecWriter(self._file, self._descriptor, self._namespace)

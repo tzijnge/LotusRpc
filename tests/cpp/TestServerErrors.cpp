@@ -1,6 +1,11 @@
 #include "generated/Server3/Server3.hpp"
 #include "TestUtils.hpp"
 #include <sstream>
+#include <cstdint>
+#include <gtest/gtest.h>
+#include <type_traits>
+#include <ios>
+#include <iomanip>
 
 namespace
 {
@@ -46,8 +51,11 @@ namespace
             transmitted += stream.str();
         }
 
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         std::string transmitted;
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         S00Service service00;
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         S01Service service01;
     };
 }

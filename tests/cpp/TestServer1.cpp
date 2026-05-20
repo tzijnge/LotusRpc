@@ -1,5 +1,11 @@
 #include "generated/Server1/Server1.hpp"
 #include "TestUtils.hpp"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+#include <cstdint>
+#include <type_traits>
+#include <vector>
+#include <etl/optional.h>
 
 using ::testing::Return;
 namespace
@@ -263,8 +269,8 @@ TEST_F(TestServer1, decodef22)
 {
     const lrpc::string_view arg1{"arg1"};
     const lrpc::string_view arg2{"arg2"};
-    lrpc::string_view ret1{"ret1"};
-    lrpc::string_view ret2{"ret2"};
+    const lrpc::string_view ret1{"ret1"};
+    const lrpc::string_view ret2{"ret2"};
 
     EXPECT_CALL(service, f22(arg1, arg2)).WillOnce(Return(std::tuple<lrpc::string_view, lrpc::string_view>{ret1, ret2}));
     const auto response = receive("0C001661726731006172673200");

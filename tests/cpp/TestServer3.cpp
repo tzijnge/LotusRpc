@@ -1,13 +1,18 @@
 #include "generated/Server3/Server3.hpp"
+#include <cstdint>
 #include <sstream>
 #include "TestUtils.hpp"
+#include <gtest/gtest.h>
+#include <ios>
+#include <iomanip>
+#include <type_traits>
 
 namespace
 {
     class S00Service : public srv3::s00_shim
     {
     public:
-        uint8_t f0(uint8_t p1) override
+        uint8_t f0(const uint8_t p1) override
         {
             return p1;
         }
@@ -16,7 +21,7 @@ namespace
     class S01Service : public srv3::s01_shim
     {
     public:
-        uint16_t f0(uint16_t p1) override
+        uint16_t f0(const uint16_t p1) override
         {
             return p1;
         }
@@ -46,9 +51,11 @@ namespace
             transmitted += stream.str();
         }
 
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         std::string transmitted;
-
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         S00Service service00;
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         S01Service service01;
     };
 }

@@ -11,7 +11,7 @@ class FunctionShimWriter:
     def write_function_shim(self, function: LrpcFun) -> None:
         """Write a single function shim to the C++ file."""
         params = self._params_string(function.params())
-        reader_param_name = " r" if len(params) != 0 else ""
+        reader_param_name = " reader" if len(params) != 0 else " /*reader*/"
 
         with self._file.block(f"void {function.name()}_shim(Reader&{reader_param_name})"):
             self._write_function_shim_body(function)
@@ -26,7 +26,7 @@ class FunctionShimWriter:
 
     def _write_param_readers(self, function: LrpcFun) -> None:
         def read_params(var: LrpcVar) -> str:
-            params = ["r"]
+            params = ["reader"]
             if var.is_array():
                 params.append(f"{var.name()}")
                 params.append(f"{var.array_size()}")
@@ -62,7 +62,7 @@ class FunctionShimWriter:
         response = self._response_var_name(function)
 
         def write_params(var: LrpcVar, index: int | None) -> str:
-            params = ["w"]
+            params = ["writer"]
             if index is None:
                 params.append(response)
             else:
@@ -78,7 +78,7 @@ class FunctionShimWriter:
         if function.number_returns() == 0:
             return
 
-        with self._file.block(f"const auto _lrpc_paramWriter = [&{response}](Writer &w)", ";"):
+        with self._file.block(f"const auto _lrpc_paramWriter = [&{response}](Writer &writer)", ";"):
             returns = function.returns()
             for i, r in enumerate(returns):
                 return_index = None if len(returns) == 1 else i

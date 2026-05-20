@@ -8,7 +8,7 @@ from lrpc.core import LrpcVar
 def lrpc_var_includes(var: LrpcVar) -> set[str]:
     includes = set()
     if var.base_type_is_integral():
-        includes.add("<stdint.h>")
+        includes.add("<cstdint>")
 
     if var.base_type_is_custom():
         includes.add(f'"{var.base_type()}.hpp"')

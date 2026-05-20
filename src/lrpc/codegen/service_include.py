@@ -25,7 +25,7 @@ class ServiceIncludeVisitor(LrpcVisitor):
 
     def visit_lrpc_service_end(self) -> None:
         for i in sorted(self._includes):
-            self._file.write(f"#include {i}")
+            self._file.write(f"#include {i} // IWYU pragma: export")
 
     def visit_lrpc_function(self, function: LrpcFun) -> None:
         if function.number_returns() > 1:

@@ -24,10 +24,12 @@ class ServerIncludeVisitor(LrpcVisitor):
 
         write_file_banner(self._file)
         self._file.write("#pragma once")
-        self._file.write('#include "lrpccore/Server.hpp"')
+        self._file.write('#include "lrpccore/LrpcTypes.hpp" // IWYU pragma: export')
+        self._file.write('#include "lrpccore/Server.hpp" // IWYU pragma: export')
         if len(lrpc_def.constants()) != 0:
-            self._file.write(f'#include "{lrpc_def.name()}_Constants.hpp"')
-        self._file.write('#include "LrpcMeta_service.hpp"')
+            self._file.write(f'#include "{lrpc_def.name()}_Constants.hpp" // IWYU pragma: export')
+        self._file.write('#include "LrpcMeta_constants.hpp" // IWYU pragma: export')
+        self._file.write('#include "LrpcMeta_service.hpp" // IWYU pragma: export')
 
     def visit_rpc_settings(self, settings: RpcSettings) -> None:
         rx = settings.rx_buffer_size()
@@ -39,8 +41,8 @@ class ServerIncludeVisitor(LrpcVisitor):
 
     def visit_lrpc_service(self, service: LrpcService) -> None:
         if service.name() != "LrpcMeta":
-            self._file.write(f'#include "{service.name()}_includes.hpp"')
-            self._file.write(f'#include "{service.name()}_shim.hpp"')
+            self._file.write(f'#include "{service.name()}_includes.hpp" // IWYU pragma: export')
+            self._file.write(f'#include "{service.name()}_shim.hpp" // IWYU pragma: export')
 
     def visit_lrpc_def_end(self) -> None:
         self._file.newline()

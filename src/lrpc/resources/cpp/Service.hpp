@@ -17,28 +17,31 @@ namespace lrpc
 
         virtual ~IServer() = default;
 
+        // NOLINTBEGIN(readability-avoid-const-params-in-decls)
         virtual void transmit(const uint8_t serviceId, const uint8_t functionOrStreamId) = 0;
         virtual void transmit(const uint8_t serviceId, const uint8_t functionOrStreamId, const ParamWriter writeParams) = 0;
-
         virtual void error(const LrpcMetaError type, const uint8_t p1 = 0, const uint8_t p2 = 0, const int32_t p3 = 0, const lrpc::string_view &message = {}) = 0;
+        // NOLINTEND(readability-avoid-const-params-in-decls)
     };
 
     class NullServer : public IServer
     {
     public:
-        virtual ~NullServer() = default;
+        ~NullServer() override = default;
 
-        void transmit(const uint8_t, const uint8_t) final
+        void transmit(const uint8_t /*serviceId*/, const uint8_t /*functionOrStreamId*/) final
         {
             // TODO: #206 Add LRPC_ASSERT
             // LRPC_ASSERT();
         }
-        void transmit(const uint8_t, const uint8_t, const ParamWriter) final
+
+        void transmit(const uint8_t /*serviceId*/, const uint8_t /*functionOrStreamId*/, const ParamWriter /*writeParams*/) final
         {
             // TODO: #206 Add LRPC_ASSERT
             // LRPC_ASSERT();
         }
-        void error(const LrpcMetaError, const uint8_t, const uint8_t, const int32_t, const lrpc::string_view &) final
+
+        void error(const LrpcMetaError /*type*/, const uint8_t /*p1*/, const uint8_t /*p2*/, const int32_t /*p3*/, const lrpc::string_view & /*message*/) final
         {
             // TODO: #206 Add LRPC_ASSERT
             // LRPC_ASSERT();
@@ -56,7 +59,7 @@ namespace lrpc
         virtual uint8_t id() const = 0;
         virtual void invoke(Reader &reader) = 0;
 
-        void linkServer(IServer &s) { linkedServer = &s; }
+        void linkServer(IServer &server) { linkedServer = &server; }
 
     protected:
         IServer &server() const { return *linkedServer; };

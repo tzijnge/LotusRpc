@@ -48,7 +48,7 @@ include(GoogleTest)
 include(${CMAKE_SOURCE_DIR}/cmake/CompilerWarnings.cmake)
 
 if(ENABLE_CLANG_TIDY)
-  find_program(CLANG_TIDY_EXE NAMES clang-tidy-20 clang-tidy-19 clang-tidy-18 clang-tidy REQUIRED)
+  find_program(CLANG_TIDY_EXE NAMES clang-tidy-22 clang-tidy-21 clang-tidy-20 clang-tidy-19 clang-tidy REQUIRED)
   message(STATUS "clang-tidy enabled: ${CLANG_TIDY_EXE}")
 endif()
 

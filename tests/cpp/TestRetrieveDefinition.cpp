@@ -5,14 +5,15 @@
 #include <cstddef>
 #include <type_traits>
 
-namespace
+// NOLINTNEXTLINE(misc-use-anonymous-namespace)
+class Mockservice : public test_rd::s0_shim
 {
-    class Mockservice : public test_rd::s0_shim
-    {
     public:
         MOCK_METHOD(void, f0, (), (override));
-    };
+};
 
+namespace
+{
     constexpr size_t TxBufferSize{112};
     constexpr size_t DefStreamPacketOverhead{5};
     constexpr size_t CompressedDefSize{test_rd::lrpc_meta::CompressedDefinition.size()};
@@ -24,9 +25,9 @@ namespace
     static_assert((CompressedDefSize % (TxBufferSize - DefStreamPacketOverhead)) == 0, "Compressed definition size not a multiple of the packet payload size");
 
     constexpr size_t NumberDefStreamPackets{CompressedDefSize / (TxBufferSize - DefStreamPacketOverhead)};
-
-    using TestRetrieveDefinition = testutils::TestServerBase<test_rd::RetrieveDefinition, Mockservice, false>;
 }
+
+using TestRetrieveDefinition = testutils::TestServerBase<test_rd::RetrieveDefinition, Mockservice, false>;
 
 // definition has a length of 428 bytes in compressed form
 // definition stream message from server to client has an overhead of

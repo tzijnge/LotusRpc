@@ -8,10 +8,9 @@
 #include <etl/optional.h>
 
 using ::testing::Return;
-namespace
+// NOLINTNEXTLINE(misc-use-anonymous-namespace)
+class Mockservice : public ts1::s0_shim
 {
-    class Mockservice : public ts1::s0_shim
-    {
     public:
         MOCK_METHOD(void, f0, (), (override));
         MOCK_METHOD(void, f1, (), (override));
@@ -59,10 +58,9 @@ namespace
         MOCK_METHOD(void, f43, (uint64_t a), (override));
         MOCK_METHOD(uint64_t, f44, (), (override));
         MOCK_METHOD(void, stream0, (lrpc::bytearray, bool), (override));
-    };
+};
 
-    using TestServer1 = testutils::TestServerBase<ts1::Server1, Mockservice>;
-}
+using TestServer1 = testutils::TestServerBase<ts1::Server1, Mockservice>;
 
 static_assert(std::is_same<ts1::Server1, lrpc::Server<0, ts1::LrpcMeta_service, 100, 200>>::value, "RX and/or TX buffer size are unequal to the definition file");
 

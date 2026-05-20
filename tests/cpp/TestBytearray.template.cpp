@@ -2,10 +2,9 @@
 
 using ::testing::Return;
 
-namespace
+// NOLINTNEXTLINE(misc-use-anonymous-namespace)
+class TestBytearrayService : public test_ba::bytearray_shim
 {
-    class TestBytearrayService : public test_ba::bytearray_shim
-    {
     public:
         MOCK_METHOD((lrpc::bytearray), param_return, (lrpc::bytearray), (override));
         MOCK_METHOD((std::tuple<lrpc::bytearray, lrpc::bytearray>), param_return_multiple, (lrpc::bytearray p0, lrpc::bytearray), (override));
@@ -31,17 +30,18 @@ namespace
         MOCK_METHOD(void, server_array_stop, (), (override));
         MOCK_METHOD(void, server_custom, (), (override));
         MOCK_METHOD(void, server_custom_stop, (), (override));
-    };
+};
 
-
+namespace
+{
     template <typename... Ts>
     std::vector<lrpc::byte> makeBytes(Ts &&...args)
     {
         return {static_cast<lrpc::byte>(std::forward<Ts>(args))...};
     }
-
-    using TestBytearray = testutils::TestServerBase<test_ba::Bytearray, TestBytearrayService>;
 }
+
+using TestBytearray = testutils::TestServerBase<test_ba::Bytearray, TestBytearrayService>;
 
 TEST_F(TestBytearray, param_return)
 {

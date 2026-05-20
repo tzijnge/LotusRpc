@@ -5,17 +5,17 @@
 #include <gtest/gtest.h>
 #include <type_traits>
 
-namespace
+// NOLINTNEXTLINE(misc-use-anonymous-namespace)
+class MockService0 : public srv0_shim
 {
-    class MockService0 : public srv0_shim
-    {
     public:
         MOCK_METHOD(void, client_infinite, (uint16_t, uint8_t), (override));
         MOCK_METHOD(void, client_finite, (bool, DoorState, bool), (override));
     };
 
-    class MockService1 : public srv1_shim
-    {
+// NOLINTNEXTLINE(misc-use-anonymous-namespace)
+class MockService1 : public srv1_shim
+{
     public:
         MOCK_METHOD(void, server_infinite, (), (override));
         MOCK_METHOD(void, server_infinite_stop, (), (override));
@@ -23,8 +23,9 @@ namespace
         MOCK_METHOD(void, server_finite_stop, (), (override));
     };
 
-    class MockService2 : public srv2_shim
-    {
+// NOLINTNEXTLINE(misc-use-anonymous-namespace)
+class MockService2 : public srv2_shim
+{
     public:
         MOCK_METHOD(void, client_infinite, (DoorState), (override));
         MOCK_METHOD(void, server_infinite, (), (override));
@@ -32,8 +33,9 @@ namespace
         MOCK_METHOD(void, f0, (DoorState), (override));
     };
 
-    class MockService3 : public srv3_shim
-    {
+// NOLINTNEXTLINE(misc-use-anonymous-namespace)
+class MockService3 : public srv3_shim
+{
     public:
         MOCK_METHOD(void, client_infinite, (lrpc::span<const uint8_t>, lrpc::span<const lrpc::string_view>), (override));
         MOCK_METHOD(void, client_finite, (lrpc::span<const uint8_t>, lrpc::span<const lrpc::string_view>, bool), (override));
@@ -43,10 +45,9 @@ namespace
         MOCK_METHOD(void, server_finite_stop, (), (override));
     };
 
-    using TestServer5Srv0 = testutils::TestServerBase<Server5, MockService0>;
-    using TestServer5Srv1 = testutils::TestServerBase<Server5, MockService1>;
-    using TestServer5Srv2 = testutils::TestServerBase<Server5, MockService2>;
-}
+using TestServer5Srv0 = testutils::TestServerBase<Server5, MockService0>;
+using TestServer5Srv1 = testutils::TestServerBase<Server5, MockService1>;
+using TestServer5Srv2 = testutils::TestServerBase<Server5, MockService2>;
 
 static_assert(std::is_same<Server5, lrpc::Server<68, LrpcMeta_service>>::value, "RX and/or TX buffer size are unequal to the definition file");
 

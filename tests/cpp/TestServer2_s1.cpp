@@ -6,10 +6,9 @@
 
 using ::testing::Return;
 
-namespace
+// NOLINTNEXTLINE(misc-use-anonymous-namespace)
+class MockS01Service : public s01_shim
 {
-    class MockS01Service : public s01_shim
-    {
     public:
         MOCK_METHOD(void, f0, (lrpc::span<const lrpc::string_view> p0), (override));
         MOCK_METHOD((lrpc::span<const lrpc::string_view>), f1, (), (override));
@@ -22,10 +21,9 @@ namespace
         MOCK_METHOD(void, f8, (lrpc::span<const lrpc::string_view> p0), (override));
         MOCK_METHOD(void, f9, (const StringStruct2 &a), (override));
         MOCK_METHOD(StringStruct2, f10, (), (override));
-    };
+};
 
-    using TestServer2_s1 = testutils::TestServerBase<Server2, MockS01Service>;
-}
+using TestServer2_s1 = testutils::TestServerBase<Server2, MockS01Service>;
 
 // Decode void function with array of strings param
 TEST_F(TestServer2_s1, decodeF0)

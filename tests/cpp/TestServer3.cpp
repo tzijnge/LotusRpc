@@ -7,10 +7,9 @@
 #include <iomanip>
 #include <type_traits>
 
-namespace
+// NOLINTNEXTLINE(misc-use-anonymous-namespace)
+class S00Service : public srv3::s00_shim
 {
-    class S00Service : public srv3::s00_shim
-    {
     public:
         uint8_t f0(const uint8_t p1) override
         {
@@ -18,8 +17,9 @@ namespace
         }
     };
 
-    class S01Service : public srv3::s01_shim
-    {
+// NOLINTNEXTLINE(misc-use-anonymous-namespace)
+class S01Service : public srv3::s01_shim
+{
     public:
         uint16_t f0(const uint16_t p1) override
         {
@@ -27,8 +27,9 @@ namespace
         }
     };
 
-    class TestServer3 : public ::testing::Test, public srv3::Server3
-    {
+// NOLINTNEXTLINE(misc-use-anonymous-namespace)
+class TestServer3 : public ::testing::Test, public srv3::Server3
+{
     public:
         TestServer3()
         {
@@ -58,7 +59,6 @@ namespace
         // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         S01Service service01;
     };
-}
 
 static_assert(std::is_same<srv3::Server3, lrpc::Server<6, srv3::LrpcMeta_service, 256, 256>>::value, "RX and/or TX buffer size are unequal to the definition file");
 

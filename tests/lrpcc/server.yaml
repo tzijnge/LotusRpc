@@ -25,12 +25,10 @@
   write: "020013"
   read: "060013ABCD1234"
   response: "r0: [{'f0': 171, 'f1': 205}, {'f0': 18, 'f1': 52}]"
-- {
-    cli: "lrpcc srv0 f20",
-    write: "020014",
-    read: "050014ABCD01",
-    response: "r0: {'f0': {'f0': 171, 'f1': 205}, 'f1': 'V1'}",
-  }
+- cli: "lrpcc srv0 f20"
+  write: "020014"
+  read: "050014ABCD01"
+  response: "r0: {'f0': {'f0': 171, 'f1': 205}, 'f1': 'V1'}"
 - {cli: "lrpcc srv0 f21", write: "020015", read: "040015ABCD", response: "r0: 171 (0xab)\r\nr1: 205 (0xcd)"}
 - cli: "lrpcc srv0 f22 Flip dip"
   write: "0C0016466C6970006469700000"
@@ -43,8 +41,8 @@
 - cli: "lrpcc srv0 f24"
   write: "020018"
   read: "170018456C6566616E742000696E2074686520726F6F6D00"
-  response: "r0: Elefant \r\nr1: in the room"
-- {cli: "lrpcc srv0 f25", write: "020019", read: "0B001901456C6566616E7400", response: "r0: Elefant"}
+  response: "r0: Elephant \r\nr1: in the room"
+- {cli: "lrpcc srv0 f25", write: "020019", read: "0B001901456C6566616E7400", response: "r0: Elephant"}
 - cli: "lrpcc srv0 f26"
   write: "02001A"
   read: "0F001A49276D00206120007472656500"

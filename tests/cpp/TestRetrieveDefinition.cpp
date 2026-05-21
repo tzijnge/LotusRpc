@@ -81,15 +81,13 @@ TEST_F(TestRetrieveDefinition, retrieveDefinition)
     }
 
     // partial last packet
-    {
-        const size_t start = NumberFullPackets * TxBufferSizeHex;
-        const auto message = response.substr(start, LastPacketSizeHex);
+    const size_t start = NumberFullPackets * TxBufferSizeHex;
+    const auto message = response.substr(start, LastPacketSizeHex);
 
-        // length, service ID and stream ID
-        EXPECT_EQ("08FF01", message.substr(0, 6));
-        // bytearray length (4 remaining bytes)
-        EXPECT_EQ("04", message.substr(6, 2));
-        // final
-        EXPECT_EQ("01", message.substr(LastPacketSizeHex - HexDigitsPerByte, HexDigitsPerByte));
-    }
+    // length, service ID and stream ID
+    EXPECT_EQ("08FF01", message.substr(0, 6));
+    // bytearray length (4 remaining bytes)
+    EXPECT_EQ("04", message.substr(6, 2));
+    // final
+    EXPECT_EQ("01", message.substr(LastPacketSizeHex - HexDigitsPerByte, HexDigitsPerByte));
 }

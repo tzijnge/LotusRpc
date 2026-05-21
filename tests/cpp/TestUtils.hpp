@@ -122,8 +122,8 @@ namespace testutils
         return ss.str();
     }
 
-    // NOLINTNEXTLINE(misc-multiple-inheritance)
     template <typename Server, typename Service, bool AutoReset = true>
+    // NOLINTNEXTLINE(misc-multiple-inheritance)
     class TestServerBase : public Server, public ::testing::Test
     {
     public:

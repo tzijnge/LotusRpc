@@ -33,7 +33,9 @@ class MockServer1S0 : public srv1::srv0_shim
         MOCK_METHOD(srv1::MyEnum, f18, (), (override));
         MOCK_METHOD((lrpc::span<const srv1::CompositeData2>), f19, (), (override));
         MOCK_METHOD(srv1::CompositeData3, f20, (), (override));
+        // NOLINTNEXTLINE(misc-include-cleaner)
         MOCK_METHOD((std::tuple<uint8_t, uint8_t>), f21, (), (override));
+        // NOLINTNEXTLINE(misc-include-cleaner)
         MOCK_METHOD((std::tuple<lrpc::string_view, lrpc::string_view>), f22, (lrpc::string_view p0, lrpc::string_view p1), (override));
         MOCK_METHOD(lrpc::string_view, f23, (), (override));
         // NOLINTNEXTLINE(misc-include-cleaner)

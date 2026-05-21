@@ -11,6 +11,11 @@
 
 namespace testutils
 {
+    template <typename T>
+    constexpr bool areClose(const T first, const T second, const T tolerance)
+    {
+        return ((first - second) < tolerance) && ((first - second) > -tolerance);
+    }
 
     class InvalidHexString : public std::runtime_error
     {

@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 #include <cstdint>
 #include <type_traits>
+#include "TestUtils.hpp"
 
 static_assert(srv4::c0 == 111, "");
 static_assert(std::is_same<decltype(srv4::c0), const int32_t>::value, "");
@@ -53,8 +54,12 @@ static_assert(std::is_same<decltype(srv4::c15), const bool>::value, "");
 static_assert(!srv4::c16, "");
 static_assert(std::is_same<decltype(srv4::c16), const bool>::value, "");
 
-constexpr double testc17{2.3e-5};
-static_assert(std::abs(srv4::c17 - ::testc17) <= 1e-10, "");
+namespace
+{
+    constexpr double testc17{2.3e-5};
+    constexpr double tolerance{1e-10};
+}
+static_assert(testutils::areClose(srv4::c17, testc17, tolerance), "");
 static_assert(std::is_same<decltype(srv4::c17), const double>::value, "");
 
 static_assert(srv4::c18 == "This is an implicit string constant", "");

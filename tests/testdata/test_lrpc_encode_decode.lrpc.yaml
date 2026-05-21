@@ -28,49 +28,49 @@ services:
       - name: f2
       - name: bytearray
         params:
-          - { name: p0, type: bytearray }
+          - {name: p0, type: bytearray}
         returns:
-          - { name: r0, type: bytearray }
+          - {name: r0, type: bytearray}
   - name: srv2
     streams:
       - name: client_infinite
         origin: client
         finite: false
         params:
-          - { name: p0, type: uint8_t }
-          - { name: p1, type: uint16_t }
+          - {name: p0, type: uint8_t}
+          - {name: p1, type: uint16_t}
       - name: client_finite
         origin: client
         finite: true
         params:
-          - { name: p0, type: uint8_t }
-          - { name: p1, type: uint16_t }
+          - {name: p0, type: uint8_t}
+          - {name: p1, type: uint16_t}
       - name: server_infinite
         origin: server
         finite: false
         params:
-          - { name: p0, type: uint8_t }
-          - { name: p1, type: uint16_t }
+          - {name: p0, type: uint8_t}
+          - {name: p1, type: uint16_t}
       - name: server_finite
         origin: server
         finite: true
         params:
-          - { name: p0, type: uint8_t }
-          - { name: p1, type: uint16_t }
+          - {name: p0, type: uint8_t}
+          - {name: p1, type: uint16_t}
 structs:
   - name: MyStruct1
     fields:
-      - { name: "f0", type: uint16_t }
-      - { name: "f1", type: uint8_t }
-      - { name: "f2", type: bool }
+      - {name: "f0", type: uint16_t}
+      - {name: "f1", type: uint8_t}
+      - {name: "f2", type: bool}
   - name: MyStruct2
     fields:
-      - { name: f0, type: "@MyStruct1" }
+      - {name: f0, type: "@MyStruct1"}
   - name: MyStruct3
     fields:
-      - { name: "f0", type: string_2, count: 2 }
-      - { name: "f1", type: "@MyStruct2", count: "?" }
-      - { name: "f2", type: "@MyEnum1" }
+      - {name: "f0", type: string_2, count: 2}
+      - {name: "f1", type: "@MyStruct2", count: "?"}
+      - {name: "f2", type: "@MyEnum1"}
 enums:
   - name: MyEnum1
     fields:

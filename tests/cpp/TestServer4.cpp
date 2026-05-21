@@ -85,10 +85,10 @@ static_assert(static_cast<uint8_t>(srv4::MyEnum::V1) == 1, "");
 static_assert(static_cast<uint8_t>(srv4::MyEnum::V2) == 2, "");
 static_assert(static_cast<uint8_t>(srv4::MyEnum::V3) == 3, "");
 
-static_assert(static_cast<uint8_t>(srv4::MyEnum4::f1) == 0, "");
-static_assert(static_cast<uint8_t>(srv4::MyEnum4::f2) == 1, "");
-static_assert(static_cast<uint8_t>(srv4::MyEnum4::f3) == 222, "");
-static_assert(static_cast<uint8_t>(srv4::MyEnum4::f4) == 223, "");
+static_assert(static_cast<uint8_t>(srv4::MyEnum4::f0) == 0, "");
+static_assert(static_cast<uint8_t>(srv4::MyEnum4::f1) == 1, "");
+static_assert(static_cast<uint8_t>(srv4::MyEnum4::f2) == 222, "");
+static_assert(static_cast<uint8_t>(srv4::MyEnum4::f3) == 223, "");
 
 namespace meta = srv4::lrpc_meta;
 static_assert(meta::DefinitionVersion == "major.minor.patch.123", "");

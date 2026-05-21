@@ -54,7 +54,7 @@ class TestLrpcClient:
 
     def test_encode_function_nested_struct(self) -> None:
         assert (
-            self.client().encode("srv0", "f1", p1={"a": {"a": 4567, "b": 123, "c": True}})
+            self.client().encode("srv0", "f1", p0={"f0": {"f0": 4567, "f1": 123, "f2": True}})
             == b"\x06\x00\x01\xd7\x11\x7b\x01"
         )
 
@@ -502,4 +502,4 @@ class TestLrpcClient:
         assert len(definition.services()) == 1
         s0 = definition.service_by_id(0)
         assert s0 is not None
-        assert s0.name() == "s0"
+        assert s0.name() == "srv0"

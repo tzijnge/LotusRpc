@@ -3,28 +3,28 @@ settings:
   namespace: "srv3"
   definition_hash_length: 20
 services:
-  - name: "s00"
+  - name: "srv0"
     id: 0
     functions:
       - name: "f0"
         params:
-          - name: p1
+          - name: p0
             type: uint8_t
         returns:
-          - name: r1
+          - name: r0
             type: uint8_t
-  - name: "s01"
+  - name: "srv1"
     id: 5
     functions:
       - name: "f0"
         id: 8
         params:
-          - name: p1
+          - name: p0
             type: uint16_t
         returns:
-          - name: r1
+          - name: r0
             type: uint16_t
-  - name: "s02"
+  - name: "srv2"
     functions:
       - name: "f0"
         id: 0

@@ -8,22 +8,22 @@
 #include <iomanip>
 
 // NOLINTNEXTLINE(misc-use-anonymous-namespace)
-class MockServerErrorsS00 : public srv3::s00_shim
+class MockServerErrorsS00 : public srv3::srv0_shim
 {
     public:
-        uint8_t f0(const uint8_t p1) override
+        uint8_t f0(const uint8_t p0) override
         {
-            return p1;
+            return p0;
         }
     };
 
 // NOLINTNEXTLINE(misc-use-anonymous-namespace)
-class MockServerErrorsS01 : public srv3::s01_shim
+class MockServerErrorsS01 : public srv3::srv1_shim
 {
     public:
-        uint16_t f0(const uint16_t p1) override
+        uint16_t f0(const uint16_t p0) override
         {
-            return p1;
+            return p0;
         }
     };
 

@@ -291,20 +291,20 @@ def test_encode_optional_double() -> None:
 def test_encode_struct() -> None:
     var = LrpcVar({"name": "v1", "type": "struct@MyStruct1"})
 
-    encoded = encode_var({"b": 123, "a": 4567, "c": True}, var)
+    encoded = encode_var({"f1": 123, "f0": 4567, "f2": True}, var)
     assert encoded == b"\xd7\x11\x7b\x01"
 
     with pytest.raises(TypeError, match=re.escape("Type error for v1: expected dict, but got <class 'tuple'>")):
         encode_var((123, 4567, True), var)
 
-    with pytest.raises(ValueError, match=re.escape("Missing fields for v1: {'b'}")):
-        encode_var({1: 123, "a": 4567, "c": True}, var)
+    with pytest.raises(ValueError, match=re.escape("Missing fields for v1: {'f1'}")):
+        encode_var({1: 123, "f0": 4567, "f2": True}, var)
 
-    with pytest.raises(ValueError, match=re.escape("Missing fields for v1: {'c'}")):
-        encode_var({"b": 123, "a": 4567}, var)
+    with pytest.raises(ValueError, match=re.escape("Missing fields for v1: {'f2'}")):
+        encode_var({"f1": 123, "f0": 4567}, var)
 
     with pytest.raises(ValueError, match=re.escape("Unknown fields for v1: {'d'}")):
-        encode_var({"b": 123, "a": 4567, "c": True, "d": False}, var)
+        encode_var({"f1": 123, "f0": 4567, "f2": True, "d": False}, var)
 
 
 def test_encode_optional_struct() -> None:
@@ -312,14 +312,14 @@ def test_encode_optional_struct() -> None:
 
     encoded = encode_var(None, var)
     assert encoded == b"\x00"
-    encoded = encode_var({"b": 123, "a": 4567, "c": True}, var)
+    encoded = encode_var({"f1": 123, "f0": 4567, "f2": True}, var)
     assert encoded == b"\x01\xd7\x11\x7b\x01"
 
 
 def test_encode_nested_struct() -> None:
     var = LrpcVar({"name": "v1", "type": "struct@MyStruct2"})
 
-    encoded = encode_var({"a": {"b": 123, "a": 4567, "c": True}}, var)
+    encoded = encode_var({"f0": {"f1": 123, "f0": 4567, "f2": True}}, var)
     assert encoded == b"\xd7\x11\x7b\x01"
 
 
@@ -369,7 +369,7 @@ def test_encode_enum_invalid_input() -> None:
 def test_encode_array_of_struct() -> None:
     var = LrpcVar({"name": "v1", "type": "struct@MyStruct2", "count": 2})
 
-    array_of_structs = [{"a": {"b": 123, "a": 4567, "c": True}}, {"a": {"b": 51, "a": 8721, "c": False}}]
+    array_of_structs = [{"f0": {"f1": 123, "f0": 4567, "f2": True}}, {"f0": {"f1": 51, "f0": 8721, "f2": False}}]
     encoded = encode_var(array_of_structs, var)
 
     assert encoded == b"\xd7\x11\x7b\x01\x11\x22\x33\x00"

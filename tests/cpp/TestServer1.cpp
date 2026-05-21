@@ -9,60 +9,60 @@
 
 using ::testing::Return;
 // NOLINTNEXTLINE(misc-use-anonymous-namespace)
-class MockServer1S0 : public ts1::s0_shim
+class MockServer1S0 : public srv1::srv0_shim
 {
     public:
         MOCK_METHOD(void, f0, (), (override));
         MOCK_METHOD(void, f1, (), (override));
-        MOCK_METHOD(void, f2, (uint8_t a), (override));
-        MOCK_METHOD(void, f3, (uint16_t a), (override));
-        MOCK_METHOD(void, f4, (float a), (override));
-        MOCK_METHOD(void, f5, ((lrpc::span<const uint16_t>)a), (override));
-        MOCK_METHOD(void, f6, (lrpc::string_view a), (override));
-        MOCK_METHOD(void, f7, (const ts1::CompositeData &a), (override));
-        MOCK_METHOD(void, f8, (ts1::MyEnum a), (override));
-        MOCK_METHOD(void, f9, ((lrpc::span<const ts1::CompositeData2>)a), (override));
-        MOCK_METHOD(void, f10, (const ts1::CompositeData3 &a), (override));
-        MOCK_METHOD(void, f11, (uint8_t a, uint8_t b), (override));
+        MOCK_METHOD(void, f2, (uint8_t p0), (override));
+        MOCK_METHOD(void, f3, (uint16_t p0), (override));
+        MOCK_METHOD(void, f4, (float p0), (override));
+        MOCK_METHOD(void, f5, ((lrpc::span<const uint16_t>)p0), (override));
+        MOCK_METHOD(void, f6, (lrpc::string_view p0), (override));
+        MOCK_METHOD(void, f7, (const srv1::CompositeData &p0), (override));
+        MOCK_METHOD(void, f8, (srv1::MyEnum p0), (override));
+        MOCK_METHOD(void, f9, ((lrpc::span<const srv1::CompositeData2>)p0), (override));
+        MOCK_METHOD(void, f10, (const srv1::CompositeData3 &p0), (override));
+        MOCK_METHOD(void, f11, (uint8_t p0, uint8_t p1), (override));
         MOCK_METHOD(uint8_t, f12, (), (override));
         MOCK_METHOD(uint16_t, f13, (), (override));
         MOCK_METHOD(float, f14, (), (override));
         MOCK_METHOD((lrpc::span<const uint16_t>), f15, (), (override));
         MOCK_METHOD(lrpc::string_view, f16, (), (override));
-        MOCK_METHOD(ts1::CompositeData, f17, (), (override));
-        MOCK_METHOD(ts1::MyEnum, f18, (), (override));
-        MOCK_METHOD((lrpc::span<const ts1::CompositeData2>), f19, (), (override));
-        MOCK_METHOD(ts1::CompositeData3, f20, (), (override));
+        MOCK_METHOD(srv1::CompositeData, f17, (), (override));
+        MOCK_METHOD(srv1::MyEnum, f18, (), (override));
+        MOCK_METHOD((lrpc::span<const srv1::CompositeData2>), f19, (), (override));
+        MOCK_METHOD(srv1::CompositeData3, f20, (), (override));
         MOCK_METHOD((std::tuple<uint8_t, uint8_t>), f21, (), (override));
-        MOCK_METHOD((std::tuple<lrpc::string_view, lrpc::string_view>), f22, (lrpc::string_view s1, lrpc::string_view s2), (override));
+        MOCK_METHOD((std::tuple<lrpc::string_view, lrpc::string_view>), f22, (lrpc::string_view p0, lrpc::string_view p1), (override));
         MOCK_METHOD(lrpc::string_view, f23, (), (override));
         MOCK_METHOD((std::tuple<lrpc::string_view, lrpc::string_view>), f24, (), (override));
         MOCK_METHOD((lrpc::optional<lrpc::string_view>), f25, (), (override));
         MOCK_METHOD((lrpc::span<const lrpc::string_view>), f26, (), (override));
-        MOCK_METHOD((ts1::complex_return), f27, (), (override));
-        MOCK_METHOD(void, f28, (const ts1::CompositeData4 &), (override));
+        MOCK_METHOD((srv1::complex_return), f27, (), (override));
+        MOCK_METHOD(void, f28, (const srv1::CompositeData4 &), (override));
         MOCK_METHOD(lrpc::bytearray, f29, (lrpc::bytearray), (override));
         MOCK_METHOD(void, f30, (lrpc::span<const lrpc::bytearray>), (override));
-        MOCK_METHOD(void, f31, (double a), (override));
+        MOCK_METHOD(void, f31, (double p0), (override));
         MOCK_METHOD(double, f32, (), (override));
-        MOCK_METHOD(void, f33, (int8_t a), (override));
+        MOCK_METHOD(void, f33, (int8_t p0), (override));
         MOCK_METHOD(int8_t, f34, (), (override));
-        MOCK_METHOD(void, f35, (int16_t a), (override));
+        MOCK_METHOD(void, f35, (int16_t p0), (override));
         MOCK_METHOD(int16_t, f36, (), (override));
-        MOCK_METHOD(void, f37, (int32_t a), (override));
+        MOCK_METHOD(void, f37, (int32_t p0), (override));
         MOCK_METHOD(int32_t, f38, (), (override));
-        MOCK_METHOD(void, f39, (int64_t a), (override));
+        MOCK_METHOD(void, f39, (int64_t p0), (override));
         MOCK_METHOD(int64_t, f40, (), (override));
-        MOCK_METHOD(void, f41, (uint32_t a), (override));
+        MOCK_METHOD(void, f41, (uint32_t p0), (override));
         MOCK_METHOD(uint32_t, f42, (), (override));
-        MOCK_METHOD(void, f43, (uint64_t a), (override));
+        MOCK_METHOD(void, f43, (uint64_t p0), (override));
         MOCK_METHOD(uint64_t, f44, (), (override));
         MOCK_METHOD(void, stream0, (lrpc::bytearray, bool), (override));
 };
 
-using TestServer1 = testutils::TestServerBase<ts1::Server1, MockServer1S0>;
+using TestServer1 = testutils::TestServerBase<srv1::Server1, MockServer1S0>;
 
-static_assert(std::is_same<ts1::Server1, lrpc::Server<0, ts1::LrpcMeta_service, 100, 200>>::value, "RX and/or TX buffer size are unequal to the definition file");
+static_assert(std::is_same<srv1::Server1, lrpc::Server<0, srv1::LrpcMeta_service, 100, 200>>::value, "RX and/or TX buffer size are unequal to the definition file");
 
 // Decode void function f0. Make sure f1 is not called
 TEST_F(TestServer1, decodeF0)
@@ -136,7 +136,7 @@ TEST_F(TestServer1, decodeF6WithMissingStringTerminator)
 // Decode function f7 with custom type
 TEST_F(TestServer1, decodeF7)
 {
-    const ts1::CompositeData expected{{0xBBAA, 0xDDCC}, 123, true};
+    const srv1::CompositeData expected{{0xBBAA, 0xDDCC}, 123, true};
     EXPECT_CALL(service, f7(expected));
     const auto response = receive("080007AABBCCDD7B01");
     EXPECT_EQ("020007", response);
@@ -145,7 +145,7 @@ TEST_F(TestServer1, decodeF7)
 // Decode function f8 with custom enum
 TEST_F(TestServer1, decodeF8)
 {
-    EXPECT_CALL(service, f8(ts1::MyEnum::V3));
+    EXPECT_CALL(service, f8(srv1::MyEnum::V3));
     const auto response = receive("03000803");
     EXPECT_EQ("020008", response);
 }
@@ -153,9 +153,9 @@ TEST_F(TestServer1, decodeF8)
 // Decode function f9 with array of custom type
 TEST_F(TestServer1, decodeF9)
 {
-    const std::vector<ts1::CompositeData2> expected{
-        ts1::CompositeData2{0xAA, 0xBB},
-        ts1::CompositeData2{0xCC, 0xDD}};
+    const std::vector<srv1::CompositeData2> expected{
+        srv1::CompositeData2{0xAA, 0xBB},
+        srv1::CompositeData2{0xCC, 0xDD}};
     EXPECT_CALL(service, f9(testutils::SPAN_EQ(expected)));
     const auto response = receive("060009AABBCCDD");
     EXPECT_EQ("020009", response);
@@ -164,7 +164,7 @@ TEST_F(TestServer1, decodeF9)
 // Decode function f10 with nested custom types
 TEST_F(TestServer1, decodeF10)
 {
-    const ts1::CompositeData3 expected{{0xAA, 0xBB}, ts1::MyEnum::V1};
+    const srv1::CompositeData3 expected{{0xAA, 0xBB}, srv1::MyEnum::V1};
     EXPECT_CALL(service, f10(expected));
     const auto response = receive("05000AAABB01");
     EXPECT_EQ("02000A", response);
@@ -222,7 +222,7 @@ TEST_F(TestServer1, decodeF16)
 // Decode function f17 which returns custom type
 TEST_F(TestServer1, decodeF17)
 {
-    EXPECT_CALL(service, f17()).WillOnce(Return(ts1::CompositeData{{0xBBAA, 0xDDCC}, 0x7B, true}));
+    EXPECT_CALL(service, f17()).WillOnce(Return(srv1::CompositeData{{0xBBAA, 0xDDCC}, 0x7B, true}));
     const auto response = receive("020011");
     EXPECT_EQ("080011AABBCCDD7B01", response);
 }
@@ -230,7 +230,7 @@ TEST_F(TestServer1, decodeF17)
 // Decode function f18 which returns custom enum
 TEST_F(TestServer1, decodeF18)
 {
-    EXPECT_CALL(service, f18()).WillOnce(Return(ts1::MyEnum::V3));
+    EXPECT_CALL(service, f18()).WillOnce(Return(srv1::MyEnum::V3));
     const auto response = receive("020012");
     EXPECT_EQ("03001203", response);
 }
@@ -238,9 +238,9 @@ TEST_F(TestServer1, decodeF18)
 // Decode function f19 which returns array of custom type
 TEST_F(TestServer1, decodeF19)
 {
-    const lrpc::array<ts1::CompositeData2, 2> expected{
-        ts1::CompositeData2{0xAA, 0xBB},
-        ts1::CompositeData2{0xCC, 0xDD}};
+    const lrpc::array<srv1::CompositeData2, 2> expected{
+        srv1::CompositeData2{0xAA, 0xBB},
+        srv1::CompositeData2{0xCC, 0xDD}};
     EXPECT_CALL(service, f19()).WillOnce(Return(expected));
     const auto response = receive("020013");
     EXPECT_EQ("060013AABBCCDD", response);
@@ -249,7 +249,7 @@ TEST_F(TestServer1, decodeF19)
 // Decode function f20 which returns nested custom types
 TEST_F(TestServer1, decodeF20)
 {
-    EXPECT_CALL(service, f20()).WillOnce(Return(ts1::CompositeData3{{0xAA, 0xBB}, ts1::MyEnum::V2}));
+    EXPECT_CALL(service, f20()).WillOnce(Return(srv1::CompositeData3{{0xAA, 0xBB}, srv1::MyEnum::V2}));
     const auto response = receive("020014");
     EXPECT_EQ("050014AABB02", response);
 }
@@ -317,7 +317,7 @@ TEST_F(TestServer1, decodef27)
     const lrpc::array<uint8_t, 2> r0{0x01, 0x02};
     const lrpc::array<lrpc::string_view, 2> r1{"t1", "t2"};
     const lrpc::array<lrpc::string_view, 2> r2{"t3", "t4"};
-    const ts1::complex_return r{r0, r1, r2};
+    const srv1::complex_return r{r0, r1, r2};
     EXPECT_CALL(service, f27()).WillOnce(Return(r));
     const auto response = receive("02001B");
     EXPECT_EQ("10001B0102743100743200743300743400", response);
@@ -326,11 +326,11 @@ TEST_F(TestServer1, decodef27)
 // Decode function f28 with CompositeData4 arg
 TEST_F(TestServer1, decodeF28)
 {
-    const ts1::CompositeData4 expected{
-        lrpc::array<ts1::CompositeData2, 2>{
-            ts1::CompositeData2{0xAA, 0xBB},
-            ts1::CompositeData2{0xCC, 0xDD}},
-        ts1::CompositeData2{0xEE, 0xFF}};
+    const srv1::CompositeData4 expected{
+        lrpc::array<srv1::CompositeData2, 2>{
+            srv1::CompositeData2{0xAA, 0xBB},
+            srv1::CompositeData2{0xCC, 0xDD}},
+        srv1::CompositeData2{0xEE, 0xFF}};
     EXPECT_CALL(service, f28(expected));
     const auto response = receive("09001CAABBCCDD01EEFF");
     EXPECT_EQ("02001C", response);

@@ -4,17 +4,17 @@ services:
     functions:
       - name: f0
         params:
-          - name: p1
+          - name: p0
             type: "@MyStruct1"
       - name: f1
         params:
-          - name: p1
+          - name: p0
             type: "@MyStruct2"
       - name: f2
         params:
-          - name: p1
+          - name: p0
             type: "@MyEnum1"
-          - name: p2
+          - name: p1
             type: "@MyStruct3"
   - name: srv1
     functions:
@@ -60,17 +60,17 @@ services:
 structs:
   - name: MyStruct1
     fields:
-      - { name: "a", type: uint16_t }
-      - { name: "b", type: uint8_t }
-      - { name: "c", type: bool }
+      - { name: "f0", type: uint16_t }
+      - { name: "f1", type: uint8_t }
+      - { name: "f2", type: bool }
   - name: MyStruct2
     fields:
-      - { name: a, type: "@MyStruct1" }
+      - { name: f0, type: "@MyStruct1" }
   - name: MyStruct3
     fields:
-      - { name: "a", type: string_2, count: 2 }
-      - { name: "b", type: "@MyStruct2", count: "?" }
-      - { name: "c", type: "@MyEnum1" }
+      - { name: "f0", type: string_2, count: 2 }
+      - { name: "f1", type: "@MyStruct2", count: "?" }
+      - { name: "f2", type: "@MyEnum1" }
 enums:
   - name: MyEnum1
     fields:

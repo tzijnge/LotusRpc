@@ -5,7 +5,7 @@
 #include <type_traits>
 
 // NOLINTNEXTLINE(misc-use-anonymous-namespace)
-class MockServer2S00 : public s00_shim
+class MockServer2S00 : public srv0_shim
 {
     public:
         MOCK_METHOD(void, f0, (bool p0, lrpc::string_view p1), (override));

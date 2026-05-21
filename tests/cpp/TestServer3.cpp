@@ -8,22 +8,22 @@
 #include <type_traits>
 
 // NOLINTNEXTLINE(misc-use-anonymous-namespace)
-class MockServer3S00 : public srv3::s00_shim
+class MockServer3S00 : public srv3::srv0_shim
 {
     public:
-        uint8_t f0(const uint8_t p1) override
+        uint8_t f0(const uint8_t p0) override
         {
-            return p1;
+            return p0;
         }
     };
 
 // NOLINTNEXTLINE(misc-use-anonymous-namespace)
-class MockServer3S01 : public srv3::s01_shim
+class MockServer3S01 : public srv3::srv1_shim
 {
     public:
-        uint16_t f0(const uint16_t p1) override
+        uint16_t f0(const uint16_t p0) override
         {
-            return p1;
+            return p0;
         }
     };
 
@@ -45,9 +45,9 @@ class TestServer3 : public ::testing::Test, public srv3::Server3
         void lrpcTransmit(const lrpc::span<const uint8_t> bytes) override
         {
             std::stringstream stream;
-            for (const auto b : bytes)
+            for (const auto _byte : bytes)
             {
-                stream << std::hex << std::setw(2) << std::uppercase << std::setfill('0') << static_cast<uint32_t>(b);
+                stream << std::hex << std::setw(2) << std::uppercase << std::setfill('0') << static_cast<uint32_t>(_byte);
             }
             transmitted += stream.str();
         }

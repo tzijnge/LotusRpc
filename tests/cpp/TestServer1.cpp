@@ -318,8 +318,8 @@ TEST_F(TestServer1, decodef27)
     const lrpc::array<uint8_t, 2> r0{0x01, 0x02};
     const lrpc::array<lrpc::string_view, 2> r1{"t1", "t2"};
     const lrpc::array<lrpc::string_view, 2> r2{"t3", "t4"};
-    const srv1::complex_return r{r0, r1, r2};
-    EXPECT_CALL(service, f27()).WillOnce(Return(r));
+    const srv1::complex_return ret{r0, r1, r2};
+    EXPECT_CALL(service, f27()).WillOnce(Return(ret));
     const auto response = receive("02001B");
     EXPECT_EQ("10001B0102743100743200743300743400", response);
 }

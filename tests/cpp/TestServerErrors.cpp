@@ -28,6 +28,7 @@ class MockServerErrorsS01 : public srv3::srv1_shim
     };
 
 // NOLINTNEXTLINE(misc-use-anonymous-namespace)
+// NOLINTNEXTLINE(misc-multiple-inheritance)
 class TestServerErrors : public ::testing::Test, public srv3::Server3
 {
     public:
@@ -45,9 +46,9 @@ class TestServerErrors : public ::testing::Test, public srv3::Server3
         void lrpcTransmit(const lrpc::span<const uint8_t> bytes) override
         {
             std::stringstream stream;
-            for (const auto b : bytes)
+            for (const auto _byte : bytes)
             {
-                stream << std::hex << std::setw(2) << std::uppercase << std::setfill('0') << static_cast<uint32_t>(b);
+                stream << std::hex << std::setw(2) << std::uppercase << std::setfill('0') << static_cast<uint32_t>(_byte);
             }
             transmitted += stream.str();
         }

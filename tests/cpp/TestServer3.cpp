@@ -28,6 +28,7 @@ class MockServer3S01 : public srv3::srv1_shim
     };
 
 // NOLINTNEXTLINE(misc-use-anonymous-namespace)
+// NOLINTNEXTLINE(misc-multiple-inheritance)
 class TestServer3 : public ::testing::Test, public srv3::Server3
 {
     public:

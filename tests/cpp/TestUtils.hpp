@@ -28,8 +28,7 @@ namespace testutils
 #pragma warning(disable : 4100)
 #endif
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
-    // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
+    // NOLINTBEGIN(cppcoreguidelines-avoid-const-or-ref-data-members, misc-non-private-member-variables-in-classes)
     MATCHER_P(SPAN_EQ, ex, "Equality matcher for lrpc::span")
     {
         if (ex.size() != arg.size())
@@ -47,9 +46,9 @@ namespace testutils
         }
         return true;
     }
+    // NOLINTEND(cppcoreguidelines-avoid-const-or-ref-data-members, misc-non-private-member-variables-in-classes)
 
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
-    // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
+    // NOLINTBEGIN(cppcoreguidelines-avoid-const-or-ref-data-members, misc-non-private-member-variables-in-classes)
     MATCHER_P(OPT_SPAN_EQ, ex, "Equality matcher for lrpc::optional of lrpc::span")
     {
         if (ex.has_value() != arg.has_value())
@@ -77,6 +76,7 @@ namespace testutils
         }
         return true;
     }
+    // NOLINTEND(cppcoreguidelines-avoid-const-or-ref-data-members, misc-non-private-member-variables-in-classes)
 
 #ifdef _MSC_VER
 #pragma warning(pop)
@@ -93,7 +93,7 @@ namespace testutils
 
         std::vector<uint8_t> bytes;
 
-        for (auto i = 0U; i < numberBytes; i += 1)
+        for (size_t i = 0; i < numberBytes; i += 1)
         {
             const auto result = etl::to_arithmetic<uint8_t>(hex.substr(i * 2U, 2U), etl::hex);
             if (result.has_value())
@@ -122,6 +122,7 @@ namespace testutils
         return ss.str();
     }
 
+    // NOLINTNEXTLINE(misc-multiple-inheritance)
     template <typename Server, typename Service, bool AutoReset = true>
     class TestServerBase : public Server, public ::testing::Test
     {

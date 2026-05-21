@@ -109,6 +109,7 @@ TEST_F(TestBytearray, custom)
     const auto ba6 = makeBytes(0x76, 0x77);
     const auto ba7 = makeBytes(0x78);
 
+    // NOLINTNEXTLINE(bugprone-exception-escape)
     const auto handler = [ba4, ba5, ba6, ba7](const test_ba::BytearrayStruct &bas)
     {
         EXPECT_EQ(2, bas.f0.size());

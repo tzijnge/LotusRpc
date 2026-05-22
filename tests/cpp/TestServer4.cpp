@@ -1,6 +1,8 @@
 #include "generated/Server4/Server4.hpp"
 #include <gtest/gtest.h>
+#include <cstdint>
 #include <type_traits>
+#include "TestUtils.hpp"
 
 static_assert(srv4::c0 == 111, "");
 static_assert(std::is_same<decltype(srv4::c0), const int32_t>::value, "");
@@ -37,23 +39,27 @@ constexpr double testc11{333.444};
 static_assert(srv4::c11 == testc11, "");
 static_assert(std::is_same<decltype(srv4::c11), const double>::value, "");
 
-static_assert(srv4::c12 == true, "");
+static_assert(srv4::c12, "");
 static_assert(std::is_same<decltype(srv4::c12), const bool>::value, "");
 
-static_assert(srv4::c13 == true, "");
+static_assert(srv4::c13, "");
 static_assert(std::is_same<decltype(srv4::c13), const bool>::value, "");
 
-static_assert(srv4::c14 == false, "");
+static_assert(!srv4::c14, "");
 static_assert(std::is_same<decltype(srv4::c14), const bool>::value, "");
 
-static_assert(srv4::c15 == true, "");
+static_assert(srv4::c15, "");
 static_assert(std::is_same<decltype(srv4::c15), const bool>::value, "");
 
-static_assert(srv4::c16 == false, "");
+static_assert(!srv4::c16, "");
 static_assert(std::is_same<decltype(srv4::c16), const bool>::value, "");
 
-constexpr double testc17{2.3e-5};
-static_assert(srv4::c17 == testc17, "");
+namespace
+{
+    constexpr double testc17{2.3e-5};
+    constexpr double tolerance{1e-10};
+}
+static_assert(testutils::areClose(srv4::c17, testc17, tolerance), "");
 static_assert(std::is_same<decltype(srv4::c17), const double>::value, "");
 
 static_assert(srv4::c18 == "This is an implicit string constant", "");
@@ -74,15 +80,15 @@ TEST(TestServer4, c22)
     EXPECT_EQ(srv4::c22, (lrpc::array<lrpc::byte, 4>{0xAA, 0xBB, 0x00, 0x01}));
 }
 
-static_assert(static_cast<int>(srv4::MyEnum::V0) == 0, "");
-static_assert(static_cast<int>(srv4::MyEnum::V1) == 1, "");
-static_assert(static_cast<int>(srv4::MyEnum::V2) == 2, "");
-static_assert(static_cast<int>(srv4::MyEnum::V3) == 3, "");
+static_assert(static_cast<uint8_t>(srv4::MyEnum::V0) == 0, "");
+static_assert(static_cast<uint8_t>(srv4::MyEnum::V1) == 1, "");
+static_assert(static_cast<uint8_t>(srv4::MyEnum::V2) == 2, "");
+static_assert(static_cast<uint8_t>(srv4::MyEnum::V3) == 3, "");
 
-static_assert(static_cast<int>(srv4::MyEnum4::f1) == 0, "");
-static_assert(static_cast<int>(srv4::MyEnum4::f2) == 1, "");
-static_assert(static_cast<int>(srv4::MyEnum4::f3) == 222, "");
-static_assert(static_cast<int>(srv4::MyEnum4::f4) == 223, "");
+static_assert(static_cast<uint8_t>(srv4::MyEnum4::f0) == 0, "");
+static_assert(static_cast<uint8_t>(srv4::MyEnum4::f1) == 1, "");
+static_assert(static_cast<uint8_t>(srv4::MyEnum4::f2) == 222, "");
+static_assert(static_cast<uint8_t>(srv4::MyEnum4::f3) == 223, "");
 
 namespace meta = srv4::lrpc_meta;
 static_assert(meta::DefinitionVersion == "major.minor.patch.123", "");

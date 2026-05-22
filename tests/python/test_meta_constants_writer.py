@@ -21,7 +21,7 @@ def test_with_namespace() -> None:
 
     expected = (
         """#pragma once
-#include <stdint.h>
+#include <cstdint>
 #include "lrpccore/LrpcTypes.hpp"
 
 namespace test123
@@ -64,7 +64,7 @@ def test_without_namespace() -> None:
 
     expected = (
         """#pragma once
-#include <stdint.h>
+#include <cstdint>
 #include "lrpccore/LrpcTypes.hpp"
 
 namespace lrpc_meta
@@ -104,7 +104,7 @@ def test_with_definition_hash_and_version() -> None:
 
     expected = (
         """#pragma once
-#include <stdint.h>
+#include <cstdint>
 #include "lrpccore/LrpcTypes.hpp"
 
 namespace test123
@@ -148,7 +148,7 @@ def test_without_namespace_with_compressed_definition() -> None:
 
     expected = (
         """#pragma once
-#include <stdint.h>
+#include <cstdint>
 #include "lrpccore/LrpcTypes.hpp"
 
 namespace lrpc_meta

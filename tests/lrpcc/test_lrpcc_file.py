@@ -48,7 +48,7 @@ Options:
   --help     Show this message and exit.
 
 Commands:
-  s0
+  srv0
 """
     result = subprocess.run(cli, shell=True, capture_output=True, check=False)  # noqa: S602
 
@@ -67,7 +67,7 @@ Options:
   --help     Show this message and exit.
 
 Commands:
-  s0
+  srv0
 """
     result = subprocess.run(cli, shell=True, capture_output=True, check=False)  # noqa: S602
 

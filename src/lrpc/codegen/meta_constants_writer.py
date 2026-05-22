@@ -30,7 +30,7 @@ class MetaConstantsWriter:
         self._definition_stream_chunk_size = definition_stream_chunk_size
 
         self._file.write("#pragma once")
-        self._file.write("#include <stdint.h>")
+        self._file.write("#include <cstdint>")
         self._file.write('#include "lrpccore/LrpcTypes.hpp"')
 
         self._file.newline()

@@ -71,7 +71,7 @@ void lrpcReceive(uint8_t byte);                    // single byte
 void lrpcReceive(lrpc::span<const uint8_t> bytes); // span of bytes (lvalue container implicitly converted to span)
 
 template <typename TContainer>
-void lrpcReceive(TContainer &&bytes);              // temporary container of bytes
+void lrpcReceive(const TContainer &bytes);         // container of bytes
 
 ```
 

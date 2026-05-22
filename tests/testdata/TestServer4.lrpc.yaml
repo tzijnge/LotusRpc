@@ -70,28 +70,28 @@ constants:
     value: "AA bb 00 01"
     cppType: bytearray
 services:
-  - name: "s00"
+  - name: "srv0"
     functions:
       - name: "f0"
         params:
-          - name: e
+          - name: p0
             type: "@MyEnum"
-          - name: f
+          - name: p1
             type: "@MyEnum2"
-          - name: g
+          - name: p2
             type: "@MyEnum3"
-          - name: h
+          - name: p3
             type: "@MyStruct1"
-          - name: i
+          - name: p4
             type: "@MyStruct2"
-          - name: j
+          - name: p5
             type: "@MyEnum4"
         returns:
-          - name: "a"
+          - name: "r0"
             type: uint16_t
             count: *array_size
 enums:
-  - { name: "MyEnum", fields: [V0, V1, V2, V3] }
+  - {name: "MyEnum", fields: [V0, V1, V2, V3]}
   - name: "MyEnum2"
     fields: [V0, V1, V2, V3]
     external: ext_files/MyEnum2.hpp
@@ -99,15 +99,15 @@ enums:
   - name: "MyEnum3"
     external: ext_files/MyEnum3.hpp
     fields:
-      - { name: V0, id: 0 }
-      - { name: V55, id: 55 }
-      - { name: V200, id: 200 }
+      - {name: V0, id: 0}
+      - {name: V55, id: 55}
+      - {name: V200, id: 200}
   - name: MyEnum4
     fields:
-      - { name: f1 }
-      - { name: f2 }
-      - { name: f3, id: 222 }
-      - { name: f4 }
+      - {name: f0}
+      - {name: f1}
+      - {name: f2, id: 222}
+      - {name: f3}
 structs:
   - name: MyStruct1
     fields:

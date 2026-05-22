@@ -2,45 +2,46 @@
 
 using ::testing::Return;
 
-class TestBytearrayService : public test_ba::bytearray_shim
+// NOLINTNEXTLINE(misc-use-anonymous-namespace)
+class MockBytearray : public test_ba::bytearray_shim
 {
-public:
-    MOCK_METHOD((lrpc::bytearray), param_return, (lrpc::bytearray), (override));
-    MOCK_METHOD((std::tuple<lrpc::bytearray, lrpc::bytearray>), param_return_multiple, (lrpc::bytearray p0, lrpc::bytearray), (override));
-    MOCK_METHOD((lrpc::optional<lrpc::bytearray>), optional, (lrpc::optional<lrpc::bytearray>), (override));
-    MOCK_METHOD((lrpc::span<const lrpc::bytearray>), array, (lrpc::span<const lrpc::bytearray>), (override));
-    MOCK_METHOD(test_ba::BytearrayStruct, custom, (const test_ba::BytearrayStruct &), (override));
+    public:
+        MOCK_METHOD((lrpc::bytearray), param_return, (lrpc::bytearray), (override));
+        MOCK_METHOD((std::tuple<lrpc::bytearray, lrpc::bytearray>), param_return_multiple, (lrpc::bytearray p0, lrpc::bytearray), (override));
+        MOCK_METHOD((lrpc::optional<lrpc::bytearray>), optional, (lrpc::optional<lrpc::bytearray>), (override));
+        MOCK_METHOD((lrpc::span<const lrpc::bytearray>), array, (lrpc::span<const lrpc::bytearray>), (override));
+        MOCK_METHOD(test_ba::BytearrayStruct, custom, (const test_ba::BytearrayStruct &), (override));
 
-    // client streams
-    MOCK_METHOD(void, client_single, (lrpc::bytearray), (override));
-    MOCK_METHOD(void, client_multiple, (lrpc::bytearray, lrpc::bytearray), (override));
-    MOCK_METHOD(void, client_optional, (lrpc::optional<lrpc::bytearray>), (override));
-    MOCK_METHOD(void, client_array, (lrpc::span<const lrpc::bytearray>), (override));
-    MOCK_METHOD(void, client_custom, (const test_ba::BytearrayStruct &), (override));
+        // client streams
+        MOCK_METHOD(void, client_single, (lrpc::bytearray), (override));
+        MOCK_METHOD(void, client_multiple, (lrpc::bytearray, lrpc::bytearray), (override));
+        MOCK_METHOD(void, client_optional, (lrpc::optional<lrpc::bytearray>), (override));
+        MOCK_METHOD(void, client_array, (lrpc::span<const lrpc::bytearray>), (override));
+        MOCK_METHOD(void, client_custom, (const test_ba::BytearrayStruct &), (override));
 
-    // server streams
-    MOCK_METHOD(void, server_single, (), (override));
-    MOCK_METHOD(void, server_single_stop, (), (override));
-    MOCK_METHOD(void, server_multiple, (), (override));
-    MOCK_METHOD(void, server_multiple_stop, (), (override));
-    MOCK_METHOD(void, server_optional, (), (override));
-    MOCK_METHOD(void, server_optional_stop, (), (override));
-    MOCK_METHOD(void, server_array, (), (override));
-    MOCK_METHOD(void, server_array_stop, (), (override));
-    MOCK_METHOD(void, server_custom, (), (override));
-    MOCK_METHOD(void, server_custom_stop, (), (override));
+        // server streams
+        MOCK_METHOD(void, server_single, (), (override));
+        MOCK_METHOD(void, server_single_stop, (), (override));
+        MOCK_METHOD(void, server_multiple, (), (override));
+        MOCK_METHOD(void, server_multiple_stop, (), (override));
+        MOCK_METHOD(void, server_optional, (), (override));
+        MOCK_METHOD(void, server_optional_stop, (), (override));
+        MOCK_METHOD(void, server_array, (), (override));
+        MOCK_METHOD(void, server_array_stop, (), (override));
+        MOCK_METHOD(void, server_custom, (), (override));
+        MOCK_METHOD(void, server_custom_stop, (), (override));
 };
 
 namespace
 {
     template <typename... Ts>
-    std::vector<lrpc::byte> makeBytes(Ts &&...args) noexcept
+    std::vector<lrpc::byte> makeBytes(Ts &&...args)
     {
         return {static_cast<lrpc::byte>(std::forward<Ts>(args))...};
     }
 }
 
-using TestBytearray = testutils::TestServerBase<test_ba::Bytearray, TestBytearrayService>;
+using TestBytearray = testutils::TestServerBase<test_ba::Bytearray, MockBytearray>;
 
 TEST_F(TestBytearray, param_return)
 {
@@ -81,6 +82,7 @@ TEST_F(TestBytearray, array)
     const auto ba1 = makeBytes(0x73, 0x74, 0x75);
     const std::vector<lrpc::bytearray> r0{ba0, ba1};
 
+    // NOLINTNEXTLINE(bugprone-exception-escape)
     const auto handler = [r0](lrpc::span<const lrpc::bytearray> ba)
     {
         EXPECT_EQ(2, ba.size());
@@ -107,6 +109,7 @@ TEST_F(TestBytearray, custom)
     const auto ba6 = makeBytes(0x76, 0x77);
     const auto ba7 = makeBytes(0x78);
 
+    // NOLINTNEXTLINE(bugprone-exception-escape)
     const auto handler = [ba4, ba5, ba6, ba7](const test_ba::BytearrayStruct &bas)
     {
         EXPECT_EQ(2, bas.f0.size());

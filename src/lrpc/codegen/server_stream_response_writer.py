@@ -17,7 +17,7 @@ class ServerStreamResponseWriter:
             else:
                 response = self._response_captures(returns)
 
-                with self._file.block(f"const auto _lrpc_paramWriter = [{response}](Writer &w)", ";"):
+                with self._file.block(f"const auto _lrpc_paramWriter = [{response}](Writer &writer)", ";"):
                     for r in returns:
                         self._file.write(f"lrpc::write_unchecked<{r.rw_type()}>({self._write_params(r)});")
 
@@ -25,7 +25,7 @@ class ServerStreamResponseWriter:
 
     @staticmethod
     def _write_params(var: LrpcVar) -> str:
-        params = ["w", var.name()]
+        params = ["writer", var.name()]
 
         if var.is_array():
             params.append(f"{var.array_size()}")

@@ -47,8 +47,11 @@ mark_as_advanced(
 include(GoogleTest)
 include(${CMAKE_SOURCE_DIR}/cmake/CompilerWarnings.cmake)
 
-# set(Python3_FIND_REGISTRY NEVER)
-# set(Python3_FIND_STRATEGY LOCATION)
+if(ENABLE_CLANG_TIDY)
+  find_program(CLANG_TIDY_EXE NAMES clang-tidy-22 clang-tidy-21 clang-tidy-20 clang-tidy-19 clang-tidy REQUIRED)
+  message(STATUS "clang-tidy enabled: ${CLANG_TIDY_EXE}")
+endif()
+
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
 add_library(UnitTests_core INTERFACE)
@@ -134,6 +137,10 @@ target_link_libraries(
 
 set_property(TARGET UnitTests PROPERTY COMPILE_WARNING_AS_ERROR ON)
 
+if(CLANG_TIDY_EXE)
+  set_property(TARGET UnitTests PROPERTY CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
+endif()
+
 gtest_discover_tests(UnitTests XML_OUTPUT_DIR TestResults DISCOVERY_MODE PRE_TEST)
 
 function(add_test_ba_executable byte_type)
@@ -154,6 +161,10 @@ function(add_test_ba_executable byte_type)
   )
 
   set_property(TARGET ${UNIT_TESTS_BA_EXE} PROPERTY COMPILE_WARNING_AS_ERROR ON)
+
+  if(CLANG_TIDY_EXE)
+    set_property(TARGET ${UNIT_TESTS_BA_EXE} PROPERTY CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
+  endif()
 endfunction()
 
 

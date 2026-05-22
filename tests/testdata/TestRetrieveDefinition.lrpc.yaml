@@ -4,6 +4,6 @@ settings:
   tx_buffer_size: 112
   embed_definition: true
 services:
-  - name: s0
+  - name: srv0
     functions:
       - name: f0

@@ -49,9 +49,9 @@ def make_lrpcc(
 def test_server1_f13(capsys: pytest.CaptureFixture[str]) -> None:
     response = "04000dcdab"
     lrpcc = make_lrpcc("../testdata/TestServer1.lrpc.yaml", response, check_server_version=False)
-    lrpcc._command_handler("s0", "f13")
+    lrpcc._command_handler("srv0", "f13")
 
-    expected_response = """a: 43981 (0xabcd)
+    expected_response = """r0: 43981 (0xabcd)
 """
     assert escape_ansi(capsys.readouterr().out) == expected_response
 
@@ -59,9 +59,9 @@ def test_server1_f13(capsys: pytest.CaptureFixture[str]) -> None:
 def test_server1_f13_with_version_check(capsys: pytest.CaptureFixture[str]) -> None:
     response = "04000dcdab"
     lrpcc = make_lrpcc("../testdata/TestServer1.lrpc.yaml", response, check_server_version=True)
-    lrpcc._command_handler("s0", "f13")
+    lrpcc._command_handler("srv0", "f13")
 
-    expected_response = """a: 43981 (0xabcd)
+    expected_response = """r0: 43981 (0xabcd)
 """
     assert escape_ansi(capsys.readouterr().out) == expected_response
 
@@ -69,7 +69,7 @@ def test_server1_f13_with_version_check(capsys: pytest.CaptureFixture[str]) -> N
 def test_server1_f29(capsys: pytest.CaptureFixture[str]) -> None:
     response = "06001d03334455"
     lrpcc = make_lrpcc("../testdata/TestServer1.lrpc.yaml", response, check_server_version=False)
-    lrpcc._command_handler("s0", "f29", p0=b"\x77\x88\x99")
+    lrpcc._command_handler("srv0", "f29", p0=b"\x77\x88\x99")
 
     expected_response = """r0: [33 44 55]
 """
@@ -79,21 +79,21 @@ def test_server1_f29(capsys: pytest.CaptureFixture[str]) -> None:
 def test_server1_f30(capsys: pytest.CaptureFixture[str]) -> None:
     response = "02001e"
     lrpcc = make_lrpcc("../testdata/TestServer1.lrpc.yaml", response, check_server_version=False)
-    lrpcc._command_handler("s0", "f30", p0=[b"\x33\x44", b"\x55\x66"])
+    lrpcc._command_handler("srv0", "f30", p0=[b"\x33\x44", b"\x55\x66"])
 
     assert escape_ansi(capsys.readouterr().out) == ""
 
 
 def test_server1_stream0(capsys: pytest.CaptureFixture[str]) -> None:
     lrpcc = make_lrpcc("../testdata/TestServer1.lrpc.yaml", check_server_version=False)
-    lrpcc._command_handler("s0", "stream0", p0=b"\x77\x88\x99", final=False)
+    lrpcc._command_handler("srv0", "stream0", p0=b"\x77\x88\x99", final=False)
 
     assert escape_ansi(capsys.readouterr().out) == ""
 
 
 def test_server1_stream0_final(capsys: pytest.CaptureFixture[str]) -> None:
     lrpcc = make_lrpcc("../testdata/TestServer1.lrpc.yaml", check_server_version=False)
-    lrpcc._command_handler("s0", "stream0", p0=b"\x77\x88\x99", final=True)
+    lrpcc._command_handler("srv0", "stream0", p0=b"\x77\x88\x99", final=True)
 
     assert escape_ansi(capsys.readouterr().out) == ""
 
@@ -202,9 +202,9 @@ def test_server_finite_stop(capsys: pytest.CaptureFixture[str]) -> None:
 def test_error_response_unknown_service(capsys: pytest.CaptureFixture[str], caplog: pytest.LogCaptureFixture) -> None:
     response = "0aff000044550000000000"
     lrpcc = make_lrpcc("../testdata/TestServer1.lrpc.yaml", response, check_server_version=False)
-    lrpcc._command_handler("s0", "f13")
+    lrpcc._command_handler("srv0", "f13")
 
-    expected_log = "Server reported error 'UnknownService' for call to s0.f13"
+    expected_log = "Server reported error 'UnknownService' for call to srv0.f13"
     expected_print = "Server reported call to unknown service with ID 68. Function or stream ID is 85"
 
     assert len(caplog.messages) == 1
@@ -218,9 +218,9 @@ def test_error_response_unknown_function_or_stream(
 ) -> None:
     response = "0aff000144550000000000"
     lrpcc = make_lrpcc("../testdata/TestServer1.lrpc.yaml", response, check_server_version=False)
-    lrpcc._command_handler("s0", "f13")
+    lrpcc._command_handler("srv0", "f13")
 
-    expected_log = "Server reported error 'UnknownFunctionOrStream' for call to s0.f13"
+    expected_log = "Server reported error 'UnknownFunctionOrStream' for call to srv0.f13"
     expected_print = "Server reported call to unknown function or stream with ID 85 in service with ID 68"
 
     assert len(caplog.messages) == 1
@@ -239,14 +239,14 @@ def test_definition_from_server_always(capsys: pytest.CaptureFixture[str]) -> No
         check_server_version=False,
         definition_from_server="always",
     )
-    lrpcc._command_handler("s0", "f0")
+    lrpcc._command_handler("srv0", "f0")
 
     assert escape_ansi(capsys.readouterr().out) == ""
 
 
 def test_definition_from_server_once(capsys: pytest.CaptureFixture[str]) -> None:
     response = embedded_definition_for_testing()
-    # actual response to s0.f0. Times 2 to make sure s0.f0 can be called again without retrieving the
+    # actual response to srv0.f0. Times 2 to make sure srv0.f0 can be called again without retrieving the
     # embedded definition again
     response += b"\x02\x00\x00"
     response += b"\x02\x00\x00"
@@ -261,10 +261,10 @@ def test_definition_from_server_once(capsys: pytest.CaptureFixture[str]) -> None
             check_server_version=False,
             definition_from_server="once",
         )
-        lrpcc._command_handler("s0", "f0")
+        lrpcc._command_handler("srv0", "f0")
         assert definition_file.exists()
 
-        lrpcc._command_handler("s0", "f0")
+        lrpcc._command_handler("srv0", "f0")
 
         assert escape_ansi(capsys.readouterr().out) == ""
 

@@ -5,5 +5,7 @@ project(UnitTests)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(ENABLE_CLANG_TIDY "Enable clang-tidy analysis" OFF)
+
 enable_testing()
 add_subdirectory(tests/cpp)

@@ -1,4 +1,6 @@
 name: Server5
+settings:
+  namespace: srv5
 services:
   # service with only client streams
   - name: srv0
@@ -7,15 +9,15 @@ services:
         origin: client
         finite: false
         params:
-          - { name: p0, type: uint16_t }
-          - { name: p1, type: uint8_t }
+          - {name: p0, type: uint16_t}
+          - {name: p1, type: uint8_t}
       - name: client_finite
         id: 55
         origin: client
         finite: true
         params:
-          - { name: p0, type: bool }
-          - { name: p1, type: "@DoorState" }
+          - {name: p0, type: bool}
+          - {name: p1, type: "@DoorState"}
   # service with only server streams
   - name: srv1
     id: 66
@@ -24,32 +26,32 @@ services:
         origin: server
         finite: false
         params:
-          - { name: p0, type: uint16_t }
-          - { name: p1, type: uint8_t }
+          - {name: p0, type: uint16_t}
+          - {name: p1, type: uint8_t}
 
       - name: server_finite
         id: 33
         origin: server
         finite: true
         params:
-          - { name: p0, type: bool }
-          - { name: p1, type: "@DoorState" }
+          - {name: p0, type: bool}
+          - {name: p1, type: "@DoorState"}
   # service with a client stream a server stream and a function
   - name: srv2
     streams:
       - name: client_infinite
         origin: client
         params:
-          - { name: p1, type: "@DoorState" }
+          - {name: p0, type: "@DoorState"}
       - name: server_infinite
         origin: server
         params:
-          - { name: p1, type: "@DoorState" }
-          - { name: p2, type: "@Color" }
+          - {name: p0, type: "@DoorState"}
+          - {name: p1, type: "@Color"}
     functions:
       - name: f0
         params:
-          - { name: p1, type: "@DoorState" }
+          - {name: p0, type: "@DoorState"}
   # No unit tests for this service. Just there to make sure it compiles
   - name: srv3
     streams:
@@ -57,26 +59,26 @@ services:
         origin: client
         finite: false
         params:
-          - { name: p1, type: uint8_t, count: 2 }
-          - { name: p2, type: string_3, count: 2 }
+          - {name: p0, type: uint8_t, count: 2}
+          - {name: p1, type: string_3, count: 2}
       - name: client_finite
         origin: client
         finite: true
         params:
-          - { name: p1, type: uint8_t, count: 2 }
-          - { name: p2, type: string_3, count: 2 }
+          - {name: p0, type: uint8_t, count: 2}
+          - {name: p1, type: string_3, count: 2}
       - name: server_infinite
         origin: server
         finite: false
         params:
-          - { name: p1, type: uint8_t, count: 2 }
-          - { name: p2, type: string_3, count: 2 }
+          - {name: p0, type: uint8_t, count: 2}
+          - {name: p1, type: string_3, count: 2}
       - name: server_finite
         origin: server
         finite: true
         params:
-          - { name: p1, type: uint8_t, count: 2 }
-          - { name: p2, type: string_3, count: 2 }
+          - {name: p0, type: uint8_t, count: 2}
+          - {name: p1, type: string_3, count: 2}
 
 enums:
   - name: DoorState

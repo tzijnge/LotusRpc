@@ -9,7 +9,7 @@ class ClientStreamShimWriter:
         self._file = file
 
     def write_shim(self, stream: LrpcStream) -> None:
-        with self._file.block(f"void {stream.name()}_shim(Reader& r)"):
+        with self._file.block(f"void {stream.name()}_shim(Reader& reader)"):
             for p in stream.params():
                 self._write_param_readers(p)
 
@@ -27,7 +27,7 @@ class ClientStreamShimWriter:
 
     @staticmethod
     def _read_params(var: LrpcVar) -> str:
-        params = ["r"]
+        params = ["reader"]
         if var.is_array():
             params.append(f"{var.name()}")
             params.append(f"{var.array_size()}")

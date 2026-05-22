@@ -13,7 +13,7 @@ class StructCodecWriter:
         name = self._name()
         self._file("template<>")
         with self._file.block(
-            f"inline void write_unchecked<{name}>(etl::byte_stream_writer& writer, const {name}& obj)",
+            f"inline void write_unchecked<{name}>(etl::byte_stream_writer& writer, const {name}& value)",
         ):
             for f in self._descriptor.fields():
                 t = f.rw_type(self._namespace)
@@ -24,7 +24,7 @@ class StructCodecWriter:
         self._file("template<>")
         name = self._name()
         with self._file.block(f"inline {name} read_unchecked<{name}>(etl::byte_stream_reader& reader)"):
-            self._file(f"{name} obj;")
+            self._file(f"{name} value {{}};")
 
             for f in self._descriptor.fields():
                 assignment = StructCodecWriter._read_assignment(f)
@@ -32,14 +32,14 @@ class StructCodecWriter:
                 p = StructCodecWriter._read_params(f)
                 self._file.write(f"{assignment}lrpc::read_unchecked<{t}>({p});")
 
-            self._file("return obj;")
+            self._file("return value;")
 
     def _name(self) -> str:
         return f"{self._namespace}::{self._descriptor.name()}" if self._namespace else self._descriptor.name()
 
     @staticmethod
     def _write_params(var: LrpcVar) -> str:
-        params = ["writer", f"obj.{var.name()}"]
+        params = ["writer", f"value.{var.name()}"]
         if var.is_array():
             params.append(f"{var.array_size()}")
         if var.is_fixed_size_string():
@@ -51,7 +51,7 @@ class StructCodecWriter:
     def _read_params(var: LrpcVar) -> str:
         params = ["reader"]
         if var.is_array():
-            params.append(f"obj.{var.name()}")
+            params.append(f"value.{var.name()}")
             params.append(f"{var.array_size()}")
         if var.is_fixed_size_string():
             params.append(f"{var.string_size()}")
@@ -60,4 +60,4 @@ class StructCodecWriter:
 
     @staticmethod
     def _read_assignment(var: LrpcVar) -> str:
-        return "" if var.is_array() else f"obj.{var.name()} = "
+        return "" if var.is_array() else f"value.{var.name()} = "

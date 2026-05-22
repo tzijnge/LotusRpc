@@ -347,16 +347,16 @@ def test_decode_struct() -> None:
     var = LrpcVar({"name": "v1", "type": "struct@MyStruct1"})
 
     assert lrpc_decode(b"\xd7\x11\x7b\x01", var, lrpc_def) == {
-        "b": 123,
-        "a": 4567,
-        "c": True,
+        "f1": 123,
+        "f0": 4567,
+        "f2": True,
     }
 
     #  trailing bytes
     assert lrpc_decode(b"\xd7\x11\x7b\x01\x00", var, lrpc_def) == {
-        "b": 123,
-        "a": 4567,
-        "c": True,
+        "f1": 123,
+        "f0": 4567,
+        "f2": True,
     }
 
     with pytest.raises(
@@ -374,16 +374,16 @@ def test_decode_optional_struct() -> None:
 
     assert lrpc_decode(b"\x00", var, lrpc_def) is None
     assert lrpc_decode(b"\x01\xd7\x11\x7b\x01", var, lrpc_def) == {
-        "b": 123,
-        "a": 4567,
-        "c": True,
+        "f1": 123,
+        "f0": 4567,
+        "f2": True,
     }
 
 
 def test_decode_nested_struct() -> None:
     var = LrpcVar({"name": "v1", "type": "struct@MyStruct2"})
 
-    assert lrpc_decode(b"\xd7\x11\x7b\x01", var, lrpc_def) == {"a": {"b": 123, "a": 4567, "c": True}}
+    assert lrpc_decode(b"\xd7\x11\x7b\x01", var, lrpc_def) == {"f0": {"f1": 123, "f0": 4567, "f2": True}}
 
 
 def test_decode_enum() -> None:
@@ -409,5 +409,5 @@ def test_decode_array_of_struct() -> None:
     decoded = lrpc_decode(b"\xd7\x11\x7b\x01\x11\x22\x33\x00", var, lrpc_def)
 
     assert len(decoded) == 2
-    assert decoded[0] == {"a": {"b": 123, "a": 4567, "c": True}}
-    assert decoded[1] == {"a": {"b": 51, "a": 8721, "c": False}}
+    assert decoded[0] == {"f0": {"f1": 123, "f0": 4567, "f2": True}}
+    assert decoded[1] == {"f0": {"f1": 51, "f0": 8721, "f2": False}}

@@ -82,7 +82,7 @@ jobs:
           -G Ninja
 
       - name: Build unit tests
-        run: cmake --build cmake_build --config ${{env.BUILD_TYPE}} --parallel 4
+        run: cmake --build cmake_build --config ${{env.BUILD_TYPE}} --parallel
 
       - name: C++ unit tests
         working-directory: cmake_build
@@ -111,6 +111,9 @@ jobs:
       - name: SonarQube Install
         uses: SonarSource/sonarqube-scan-action/install-build-wrapper@59db25f34e16620e48ab4bb9e4a5dce155cb5432
 
+      - name: Install LLVM 19
+        run: sudo apt-get install -y clang-19 clang-tidy-19
+
       - name: Install Python requirements
         run: pip install -r requirements/dev.txt
 
@@ -137,14 +140,20 @@ jobs:
           --parallel 10
 
       - name: Configure unit tests
-        run: cmake -B ${{github.workspace}}/cmake_build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+        run: >
+          cmake -B ${{github.workspace}}/cmake_build
+          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+          -DCMAKE_C_COMPILER=clang-19
+          -DCMAKE_CXX_COMPILER=clang++-19
+          -DENABLE_CLANG_TIDY=ON
+          -G Ninja
 
-      - name: Build unit tests with SQ
+      - name: Build unit tests with SQ and Clang-tidy
         run: >
           build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build
-          ${{github.workspace}}/cmake_build --config ${{env.BUILD_TYPE}}
+          ${{github.workspace}}/cmake_build --config ${{env.BUILD_TYPE}} --parallel
 
-      - name: C++ unit tests
+      - name: Run C++ unit tests
         working-directory: ${{github.workspace}}/cmake_build
         run: >
           ctest -C ${{env.BUILD_TYPE}} --output-junit ../testresults/cpptestresults.xml --output-on-failure

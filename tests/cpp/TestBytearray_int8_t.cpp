@@ -1,2 +1,4 @@
+// NOLINTNEXTLINE(misc-include-cleaner)
 #include "generated/Bytearray/int8_t/Bytearray.hpp"
+// NOLINTNEXTLINE(bugprone-suspicious-include)
 #include "TestBytearray.template.cpp"

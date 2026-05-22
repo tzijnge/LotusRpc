@@ -1,0 +1,54 @@
+---
+# clang-tidy configuration for LotusRpc
+# Target: C++11+, safety and efficiency focus, resource-constrained / bare-metal platforms
+
+Checks: >-
+  bugprone-*,
+  clang-analyzer-*,
+  cppcoreguidelines-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-non-private-member-variables-in-classes,
+  -misc-use-internal-linkage,
+  -modernize-unary-static-assert,
+  -modernize-use-nodiscard,
+  -modernize-use-trailing-return-type,
+  -modernize-type-traits,
+  -modernize-concat-nested-namespaces,
+  -modernize-use-std-print,
+  -modernize-use-uncaught-exceptions,
+  -readability-identifier-naming,
+  -readability-magic-numbers,
+  -portability-avoid-pragma-once
+
+# All clang-tidy warnings are build errors
+WarningsAsErrors: "*"
+
+# Skip system and third-party headers; only analyse project files
+SystemHeaders: false
+HeaderFilterRegex: ".*"
+ExcludeHeaderFilterRegex: "cmake_build[/\\\\]_deps"
+
+CheckOptions:
+  # Satisfy the rule of zero/five: allow classes that only default their destructor
+  - key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+    value: "true"
+  - key: readability-identifier-naming.VariableCase
+    value: "camelBack"
+  - key: readability-identifier-length.MinimumVariableNameLength
+    value: 2
+  - key: readability-identifier-length.MinimumParameterNameLength
+    value: 2
+  # Allow i, j, k as loop counter names (common C++ convention)
+  - key: readability-identifier-length.IgnoredLoopCounterNames
+    value: "^[ijk_]$"
+  # span types are cheap to copy by design (pointer + size), so passing by value is intentional
+  - key: performance-unnecessary-value-param.AllowedTypes
+    value: "lrpc::span;lrpc::string_view;etl::span;std::span"
+  # Don't count macro expansions (e.g. EXPECT_EQ) toward cognitive complexity
+  - key: readability-function-cognitive-complexity.IgnoreMacros
+    value: "true"

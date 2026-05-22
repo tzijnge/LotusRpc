@@ -41,21 +41,20 @@ class ServiceShimVisitor(LrpcVisitor):
 
         with self._file.block(f"class {self._class_name()} : public lrpc::Service", ";"):
             self._file.label("public")
-            self._file(f"virtual ~{self._class_name()}() = default;")
+            self._file(f"~{self._class_name()}() override = default;")
             self._file.newline()
             self._file(f"uint8_t id() const override {{ return {self._service_id()}; }}")
             self._file.newline()
 
-            with self._file.block("void invoke(Reader &r) override"):
-                self._file("const auto functionOrStreamId = r.read_unchecked<uint8_t>();")
+            with self._file.block("void invoke(Reader &reader) override"):
+                self._file("const auto functionOrStreamId = reader.read_unchecked<uint8_t>();")
                 self._file("const auto functionOrStreamShim = shim(functionOrStreamId);")
-                self._file("((this)->*(functionOrStreamShim))(r);")
+                self._file("((this)->*functionOrStreamShim)(reader);")
 
             self._file.newline()
             self._write_server_stream_responses(server_streams)
             self._write_client_stream_stop_requests(client_streams)
 
-            self._file.label("protected")
             self._write_function_declarations(functions)
             self._write_function_shims(functions)
 
@@ -135,8 +134,8 @@ class ServiceShimVisitor(LrpcVisitor):
             self._file.write("// Server stream start/stop shims")
 
         for stream in server_streams:
-            with self._file.block(f"void {stream.name()}_start_stop_shim(Reader& r)"):
-                self._file.write("const auto start = r.read_unchecked<bool>();")
+            with self._file.block(f"void {stream.name()}_start_stop_shim(Reader& reader)"):
+                self._file.write("const auto start = reader.read_unchecked<bool>();")
                 with self._file.block("if (start)"):
                     self._file.write(f"{stream.name()}();")
                 with self._file.block("else"):
@@ -163,8 +162,8 @@ class ServiceShimVisitor(LrpcVisitor):
         max_function_or_stream_id = self._max_function_or_stream_id(functions, client_streams, server_streams)
 
         self._file.write(f"using ShimType = void ({self._class_name()}::*)(Reader &);")
-        with self._file.block("void missingFunction_shim(Reader& r)"):
-            self._file.write("const auto data = r.data();")
+        with self._file.block("void missingFunction_shim(Reader& reader)"):
+            self._file.write("const auto data = reader.data();")
             self._file.write("const auto functionOrStreamId = static_cast<uint8_t>(data.at(2));")
             self._file.write("server().error(LrpcMetaError::UnknownFunctionOrStream, id(), functionOrStreamId);")
         self._file.newline()

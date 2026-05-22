@@ -1,203 +1,203 @@
 name: Server1
 settings:
-  namespace: ts1
+  namespace: srv1
   rx_buffer_size: 100
   tx_buffer_size: 200
 services:
-  - name: s0
+  - name: srv0
     functions:
       - name: f0
       - name: f1
       - name: f2
         params:
-          - { name: a, type: uint8_t }
+          - {name: p0, type: uint8_t}
       - name: f3
         params:
-          - { name: a, type: uint16_t }
+          - {name: p0, type: uint16_t}
       - name: f4
         params:
-          - { name: a, type: float }
+          - {name: p0, type: float}
       - name: f5
         params:
-          - { name: a, type: uint16_t, count: 2 }
+          - {name: p0, type: uint16_t, count: 2}
       - name: f6
         params:
-          - { name: a, type: string_20 }
+          - {name: p0, type: string_20}
       - name: f7
         params:
-          - name: cd
+          - name: p0
             type: "@CompositeData"
       - name: f8
         params:
-          - name: a
+          - name: p0
             type: "@MyEnum"
       - name: f9
         params:
-          - name: a
+          - name: p0
             type: "@CompositeData2"
             count: 2
       - name: f10
         params:
-          - { name: a, type: "@CompositeData3" }
+          - {name: p0, type: "@CompositeData3"}
       - name: f11
         params:
-          - { name: a, type: uint8_t }
-          - { name: b, type: uint8_t }
+          - {name: p0, type: uint8_t}
+          - {name: p1, type: uint8_t}
       - name: f12
         returns:
-          - name: a
+          - name: r0
             type: uint8_t
       - name: f13
         returns:
-          - name: a
+          - name: r0
             type: uint16_t
       - name: f14
         returns:
-          - name: a
+          - name: r0
             type: float
       - name: f15
         returns:
-          - name: a
+          - name: r0
             type: uint16_t
             count: 2
       - name: f16
         returns:
-          - name: a
+          - name: r0
             type: string_8
       - name: f17
         returns:
-          - name: cd
+          - name: r0
             type: "@CompositeData"
       - name: f18
         returns:
-          - name: a
+          - name: r0
             type: "@MyEnum"
       - name: f19
         returns:
-          - name: a
+          - name: r0
             type: "@CompositeData2"
             count: 2
       - name: f20
         returns:
-          - name: a
+          - name: r0
             type: "@CompositeData3"
       - name: f21
         returns:
-          - name: a
+          - name: r0
             type: uint8_t
-          - name: b
+          - name: r1
             type: uint8_t
       - name: f22
         params:
-          - name: s1
+          - name: p0
             type: string_4
-          - name: s2
+          - name: p1
             type: string_4
         returns:
-          - name: r1
+          - name: r0
             type: string_4
-          - name: r2
+          - name: r1
             type: string_4
       - name: f23
         returns:
-          - { name: r0, type: string }
+          - {name: r0, type: string}
       - name: f24
         returns:
-          - { name: r0, type: string }
-          - { name: r1, type: string }
+          - {name: r0, type: string}
+          - {name: r1, type: string}
       - name: f25
         returns:
-          - { name: r0, type: string, count: "?" }
+          - {name: r0, type: string, count: "?"}
       - name: f26
         returns:
-          - { name: r0, type: string, count: 3 }
+          - {name: r0, type: string, count: 3}
       - name: f27
         returns:
-          - { name: r0, type: uint8_t, count: 2 }
-          - { name: r1, type: string, count: 2 }
-          - { name: r2, type: string_2, count: 2 }
+          - {name: r0, type: uint8_t, count: 2}
+          - {name: r1, type: string, count: 2}
+          - {name: r2, type: string_2, count: 2}
         returns_alias: complex_return
       - name: f28
         params:
-          - { name: p0, type: "@CompositeData4" }
+          - {name: p0, type: "@CompositeData4"}
       - name: f29
         params:
-          - { name: p0, type: "bytearray" }
+          - {name: p0, type: "bytearray"}
         returns:
-          - { name: r0, type: "bytearray" }
+          - {name: r0, type: "bytearray"}
       - name: f30
         params:
-          - { name: p0, type: "bytearray", count: 2 }
+          - {name: p0, type: "bytearray", count: 2}
       - name: f31
         params:
-          - { name: a, type: double }
+          - {name: p0, type: double}
       - name: f32
         returns:
-          - { name: a, type: double }
+          - {name: r0, type: double}
       - name: f33
         params:
-          - { name: a, type: int8_t }
+          - {name: p0, type: int8_t}
       - name: f34
         returns:
-          - { name: a, type: int8_t }
+          - {name: r0, type: int8_t}
       - name: f35
         params:
-          - { name: a, type: int16_t }
+          - {name: p0, type: int16_t}
       - name: f36
         returns:
-          - { name: a, type: int16_t }
+          - {name: r0, type: int16_t}
       - name: f37
         params:
-          - { name: a, type: int32_t }
+          - {name: p0, type: int32_t}
       - name: f38
         returns:
-          - { name: a, type: int32_t }
+          - {name: r0, type: int32_t}
       - name: f39
         params:
-          - { name: a, type: int64_t }
+          - {name: p0, type: int64_t}
       - name: f40
         returns:
-          - { name: a, type: int64_t }
+          - {name: r0, type: int64_t}
       - name: f41
         params:
-          - { name: a, type: uint32_t }
+          - {name: p0, type: uint32_t}
       - name: f42
         returns:
-          - { name: a, type: uint32_t }
+          - {name: r0, type: uint32_t}
       - name: f43
         params:
-          - { name: a, type: uint64_t }
+          - {name: p0, type: uint64_t}
       - name: f44
         returns:
-          - { name: a, type: uint64_t }
+          - {name: r0, type: uint64_t}
     streams:
       - name: stream0
         origin: client
         finite: true
         params:
-          - { name: p0, type: bytearray }
+          - {name: p0, type: bytearray}
 structs:
   - name: CompositeData
     fields:
-      - { name: a, type: uint16_t, count: 2 }
-      - { name: b, type: uint8_t }
-      - { name: c, type: bool }
+      - {name: f0, type: uint16_t, count: 2}
+      - {name: f1, type: uint8_t}
+      - {name: f2, type: bool}
   - name: CompositeData2
     fields:
-      - { name: a, type: uint8_t }
-      - { name: b, type: uint8_t }
+      - {name: f0, type: uint8_t}
+      - {name: f1, type: uint8_t}
   - name: CompositeData3
     fields:
-      - { name: a, type: "@CompositeData2" }
-      - { name: b, type: "@MyEnum" }
+      - {name: f0, type: "@CompositeData2"}
+      - {name: f1, type: "@MyEnum"}
   - name: CompositeData4
     fields:
-      - { name: a, type: "@CompositeData2", count: 2 }
-      - { name: b, type: "@CompositeData2", count: "?" }
+      - {name: f0, type: "@CompositeData2", count: 2}
+      - {name: f1, type: "@CompositeData2", count: "?"}
 enums:
   - name: MyEnum
     fields:
-      - { name: V0, id: 0 }
-      - { name: V1, id: 1 }
-      - { name: V2, id: 2 }
-      - { name: V3, id: 3 }
+      - {name: V0, id: 0}
+      - {name: V1, id: 1}
+      - {name: V2, id: 2}
+      - {name: V3, id: 3}

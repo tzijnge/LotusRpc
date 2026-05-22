@@ -16,7 +16,7 @@ def assert_stream(stream: LrpcStreamDict, expected: str) -> None:
 
 def test_no_params() -> None:
     func: LrpcStreamDict = {"name": "test_stream", "id": 42, "origin": "client"}
-    expected = """void test_stream_shim(Reader& r)
+    expected = """void test_stream_shim(Reader& reader)
 {
 \ttest_stream();
 }
@@ -32,9 +32,9 @@ def test_single_param() -> None:
         "origin": "client",
         "params": [{"name": "p0", "type": "uint8_t"}],
     }
-    expected = """void test_stream_shim(Reader& r)
+    expected = """void test_stream_shim(Reader& reader)
 {
-\tconst auto p0 = lrpc::read_unchecked<uint8_t>(r);
+\tconst auto p0 = lrpc::read_unchecked<uint8_t>(reader);
 \ttest_stream(p0);
 }
 """
@@ -49,10 +49,10 @@ def test_two_params() -> None:
         "origin": "client",
         "params": [{"name": "p0", "type": "uint8_t"}, {"name": "p1", "type": "bool"}],
     }
-    expected = """void test_stream_shim(Reader& r)
+    expected = """void test_stream_shim(Reader& reader)
 {
-\tconst auto p0 = lrpc::read_unchecked<uint8_t>(r);
-\tconst auto p1 = lrpc::read_unchecked<bool>(r);
+\tconst auto p0 = lrpc::read_unchecked<uint8_t>(reader);
+\tconst auto p1 = lrpc::read_unchecked<bool>(reader);
 \ttest_stream(p0, p1);
 }
 """
@@ -67,10 +67,10 @@ def test_array_param() -> None:
         "origin": "client",
         "params": [{"name": "p0", "type": "uint8_t", "count": 25}],
     }
-    expected = """void test_stream_shim(Reader& r)
+    expected = """void test_stream_shim(Reader& reader)
 {
 \tlrpc::array<uint8_t, 25> p0;
-\tlrpc::read_unchecked<lrpc::tags::array_n<uint8_t>>(r, p0, 25);
+\tlrpc::read_unchecked<lrpc::tags::array_n<uint8_t>>(reader, p0, 25);
 \ttest_stream(p0);
 }
 """
@@ -85,9 +85,9 @@ def test_string_n_param() -> None:
         "origin": "client",
         "params": [{"name": "p0", "type": "string_20"}],
     }
-    expected = """void test_stream_shim(Reader& r)
+    expected = """void test_stream_shim(Reader& reader)
 {
-\tconst auto p0 = lrpc::read_unchecked<lrpc::tags::string_n>(r, 20);
+\tconst auto p0 = lrpc::read_unchecked<lrpc::tags::string_n>(reader, 20);
 \ttest_stream(p0);
 }
 """
@@ -102,10 +102,10 @@ def test_array_of_string_n_param() -> None:
         "origin": "client",
         "params": [{"name": "p0", "type": "string_5", "count": 7}],
     }
-    expected = """void test_stream_shim(Reader& r)
+    expected = """void test_stream_shim(Reader& reader)
 {
 \tlrpc::array<lrpc::string_view, 7> p0;
-\tlrpc::read_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(r, p0, 7, 5);
+\tlrpc::read_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(reader, p0, 7, 5);
 \ttest_stream(p0);
 }
 """

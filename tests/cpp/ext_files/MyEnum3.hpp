@@ -1,6 +1,9 @@
 #pragma once
+#include <cstdint>
 
-enum class MyEnum3
+// Testing the default value is part of the test this is used in
+// NOLINTNEXTLINE(readability-enum-initial-value)
+enum class MyEnum3 : uint8_t
 {
     V0,
     V55 = 55,

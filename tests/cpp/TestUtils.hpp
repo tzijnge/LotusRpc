@@ -11,6 +11,11 @@
 
 namespace testutils
 {
+    template <typename T>
+    constexpr bool areClose(const T first, const T second, const T tolerance)
+    {
+        return ((first - second) < tolerance) && ((first - second) > -tolerance);
+    }
 
     class InvalidHexString : public std::runtime_error
     {
@@ -23,51 +28,55 @@ namespace testutils
 #pragma warning(disable : 4100)
 #endif
 
-    MATCHER_P(SPAN_EQ, e, "Equality matcher for lrpc::span")
+    // NOLINTBEGIN(cppcoreguidelines-avoid-const-or-ref-data-members, misc-non-private-member-variables-in-classes)
+    MATCHER_P(SPAN_EQ, ex, "Equality matcher for lrpc::span")
     {
-        if (e.size() != arg.size())
+        if (ex.size() != arg.size())
         {
             return false;
         }
 
-        const auto size = e.size();
+        const auto size = ex.size();
         for (size_t i = 0; i < size; ++i)
         {
-            if (e[i] != arg[i])
+            if (ex.at(i) != arg.at(i))
             {
                 return false;
             }
         }
         return true;
     }
+    // NOLINTEND(cppcoreguidelines-avoid-const-or-ref-data-members, misc-non-private-member-variables-in-classes)
 
-    MATCHER_P(OPT_SPAN_EQ, e, "Equality matcher for lrpc::optional of lrpc::span")
+    // NOLINTBEGIN(cppcoreguidelines-avoid-const-or-ref-data-members, misc-non-private-member-variables-in-classes)
+    MATCHER_P(OPT_SPAN_EQ, ex, "Equality matcher for lrpc::optional of lrpc::span")
     {
-        if (e.has_value() != arg.has_value())
+        if (ex.has_value() != arg.has_value())
         {
             return false;
         }
 
-        if (!e.has_value())
+        if (!ex.has_value())
         {
             return true;
         }
 
-        if (e.value().size() != arg.value().size())
+        if (ex.value().size() != arg.value().size())
         {
             return false;
         }
 
-        const auto size = e.value().size();
+        const auto size = ex.value().size();
         for (size_t i = 0; i < size; ++i)
         {
-            if (e.value().at(i) != arg.value().at(i))
+            if (ex.value().at(i) != arg.value().at(i))
             {
                 return false;
             }
         }
         return true;
     }
+    // NOLINTEND(cppcoreguidelines-avoid-const-or-ref-data-members, misc-non-private-member-variables-in-classes)
 
 #ifdef _MSC_VER
 #pragma warning(pop)
@@ -84,12 +93,12 @@ namespace testutils
 
         std::vector<uint8_t> bytes;
 
-        for (auto i = 0U; i < numberBytes; i += 1)
+        for (size_t i = 0; i < numberBytes; i += 1)
         {
-            const auto r = etl::to_arithmetic<uint8_t>(hex.substr(i * 2, 2), etl::hex);
-            if (r.has_value())
+            const auto result = etl::to_arithmetic<uint8_t>(hex.substr(i * 2U, 2U), etl::hex);
+            if (result.has_value())
             {
-                bytes.emplace_back(r.value());
+                bytes.emplace_back(result.value());
             }
             else
             {
@@ -105,23 +114,19 @@ namespace testutils
         std::stringstream ss;
         ss << std::hex << std::setfill('0') << std::uppercase;
 
-        for (const auto b : bytes)
+        for (const auto byteVal : bytes)
         {
-            ss << std::setw(2) << static_cast<uint32_t>(b);
+            ss << std::setw(2) << static_cast<uint32_t>(byteVal);
         }
 
         return ss.str();
     }
 
     template <typename Server, typename Service, bool AutoReset = true>
+    // NOLINTNEXTLINE(misc-multiple-inheritance)
     class TestServerBase : public Server, public ::testing::Test
     {
     public:
-        void SetUp() final
-        {
-            Server::registerService(service);
-        }
-
         void lrpcTransmit(lrpc::span<const uint8_t> bytes) override
         {
             if (AutoReset)
@@ -142,8 +147,15 @@ namespace testutils
             return testutils::bytesToHex(responseBuffer);
         }
 
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         std::vector<uint8_t> responseBuffer;
-
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         Service service;
+
+    protected:
+        void SetUp() final
+        {
+            Server::registerService(service);
+        }
     };
 }

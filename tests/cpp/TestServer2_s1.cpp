@@ -1,25 +1,29 @@
 #include "generated/Server2/Server2.hpp"
 #include "TestUtils.hpp"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+#include <vector>
 
 using ::testing::Return;
 
-class MockS01Service : public s01_shim
+// NOLINTNEXTLINE(misc-use-anonymous-namespace)
+class MockServer2S01 : public srv1_shim
 {
-public:
-    MOCK_METHOD(void, f0, (lrpc::span<const lrpc::string_view> p0), (override));
-    MOCK_METHOD((lrpc::span<const lrpc::string_view>), f1, (), (override));
-    MOCK_METHOD(void, f2, (lrpc::optional<lrpc::string_view> p01), (override));
-    MOCK_METHOD(void, f3, (lrpc::optional<lrpc::string_view> p01), (override));
-    MOCK_METHOD((lrpc::optional<lrpc::string_view>), f4, (), (override));
-    MOCK_METHOD(void, f5, (const StringStruct &a), (override));
-    MOCK_METHOD(StringStruct, f6, (), (override));
-    MOCK_METHOD((lrpc::string_view), f7, (lrpc::string_view p0), (override));
-    MOCK_METHOD(void, f8, (lrpc::span<const lrpc::string_view> p0), (override));
-    MOCK_METHOD(void, f9, (const StringStruct2 &a), (override));
-    MOCK_METHOD(StringStruct2, f10, (), (override));
+    public:
+        MOCK_METHOD(void, f0, (lrpc::span<const lrpc::string_view> p0), (override));
+        MOCK_METHOD((lrpc::span<const lrpc::string_view>), f1, (), (override));
+        MOCK_METHOD(void, f2, (lrpc::optional<lrpc::string_view> p0), (override));
+        MOCK_METHOD(void, f3, (lrpc::optional<lrpc::string_view> p0), (override));
+        MOCK_METHOD((lrpc::optional<lrpc::string_view>), f4, (), (override));
+        MOCK_METHOD(void, f5, (const StringStruct &p0), (override));
+        MOCK_METHOD(StringStruct, f6, (), (override));
+        MOCK_METHOD((lrpc::string_view), f7, (lrpc::string_view p0), (override));
+        MOCK_METHOD(void, f8, (lrpc::span<const lrpc::string_view> p0), (override));
+        MOCK_METHOD(void, f9, (const StringStruct2 &p0), (override));
+        MOCK_METHOD(StringStruct2, f10, (), (override));
 };
 
-using TestServer2_s1 = testutils::TestServerBase<Server2, MockS01Service>;
+using TestServer2_s1 = testutils::TestServerBase<Server2, MockServer2S01>;
 
 // Decode void function with array of strings param
 TEST_F(TestServer2_s1, decodeF0)
@@ -36,7 +40,7 @@ TEST_F(TestServer2_s1, decodeF0WithStringShorterThanMax)
     using sv = lrpc::string_view;
     const std::vector<sv> expected{sv("1"), sv("2")};
     EXPECT_CALL(service, f0(testutils::SPAN_EQ(expected)));
-    const auto response = receive("06010031003200");
+    const auto response = receive("080100310000320000");
     EXPECT_EQ("020100", response);
 }
 
@@ -82,9 +86,9 @@ TEST_F(TestServer2_s1, decodeF4)
 TEST_F(TestServer2_s1, decodeF5)
 {
     StringStruct expected;
-    expected.aa = "T1";
-    expected.b = {"T2", "T3"};
-    expected.c = "T4";
+    expected.f0 = "T1";
+    expected.f1 = {"T2", "T3"};
+    expected.f2 = "T4";
 
     EXPECT_CALL(service, f5(expected));
     const auto response = receive("0F010554310054320054330001543400");
@@ -95,9 +99,9 @@ TEST_F(TestServer2_s1, decodeF5)
 TEST_F(TestServer2_s1, decodeF6)
 {
     StringStruct retVal;
-    retVal.aa = "T1";
-    retVal.b = {"T2", "T3"};
-    retVal.c = "T4";
+    retVal.f0 = "T1";
+    retVal.f1 = {"T2", "T3"};
+    retVal.f2 = "T4";
 
     EXPECT_CALL(service, f6()).WillOnce(Return(retVal));
     const auto response = receive("020106");
@@ -127,9 +131,9 @@ TEST_F(TestServer2_s1, decodeF8)
 TEST_F(TestServer2_s1, decodeF9)
 {
     StringStruct2 expected;
-    expected.aa = "T1";
-    expected.b = {"T2", "T3"};
-    expected.c = "T4";
+    expected.f0 = "T1";
+    expected.f1 = {"T2", "T3"};
+    expected.f2 = "T4";
 
     EXPECT_CALL(service, f9(expected));
     const auto response = receive("0F010954310054320054330001543400");
@@ -140,9 +144,9 @@ TEST_F(TestServer2_s1, decodeF9)
 TEST_F(TestServer2_s1, decodeF10)
 {
     StringStruct2 retVal;
-    retVal.aa = "T1";
-    retVal.b = {"T2", "T3"};
-    retVal.c = "T4";
+    retVal.f0 = "T1";
+    retVal.f1 = {"T2", "T3"};
+    retVal.f2 = "T4";
 
     EXPECT_CALL(service, f10()).WillOnce(Return(retVal));
     const auto response = receive("02010A");

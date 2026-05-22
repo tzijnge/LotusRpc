@@ -1,29 +1,36 @@
 #include "generated/Server3/Server3.hpp"
+#include <cstdint>
 #include <sstream>
 #include "TestUtils.hpp"
+#include <gtest/gtest.h>
+#include <ios>
+#include <iomanip>
+#include <type_traits>
 
-namespace
+// NOLINTNEXTLINE(misc-use-anonymous-namespace)
+class MockServer3S00 : public srv3::srv0_shim
 {
-    class S00Service : public srv3::s00_shim
-    {
     public:
-        uint8_t f0(uint8_t p1) override
+        uint8_t f0(const uint8_t p0) override
         {
-            return p1;
+            return p0;
         }
     };
 
-    class S01Service : public srv3::s01_shim
-    {
+// NOLINTNEXTLINE(misc-use-anonymous-namespace)
+class MockServer3S01 : public srv3::srv1_shim
+{
     public:
-        uint16_t f0(uint16_t p1) override
+        uint16_t f0(const uint16_t p0) override
         {
-            return p1;
+            return p0;
         }
     };
 
-    class TestServer3 : public ::testing::Test, public srv3::Server3
-    {
+// NOLINTNEXTLINE(misc-use-anonymous-namespace)
+// NOLINTNEXTLINE(misc-multiple-inheritance)
+class TestServer3 : public ::testing::Test, public srv3::Server3
+{
     public:
         TestServer3()
         {
@@ -39,19 +46,20 @@ namespace
         void lrpcTransmit(const lrpc::span<const uint8_t> bytes) override
         {
             std::stringstream stream;
-            for (const auto b : bytes)
+            for (const auto _byte : bytes)
             {
-                stream << std::hex << std::setw(2) << std::uppercase << std::setfill('0') << static_cast<uint32_t>(b);
+                stream << std::hex << std::setw(2) << std::uppercase << std::setfill('0') << static_cast<uint32_t>(_byte);
             }
             transmitted += stream.str();
         }
 
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         std::string transmitted;
-
-        S00Service service00;
-        S01Service service01;
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
+        MockServer3S00 service00;
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
+        MockServer3S01 service01;
     };
-}
 
 static_assert(std::is_same<srv3::Server3, lrpc::Server<6, srv3::LrpcMeta_service, 256, 256>>::value, "RX and/or TX buffer size are unequal to the definition file");
 

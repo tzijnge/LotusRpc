@@ -225,8 +225,7 @@ namespace lrpc
     enable_for_fixed_size_string<T>
     read_unchecked(etl::byte_stream_reader &reader, const size_t definitionStringSize)
     {
-        size_t actualStringSize{0};
-        size_t skipSize{0};
+        size_t actualStringSize{reader.available_bytes()};
 
         const auto fd = reader.free_data();
         const auto *const found = std::find(fd.begin(), fd.end(), '\0');
@@ -234,18 +233,16 @@ namespace lrpc
         if (found != fd.end())
         {
             actualStringSize = static_cast<size_t>(std::distance(fd.begin(), found));
-            actualStringSize = std::min(actualStringSize, definitionStringSize);
-            skipSize = actualStringSize + 1;
-        }
-        else
-        {
-            actualStringSize = reader.available_bytes();
-            actualStringSize = std::min(actualStringSize, definitionStringSize);
-            skipSize = actualStringSize;
         }
 
+        actualStringSize = std::min(actualStringSize, definitionStringSize);
+
+        const auto fixedSlotSize = definitionStringSize + 1;
+        const auto skipSize = std::min(reader.available_bytes(), fixedSlotSize);
         const lrpc::string_view readValue{reader.end(), actualStringSize};
-        (void)reader.read_unchecked<uint8_t>(skipSize);
+
+        (void)reader.skip<uint8_t>(skipSize);
+
         return readValue;
     }
 

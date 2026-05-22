@@ -116,7 +116,7 @@ TEST(TestEtlRwExtensions, readAutoString)
 
 TEST(TestEtlRwExtensions, readFixedSizeString)
 {
-    etl::vector<char, 10> storage{'T', 'e', 's', 't', '\0'};
+    etl::vector<char, 10> storage{'T', 'e', 's', 't', '\0', '\0', 'q', '\0'};
     etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
 
     EXPECT_EQ("Tes", lrpc::read_unchecked<lrpc::tags::string_n>(reader, 3));
@@ -124,6 +124,7 @@ TEST(TestEtlRwExtensions, readFixedSizeString)
     EXPECT_EQ("Test", lrpc::read_unchecked<lrpc::tags::string_n>(reader, 4));
     reader.restart();
     EXPECT_EQ("Test", lrpc::read_unchecked<lrpc::tags::string_n>(reader, 5));
+    EXPECT_EQ("q", lrpc::read_unchecked<lrpc::tags::string_n>(reader, 1));
 }
 
 TEST(TestEtlRwExtensions, readOptional)

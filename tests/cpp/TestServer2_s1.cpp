@@ -40,7 +40,7 @@ TEST_F(TestServer2_s1, decodeF0WithStringShorterThanMax)
     using sv = lrpc::string_view;
     const std::vector<sv> expected{sv("1"), sv("2")};
     EXPECT_CALL(service, f0(testutils::SPAN_EQ(expected)));
-    const auto response = receive("06010031003200");
+    const auto response = receive("080100310000320000");
     EXPECT_EQ("020100", response);
 }
 

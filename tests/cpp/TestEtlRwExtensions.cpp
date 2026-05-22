@@ -377,7 +377,7 @@ TEST(TestEtlRwExtensions, writeOptional)
     EXPECT_EQ(0x02, static_cast<uint8_t>(written.at(2)));
 }
 
-TEST(TestEtlRwExtensions, writeString)
+TEST(TestEtlRwExtensions, writeFixedSizeString)
 {
     lrpc::array<uint8_t, 10> storage;
     etl::byte_stream_writer writer(storage, etl::endian::little);
@@ -396,6 +396,22 @@ TEST(TestEtlRwExtensions, writeString)
     EXPECT_EQ('T', written.at(5));
     EXPECT_EQ('2', written.at(6));
     EXPECT_EQ('\0', written.at(7));
+}
+
+TEST(TestEtlRwExtensions, writeFixedSizeStringOverflow)
+{
+    lrpc::array<uint8_t, 10> storage;
+    etl::byte_stream_writer writer(storage, etl::endian::little);
+
+    lrpc::write_unchecked<lrpc::tags::string_n>(writer, "test123", 4);
+
+    const auto written = writer.used_data();
+    ASSERT_EQ(5, written.size());
+    EXPECT_EQ('t', written.at(0));
+    EXPECT_EQ('e', written.at(1));
+    EXPECT_EQ('s', written.at(2));
+    EXPECT_EQ('t', written.at(3));
+    EXPECT_EQ('\0', written.at(4));
 }
 
 TEST(TestEtlRwExtensions, writeAutoString)

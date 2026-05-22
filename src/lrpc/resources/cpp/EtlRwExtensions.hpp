@@ -223,7 +223,7 @@ namespace lrpc
 
     template <typename T>
     enable_for_fixed_size_string<T>
-    read_unchecked(etl::byte_stream_reader &reader, size_t definitionStringSize)
+    read_unchecked(etl::byte_stream_reader &reader, const size_t definitionStringSize)
     {
         size_t actualStringSize{0};
         size_t skipSize{0};
@@ -290,7 +290,7 @@ namespace lrpc
 
     template <typename T>
     enable_for_optional_string_n<T>
-    read_unchecked(etl::byte_stream_reader &reader, size_t definitionStringSize)
+    read_unchecked(etl::byte_stream_reader &reader, const size_t definitionStringSize)
     {
         const auto hasValue = etl::read_unchecked<bool>(reader);
         if (hasValue)
@@ -307,7 +307,7 @@ namespace lrpc
 
     template <typename T>
     enable_for_array<T>
-    read_unchecked(etl::byte_stream_reader &reader, typename array_outparam_type<T>::type dest, size_t definitionArraySize)
+    read_unchecked(etl::byte_stream_reader &reader, typename array_outparam_type<T>::type dest, const size_t definitionArraySize)
     {
         const auto size = std::min(dest.size(), definitionArraySize);
         for (size_t i{0}; i < size; ++i)
@@ -333,7 +333,7 @@ namespace lrpc
 
     template <typename T>
     enable_for_array_of_string_n<T>
-    read_unchecked(etl::byte_stream_reader &reader, lrpc::span<lrpc::string_view> dest, size_t definitionArraySize, size_t definitionStringSize)
+    read_unchecked(etl::byte_stream_reader &reader, lrpc::span<lrpc::string_view> dest, const size_t definitionArraySize, const size_t definitionStringSize)
     {
         const auto size = std::min(dest.size(), definitionArraySize);
         for (size_t i{0}; i < size; ++i)
@@ -387,11 +387,13 @@ namespace lrpc
 
     // fixed size string
     template <typename T, typename std::enable_if_t<std::is_same<T, tags::string_n>::value, bool> = true>
-    void write_unchecked(etl::byte_stream_writer &writer, const lrpc::string_view &value, size_t definitionStringSize)
+    void write_unchecked(etl::byte_stream_writer &writer, const lrpc::string_view &value, const size_t definitionStringSize)
     {
-        for (const char character : value)
+        const size_t writeSize = std::min<size_t>(definitionStringSize, value.size());
+
+        for (size_t i = 0; i < writeSize; ++i)
         {
-            writer.write_unchecked<char>(character);
+            writer.write_unchecked<char>(value.at(i));
         }
 
         // fill remainder with null terminators
@@ -433,7 +435,7 @@ namespace lrpc
 
     // optional fixed size string
     template <typename OPT, typename std::enable_if_t<is_optional_string_n<OPT>::value, bool> = true>
-    void write_unchecked(etl::byte_stream_writer &writer, lrpc::optional<lrpc::string_view> value, size_t definitionStringSize)
+    void write_unchecked(etl::byte_stream_writer &writer, lrpc::optional<lrpc::string_view> value, const size_t definitionStringSize)
     {
         writer.write_unchecked<bool>(value.has_value());
         if (value.has_value())
@@ -444,7 +446,7 @@ namespace lrpc
 
     // array but not of fixed size string
     template <typename ARR, typename std::enable_if_t<is_array_n<ARR>::value && (!array_n_type_is_string_n<ARR>::value), bool> = true>
-    void write_unchecked(etl::byte_stream_writer &writer, typename array_param_type<ARR>::type value, size_t definitionArraySize)
+    void write_unchecked(etl::byte_stream_writer &writer, typename array_param_type<ARR>::type value, const size_t definitionArraySize)
     {
         const auto size = std::min(value.size(), definitionArraySize);
         for (size_t i{0}; i < size; ++i)
@@ -466,7 +468,7 @@ namespace lrpc
     // array of fixed size string
     template <typename ARR, typename std::enable_if_t<is_array_n<ARR>::value && array_n_type_is_string_n<ARR>::value, bool> = true>
     // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-    void write_unchecked(etl::byte_stream_writer &writer, lrpc::span<const lrpc::string_view> value, size_t definitionArraySize, size_t definitionStringSize)
+    void write_unchecked(etl::byte_stream_writer &writer, lrpc::span<const lrpc::string_view> value, const size_t definitionArraySize, const size_t definitionStringSize)
     {
         const auto size = std::min(value.size(), definitionArraySize);
         for (size_t i{0}; i < size; ++i)

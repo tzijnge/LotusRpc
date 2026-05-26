@@ -70,4 +70,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
           fail_level: any
-          exclude: examples/examples/stm32_nucleo_l496/Core, examples/stm32_nucleo_l496/Drivers, cmake_build
+          exclude: cmake_build

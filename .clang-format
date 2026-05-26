@@ -21,6 +21,7 @@ BreakBeforeBraces: Allman
 # All namespace contents are indented (observed consistently across all files).
 NamespaceIndentation: All
 CompactNamespaces: false
+FixNamespaceComments: false
 
 # --- Access modifiers ---
 # public: / private: / protected: sit at the same indent level as the class keyword,
@@ -29,10 +30,7 @@ AccessModifierOffset: -4
 IndentAccessModifiers: false
 
 # --- Pointer and reference alignment ---
-# Handwritten code: Reader &reader, IServer *linkedServer  (Right)
-# Generated code:   Reader& reader, etl::byte_stream_writer& writer  (Left) — conflict.
-# Right is chosen to match the hand-written source.
-PointerAlignment: Right
+PointerAlignment: Left
 ReferenceAlignment: Pointer
 
 # --- Column limit ---
@@ -72,19 +70,19 @@ SortIncludes: CaseSensitive
 IncludeBlocks: Regroup
 IncludeCategories:
   # C++ standard library headers: lowercase identifiers, no path separators, no file extension
-  - Regex:    '^<[a-z_]+>$'
+  - Regex: "^<[a-z_]+>$"
     Priority: 1
     SortPriority: 0
   # ETL library
-  - Regex:    '^<etl/'
+  - Regex: "^<etl/"
     Priority: 2
     SortPriority: 1
   # Other angle-bracket includes (gtest, gmock, CMSIS, etc.)
-  - Regex:    '^<.*>'
+  - Regex: "^<.*>"
     Priority: 3
     SortPriority: 2
   # Project-local headers
-  - Regex:    '^".*"'
+  - Regex: '^".*"'
     Priority: 4
     SortPriority: 3
 

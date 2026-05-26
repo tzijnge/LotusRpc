@@ -1,9 +1,8 @@
 import typing
 from pathlib import Path
 
-from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
-
 from lrpc.codegen.common import write_file_banner
+from lrpc.codegen.cppfile import CppFile
 from lrpc.codegen.utils import optionally_in_namespace
 from lrpc.core import LrpcConstant, LrpcDef, RpcSettings
 from lrpc.visitors import LrpcVisitor

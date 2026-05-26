@@ -1,8 +1,7 @@
 from pathlib import Path
 
-from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
-
 from lrpc.codegen.common import lrpc_var_includes, write_file_banner
+from lrpc.codegen.cppfile import CppFile
 from lrpc.core import LrpcFun, LrpcService, LrpcVar
 from lrpc.visitors import LrpcVisitor
 

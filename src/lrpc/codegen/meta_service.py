@@ -1,8 +1,7 @@
 from pathlib import Path
 
-from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
-
 from lrpc.codegen.common import write_file_banner
+from lrpc.codegen.cppfile import CppFile
 from lrpc.codegen.meta_constants_writer import MetaConstantsWriter
 from lrpc.codegen.meta_service_file_writer import MetaServiceFileWriter
 from lrpc.core import LrpcDef, RpcSettings

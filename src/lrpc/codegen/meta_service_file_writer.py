@@ -39,9 +39,9 @@ class MetaServiceFileWriter:
         self._file = file
 
     def write_service(self, namespace: str | None = None) -> None:
-        self._file.write("#pragma once")
-        self._file.write('#include "LrpcMeta_shim.hpp"')
-        self._file.write('#include "LrpcMeta_constants.hpp"')
+        self._file.pragma_once()
+        self._file.include('"LrpcMeta_shim.hpp"')
+        self._file.include('"LrpcMeta_constants.hpp"')
 
         self._file.newline()
         optionally_in_namespace(self._file, self._write_service_class, namespace)

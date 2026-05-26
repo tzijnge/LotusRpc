@@ -28,9 +28,9 @@ class MetaConstantsWriter:
         self._compressed_definition = compressed_definition
         self._definition_stream_chunk_size = definition_stream_chunk_size
 
-        self._file.write("#pragma once")
-        self._file.write("#include <cstdint>")
-        self._file.write('#include "lrpccore/LrpcTypes.hpp"')
+        self._file.pragma_once()
+        self._file.include("<cstdint>")
+        self._file.include('"lrpccore/LrpcTypes.hpp"')
 
         self._file.newline()
         optionally_in_namespace(self._file, self._write_constants, namespace)

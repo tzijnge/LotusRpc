@@ -38,7 +38,7 @@ ReferenceAlignment: Pointer
 # long virtual method signatures already exceed 120 characters.
 # Set to 0 (unlimited) to avoid reformatting existing code.
 # Consider revisiting once clang-tidy / CI gates are in place.
-ColumnLimit: 0
+ColumnLimit: 120
 
 # --- Short functions on one line ---
 # Inline class members like `uint8_t id() const override { return 0; }` are kept on one line.

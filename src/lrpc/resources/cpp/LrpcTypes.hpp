@@ -2,13 +2,14 @@
 
 $byte_include
 #include <array>
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
+
 #include <etl/optional.h>
 #include <etl/span.h>
 #include <etl/string_view.h>
 
-namespace lrpc
+    namespace lrpc
 {
     using byte = $byte_type;
     static_assert(sizeof(byte) == 1, "sizeof(byte) must be exactly 1");

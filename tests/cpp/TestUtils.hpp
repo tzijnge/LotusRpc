@@ -1,13 +1,15 @@
 #pragma once
 
+#include <etl/to_arithmetic.h>
+
+#include <iomanip>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <vector>
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <etl/to_arithmetic.h>
-#include <vector>
-#include <stdexcept>
-#include <sstream>
-#include <iomanip>
-#include <string>
 
 namespace testutils
 {
@@ -142,10 +144,7 @@ namespace testutils
             return response();
         }
 
-        std::string response() const
-        {
-            return testutils::bytesToHex(responseBuffer);
-        }
+        std::string response() const { return testutils::bytesToHex(responseBuffer); }
 
         // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         std::vector<uint8_t> responseBuffer;
@@ -153,9 +152,6 @@ namespace testutils
         Service service;
 
     protected:
-        void SetUp() final
-        {
-            Server::registerService(service);
-        }
+        void SetUp() final { Server::registerService(service); }
     };
 }

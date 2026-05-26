@@ -1,55 +1,59 @@
-#include "generated/Server5/Server5.hpp"
-#include "TestUtils.hpp"
 #include <cstdint>
+#include <type_traits>
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <type_traits>
+
+#include "TestUtils.hpp"
+#include "generated/Server5/Server5.hpp"
 
 // NOLINTNEXTLINE(misc-use-anonymous-namespace)
 class MockServer5Srv0 : public srv5::srv0_shim
 {
-    public:
-        MOCK_METHOD(void, client_infinite, (uint16_t, uint8_t), (override));
-        MOCK_METHOD(void, client_finite, (bool, srv5::DoorState, bool), (override));
-    };
+public:
+    MOCK_METHOD(void, client_infinite, (uint16_t, uint8_t), (override));
+    MOCK_METHOD(void, client_finite, (bool, srv5::DoorState, bool), (override));
+};
 
 // NOLINTNEXTLINE(misc-use-anonymous-namespace)
 class MockServer5Srv1 : public srv5::srv1_shim
 {
-    public:
-        MOCK_METHOD(void, server_infinite, (), (override));
-        MOCK_METHOD(void, server_infinite_stop, (), (override));
-        MOCK_METHOD(void, server_finite, (), (override));
-        MOCK_METHOD(void, server_finite_stop, (), (override));
-    };
+public:
+    MOCK_METHOD(void, server_infinite, (), (override));
+    MOCK_METHOD(void, server_infinite_stop, (), (override));
+    MOCK_METHOD(void, server_finite, (), (override));
+    MOCK_METHOD(void, server_finite_stop, (), (override));
+};
 
 // NOLINTNEXTLINE(misc-use-anonymous-namespace)
 class MockServer5Srv2 : public srv5::srv2_shim
 {
-    public:
-        MOCK_METHOD(void, client_infinite, (srv5::DoorState), (override));
-        MOCK_METHOD(void, server_infinite, (), (override));
-        MOCK_METHOD(void, server_infinite_stop, (), (override));
-        MOCK_METHOD(void, f0, (srv5::DoorState), (override));
-    };
+public:
+    MOCK_METHOD(void, client_infinite, (srv5::DoorState), (override));
+    MOCK_METHOD(void, server_infinite, (), (override));
+    MOCK_METHOD(void, server_infinite_stop, (), (override));
+    MOCK_METHOD(void, f0, (srv5::DoorState), (override));
+};
 
 // NOLINTNEXTLINE(misc-use-anonymous-namespace)
 class MockServer5Srv3 : public srv5::srv3_shim
 {
-    public:
-        MOCK_METHOD(void, client_infinite, (lrpc::span<const uint8_t>, lrpc::span<const lrpc::string_view>), (override));
-        MOCK_METHOD(void, client_finite, (lrpc::span<const uint8_t>, lrpc::span<const lrpc::string_view>, bool), (override));
-        MOCK_METHOD(void, server_infinite, (), (override));
-        MOCK_METHOD(void, server_infinite_stop, (), (override));
-        MOCK_METHOD(void, server_finite, (), (override));
-        MOCK_METHOD(void, server_finite_stop, (), (override));
-    };
+public:
+    MOCK_METHOD(void, client_infinite, (lrpc::span<const uint8_t>, lrpc::span<const lrpc::string_view>), (override));
+    MOCK_METHOD(void, client_finite, (lrpc::span<const uint8_t>, lrpc::span<const lrpc::string_view>, bool),
+                (override));
+    MOCK_METHOD(void, server_infinite, (), (override));
+    MOCK_METHOD(void, server_infinite_stop, (), (override));
+    MOCK_METHOD(void, server_finite, (), (override));
+    MOCK_METHOD(void, server_finite_stop, (), (override));
+};
 
 using TestServer5Srv0 = testutils::TestServerBase<srv5::Server5, MockServer5Srv0>;
 using TestServer5Srv1 = testutils::TestServerBase<srv5::Server5, MockServer5Srv1>;
 using TestServer5Srv2 = testutils::TestServerBase<srv5::Server5, MockServer5Srv2>;
 
-static_assert(std::is_same<srv5::Server5, lrpc::Server<68, srv5::LrpcMeta_service, 256, 256>>::value, "RX and/or TX buffer size are unequal to the definition file");
+static_assert(std::is_same<srv5::Server5, lrpc::Server<68, srv5::LrpcMeta_service, 256, 256>>::value,
+              "RX and/or TX buffer size are unequal to the definition file");
 
 TEST_F(TestServer5Srv0, client_infinite)
 {

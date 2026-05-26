@@ -1,8 +1,11 @@
 #pragma once
 #include <algorithm>
+
+#include <etl/byte_stream.h>
+
 #include <limits>
 #include <type_traits>
-#include <etl/byte_stream.h>
+
 #include "LrpcTypes.hpp"
 
 namespace lrpc
@@ -155,23 +158,19 @@ namespace lrpc
 
     // deleted read function to allow specializations for custom structs
     template <typename T>
-    typename std::enable_if_t<(!std::is_arithmetic<T>::value) &&
-                                  (!std::is_enum<T>::value) &&
-                                  (!is_optional<T>::value) &&
-                                  (!is_array_n<T>::value) &&
-                                  (!std::is_same<T, tags::string_auto>::value) &&
-                                  (!std::is_same<T, tags::string_n>::value) &&
-                                  (!std::is_same<T, tags::bytearray_auto>::value),
-                              T>
-    read_unchecked(etl::byte_stream_reader &reader) = delete;
+    typename std::enable_if_t<
+        (!std::is_arithmetic<T>::value) && (!std::is_enum<T>::value) && (!is_optional<T>::value) &&
+            (!is_array_n<T>::value) && (!std::is_same<T, tags::string_auto>::value) &&
+            (!std::is_same<T, tags::string_n>::value) && (!std::is_same<T, tags::bytearray_auto>::value),
+        T>
+    read_unchecked(etl::byte_stream_reader& reader) = delete;
 
     // Arithmetic types
     template <typename T>
     using enable_for_arithmetic = std::enable_if_t<std::is_arithmetic<T>::value, T>;
 
     template <typename T>
-    enable_for_arithmetic<T>
-    read_unchecked(etl::byte_stream_reader &reader)
+    enable_for_arithmetic<T> read_unchecked(etl::byte_stream_reader& reader)
     {
         return reader.read_unchecked<T>();
     };
@@ -181,8 +180,7 @@ namespace lrpc
     using enable_for_enum = std::enable_if_t<std::is_enum<T>::value, T>;
 
     template <typename T>
-    enable_for_enum<T>
-    read_unchecked(etl::byte_stream_reader &reader)
+    enable_for_enum<T> read_unchecked(etl::byte_stream_reader& reader)
     {
         return static_cast<T>(reader.read_unchecked<uint8_t>());
     }
@@ -192,14 +190,13 @@ namespace lrpc
     using enable_for_auto_string = std::enable_if_t<std::is_same<T, tags::string_auto>::value, lrpc::string_view>;
 
     template <typename T>
-    enable_for_auto_string<T>
-    read_unchecked(etl::byte_stream_reader &reader)
+    enable_for_auto_string<T> read_unchecked(etl::byte_stream_reader& reader)
     {
         size_t stringSize{0};
         size_t skipSize{0};
 
         const auto fd = reader.free_data();
-        const auto *const found = std::find(fd.begin(), fd.end(), '\0');
+        const auto* const found = std::find(fd.begin(), fd.end(), '\0');
 
         if (found != fd.end())
         {
@@ -222,13 +219,12 @@ namespace lrpc
     using enable_for_fixed_size_string = std::enable_if_t<std::is_same<T, tags::string_n>::value, lrpc::string_view>;
 
     template <typename T>
-    enable_for_fixed_size_string<T>
-    read_unchecked(etl::byte_stream_reader &reader, const size_t definitionStringSize)
+    enable_for_fixed_size_string<T> read_unchecked(etl::byte_stream_reader& reader, const size_t definitionStringSize)
     {
         size_t actualStringSize{reader.available_bytes()};
 
         const auto fd = reader.free_data();
-        const auto *const found = std::find(fd.begin(), fd.end(), '\0');
+        const auto* const found = std::find(fd.begin(), fd.end(), '\0');
 
         if (found != fd.end())
         {
@@ -251,8 +247,7 @@ namespace lrpc
     using enable_for_bytearray = std::enable_if_t<std::is_same<T, tags::bytearray_auto>::value, bytearray>;
 
     template <typename T>
-    enable_for_bytearray<T>
-    read_unchecked(etl::byte_stream_reader &reader)
+    enable_for_bytearray<T> read_unchecked(etl::byte_stream_reader& reader)
     {
         size_t readSize = reader.read_unchecked<uint8_t>();
         const auto streamSize = reader.available_bytes();
@@ -266,11 +261,11 @@ namespace lrpc
 
     // Optional, but not of fixed size string
     template <typename T>
-    using enable_for_optional = std::enable_if_t<is_optional<T>::value && (!is_optional_string_n<T>::value), typename optional_pr_type<T>::type>;
+    using enable_for_optional = std::enable_if_t<is_optional<T>::value && (!is_optional_string_n<T>::value),
+                                                 typename optional_pr_type<T>::type>;
 
     template <typename T>
-    enable_for_optional<T>
-    read_unchecked(etl::byte_stream_reader &reader)
+    enable_for_optional<T> read_unchecked(etl::byte_stream_reader& reader)
     {
         const auto hasValue = etl::read_unchecked<bool>(reader);
         if (hasValue)
@@ -283,11 +278,11 @@ namespace lrpc
 
     // Optional of fixed size string. Read as an optional of lrpc::string_view
     template <typename T>
-    using enable_for_optional_string_n = std::enable_if_t<is_optional_string_n<T>::value, lrpc::optional<lrpc::string_view>>;
+    using enable_for_optional_string_n =
+        std::enable_if_t<is_optional_string_n<T>::value, lrpc::optional<lrpc::string_view>>;
 
     template <typename T>
-    enable_for_optional_string_n<T>
-    read_unchecked(etl::byte_stream_reader &reader, const size_t definitionStringSize)
+    enable_for_optional_string_n<T> read_unchecked(etl::byte_stream_reader& reader, const size_t definitionStringSize)
     {
         const auto hasValue = etl::read_unchecked<bool>(reader);
         if (hasValue)
@@ -303,8 +298,8 @@ namespace lrpc
     using enable_for_array = std::enable_if_t<is_array_n<T>::value && (!array_n_type_is_string_n<T>::value), void>;
 
     template <typename T>
-    enable_for_array<T>
-    read_unchecked(etl::byte_stream_reader &reader, typename array_outparam_type<T>::type dest, const size_t definitionArraySize)
+    enable_for_array<T> read_unchecked(etl::byte_stream_reader& reader, typename array_outparam_type<T>::type dest,
+                                       const size_t definitionArraySize)
     {
         const auto size = std::min(dest.size(), definitionArraySize);
         for (size_t i{0}; i < size; ++i)
@@ -326,11 +321,12 @@ namespace lrpc
 
     // Array of fixed size string. Read as an array of lrpc::string_view
     template <typename T>
-    using enable_for_array_of_string_n = std::enable_if_t<is_array_n<T>::value && array_n_type_is_string_n<T>::value, void>;
+    using enable_for_array_of_string_n =
+        std::enable_if_t<is_array_n<T>::value && array_n_type_is_string_n<T>::value, void>;
 
     template <typename T>
-    enable_for_array_of_string_n<T>
-    read_unchecked(etl::byte_stream_reader &reader, lrpc::span<lrpc::string_view> dest, const size_t definitionArraySize, const size_t definitionStringSize)
+    enable_for_array_of_string_n<T> read_unchecked(etl::byte_stream_reader& reader, lrpc::span<lrpc::string_view> dest,
+                                                   const size_t definitionArraySize, const size_t definitionStringSize)
     {
         const auto size = std::min(dest.size(), definitionArraySize);
         for (size_t i{0}; i < size; ++i)
@@ -345,33 +341,31 @@ namespace lrpc
     };
 
     // deleted write function to allow specializations for custom structs
-    template <typename T, typename std::enable_if_t<(!std::is_arithmetic<T>::value) &&
-                                                        (!std::is_enum<T>::value) &&
-                                                        (!is_optional<T>::value) &&
-                                                        (!is_array_n<T>::value) &&
-                                                        (!std::is_same<T, tags::string_auto>::value) &&
-                                                        (!std::is_same<T, tags::string_n>::value) &&
-                                                        (!std::is_same<T, tags::bytearray_auto>::value),
-                                                    bool> = true>
-    void write_unchecked(etl::byte_stream_writer &writer, const T &value) = delete;
+    template <typename T,
+              typename std::enable_if_t<
+                  (!std::is_arithmetic<T>::value) && (!std::is_enum<T>::value) && (!is_optional<T>::value) &&
+                      (!is_array_n<T>::value) && (!std::is_same<T, tags::string_auto>::value) &&
+                      (!std::is_same<T, tags::string_n>::value) && (!std::is_same<T, tags::bytearray_auto>::value),
+                  bool> = true>
+    void write_unchecked(etl::byte_stream_writer& writer, const T& value) = delete;
 
     // arithmetic
     template <typename ARI, typename std::enable_if_t<std::is_arithmetic<ARI>::value, bool> = true>
-    void write_unchecked(etl::byte_stream_writer &writer, const ARI &value)
+    void write_unchecked(etl::byte_stream_writer& writer, const ARI& value)
     {
         writer.write_unchecked<ARI>(value);
     };
 
     // Enum
     template <typename ENUM, typename std::enable_if_t<std::is_enum<ENUM>::value, bool> = true>
-    void write_unchecked(etl::byte_stream_writer &writer, const ENUM &value)
+    void write_unchecked(etl::byte_stream_writer& writer, const ENUM& value)
     {
         writer.write_unchecked<uint8_t>(static_cast<uint8_t>(value));
     };
 
     // auto string
     template <typename T, typename std::enable_if_t<std::is_same<T, tags::string_auto>::value, bool> = true>
-    void write_unchecked(etl::byte_stream_writer &writer, const lrpc::string_view &value)
+    void write_unchecked(etl::byte_stream_writer& writer, const lrpc::string_view& value)
     {
         for (const char character : value)
         {
@@ -384,7 +378,8 @@ namespace lrpc
 
     // fixed size string
     template <typename T, typename std::enable_if_t<std::is_same<T, tags::string_n>::value, bool> = true>
-    void write_unchecked(etl::byte_stream_writer &writer, const lrpc::string_view &value, const size_t definitionStringSize)
+    void write_unchecked(etl::byte_stream_writer& writer, const lrpc::string_view& value,
+                         const size_t definitionStringSize)
     {
         const size_t writeSize = std::min<size_t>(definitionStringSize, value.size());
 
@@ -405,7 +400,7 @@ namespace lrpc
 
     // auto bytearray
     template <typename T, typename std::enable_if_t<std::is_same<T, tags::bytearray_auto>::value, bool> = true>
-    void write_unchecked(etl::byte_stream_writer &writer, const bytearray &value)
+    void write_unchecked(etl::byte_stream_writer& writer, const bytearray& value)
     {
         constexpr size_t baMaxSize{std::numeric_limits<uint8_t>::max()};
         const size_t ba_size = std::min<size_t>(baMaxSize, value.size());
@@ -420,8 +415,9 @@ namespace lrpc
     };
 
     // optional, but not of fixed size string
-    template <typename OPT, typename std::enable_if_t<is_optional<OPT>::value && (!is_optional_string_n<OPT>::value), bool> = true>
-    void write_unchecked(etl::byte_stream_writer &writer, const typename optional_pr_type<OPT>::type &value)
+    template <typename OPT,
+              typename std::enable_if_t<is_optional<OPT>::value && (!is_optional_string_n<OPT>::value), bool> = true>
+    void write_unchecked(etl::byte_stream_writer& writer, const typename optional_pr_type<OPT>::type& value)
     {
         writer.write_unchecked<bool>(value.has_value());
         if (value.has_value())
@@ -432,7 +428,8 @@ namespace lrpc
 
     // optional fixed size string
     template <typename OPT, typename std::enable_if_t<is_optional_string_n<OPT>::value, bool> = true>
-    void write_unchecked(etl::byte_stream_writer &writer, lrpc::optional<lrpc::string_view> value, const size_t definitionStringSize)
+    void write_unchecked(etl::byte_stream_writer& writer, lrpc::optional<lrpc::string_view> value,
+                         const size_t definitionStringSize)
     {
         writer.write_unchecked<bool>(value.has_value());
         if (value.has_value())
@@ -442,8 +439,10 @@ namespace lrpc
     };
 
     // array but not of fixed size string
-    template <typename ARR, typename std::enable_if_t<is_array_n<ARR>::value && (!array_n_type_is_string_n<ARR>::value), bool> = true>
-    void write_unchecked(etl::byte_stream_writer &writer, typename array_param_type<ARR>::type value, const size_t definitionArraySize)
+    template <typename ARR,
+              typename std::enable_if_t<is_array_n<ARR>::value && (!array_n_type_is_string_n<ARR>::value), bool> = true>
+    void write_unchecked(etl::byte_stream_writer& writer, typename array_param_type<ARR>::type value,
+                         const size_t definitionArraySize)
     {
         const auto size = std::min(value.size(), definitionArraySize);
         for (size_t i{0}; i < size; ++i)
@@ -463,9 +462,11 @@ namespace lrpc
     };
 
     // array of fixed size string
-    template <typename ARR, typename std::enable_if_t<is_array_n<ARR>::value && array_n_type_is_string_n<ARR>::value, bool> = true>
+    template <typename ARR,
+              typename std::enable_if_t<is_array_n<ARR>::value && array_n_type_is_string_n<ARR>::value, bool> = true>
     // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-    void write_unchecked(etl::byte_stream_writer &writer, lrpc::span<const lrpc::string_view> value, const size_t definitionArraySize, const size_t definitionStringSize)
+    void write_unchecked(etl::byte_stream_writer& writer, lrpc::span<const lrpc::string_view> value,
+                         const size_t definitionArraySize, const size_t definitionStringSize)
     {
         const auto size = std::min(value.size(), definitionArraySize);
         for (size_t i{0}; i < size; ++i)

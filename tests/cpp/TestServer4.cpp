@@ -1,8 +1,10 @@
-#include "generated/Server4/Server4.hpp"
-#include <gtest/gtest.h>
 #include <cstdint>
 #include <type_traits>
+
+#include <gtest/gtest.h>
+
 #include "TestUtils.hpp"
+#include "generated/Server4/Server4.hpp"
 
 static_assert(srv4::c0 == 111, "");
 static_assert(std::is_same<decltype(srv4::c0), const int32_t>::value, "");

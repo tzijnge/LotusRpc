@@ -1,65 +1,58 @@
-#include "generated/Server3/Server3.hpp"
-#include "TestUtils.hpp"
-#include <sstream>
 #include <cstdint>
-#include <gtest/gtest.h>
-#include <type_traits>
-#include <ios>
 #include <iomanip>
+#include <ios>
+#include <sstream>
+#include <type_traits>
+
+#include <gtest/gtest.h>
+
+#include "TestUtils.hpp"
+#include "generated/Server3/Server3.hpp"
 
 // NOLINTNEXTLINE(misc-use-anonymous-namespace)
 class MockServerErrorsS00 : public srv3::srv0_shim
 {
-    public:
-        uint8_t f0(const uint8_t p0) override
-        {
-            return p0;
-        }
-    };
+public:
+    uint8_t f0(const uint8_t p0) override { return p0; }
+};
 
 // NOLINTNEXTLINE(misc-use-anonymous-namespace)
 class MockServerErrorsS01 : public srv3::srv1_shim
 {
-    public:
-        uint16_t f0(const uint16_t p0) override
-        {
-            return p0;
-        }
-    };
+public:
+    uint16_t f0(const uint16_t p0) override { return p0; }
+};
 
 // NOLINTNEXTLINE(misc-use-anonymous-namespace)
 // NOLINTNEXTLINE(misc-multiple-inheritance)
 class TestServerErrors : public ::testing::Test, public srv3::Server3
 {
-    public:
-        TestServerErrors()
-        {
-            registerService(service00);
-            // service 5 is intentionally not registered
-        }
+public:
+    TestServerErrors()
+    {
+        registerService(service00);
+        // service 5 is intentionally not registered
+    }
 
-        void receive(const lrpc::string_view hex)
-        {
-            lrpcReceive(testutils::hexToBytes(hex));
-        }
+    void receive(const lrpc::string_view hex) { lrpcReceive(testutils::hexToBytes(hex)); }
 
-        void lrpcTransmit(const lrpc::span<const uint8_t> bytes) override
+    void lrpcTransmit(const lrpc::span<const uint8_t> bytes) override
+    {
+        std::stringstream stream;
+        for (const auto _byte : bytes)
         {
-            std::stringstream stream;
-            for (const auto _byte : bytes)
-            {
-                stream << std::hex << std::setw(2) << std::uppercase << std::setfill('0') << static_cast<uint32_t>(_byte);
-            }
-            transmitted += stream.str();
+            stream << std::hex << std::setw(2) << std::uppercase << std::setfill('0') << static_cast<uint32_t>(_byte);
         }
+        transmitted += stream.str();
+    }
 
-        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
-        std::string transmitted;
-        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
-        MockServerErrorsS00 service00;
-        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
-        MockServerErrorsS01 service01;
-    };
+    // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
+    std::string transmitted;
+    // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
+    MockServerErrorsS00 service00;
+    // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
+    MockServerErrorsS01 service01;
+};
 
 TEST_F(TestServerErrors, decodeUnknownServiceLessThanMaxServiceId)
 {
@@ -71,7 +64,8 @@ TEST_F(TestServerErrors, decodeUnknownServiceLessThanMaxServiceId)
 TEST_F(TestServerErrors, decodeUnknownServiceGreaterThanServiceId)
 {
     static constexpr uint8_t SRV3_MAX_SERVICE_ID{6};
-    static_assert(std::is_same<srv3::Server3, lrpc::Server<SRV3_MAX_SERVICE_ID, srv3::LrpcMeta_service>>::value, "Unexpected server properties");
+    static_assert(std::is_same<srv3::Server3, lrpc::Server<SRV3_MAX_SERVICE_ID, srv3::LrpcMeta_service>>::value,
+                  "Unexpected server properties");
 
     // Non-existing service 0x07 (one greater than MAX_SERVICE_ID), function ID 0xAB and no additional bytes
     receive("0207AB");

@@ -37,6 +37,7 @@ def export_to(output: Path, byte_type: LrpcByteType) -> None:
     export("Server.hpp", core_dir)
     export("Service.hpp", core_dir)
     export("MetaError.hpp", core_dir)
+    export("LrpcBaseTypes.hpp", core_dir)
     export(
         "LrpcTypes.hpp",
         core_dir,

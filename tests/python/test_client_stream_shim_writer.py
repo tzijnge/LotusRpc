@@ -1,8 +1,7 @@
 from io import StringIO
 
-from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
-
 from lrpc.codegen.client_stream_shim_writer import ClientStreamShimWriter
+from lrpc.codegen.cppfile import CppFile
 from lrpc.core import LrpcStream, LrpcStreamDict
 
 
@@ -18,7 +17,7 @@ def test_no_params() -> None:
     func: LrpcStreamDict = {"name": "test_stream", "id": 42, "origin": "client"}
     expected = """void test_stream_shim(Reader& reader)
 {
-\ttest_stream();
+    test_stream();
 }
 """
 
@@ -34,8 +33,8 @@ def test_single_param() -> None:
     }
     expected = """void test_stream_shim(Reader& reader)
 {
-\tconst auto p0 = lrpc::read_unchecked<uint8_t>(reader);
-\ttest_stream(p0);
+    const auto p0 = lrpc::read_unchecked<uint8_t>(reader);
+    test_stream(p0);
 }
 """
 
@@ -51,9 +50,9 @@ def test_two_params() -> None:
     }
     expected = """void test_stream_shim(Reader& reader)
 {
-\tconst auto p0 = lrpc::read_unchecked<uint8_t>(reader);
-\tconst auto p1 = lrpc::read_unchecked<bool>(reader);
-\ttest_stream(p0, p1);
+    const auto p0 = lrpc::read_unchecked<uint8_t>(reader);
+    const auto p1 = lrpc::read_unchecked<bool>(reader);
+    test_stream(p0, p1);
 }
 """
 
@@ -69,9 +68,9 @@ def test_array_param() -> None:
     }
     expected = """void test_stream_shim(Reader& reader)
 {
-\tlrpc::array<uint8_t, 25> p0;
-\tlrpc::read_unchecked<lrpc::tags::array_n<uint8_t>>(reader, p0, 25);
-\ttest_stream(p0);
+    lrpc::array<uint8_t, 25> p0;
+    lrpc::read_unchecked<lrpc::tags::array_n<uint8_t>>(reader, p0, 25);
+    test_stream(p0);
 }
 """
 
@@ -87,8 +86,8 @@ def test_string_n_param() -> None:
     }
     expected = """void test_stream_shim(Reader& reader)
 {
-\tconst auto p0 = lrpc::read_unchecked<lrpc::tags::string_n>(reader, 20);
-\ttest_stream(p0);
+    const auto p0 = lrpc::read_unchecked<lrpc::tags::string_n>(reader, 20);
+    test_stream(p0);
 }
 """
 
@@ -104,9 +103,9 @@ def test_array_of_string_n_param() -> None:
     }
     expected = """void test_stream_shim(Reader& reader)
 {
-\tlrpc::array<lrpc::string_view, 7> p0;
-\tlrpc::read_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(reader, p0, 7, 5);
-\ttest_stream(p0);
+    lrpc::array<lrpc::string_view, 7> p0;
+    lrpc::read_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(reader, p0, 7, 5);
+    test_stream(p0);
 }
 """
 

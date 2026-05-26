@@ -56,7 +56,11 @@ find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
 add_library(UnitTests_core INTERFACE)
 
-target_include_directories(UnitTests_core INTERFACE .)
+target_include_directories(UnitTests_core INTERFACE
+  .
+  ${CMAKE_CURRENT_SOURCE_DIR}/generated/core
+  ${CMAKE_CURRENT_SOURCE_DIR}/generated/core/lrpccore
+)
 target_set_warnings(UnitTests_core INTERFACE)
 
 target_link_libraries(
@@ -88,16 +92,25 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/generated/core/lrpccore/Et
 
 
 function(generate_lrpc server_name)
+  cmake_parse_arguments(PARSE_ARGV 1 ARG "NO_CORE" "" "")
+
   set(LRPC_OUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/generated/${server_name})
   set(LRPC_DEF ${CMAKE_SOURCE_DIR}/tests/testdata/Test${server_name}.lrpc.yaml)
 
   set(OVERLAY_OPTION "")
   set(OVERLAY_DEPENDS "")
-  if(ARGC GREATER 1)
-    set(LRPC_OUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/generated/${server_name}/${ARGV1})
-    set(LRPC_DEF_OVERLAY ${CMAKE_SOURCE_DIR}/tests/testdata/Test${server_name}_${ARGV1}.lrpc.yaml)
+  if(ARG_UNPARSED_ARGUMENTS)
+    list(GET ARG_UNPARSED_ARGUMENTS 0 OVERLAY_NAME)
+    set(LRPC_OUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/generated/${server_name}/${OVERLAY_NAME})
+    set(LRPC_DEF_OVERLAY ${CMAKE_SOURCE_DIR}/tests/testdata/Test${server_name}_${OVERLAY_NAME}.lrpc.yaml)
     set(OVERLAY_OPTION "-ov" "${LRPC_DEF_OVERLAY}")
     set(OVERLAY_DEPENDS "${LRPC_DEF_OVERLAY}")
+  endif()
+
+  if(ARG_NO_CORE)
+    set(CORE_OPTION "--no-core")
+  else()
+    set(CORE_OPTION "")
   endif()
 
   set(LRPC_SERVER_HEADER ${LRPC_OUT_DIR}/${server_name}.hpp)
@@ -105,17 +118,17 @@ function(generate_lrpc server_name)
   add_custom_command(OUTPUT ${LRPC_SERVER_HEADER}
                   COMMENT "Generate Test${server_name} LRPC files"
                   DEPENDS ${LRPC_DEF} ${OVERLAY_DEPENDS} ${LRPC_IS_BUILT}
-                  COMMAND ${Python3_EXECUTABLE} -m lrpc.tools.lrpcg.lrpcg cpp -d ${LRPC_DEF} ${OVERLAY_OPTION} -o ${LRPC_OUT_DIR} -w
+                  COMMAND ${Python3_EXECUTABLE} -m lrpc.tools.lrpcg.lrpcg cpp -d ${LRPC_DEF} ${OVERLAY_OPTION} ${CORE_OPTION} -o ${LRPC_OUT_DIR} -w
                   COMMAND ${Python3_EXECUTABLE} -m lrpc.tools.lrpcg.lrpcg puml -d ${LRPC_DEF} -o ${LRPC_OUT_DIR} -w)
 
 endfunction()
 
-generate_lrpc(Server1)
-generate_lrpc(Server2)
-generate_lrpc(Server3)
-generate_lrpc(Server4)
-generate_lrpc(Server5)
-generate_lrpc(RetrieveDefinition)
+generate_lrpc(Server1 NO_CORE)
+generate_lrpc(Server2 NO_CORE)
+generate_lrpc(Server3 NO_CORE)
+generate_lrpc(Server4 NO_CORE)
+generate_lrpc(Server5 NO_CORE)
+generate_lrpc(RetrieveDefinition NO_CORE)
 
 set_directory_properties(PROPERTIES ADDITIONAL_CLEAN_FILES ${CMAKE_CURRENT_SOURCE_DIR}/generated)
 
@@ -158,6 +171,10 @@ function(add_test_ba_executable byte_type)
   target_link_libraries(
     ${UNIT_TESTS_BA_EXE}
     UnitTests_core
+  )
+
+  target_include_directories(${UNIT_TESTS_BA_EXE} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/generated/Bytearray/${byte_type}/lrpccore
   )
 
   set_property(TARGET ${UNIT_TESTS_BA_EXE} PROPERTY COMPILE_WARNING_AS_ERROR ON)

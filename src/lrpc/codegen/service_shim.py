@@ -1,9 +1,8 @@
 from pathlib import Path
 
-from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
-
 from lrpc.codegen.client_stream_shim_writer import ClientStreamShimWriter
 from lrpc.codegen.common import write_file_banner
+from lrpc.codegen.cppfile import CppFile
 from lrpc.codegen.function_shim_writer import FunctionShimWriter
 from lrpc.codegen.server_stream_response_writer import ServerStreamResponseWriter
 from lrpc.codegen.utils import optionally_in_namespace

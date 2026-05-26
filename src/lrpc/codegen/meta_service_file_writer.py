@@ -1,36 +1,35 @@
-from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
-
+from lrpc.codegen.cppfile import CppFile
 from lrpc.codegen.utils import optionally_in_namespace
 
 LRPC_META_SERVICE = """class LrpcMeta_service : public LrpcMeta_shim
 {
 public:
-\tvoid error() override {}
-\tvoid error_stop() override {}
+    void error() override {}
+    void error_stop() override {}
 
-\tvoid definition() override
-\t{
-\t\tlrpc::span<const uint8_t> data{lrpc_meta::CompressedDefinition};
+    void definition() override
+    {
+        lrpc::span<const uint8_t> data{lrpc_meta::CompressedDefinition};
 
-\t\tbool final{false};
-\t\twhile (!final)
-\t\t{
-\t\t\tconst auto transmitSize = std::min<size_t>(data.size(), lrpc_meta::DefinitionStreamChunkSize);
-\t\t\tfinal = (transmitSize != lrpc_meta::DefinitionStreamChunkSize) ||
-\t\t\t\t\t(data.size() == lrpc_meta::DefinitionStreamChunkSize);
+        bool final{false};
+        while (!final)
+        {
+            const auto transmitSize = std::min<size_t>(data.size(), lrpc_meta::DefinitionStreamChunkSize);
+            final = (transmitSize != lrpc_meta::DefinitionStreamChunkSize) ||
+                    (data.size() == lrpc_meta::DefinitionStreamChunkSize);
 
-\t\t\tdefinition_response(data.take<const lrpc::byte>(transmitSize), final);
-\t\t}
-\t}
-\tvoid definition_stop() override {}
+            definition_response(data.take<const lrpc::byte>(transmitSize), final);
+        }
+    }
+    void definition_stop() override {}
 
-\tstd::tuple<lrpc::string_view, lrpc::string_view, lrpc::string_view> version() override
-\t{
-\t\treturn {
-\t\t\tlrpc_meta::DefinitionVersion,
-\t\t\tlrpc_meta::DefinitionHash,
-\t\t\tlrpc_meta::LrpcVersion};
-\t}
+    std::tuple<lrpc::string_view, lrpc::string_view, lrpc::string_view> version() override
+    {
+        return {
+            lrpc_meta::DefinitionVersion,
+            lrpc_meta::DefinitionHash,
+            lrpc_meta::LrpcVersion};
+    }
 };"""
 
 

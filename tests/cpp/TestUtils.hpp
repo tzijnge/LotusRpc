@@ -11,6 +11,8 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "LrpcBaseTypes.hpp"
+
 namespace testutils
 {
     template <typename T>

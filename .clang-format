@@ -1,0 +1,101 @@
+---
+BasedOnStyle: LLVM
+Language: Cpp
+Standard: c++11
+
+# --- Indentation ---
+# Handwritten source files use 4 spaces.
+# Generated files currently use tabs; fixing the generator is deferred.
+# Generated directories carry their own .clang-format with DisableFormat: true
+# so clang-format does not touch them.
+UseTab: Never
+IndentWidth: 4
+TabWidth: 4
+ContinuationIndentWidth: 4
+
+# --- Brace style: Allman throughout ---
+# Opening brace always on its own line: namespaces, classes, functions, control flow, lambdas.
+BreakBeforeBraces: Allman
+
+# --- Namespaces ---
+# All namespace contents are indented (observed consistently across all files).
+NamespaceIndentation: All
+CompactNamespaces: false
+
+# --- Access modifiers ---
+# public: / private: / protected: sit at the same indent level as the class keyword,
+# one step dedented from the class body members.
+AccessModifierOffset: -4
+IndentAccessModifiers: false
+
+# --- Pointer and reference alignment ---
+# Handwritten code: Reader &reader, IServer *linkedServer  (Right)
+# Generated code:   Reader& reader, etl::byte_stream_writer& writer  (Left) — conflict.
+# Right is chosen to match the hand-written source.
+PointerAlignment: Right
+ReferenceAlignment: Pointer
+
+# --- Column limit ---
+# No line-length limit is enforced in the codebase. Several template declarations and
+# long virtual method signatures already exceed 120 characters.
+# Set to 0 (unlimited) to avoid reformatting existing code.
+# Consider revisiting once clang-tidy / CI gates are in place.
+ColumnLimit: 0
+
+# --- Short functions on one line ---
+# Inline class members like `uint8_t id() const override { return 0; }` are kept on one line.
+# Free functions at namespace scope remain multi-line.
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortBlocksOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortLambdasOnASingleLine: All
+
+# --- Spacing ---
+SpaceBeforeParens: ControlStatements
+SpaceAfterCStyleCast: false
+SpaceBeforeCpp11BracedList: false
+SpaceInEmptyParentheses: false
+SpaceBeforeSquareBrackets: false
+
+# --- Templates ---
+# Handwritten: template <>   (space between template and <)
+# Generated:   template<>    (no space) — will be corrected by clang-format.
+AlwaysBreakTemplateDeclarations: Yes
+SpacesInAngles: Never
+
+# --- Include ordering ---
+# Desired grouping: 1. C++ standard library, 2. ETL library, 3. other external, 4. project-local.
+# Conflict: generated files order as local → standard → ETL; clang-format will reorder them.
+# Conflict: Server.hpp has #include <utility> after local headers; clang-format will move it.
+SortIncludes: CaseSensitive
+IncludeBlocks: Regroup
+IncludeCategories:
+  # C++ standard library headers: lowercase identifiers, no path separators, no file extension
+  - Regex:    '^<[a-z_]+>$'
+    Priority: 1
+    SortPriority: 0
+  # ETL library
+  - Regex:    '^<etl/'
+    Priority: 2
+    SortPriority: 1
+  # Other angle-bracket includes (gtest, gmock, CMSIS, etc.)
+  - Regex:    '^<.*>'
+    Priority: 3
+    SortPriority: 2
+  # Project-local headers
+  - Regex:    '^".*"'
+    Priority: 4
+    SortPriority: 3
+
+# --- Alignment ---
+AlignAfterOpenBracket: Align
+AlignConsecutiveDeclarations: None
+AlignTrailingComments: true
+
+# --- C++11 braced initialisation ---
+Cpp11BracedListStyle: true
+
+# --- Trailing commas ---
+# Enum trailing commas are present in the existing code; do not insert them elsewhere.
+InsertTrailingCommas: None

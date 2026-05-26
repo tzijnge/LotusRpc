@@ -37,7 +37,8 @@ namespace test123
 
         static constexpr lrpc::array<uint8_t, 0> CompressedDefinition =
         {
-            // Use the 'embed_definition' setting in the definition file to embed the definition in the generated server code
+            // Use the 'embed_definition' setting in the definition file
+            // to embed the definition in the generated server code
         };
     }
 }
@@ -78,7 +79,8 @@ namespace lrpc_meta
 
     static constexpr lrpc::array<uint8_t, 0> CompressedDefinition =
     {
-        // Use the 'embed_definition' setting in the definition file to embed the definition in the generated server code
+        // Use the 'embed_definition' setting in the definition file
+        // to embed the definition in the generated server code
     };
 }
 """
@@ -120,7 +122,8 @@ namespace test123
 
         static constexpr lrpc::array<uint8_t, 0> CompressedDefinition =
         {
-            // Use the 'embed_definition' setting in the definition file to embed the definition in the generated server code
+            // Use the 'embed_definition' setting in the definition file
+            // to embed the definition in the generated server code
         };
     }
 }

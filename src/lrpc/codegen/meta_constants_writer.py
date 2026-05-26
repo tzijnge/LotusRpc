@@ -64,10 +64,8 @@ class MetaConstantsWriter:
             ";",
         ):
             if comp_def_size == 0:
-                self._file.write(
-                    "// Use the 'embed_definition' setting in the definition file "
-                    "to embed the definition in the generated server code",
-                )
+                self._file.write("// Use the 'embed_definition' setting in the definition file")
+                self._file.write("// to embed the definition in the generated server code")
                 return
 
             bytes_per_line = 16

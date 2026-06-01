@@ -8,6 +8,7 @@ import click
 import click_log
 
 from lrpc.codegen import (
+    ByteTypesFileWriter,
     ConstantsFileVisitor,
     EnumFileVisitor,
     MetaServiceVisitor,
@@ -16,6 +17,8 @@ from lrpc.codegen import (
     ServiceShimVisitor,
     StructFileVisitor,
 )
+from lrpc.codegen.common import write_file_banner
+from lrpc.codegen.cppfile import CppFile
 from lrpc.core import LrpcDef
 from lrpc.core.settings import LrpcByteType
 from lrpc.resources.cpp import export_to as export_resources_to
@@ -35,7 +38,11 @@ def generate_rpc(lrpc_def: LrpcDef, output: Path, *, generate_core: bool) -> Non
     create_dir_if_not_exists(output)
 
     if generate_core:
-        export_resources_to(output, lrpc_def.settings().byte_type())
+        export_resources_to(output)
+        core_dir = output.joinpath("lrpccore")
+        byte_types_file = CppFile(f"{core_dir}/LrpcByteTypes.hpp")
+        write_file_banner(byte_types_file)
+        ByteTypesFileWriter(byte_types_file, lrpc_def.settings().byte_type()).write()
 
     lrpc_def.accept(ServerIncludeVisitor(output))
     lrpc_def.accept(ServiceIncludeVisitor(output))
@@ -139,7 +146,11 @@ def cppcore(output: os.PathLike[str], byte_type: LrpcByteType) -> None:
     """Generate C++ server core files. Generating these files separately from the rest of the server
     allows for having multiple servers in a single project without conflicting and/or duplicate files.
     Use in combination with the 'cpp' command and the '--no-core' option"""
-    export_resources_to(Path(output), byte_type)
+    export_resources_to(Path(output))
+    core_dir = Path(output).joinpath("lrpccore")
+    byte_types_file = CppFile(f"{core_dir}/LrpcByteTypes.hpp")
+    write_file_banner(byte_types_file)
+    ByteTypesFileWriter(byte_types_file, byte_type).write()
     log.info("Generated LRPC core code in %s", output)
 
 

@@ -26,8 +26,10 @@ class ConstantsFileVisitor(LrpcVisitor):
     def visit_lrpc_constant(self, constant: LrpcConstant) -> None:
         if "int" in constant.cpp_type():
             self._includes.add("<cstdint>")
-        if (constant.cpp_type() == "string") or (constant.cpp_type() == "bytearray"):
+        if constant.cpp_type() == "string":
             self._includes.add('"lrpccore/LrpcTypes.hpp"')
+        if constant.cpp_type() == "bytearray":
+            self._includes.add('"lrpccore/LrpcByteTypes.hpp"')
 
         self._constant_definitions.append(self._constant_definition(constant))
 

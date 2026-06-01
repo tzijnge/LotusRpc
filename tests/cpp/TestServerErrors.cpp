@@ -23,7 +23,6 @@ public:
     uint16_t f0(const uint16_t p0) override { return p0; }
 };
 
-// NOLINTNEXTLINE(misc-use-anonymous-namespace)
 // NOLINTNEXTLINE(misc-multiple-inheritance)
 class TestServerErrors : public ::testing::Test, public srv3::Server3
 {
@@ -34,8 +33,10 @@ public:
         // service 5 is intentionally not registered
     }
 
+    // NOLINTNEXTLINE(misc-include-cleaner)
     void receive(const lrpc::string_view hex) { lrpcReceive(testutils::hexToBytes(hex)); }
 
+    // NOLINTNEXTLINE(misc-include-cleaner)
     void lrpcTransmit(const lrpc::span<const uint8_t> bytes) override
     {
         std::stringstream stream;

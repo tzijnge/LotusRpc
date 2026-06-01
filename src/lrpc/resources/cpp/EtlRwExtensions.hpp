@@ -6,6 +6,7 @@
 #include <limits>
 #include <type_traits>
 
+#include "LrpcByteTypes.hpp"
 #include "LrpcTypes.hpp"
 
 namespace lrpc
@@ -462,11 +463,12 @@ namespace lrpc
     };
 
     // array of fixed size string
+    // NOLINTBEGIN(bugprone-easily-swappable-parameters)
     template <typename ARR,
               typename std::enable_if_t<is_array_n<ARR>::value && array_n_type_is_string_n<ARR>::value, bool> = true>
-    // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
     void write_unchecked(etl::byte_stream_writer& writer, lrpc::span<const lrpc::string_view> value,
                          const size_t definitionArraySize, const size_t definitionStringSize)
+    // NOLINTEND(bugprone-easily-swappable-parameters)
     {
         const auto size = std::min(value.size(), definitionArraySize);
         for (size_t i{0}; i < size; ++i)

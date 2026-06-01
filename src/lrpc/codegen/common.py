@@ -12,7 +12,9 @@ def lrpc_var_includes(var: LrpcVar) -> set[tuple[str, bool]]:
     if var.base_type_is_custom():
         includes.add((f'"{var.base_type()}.hpp"', True))
 
-    if var.base_type_is_string() or var.is_array() or var.is_optional():
+    if var.base_type_is_bytearray():
+        includes.add(('"lrpccore/LrpcByteTypes.hpp"', True))
+    elif var.base_type_is_string() or var.is_array() or var.is_optional():
         includes.add(('"lrpccore/LrpcTypes.hpp"', True))
 
     return includes

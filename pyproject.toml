@@ -65,7 +65,6 @@ where = ["src"]
     "Service.hpp",
     "EtlRwExtensions.hpp",
     "MetaError.hpp",
-    "LrpcBaseTypes.hpp",
     "LrpcTypes.hpp",
 ]
 "lrpc.resources.meta" = ["meta.lrpc.yaml"]

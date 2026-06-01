@@ -78,6 +78,7 @@ static_assert(std::is_same<decltype(srv4::c21), const lrpc::string_view>::value,
 
 TEST(TestServer4, c22)
 {
+    // NOLINTNEXTLINE(misc-include-cleaner)
     static_assert(std::is_same<decltype(srv4::c22), const lrpc::array<lrpc::byte, 4>>::value, "");
     EXPECT_EQ(srv4::c22, (lrpc::array<lrpc::byte, 4>{0xAA, 0xBB, 0x00, 0x01}));
 }

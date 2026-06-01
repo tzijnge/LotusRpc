@@ -12,6 +12,7 @@
 #include "generated/Server1/Server1.hpp"
 
 using ::testing::Return;
+
 // NOLINTNEXTLINE(misc-use-anonymous-namespace)
 class MockServer1S0 : public srv1::srv0_shim
 {

@@ -1,17 +1,23 @@
 
 #pragma once
 
-$byte_include
-#include <cstdint>
+#include <array>
+#include <cstddef>
 
+#include <etl/optional.h>
 #include <etl/span.h>
-
-#include "LrpcBaseTypes.hpp"
+#include <etl/string_view.h>
 
 namespace lrpc
 {
-    using byte = $byte_type;
-    static_assert(sizeof(byte) == 1, "sizeof(byte) must be exactly 1");
+    using string_view = etl::string_view;
 
-    using bytearray = etl::span<const byte>;
+    template <typename T>
+    using span = etl::span<T>;
+
+    template <typename T, size_t N>
+    using array = std::array<T, N>;
+
+    template <typename T>
+    using optional = etl::optional<T>;
 }

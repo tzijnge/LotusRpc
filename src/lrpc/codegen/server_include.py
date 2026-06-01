@@ -23,7 +23,6 @@ class ServerIncludeVisitor(LrpcVisitor):
 
         write_file_banner(self._file)
         self._file.pragma_once()
-        self._file.include('"lrpccore/LrpcTypes.hpp"', iwyu_export=True)
         self._file.include('"lrpccore/Server.hpp"', iwyu_export=True)
         if len(lrpc_def.constants()) != 0:
             self._file.include(f'"{lrpc_def.name()}_Constants.hpp"', iwyu_export=True)

@@ -34,8 +34,10 @@ public:
         registerService(service01);
     }
 
+    // NOLINTNEXTLINE(misc-include-cleaner)
     void receive(const lrpc::string_view hex) { lrpcReceive(testutils::hexToBytes(hex)); }
 
+    // NOLINTNEXTLINE(misc-include-cleaner)
     void lrpcTransmit(const lrpc::span<const uint8_t> bytes) override
     {
         std::stringstream stream;

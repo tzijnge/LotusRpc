@@ -65,6 +65,7 @@ TEST(TestEtlRwExtensions, optional_pr_type)
                               lrpc::optional_pr_type<lrpc::optional<lrpc::tags::string_auto>>::type>::value));
     EXPECT_TRUE((std::is_same<lrpc::optional<lrpc::string_view>,
                               lrpc::optional_pr_type<lrpc::optional<lrpc::tags::string_n>>::type>::value));
+    // NOLINTNEXTLINE(misc-include-cleaner)
     EXPECT_TRUE((std::is_same<lrpc::optional<lrpc::bytearray>,
                               lrpc::optional_pr_type<lrpc::optional<lrpc::tags::bytearray_auto>>::type>::value));
 }
@@ -462,6 +463,7 @@ TEST(TestEtlRwExtensions, writeByteArray)
     lrpc::array<uint8_t, 10> storage;
     etl::byte_stream_writer writer(storage, etl::endian::little);
 
+    // NOLINTNEXTLINE(misc-include-cleaner)
     const lrpc::array<lrpc::byte, 3> a0{0x11, 0x12, 0x13};
     const lrpc::array<lrpc::byte, 2> a1{0x14, 0x15};
     lrpc::write_unchecked<lrpc::tags::bytearray_auto>(writer, a0);

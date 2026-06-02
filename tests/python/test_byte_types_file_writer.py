@@ -7,9 +7,10 @@ import pytest
 
 from lrpc.codegen.byte_types_file_writer import ByteTypesFileWriter, write_byte_types_file
 from lrpc.codegen.cppfile import CppFile
+from lrpc.core.settings import LrpcByteType
 
 
-def _write(byte_type: str) -> str:
+def _write(byte_type: LrpcByteType) -> str:
     mock_file = StringIO()
     ByteTypesFileWriter(CppFile.from_writer(mock_file.write), byte_type).write()
     return mock_file.getvalue()
@@ -92,7 +93,7 @@ namespace lrpc
 
 
 @pytest.mark.parametrize("byte_type", ["char", "char8_t", "unsigned char", "signed char"])
-def test_char_types_have_no_extra_include(byte_type: str) -> None:
+def test_char_types_have_no_extra_include(byte_type: LrpcByteType) -> None:
     expected = f"""\
 #pragma once
 

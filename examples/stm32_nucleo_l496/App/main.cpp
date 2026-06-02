@@ -1,11 +1,10 @@
 #include "main.h"
 
 #include <algorithm>
+#include <cstdint>
+#include <random>
 
 #include <etl/algorithm.h>
-#include <etl/array.h>
-
-#include <random>
 
 #include "lrpc/generated/example.hpp"
 #include "usart.h"
@@ -34,13 +33,13 @@ public:
 
     double f8(double p1) override { return p1; }
 
-    std::tuple<uint8_t, uint8_t> f9() override { return {123, 456}; }
+    std::tuple<uint8_t, uint8_t> f9() override { return {123, 111}; }
 
     lrpc::span<const uint8_t> f10() override { return {}; }
 
-    void f11(lrpc::span<const uint8_t>) override {}
+    void f11(lrpc::span<const uint8_t> /*p1*/) override {}
 
-    void f12(lrpc::optional<uint8_t>) override {}
+    void f12(lrpc::optional<uint8_t> /*p1*/) override {}
 
     uint32_t f13(lrpc::string_view p1) override { return p1.size(); }
 
@@ -139,7 +138,7 @@ private:
     Srv2 srv2;
 };
 
-int main(void)
+int main()
 {
     HAL_Init();
     SystemClock_Config();

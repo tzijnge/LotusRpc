@@ -23,6 +23,7 @@ message("Build type: " ${CMAKE_BUILD_TYPE})
 enable_language(C CXX ASM)
 
 include(FetchContent)
+include(${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/CompilerWarnings.cmake)
 
 FetchContent_Declare(
   etl
@@ -57,12 +58,8 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE)
 
-target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
-    -Wall
-    -Wextra
-    -Wconversion
-    -Werror
-)
+target_set_warnings(${CMAKE_PROJECT_NAME} PRIVATE)
+set_property(TARGET ${CMAKE_PROJECT_NAME} PROPERTY COMPILE_WARNING_AS_ERROR ON)
 
 # Remove wrong libob.a library dependency when using cpp files
 list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES ob)

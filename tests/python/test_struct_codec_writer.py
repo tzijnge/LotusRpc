@@ -7,7 +7,7 @@ from lrpc.core import LrpcStruct, LrpcStructDict
 
 def assert_encoder(struct: LrpcStructDict, expected: str, namespace: str | None = None) -> None:
     mock_file = StringIO()
-    writer = StructCodecWriter(CppFile("test", mock_file), LrpcStruct(struct), namespace)
+    writer = StructCodecWriter(CppFile.from_writer(mock_file.write), LrpcStruct(struct), namespace)
     writer.write_encoder()
 
     assert mock_file.getvalue() == expected
@@ -15,7 +15,7 @@ def assert_encoder(struct: LrpcStructDict, expected: str, namespace: str | None 
 
 def assert_decoder(struct: LrpcStructDict, expected: str, namespace: str | None = None) -> None:
     mock_file = StringIO()
-    writer = StructCodecWriter(CppFile("test", mock_file), LrpcStruct(struct), namespace)
+    writer = StructCodecWriter(CppFile.from_writer(mock_file.write), LrpcStruct(struct), namespace)
     writer.write_decoder()
 
     assert mock_file.getvalue() == expected

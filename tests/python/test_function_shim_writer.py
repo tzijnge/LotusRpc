@@ -7,7 +7,7 @@ from lrpc.core import LrpcFun, LrpcFunDict
 
 def assert_func(func: LrpcFunDict, expected: str) -> None:
     mock_file = StringIO()
-    writer = FunctionShimWriter(CppFile("test", mock_file))
+    writer = FunctionShimWriter(CppFile.from_writer(mock_file.write))
     writer.write_function_shim(LrpcFun(func))
 
     assert mock_file.getvalue() == expected

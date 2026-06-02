@@ -1,14 +1,17 @@
+import tempfile
+from importlib.metadata import version
 from io import StringIO
+from pathlib import Path
 
 import pytest
 
-from lrpc.codegen.byte_types_file_writer import ByteTypesFileWriter
+from lrpc.codegen.byte_types_file_writer import ByteTypesFileWriter, write_byte_types_file
 from lrpc.codegen.cppfile import CppFile
 
 
 def _write(byte_type: str) -> str:
     mock_file = StringIO()
-    ByteTypesFileWriter(CppFile("test", mock_file), byte_type).write()
+    ByteTypesFileWriter(CppFile.from_writer(mock_file.write), byte_type).write()
     return mock_file.getvalue()
 
 
@@ -104,3 +107,29 @@ namespace lrpc
 }}
 """
     assert _write(byte_type) == expected
+
+
+def test_write_byte_types_file() -> None:
+    v = version("lotusrpc")
+    with tempfile.TemporaryDirectory() as temp_dir:
+        write_byte_types_file(Path(temp_dir), "uint8_t")
+        output = Path(temp_dir).joinpath("LrpcByteTypes.hpp").read_text(encoding="utf-8")
+
+    expected = f"""\
+// This file has been generated with LRPC version {v}
+
+#pragma once
+
+#include <cstdint>
+
+#include "LrpcTypes.hpp"
+
+namespace lrpc
+{{
+    using byte = uint8_t;
+    static_assert(sizeof(byte) == 1, "sizeof(byte) must be exactly 1");
+
+    using bytearray = etl::span<const byte>;
+}}
+"""
+    assert output == expected

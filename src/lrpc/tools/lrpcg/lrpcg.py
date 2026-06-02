@@ -8,7 +8,6 @@ import click
 import click_log
 
 from lrpc.codegen import (
-    ByteTypesFileWriter,
     ConstantsFileVisitor,
     EnumFileVisitor,
     MetaServiceVisitor,
@@ -17,11 +16,10 @@ from lrpc.codegen import (
     ServiceShimVisitor,
     StructFileVisitor,
 )
-from lrpc.codegen.common import write_file_banner
-from lrpc.codegen.cppfile import CppFile
+from lrpc.codegen.byte_types_file_writer import write_byte_types_file
 from lrpc.core import LrpcDef
 from lrpc.core.settings import LrpcByteType
-from lrpc.resources.cpp import export_to as export_resources_to
+from lrpc.resources.cpp import export_resources_to
 from lrpc.schema import export_lrpc_schema
 from lrpc.utils import DefinitionLoader
 from lrpc.visitors import PlantUmlVisitor
@@ -39,10 +37,7 @@ def generate_rpc(lrpc_def: LrpcDef, output: Path, *, generate_core: bool) -> Non
 
     if generate_core:
         export_resources_to(output)
-        core_dir = output.joinpath("lrpccore")
-        byte_types_file = CppFile(f"{core_dir}/LrpcByteTypes.hpp")
-        write_file_banner(byte_types_file)
-        ByteTypesFileWriter(byte_types_file, lrpc_def.settings().byte_type()).write()
+        write_byte_types_file(output.joinpath("lrpccore"), lrpc_def.settings().byte_type())
 
     lrpc_def.accept(ServerIncludeVisitor(output))
     lrpc_def.accept(ServiceIncludeVisitor(output))
@@ -147,10 +142,7 @@ def cppcore(output: os.PathLike[str], byte_type: LrpcByteType) -> None:
     allows for having multiple servers in a single project without conflicting and/or duplicate files.
     Use in combination with the 'cpp' command and the '--no-core' option"""
     export_resources_to(Path(output))
-    core_dir = Path(output).joinpath("lrpccore")
-    byte_types_file = CppFile(f"{core_dir}/LrpcByteTypes.hpp")
-    write_file_banner(byte_types_file)
-    ByteTypesFileWriter(byte_types_file, byte_type).write()
+    write_byte_types_file(Path(output).joinpath("lrpccore"), byte_type)
     log.info("Generated LRPC core code in %s", output)
 
 

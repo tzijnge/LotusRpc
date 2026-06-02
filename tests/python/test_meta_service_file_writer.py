@@ -6,7 +6,7 @@ from lrpc.codegen.meta_service_file_writer import MetaServiceFileWriter
 
 def test_without_namespace() -> None:
     mock_file = StringIO()
-    writer = MetaServiceFileWriter(CppFile("test", mock_file))
+    writer = MetaServiceFileWriter(CppFile.from_writer(mock_file.write))
     writer.write_service(None)
 
     expected = """#pragma once
@@ -51,7 +51,7 @@ public:
 
 def test_with_namespace() -> None:
     mock_file = StringIO()
-    writer = MetaServiceFileWriter(CppFile("test", mock_file))
+    writer = MetaServiceFileWriter(CppFile.from_writer(mock_file.write))
     writer.write_service("my_namespace")
 
     expected = """\

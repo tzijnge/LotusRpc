@@ -1,5 +1,14 @@
+from pathlib import Path
+
+from lrpc.codegen.common import write_file_banner
 from lrpc.codegen.cppfile import CppFile
 from lrpc.core.settings import LrpcByteType
+
+
+def write_byte_types_file(output: Path, byte_type: LrpcByteType) -> None:
+    with CppFile(f"{output}/LrpcByteTypes.hpp") as file:
+        write_file_banner(file)
+        ByteTypesFileWriter(file, byte_type).write()
 
 
 class ByteTypesFileWriter:

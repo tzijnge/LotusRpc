@@ -7,7 +7,7 @@ from lrpc.core import LrpcStream, LrpcStreamDict
 
 def assert_stream(stream: LrpcStreamDict, expected: str) -> None:
     mock_file = StringIO()
-    writer = ServerStreamResponseWriter(CppFile("test", mock_file))
+    writer = ServerStreamResponseWriter(CppFile.from_writer(mock_file.write))
     writer.write_response(LrpcStream(stream))
 
     assert mock_file.getvalue() == expected

@@ -7,7 +7,7 @@ from lrpc.codegen.meta_constants_writer import MetaConstantsWriter
 
 def test_with_namespace() -> None:
     mock_file = StringIO()
-    writer = MetaConstantsWriter(CppFile("test", mock_file))
+    writer = MetaConstantsWriter(CppFile.from_writer(mock_file.write))
     writer.write_constants(
         definition_version=None,
         definition_hash=None,
@@ -51,7 +51,7 @@ namespace test123
 
 def test_without_namespace() -> None:
     mock_file = StringIO()
-    writer = MetaConstantsWriter(CppFile("test", mock_file))
+    writer = MetaConstantsWriter(CppFile.from_writer(mock_file.write))
     writer.write_constants(
         definition_version=None,
         definition_hash=None,
@@ -92,7 +92,7 @@ namespace lrpc_meta
 
 def test_with_definition_hash_and_version() -> None:
     mock_file = StringIO()
-    writer = MetaConstantsWriter(CppFile("test", mock_file))
+    writer = MetaConstantsWriter(CppFile.from_writer(mock_file.write))
     writer.write_constants(
         definition_version="1.2.3.4",
         definition_hash="AABBCCDD",
@@ -137,7 +137,7 @@ namespace test123
 def test_without_namespace_with_compressed_definition() -> None:
     mock_file = StringIO()
     compressed_def = b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13"
-    writer = MetaConstantsWriter(CppFile("test", mock_file))
+    writer = MetaConstantsWriter(CppFile.from_writer(mock_file.write))
     writer.write_constants(
         definition_version=None,
         definition_hash=None,

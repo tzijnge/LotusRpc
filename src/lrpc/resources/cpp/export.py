@@ -3,11 +3,11 @@ from importlib.metadata import version
 from pathlib import Path
 
 
-def create_dir_if_not_exists(target_dir: Path) -> None:
+def _create_dir_if_not_exists(target_dir: Path) -> None:
     target_dir.mkdir(parents=True, exist_ok=True)
 
 
-def export(resource: str, output: Path) -> None:
+def _export(resource: str, output: Path) -> None:
     resource_path = resources.files(__package__).joinpath(resource)
 
     with (
@@ -20,12 +20,12 @@ def export(resource: str, output: Path) -> None:
         dest.write(source.read())
 
 
-def export_to(output: Path) -> None:
+def export_resources_to(output: Path) -> None:
     core_dir = output.joinpath("lrpccore")
-    create_dir_if_not_exists(core_dir)
+    _create_dir_if_not_exists(core_dir)
 
-    export("EtlRwExtensions.hpp", core_dir)
-    export("Server.hpp", core_dir)
-    export("Service.hpp", core_dir)
-    export("MetaError.hpp", core_dir)
-    export("LrpcTypes.hpp", core_dir)
+    _export("EtlRwExtensions.hpp", core_dir)
+    _export("Server.hpp", core_dir)
+    _export("Service.hpp", core_dir)
+    _export("MetaError.hpp", core_dir)
+    _export("LrpcTypes.hpp", core_dir)

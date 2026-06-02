@@ -11,6 +11,7 @@ def write_byte_types_file(output: Path, byte_type: LrpcByteType) -> None:
         ByteTypesFileWriter(file, byte_type).write()
 
 
+# pylint: disable = too-few-public-methods
 class ByteTypesFileWriter:
     def __init__(self, file: CppFile, byte_type: LrpcByteType) -> None:
         self._file = file

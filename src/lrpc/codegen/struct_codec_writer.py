@@ -1,3 +1,4 @@
+from lrpc.codegen.common import rw_read_params, rw_write_params
 from lrpc.codegen.cppfile import CppFile
 from lrpc.core import LrpcStruct, LrpcVar
 
@@ -38,24 +39,11 @@ class StructCodecWriter:
 
     @staticmethod
     def _write_params(var: LrpcVar) -> str:
-        params = ["writer", f"value.{var.name()}"]
-        if var.is_array():
-            params.append(f"{var.array_size()}")
-        if var.is_fixed_size_string():
-            params.append(f"{var.string_size()}")
-
-        return ", ".join(params)
+        return rw_write_params(var, f"value.{var.name()}")
 
     @staticmethod
     def _read_params(var: LrpcVar) -> str:
-        params = ["reader"]
-        if var.is_array():
-            params.append(f"value.{var.name()}")
-            params.append(f"{var.array_size()}")
-        if var.is_fixed_size_string():
-            params.append(f"{var.string_size()}")
-
-        return ", ".join(params)
+        return rw_read_params(var, f"value.{var.name()}")
 
     @staticmethod
     def _read_assignment(var: LrpcVar) -> str:

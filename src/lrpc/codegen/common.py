@@ -20,6 +20,25 @@ def lrpc_var_includes(var: LrpcVar) -> set[tuple[str, bool]]:
     return includes
 
 
+def rw_read_params(var: LrpcVar, dest: str | None = None) -> str:
+    params = ["reader"]
+    if var.is_array():
+        params.append(dest if dest is not None else var.name())
+        params.append(f"{var.array_size()}")
+    if var.is_fixed_size_string():
+        params.append(f"{var.string_size()}")
+    return ", ".join(params)
+
+
+def rw_write_params(var: LrpcVar, value: str) -> str:
+    params = ["writer", value]
+    if var.is_array():
+        params.append(f"{var.array_size()}")
+    if var.is_fixed_size_string():
+        params.append(f"{var.string_size()}")
+    return ", ".join(params)
+
+
 def write_file_banner(file: CppFile) -> None:
     v = version("lotusrpc")
     file.write(f"// This file has been generated with LRPC version {v}")

@@ -1,3 +1,4 @@
+from lrpc.codegen.common import rw_read_params, rw_write_params
 from lrpc.codegen.cppfile import CppFile
 from lrpc.core import LrpcFun, LrpcVar
 
@@ -24,16 +25,6 @@ class FunctionShimWriter:
         self._file.write(f"server().transmit(id(), {function.id()}{callback});")
 
     def _write_param_readers(self, function: LrpcFun) -> None:
-        def read_params(var: LrpcVar) -> str:
-            params = ["reader"]
-            if var.is_array():
-                params.append(f"{var.name()}")
-                params.append(f"{var.array_size()}")
-            if var.is_fixed_size_string():
-                params.append(f"{var.string_size()}")
-
-            return ", ".join(params)
-
         for p in function.params():
             if p.is_array():
                 self._file.write(f"{p.field_type()} {p.name()};")
@@ -41,7 +32,7 @@ class FunctionShimWriter:
             else:
                 assignment = f"const auto {p.name()} = "
 
-            self._file.write(f"{assignment}lrpc::read_unchecked<{p.rw_type()}>({read_params(p)});")
+            self._file.write(f"{assignment}lrpc::read_unchecked<{p.rw_type()}>({rw_read_params(p)});")
 
     @staticmethod
     def _response_var_name(function: LrpcFun) -> str:
@@ -60,29 +51,15 @@ class FunctionShimWriter:
     def _write_return_lambda(self, function: LrpcFun) -> None:
         response = self._response_var_name(function)
 
-        def write_params(var: LrpcVar, index: int | None) -> str:
-            params = ["writer"]
-            if index is None:
-                params.append(response)
-            else:
-                params.append(f"std::get<{index}>({response})")
-
-            if var.is_array():
-                params.append(f"{var.array_size()}")
-            if var.is_fixed_size_string():
-                params.append(f"{var.string_size()}")
-
-            return ", ".join(params)
-
         if function.number_returns() == 0:
             return
 
         with self._file.block(f"const auto _lrpc_paramWriter = [&{response}](Writer &writer)", ";"):
             returns = function.returns()
             for i, r in enumerate(returns):
-                return_index = None if len(returns) == 1 else i
+                value = response if len(returns) == 1 else f"std::get<{i}>({response})"
                 self._file.write(
-                    f"lrpc::write_unchecked<{r.rw_type()}>({write_params(r, return_index)});",
+                    f"lrpc::write_unchecked<{r.rw_type()}>({rw_write_params(r, value)});",
                 )
 
     @staticmethod

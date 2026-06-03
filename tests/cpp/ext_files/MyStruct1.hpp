@@ -10,8 +10,5 @@ struct MyStruct1
     // Additional static members and functions are ok in an external struct, but they are ignored by LRPC
     static uint8_t abc;
 
-    double getF1() const
-    {
-        return f1;
-    }
+    double getF1() const { return f1; }
 };

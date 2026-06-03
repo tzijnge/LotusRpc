@@ -1,0 +1,62 @@
+---
+BasedOnStyle: LLVM
+Language: Cpp
+Standard: c++11
+
+UseTab: Never
+IndentWidth: 4
+TabWidth: 4
+ContinuationIndentWidth: 4
+
+BreakBeforeBraces: Allman
+
+NamespaceIndentation: All
+CompactNamespaces: false
+FixNamespaceComments: false
+
+AccessModifierOffset: -4
+IndentAccessModifiers: false
+
+PointerAlignment: Left
+ReferenceAlignment: Pointer
+
+ColumnLimit: 120
+
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortBlocksOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortLambdasOnASingleLine: All
+
+SpaceBeforeParens: ControlStatements
+SpaceAfterCStyleCast: false
+SpaceBeforeCpp11BracedList: false
+SpaceInEmptyParentheses: false
+SpaceBeforeSquareBrackets: false
+
+AlwaysBreakTemplateDeclarations: Yes
+SpacesInAngles: Never
+
+SortIncludes: CaseSensitive
+IncludeBlocks: Regroup
+IncludeCategories:
+  # C++ standard library headers: lowercase identifiers, no path separators, no file extension
+  - Regex: "^<[a-z_][a-z0-9_]*>$"
+    Priority: 1
+  # ETL library
+  - Regex: "^<etl/"
+    Priority: 2
+  # Other angle-bracket includes (gtest, gmock, CMSIS, etc.)
+  - Regex: "^<.*>"
+    Priority: 3
+  # Project-local headers
+  - Regex: '^".*"'
+    Priority: 4
+
+AlignAfterOpenBracket: Align
+AlignConsecutiveDeclarations: None
+AlignTrailingComments: true
+
+Cpp11BracedListStyle: true
+
+InsertTrailingCommas: None

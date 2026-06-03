@@ -1,26 +1,28 @@
-#include "generated/Server2/Server2.hpp"
-#include "TestUtils.hpp"
+#include <vector>
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <vector>
+
+#include "TestUtils.hpp"
+#include "generated/Server2/Server2.hpp"
 
 using ::testing::Return;
 
 // NOLINTNEXTLINE(misc-use-anonymous-namespace)
 class MockServer2S01 : public srv1_shim
 {
-    public:
-        MOCK_METHOD(void, f0, (lrpc::span<const lrpc::string_view> p0), (override));
-        MOCK_METHOD((lrpc::span<const lrpc::string_view>), f1, (), (override));
-        MOCK_METHOD(void, f2, (lrpc::optional<lrpc::string_view> p0), (override));
-        MOCK_METHOD(void, f3, (lrpc::optional<lrpc::string_view> p0), (override));
-        MOCK_METHOD((lrpc::optional<lrpc::string_view>), f4, (), (override));
-        MOCK_METHOD(void, f5, (const StringStruct &p0), (override));
-        MOCK_METHOD(StringStruct, f6, (), (override));
-        MOCK_METHOD((lrpc::string_view), f7, (lrpc::string_view p0), (override));
-        MOCK_METHOD(void, f8, (lrpc::span<const lrpc::string_view> p0), (override));
-        MOCK_METHOD(void, f9, (const StringStruct2 &p0), (override));
-        MOCK_METHOD(StringStruct2, f10, (), (override));
+public:
+    MOCK_METHOD(void, f0, (lrpc::span<const lrpc::string_view> p0), (override));
+    MOCK_METHOD((lrpc::span<const lrpc::string_view>), f1, (), (override));
+    MOCK_METHOD(void, f2, (lrpc::optional<lrpc::string_view> p0), (override));
+    MOCK_METHOD(void, f3, (lrpc::optional<lrpc::string_view> p0), (override));
+    MOCK_METHOD((lrpc::optional<lrpc::string_view>), f4, (), (override));
+    MOCK_METHOD(void, f5, (const StringStruct& p0), (override));
+    MOCK_METHOD(StringStruct, f6, (), (override));
+    MOCK_METHOD((lrpc::string_view), f7, (lrpc::string_view p0), (override));
+    MOCK_METHOD(void, f8, (lrpc::span<const lrpc::string_view> p0), (override));
+    MOCK_METHOD(void, f9, (const StringStruct2& p0), (override));
+    MOCK_METHOD(StringStruct2, f10, (), (override));
 };
 
 using TestServer2_s1 = testutils::TestServerBase<Server2, MockServer2S01>;

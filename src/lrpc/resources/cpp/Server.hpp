@@ -1,9 +1,11 @@
 #pragma once
 #include <cstdint>
+#include <utility>
+
 #include <etl/vector.h>
+
 #include "LrpcTypes.hpp"
 #include "Service.hpp"
-#include <utility>
 
 namespace lrpc
 {
@@ -19,7 +21,7 @@ namespace lrpc
         {
         public:
             uint8_t id() const override { return 0; };
-            void invoke(Service::Reader &reader) override
+            void invoke(Service::Reader& reader) override
             {
                 const auto data = reader.data();
                 const auto serviceId = static_cast<uint8_t>(data.at(1));
@@ -40,7 +42,7 @@ namespace lrpc
 
         void transmit(const uint8_t serviceId, const uint8_t functionOrStreamId) override
         {
-            static const auto cb = [](Writer &) {};
+            static const auto cb = [](Writer&) {};
             transmit(serviceId, functionOrStreamId, cb);
         }
 
@@ -53,14 +55,14 @@ namespace lrpc
             updateHeaderMessageSize(writer);
 
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            const auto* const begin = reinterpret_cast<const uint8_t *>(writer.cbegin());
+            const auto* const begin = reinterpret_cast<const uint8_t*>(writer.cbegin());
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-            const auto* const end = reinterpret_cast<const uint8_t *>(writer.cend());
+            const auto* const end = reinterpret_cast<const uint8_t*>(writer.cend());
 
             lrpcTransmit({begin, end});
         }
 
-        void registerService(Service &service)
+        void registerService(Service& service)
         {
             // TODO: check for out of bounds service
 
@@ -78,10 +80,8 @@ namespace lrpc
         }
 
         template <typename TContainer,
-                  typename = decltype(std::declval<TContainer>().data(),
-                                      std::declval<TContainer>().size(),
-                                      void())>
-        void lrpcReceive(const TContainer &bytes)
+                  typename = decltype(std::declval<TContainer>().data(), std::declval<TContainer>().size(), void())>
+        void lrpcReceive(const TContainer& bytes)
         {
             lrpcReceive(lrpc::span<const uint8_t>(bytes.data(), bytes.size()));
         }
@@ -97,7 +97,8 @@ namespace lrpc
             }
         }
 
-        void error(const LrpcMetaError type, const uint8_t p1 = 0, const uint8_t p2 = 0, const int32_t p3 = 0, const lrpc::string_view &message = {}) override
+        void error(const LrpcMetaError type, const uint8_t p1 = 0, const uint8_t p2 = 0, const int32_t p3 = 0,
+                   const lrpc::string_view& message = {}) override
         {
             metaService.error_response(type, p1, p2, p3, message);
         }
@@ -109,16 +110,13 @@ namespace lrpc
         lrpc::array<uint8_t, TX_SIZE> sendBuffer;
 
         // +2 to allocate space for all regular services and the meta service
-        lrpc::array<Service *, MAX_SERVICE_ID + 2U> services;
+        lrpc::array<Service*, MAX_SERVICE_ID + 2U> services;
         META_SERVICE metaService;
         ServiceNotFoundService serviceNotFound;
 
-        bool messageIsComplete() const
-        {
-            return receiveBuffer.size() == static_cast<size_t>(receiveBuffer.at(0) + 1);
-        }
+        bool messageIsComplete() const { return receiveBuffer.size() == static_cast<size_t>(receiveBuffer.at(0) + 1); }
 
-        Service *service(const uint8_t serviceId)
+        Service* service(const uint8_t serviceId)
         {
             // integer overflow for meta service intended
             const auto serviceIndex = static_cast<uint8_t>(serviceId + 1U);
@@ -142,14 +140,14 @@ namespace lrpc
             service(serviceId)->invoke(reader);
         }
 
-        static void createHeader(Writer &writer, const uint8_t serviceId, const uint8_t functionOrStreamId)
+        static void createHeader(Writer& writer, const uint8_t serviceId, const uint8_t functionOrStreamId)
         {
             writer.write_unchecked<uint8_t>(0);         // placeholder for message size
             writer.write_unchecked<uint8_t>(serviceId); // service ID
             writer.write_unchecked<uint8_t>(functionOrStreamId);
         }
 
-        static void updateHeaderMessageSize(Writer &writer)
+        static void updateHeaderMessageSize(Writer& writer)
         {
             const auto messageSize = writer.size_bytes();
             if (messageSize != 0)

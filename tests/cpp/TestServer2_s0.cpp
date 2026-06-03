@@ -1,21 +1,24 @@
-#include "generated/Server2/Server2.hpp"
-#include "TestUtils.hpp"
+#include <type_traits>
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <type_traits>
+
+#include "TestUtils.hpp"
+#include "generated/Server2/Server2.hpp"
 
 // NOLINTNEXTLINE(misc-use-anonymous-namespace)
 class MockServer2S00 : public srv0_shim
 {
-    public:
-        MOCK_METHOD(void, f0, (bool p0, lrpc::string_view p1), (override));
-        MOCK_METHOD(void, f1, (lrpc::string_view p0, bool p1), (override));
-        MOCK_METHOD(void, f2, (lrpc::string_view p0, lrpc::string_view p1), (override));
-    };
+public:
+    MOCK_METHOD(void, f0, (bool p0, lrpc::string_view p1), (override));
+    MOCK_METHOD(void, f1, (lrpc::string_view p0, bool p1), (override));
+    MOCK_METHOD(void, f2, (lrpc::string_view p0, lrpc::string_view p1), (override));
+};
 
 using TestServer2 = testutils::TestServerBase<Server2, MockServer2S00>;
 
-static_assert(std::is_same<Server2, lrpc::Server<1, LrpcMeta_service, 100, 256>>::value, "RX and/or TX buffer size are unequal to the definition file");
+static_assert(std::is_same<Server2, lrpc::Server<1, LrpcMeta_service, 100, 256>>::value,
+              "RX and/or TX buffer size are unequal to the definition file");
 
 // Decode void function with auto string as last param
 TEST_F(TestServer2, decodeF0)

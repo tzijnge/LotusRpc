@@ -1,1 +1,1 @@
-from .export import export_to as export_to
+from .export import export_resources_to as export_resources_to

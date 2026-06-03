@@ -16,9 +16,10 @@ from lrpc.codegen import (
     ServiceShimVisitor,
     StructFileVisitor,
 )
+from lrpc.codegen.byte_types_file_writer import write_byte_types_file
 from lrpc.core import LrpcDef
 from lrpc.core.settings import LrpcByteType
-from lrpc.resources.cpp import export_to as export_resources_to
+from lrpc.resources.cpp import export_resources_to
 from lrpc.schema import export_lrpc_schema
 from lrpc.utils import DefinitionLoader
 from lrpc.visitors import PlantUmlVisitor
@@ -35,7 +36,8 @@ def generate_rpc(lrpc_def: LrpcDef, output: Path, *, generate_core: bool) -> Non
     create_dir_if_not_exists(output)
 
     if generate_core:
-        export_resources_to(output, lrpc_def.settings().byte_type())
+        export_resources_to(output)
+        write_byte_types_file(output.joinpath("lrpccore"), lrpc_def.settings().byte_type())
 
     lrpc_def.accept(ServerIncludeVisitor(output))
     lrpc_def.accept(ServiceIncludeVisitor(output))
@@ -139,7 +141,8 @@ def cppcore(output: os.PathLike[str], byte_type: LrpcByteType) -> None:
     """Generate C++ server core files. Generating these files separately from the rest of the server
     allows for having multiple servers in a single project without conflicting and/or duplicate files.
     Use in combination with the 'cpp' command and the '--no-core' option"""
-    export_resources_to(Path(output), byte_type)
+    export_resources_to(Path(output))
+    write_byte_types_file(Path(output).joinpath("lrpccore"), byte_type)
     log.info("Generated LRPC core code in %s", output)
 
 

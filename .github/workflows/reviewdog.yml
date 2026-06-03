@@ -14,7 +14,9 @@ jobs:
           pip install -r requirements/dev.txt
           pip install -r requirements/package.txt
       - name: Linkspector
-        uses: umbrelladocs/action-linkspector@963b6264d7de32c904942a70b488d3407453049e
+        # action-linkspector is temporarily not working
+        if: 0
+        uses: umbrelladocs/action-linkspector@036f295d12b67b0c4b445bc83db0538afb78db69
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review
@@ -64,3 +66,10 @@ jobs:
           reporter: github-pr-review
           fail_level: any
           compare_with: "origin/${{ github.base_ref }}"
+      - name: clang-format
+        uses: tzijnge/action-clang-format@b2c1471287bc355e3968a808a6fb1390c5025ba5
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_level: any
+          exclude: cmake_build

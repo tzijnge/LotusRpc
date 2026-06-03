@@ -1,5 +1,5 @@
-from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
-
+from lrpc.codegen.common import rw_read_params
+from lrpc.codegen.cppfile import CppFile
 from lrpc.core import LrpcStream, LrpcVar
 
 
@@ -23,15 +23,4 @@ class ClientStreamShimWriter:
         else:
             assignment = f"const auto {param.name()} = "
 
-        self._file.write(f"{assignment}lrpc::read_unchecked<{param.rw_type()}>({self._read_params(param)});")
-
-    @staticmethod
-    def _read_params(var: LrpcVar) -> str:
-        params = ["reader"]
-        if var.is_array():
-            params.append(f"{var.name()}")
-            params.append(f"{var.array_size()}")
-        if var.is_fixed_size_string():
-            params.append(f"{var.string_size()}")
-
-        return ", ".join(params)
+        self._file.write(f"{assignment}lrpc::read_unchecked<{param.rw_type()}>({rw_read_params(param)});")

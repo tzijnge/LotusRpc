@@ -145,6 +145,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           -DCMAKE_C_COMPILER=clang-19
           -DCMAKE_CXX_COMPILER=clang++-19
+          -DCMAKE_CXX_STANDARD=11
           -DENABLE_CLANG_TIDY=ON
           -G Ninja
 
@@ -195,7 +196,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_ROOT_CERT: ${{ secrets.SONAR_ROOT_CERT }}
         with:
-          args: --define "sonar.cfamily.compile-commands=${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json"
+          args: --define "sonar.cfamily.compile-commands=${{github.workspace}}/cmake_build/compile_commands.json"
 
       - name: Draft release notes
         run: towncrier build --draft

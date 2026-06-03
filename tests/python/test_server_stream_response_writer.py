@@ -1,14 +1,13 @@
 from io import StringIO
 
-from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
-
+from lrpc.codegen.cppfile import CppFile
 from lrpc.codegen.server_stream_response_writer import ServerStreamResponseWriter
 from lrpc.core import LrpcStream, LrpcStreamDict
 
 
 def assert_stream(stream: LrpcStreamDict, expected: str) -> None:
     mock_file = StringIO()
-    writer = ServerStreamResponseWriter(CppFile("test", mock_file))
+    writer = ServerStreamResponseWriter(CppFile.from_writer(mock_file.write))
     writer.write_response(LrpcStream(stream))
 
     assert mock_file.getvalue() == expected
@@ -18,7 +17,7 @@ def test_no_params() -> None:
     func: LrpcStreamDict = {"name": "test_stream", "id": 42, "origin": "server"}
     expected = """void test_stream_response()
 {
-\tserver().transmit(id(), 42);
+    server().transmit(id(), 42);
 }
 """
 
@@ -34,11 +33,11 @@ def test_single_param() -> None:
     }
     expected = """void test_stream_response(uint8_t p0)
 {
-\tconst auto _lrpc_paramWriter = [&p0](Writer &writer)
-\t{
-\t\tlrpc::write_unchecked<uint8_t>(writer, p0);
-\t};
-\tserver().transmit(id(), 42, _lrpc_paramWriter);
+    const auto _lrpc_paramWriter = [&p0](Writer &writer)
+    {
+        lrpc::write_unchecked<uint8_t>(writer, p0);
+    };
+    server().transmit(id(), 42, _lrpc_paramWriter);
 }
 """
 
@@ -54,12 +53,12 @@ def test_two_params() -> None:
     }
     expected = """void test_stream_response(uint8_t p0, bool p1)
 {
-\tconst auto _lrpc_paramWriter = [&p0, &p1](Writer &writer)
-\t{
-\t\tlrpc::write_unchecked<uint8_t>(writer, p0);
-\t\tlrpc::write_unchecked<bool>(writer, p1);
-\t};
-\tserver().transmit(id(), 42, _lrpc_paramWriter);
+    const auto _lrpc_paramWriter = [&p0, &p1](Writer &writer)
+    {
+        lrpc::write_unchecked<uint8_t>(writer, p0);
+        lrpc::write_unchecked<bool>(writer, p1);
+    };
+    server().transmit(id(), 42, _lrpc_paramWriter);
 }
 """
 
@@ -75,11 +74,11 @@ def test_array_param() -> None:
     }
     expected = """void test_stream_response(lrpc::span<const uint8_t> p0)
 {
-\tconst auto _lrpc_paramWriter = [&p0](Writer &writer)
-\t{
-\t\tlrpc::write_unchecked<lrpc::tags::array_n<uint8_t>>(writer, p0, 25);
-\t};
-\tserver().transmit(id(), 42, _lrpc_paramWriter);
+    const auto _lrpc_paramWriter = [&p0](Writer &writer)
+    {
+        lrpc::write_unchecked<lrpc::tags::array_n<uint8_t>>(writer, p0, 25);
+    };
+    server().transmit(id(), 42, _lrpc_paramWriter);
 }
 """
 
@@ -95,11 +94,11 @@ def test_string_n_param() -> None:
     }
     expected = """void test_stream_response(lrpc::string_view p0)
 {
-\tconst auto _lrpc_paramWriter = [&p0](Writer &writer)
-\t{
-\t\tlrpc::write_unchecked<lrpc::tags::string_n>(writer, p0, 20);
-\t};
-\tserver().transmit(id(), 42, _lrpc_paramWriter);
+    const auto _lrpc_paramWriter = [&p0](Writer &writer)
+    {
+        lrpc::write_unchecked<lrpc::tags::string_n>(writer, p0, 20);
+    };
+    server().transmit(id(), 42, _lrpc_paramWriter);
 }
 """
 
@@ -115,11 +114,11 @@ def test_array_of_string_n_param() -> None:
     }
     expected = """void test_stream_response(lrpc::span<const lrpc::string_view> p0)
 {
-\tconst auto _lrpc_paramWriter = [&p0](Writer &writer)
-\t{
-\t\tlrpc::write_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(writer, p0, 7, 5);
-\t};
-\tserver().transmit(id(), 42, _lrpc_paramWriter);
+    const auto _lrpc_paramWriter = [&p0](Writer &writer)
+    {
+        lrpc::write_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(writer, p0, 7, 5);
+    };
+    server().transmit(id(), 42, _lrpc_paramWriter);
 }
 """
 

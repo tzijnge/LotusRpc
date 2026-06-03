@@ -1,8 +1,7 @@
 from pathlib import Path
 
-from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
-
 from lrpc.codegen.common import write_file_banner
+from lrpc.codegen.cppfile import CppFile
 from lrpc.codegen.utils import optionally_in_namespace
 from lrpc.core import LrpcEnum, RpcSettings
 from lrpc.visitors import LrpcVisitor
@@ -24,7 +23,7 @@ class EnumFileVisitor(LrpcVisitor):
 
         write_file_banner(self._file)
         self._write_include_guard()
-        self._file.write("#include <cstdint>")
+        self._file.include("<cstdint>")
 
         if self._descriptor.is_external():
             self._write_external_enum_include()
@@ -47,10 +46,10 @@ class EnumFileVisitor(LrpcVisitor):
         self._file.write(f"using {name} = {ext_full_name};")
 
     def _write_include_guard(self) -> None:
-        self._file.write("#pragma once")
+        self._file.pragma_once()
 
     def _write_external_enum_include(self) -> None:
-        self._file.write(f'#include "{self._descriptor.external_file()}"')
+        self._file.include(f'"{self._descriptor.external_file()}"')
 
     def _write_external_enum_checks(self) -> None:
         with self._file.block("namespace lrpc_private"):

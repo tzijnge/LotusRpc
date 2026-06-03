@@ -1,8 +1,7 @@
 from pathlib import Path
 
-from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
-
 from lrpc.codegen.common import lrpc_var_includes, write_file_banner
+from lrpc.codegen.cppfile import CppFile
 from lrpc.codegen.struct_codec_writer import StructCodecWriter
 from lrpc.codegen.utils import optionally_in_namespace
 from lrpc.core import LrpcStruct, LrpcVar, RpcSettings
@@ -16,7 +15,7 @@ class StructFileVisitor(LrpcVisitor):
         self._file: CppFile
         self._descriptor: LrpcStruct
         self._alias: str = ""
-        self._includes: set[str] = set()
+        self._includes: set[tuple[str, bool]] = set()
 
     def visit_rpc_settings(self, settings: RpcSettings) -> None:
         self._namespace = settings.namespace()
@@ -28,7 +27,7 @@ class StructFileVisitor(LrpcVisitor):
 
     def visit_lrpc_struct_end(self) -> None:
         write_file_banner(self._file)
-        self._file.write("#pragma once")
+        self._file.pragma_once()
         self._write_includes()
         self._file.newline()
 
@@ -74,11 +73,9 @@ class StructFileVisitor(LrpcVisitor):
             self._file.block("namespace lrpc_private"),
             self._file.block("namespace dummy"),
         ):
-            with self._file.block(f"struct {self._qualified_name()}", ";"):
+            with self._file.block(f"struct {self._qualified_name()}", ";", trailing_newline=True):
                 for f in self._descriptor.fields():
                     self._write_struct_field(f)
-
-            self._file.newline()
             self._file.write(
                 f"static_assert(sizeof(dummy::{self._qualified_name()}) == sizeof({self._name()}), "
                 '"External struct size not as expected. It may have missing or additional fields '
@@ -99,19 +96,17 @@ class StructFileVisitor(LrpcVisitor):
         self._file.write(f"using {name} = {ext_full_name};")
 
     def _write_includes(self) -> None:
-        self._includes.add("<etl/byte_stream.h>")
-        self._includes.add('"lrpccore/EtlRwExtensions.hpp"')
+        self._includes.add(("<etl/byte_stream.h>", False))
+        self._includes.add(('"lrpccore/EtlRwExtensions.hpp"', False))
         if self._descriptor.is_external():
-            self._includes.add(f'"{self._descriptor.external_file()}"')
-        for i in sorted(self._includes):
-            self._file(f"#include {i}")
+            self._includes.add((f'"{self._descriptor.external_file()}"', False))
+        for path, _ in sorted(self._includes):
+            self._file.include(path)
 
     def _write_struct(self) -> None:
-        with self._file.block(f"struct {self._qualified_name()}", ";"):
+        with self._file.block(f"struct {self._qualified_name()}", ";", trailing_newline=True):
             for f in self._descriptor.fields():
                 self._write_struct_field(f)
-
-        self._file.newline()
 
         with self._file.block(
             f"inline bool operator==(const {self._qualified_name()}& first, const {self._qualified_name()}& second)",

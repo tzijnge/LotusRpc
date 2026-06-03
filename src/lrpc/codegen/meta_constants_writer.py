@@ -1,7 +1,6 @@
 from importlib.metadata import version
 
-from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
-
+from lrpc.codegen.cppfile import CppFile
 from lrpc.codegen.utils import optionally_in_namespace
 
 
@@ -29,9 +28,9 @@ class MetaConstantsWriter:
         self._compressed_definition = compressed_definition
         self._definition_stream_chunk_size = definition_stream_chunk_size
 
-        self._file.write("#pragma once")
-        self._file.write("#include <cstdint>")
-        self._file.write('#include "lrpccore/LrpcTypes.hpp"')
+        self._file.pragma_once()
+        self._file.include("<cstdint>")
+        self._file.include('"lrpccore/LrpcTypes.hpp"')
 
         self._file.newline()
         optionally_in_namespace(self._file, self._write_constants, namespace)
@@ -65,10 +64,8 @@ class MetaConstantsWriter:
             ";",
         ):
             if comp_def_size == 0:
-                self._file.write(
-                    "// Use the 'embed_definition' setting in the definition file "
-                    "to embed the definition in the generated server code",
-                )
+                self._file.write("// Use the 'embed_definition' setting in the definition file")
+                self._file.write("// to embed the definition in the generated server code")
                 return
 
             bytes_per_line = 16

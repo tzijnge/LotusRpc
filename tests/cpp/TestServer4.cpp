@@ -1,8 +1,10 @@
-#include "generated/Server4/Server4.hpp"
-#include <gtest/gtest.h>
 #include <cstdint>
 #include <type_traits>
+
+#include <gtest/gtest.h>
+
 #include "TestUtils.hpp"
+#include "generated/Server4/Server4.hpp"
 
 static_assert(srv4::c0 == 111, "");
 static_assert(std::is_same<decltype(srv4::c0), const int32_t>::value, "");
@@ -17,14 +19,14 @@ static_assert(std::is_same<decltype(srv4::c3), const uint16_t>::value, "");
 static_assert(srv4::c4 == -1234, "");
 static_assert(std::is_same<decltype(srv4::c4), const int16_t>::value, "");
 
-static_assert(srv4::c5 == 123'456, "");
+static_assert(srv4::c5 == 123456, "");
 static_assert(std::is_same<decltype(srv4::c5), const uint32_t>::value, "");
-static_assert(srv4::c6 == -123'456, "");
+static_assert(srv4::c6 == -123456, "");
 static_assert(std::is_same<decltype(srv4::c6), const int32_t>::value, "");
 
-static_assert(srv4::c7 == 111'222'333'444, "");
+static_assert(srv4::c7 == 111222333444, "");
 static_assert(std::is_same<decltype(srv4::c7), const uint64_t>::value, "");
-static_assert(srv4::c8 == -111'222'333'444, "");
+static_assert(srv4::c8 == -111222333444, "");
 static_assert(std::is_same<decltype(srv4::c8), const int64_t>::value, "");
 
 constexpr float testc9{111.222F};
@@ -76,6 +78,7 @@ static_assert(std::is_same<decltype(srv4::c21), const lrpc::string_view>::value,
 
 TEST(TestServer4, c22)
 {
+    // NOLINTNEXTLINE(misc-include-cleaner)
     static_assert(std::is_same<decltype(srv4::c22), const lrpc::array<lrpc::byte, 4>>::value, "");
     EXPECT_EQ(srv4::c22, (lrpc::array<lrpc::byte, 4>{0xAA, 0xBB, 0x00, 0x01}));
 }

@@ -1,8 +1,7 @@
 from pathlib import Path
 
-from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
-
 from lrpc.codegen.common import write_file_banner
+from lrpc.codegen.cppfile import CppFile
 from lrpc.codegen.utils import optionally_in_namespace
 from lrpc.core import LrpcDef, LrpcService, RpcSettings
 from lrpc.visitors import LrpcVisitor
@@ -23,13 +22,12 @@ class ServerIncludeVisitor(LrpcVisitor):
         self._file = CppFile(f"{self._output}/{lrpc_def.name()}.hpp")
 
         write_file_banner(self._file)
-        self._file.write("#pragma once")
-        self._file.write('#include "lrpccore/LrpcTypes.hpp" // IWYU pragma: export')
-        self._file.write('#include "lrpccore/Server.hpp" // IWYU pragma: export')
+        self._file.pragma_once()
+        self._file.include('"lrpccore/Server.hpp"', iwyu_export=True)
         if len(lrpc_def.constants()) != 0:
-            self._file.write(f'#include "{lrpc_def.name()}_Constants.hpp" // IWYU pragma: export')
-        self._file.write('#include "LrpcMeta_constants.hpp" // IWYU pragma: export')
-        self._file.write('#include "LrpcMeta_service.hpp" // IWYU pragma: export')
+            self._file.include(f'"{lrpc_def.name()}_Constants.hpp"', iwyu_export=True)
+        self._file.include('"LrpcMeta_constants.hpp"', iwyu_export=True)
+        self._file.include('"LrpcMeta_service.hpp"', iwyu_export=True)
 
     def visit_rpc_settings(self, settings: RpcSettings) -> None:
         rx = settings.rx_buffer_size()
@@ -41,8 +39,8 @@ class ServerIncludeVisitor(LrpcVisitor):
 
     def visit_lrpc_service(self, service: LrpcService) -> None:
         if service.name() != "LrpcMeta":
-            self._file.write(f'#include "{service.name()}_includes.hpp" // IWYU pragma: export')
-            self._file.write(f'#include "{service.name()}_shim.hpp" // IWYU pragma: export')
+            self._file.include(f'"{service.name()}_includes.hpp"', iwyu_export=True)
+            self._file.include(f'"{service.name()}_shim.hpp"', iwyu_export=True)
 
     def visit_lrpc_def_end(self) -> None:
         self._file.newline()

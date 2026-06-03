@@ -1,5 +1,5 @@
-from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
-
+from lrpc.codegen.common import rw_write_params
+from lrpc.codegen.cppfile import CppFile
 from lrpc.core import LrpcStream, LrpcVar
 
 
@@ -25,14 +25,7 @@ class ServerStreamResponseWriter:
 
     @staticmethod
     def _write_params(var: LrpcVar) -> str:
-        params = ["writer", var.name()]
-
-        if var.is_array():
-            params.append(f"{var.array_size()}")
-        if var.is_fixed_size_string():
-            params.append(f"{var.string_size()}")
-
-        return ", ".join(params)
+        return rw_write_params(var, var.name())
 
     @staticmethod
     def _response_params(params: list[LrpcVar]) -> str:

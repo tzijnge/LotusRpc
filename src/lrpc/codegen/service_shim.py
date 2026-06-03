@@ -1,9 +1,8 @@
 from pathlib import Path
 
-from code_generation.code_generator import CppFile  # type: ignore[import-untyped]
-
 from lrpc.codegen.client_stream_shim_writer import ClientStreamShimWriter
 from lrpc.codegen.common import write_file_banner
+from lrpc.codegen.cppfile import CppFile
 from lrpc.codegen.function_shim_writer import FunctionShimWriter
 from lrpc.codegen.server_stream_response_writer import ServerStreamResponseWriter
 from lrpc.codegen.utils import optionally_in_namespace
@@ -134,24 +133,22 @@ class ServiceShimVisitor(LrpcVisitor):
             self._file.write("// Server stream start/stop shims")
 
         for stream in server_streams:
-            with self._file.block(f"void {stream.name()}_start_stop_shim(Reader& reader)"):
+            with self._file.block(
+                f"void {stream.name()}_start_stop_shim(Reader& reader)", trailing_newline=True,
+            ):
                 self._file.write("const auto start = reader.read_unchecked<bool>();")
                 with self._file.block("if (start)"):
                     self._file.write(f"{stream.name()}();")
                 with self._file.block("else"):
                     self._file.write(f"{stream.name()}_stop();")
 
-            self._file.newline()
-
     def _write_client_stream_stop_requests(self, client_streams: list[LrpcStream]) -> None:
         if len(client_streams) != 0:
             self._file.write("// Client stream stop requests")
 
         for stream in client_streams:
-            with self._file.block(f"void {stream.name()}_requestStop()"):
+            with self._file.block(f"void {stream.name()}_requestStop()", trailing_newline=True):
                 self._file(f"requestStop({stream.id()});")
-
-            self._file.newline()
 
     def _write_shim_array(
         self,
@@ -162,16 +159,16 @@ class ServiceShimVisitor(LrpcVisitor):
         max_function_or_stream_id = self._max_function_or_stream_id(functions, client_streams, server_streams)
 
         self._file.write(f"using ShimType = void ({self._class_name()}::*)(Reader &);")
-        with self._file.block("void missingFunction_shim(Reader& reader)"):
+        with self._file.block("void missingFunction_shim(Reader& reader)", trailing_newline=True):
             self._file.write("const auto data = reader.data();")
             self._file.write("const auto functionOrStreamId = static_cast<uint8_t>(data.at(2));")
             self._file.write("server().error(LrpcMetaError::UnknownFunctionOrStream, id(), functionOrStreamId);")
-        self._file.newline()
 
         with self._file.block("static ShimType shim(const size_t functionId)"):
             with self._file.block(
                 f"static constexpr lrpc::array<ShimType, {max_function_or_stream_id + 1}> shims",
                 ";",
+                trailing_newline=True,
             ):
                 function_info = {function.id(): function.name() for function in functions}
                 client_stream_info = {stream.id(): stream.name() for stream in client_streams}
@@ -184,12 +181,8 @@ class ServiceShimVisitor(LrpcVisitor):
                     name = server_stream_info.get(fid, name)
                     self._file(f"&{self._class_name()}::{name}_shim,")
 
-            self._file.newline()
-
-            with self._file.block("if (functionId >= shims.size())"):
+            with self._file.block("if (functionId >= shims.size())", trailing_newline=True):
                 self._file.write(f"return &{self._class_name()}::missingFunction_shim;")
-
-            self._file.newline()
 
             self._file.write("return shims.at(functionId);")
 
@@ -220,12 +213,12 @@ class ServiceShimVisitor(LrpcVisitor):
         return max(server_stream_ids + client_stream_ids + function_ids)
 
     def _write_include_guard(self) -> None:
-        self._file("#pragma once")
+        self._file.pragma_once()
 
     def _write_includes(self) -> None:
-        self._file('#include "lrpccore/Service.hpp"')
-        self._file('#include "lrpccore/EtlRwExtensions.hpp"')
-        self._file(f'#include "{self._service.name()}_includes.hpp"')
+        self._file.include('"lrpccore/Service.hpp"')
+        self._file.include('"lrpccore/EtlRwExtensions.hpp"')
+        self._file.include(f'"{self._service.name()}_includes.hpp"')
 
         self._file.newline()
 

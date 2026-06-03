@@ -1,15 +1,17 @@
-#include "generated/RetrieveDefinition/RetrieveDefinition.hpp"
-#include "TestUtils.hpp"
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 #include <cstddef>
 #include <type_traits>
+
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+
+#include "TestUtils.hpp"
+#include "generated/RetrieveDefinition/RetrieveDefinition.hpp"
 
 // NOLINTNEXTLINE(misc-use-anonymous-namespace)
 class MockRetrieveDefinitionS0 : public test_rd::srv0_shim
 {
-    public:
-        MOCK_METHOD(void, f0, (), (override));
+public:
+    MOCK_METHOD(void, f0, (), (override));
 };
 
 namespace
@@ -21,7 +23,9 @@ namespace
     constexpr size_t HexDigitsPerByte{2};
     constexpr size_t TxBufferSizeHex{TxBufferSize * HexDigitsPerByte};
 
-    static_assert(std::is_same<test_rd::RetrieveDefinition, lrpc::Server<0, test_rd::LrpcMeta_service, 256, TxBufferSize>>::value, "Definition not as expected");
+    static_assert(
+        std::is_same<test_rd::RetrieveDefinition, lrpc::Server<0, test_rd::LrpcMeta_service, 256, TxBufferSize>>::value,
+        "Definition not as expected");
     static_assert(CompressedDefSize == 432, "Compressed definition size not as expected");
 
     constexpr size_t NumberFullPackets{CompressedDefSize / ChunkPayloadSize};

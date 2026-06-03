@@ -1,3 +1,4 @@
+from .byte_types_file_writer import ByteTypesFileWriter as ByteTypesFileWriter
 from .constants import ConstantsFileVisitor as ConstantsFileVisitor
 from .enum import EnumFileVisitor as EnumFileVisitor
 from .meta_service import MetaServiceVisitor as MetaServiceVisitor

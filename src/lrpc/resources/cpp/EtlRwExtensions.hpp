@@ -337,7 +337,8 @@ namespace lrpc
         std::enable_if_t<is_array_n<T>::value && array_n_type_is_string_n<T>::value, void>;
 
     template <typename T>
-    enable_for_array_of_string_n<T> read_unchecked(etl::byte_stream_reader& reader, typename array_outparam_type<T>::type dest,
+    enable_for_array_of_string_n<T> read_unchecked(etl::byte_stream_reader& reader,
+                                                   typename array_outparam_type<T>::type dest,
                                                    const size_t definitionArraySize, const size_t definitionStringSize)
     {
         const auto size = std::min(dest.size(), definitionArraySize);

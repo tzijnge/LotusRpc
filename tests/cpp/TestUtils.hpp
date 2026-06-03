@@ -1,12 +1,12 @@
 #pragma once
 
-#include <etl/to_arithmetic.h>
-
 #include <iomanip>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+#include <etl/to_arithmetic.h>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>

@@ -1,10 +1,9 @@
 #pragma once
 #include <algorithm>
-
-#include <etl/byte_stream.h>
-
 #include <limits>
 #include <type_traits>
+
+#include <etl/byte_stream.h>
 
 #include "LrpcByteTypes.hpp"
 #include "LrpcTypes.hpp"

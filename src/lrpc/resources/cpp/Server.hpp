@@ -1,9 +1,8 @@
 #pragma once
 #include <cstdint>
+#include <utility>
 
 #include <etl/vector.h>
-
-#include <utility>
 
 #include "LrpcTypes.hpp"
 #include "Service.hpp"

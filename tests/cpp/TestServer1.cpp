@@ -1,9 +1,8 @@
 #include <cstdint>
-
-#include <etl/optional.h>
-
 #include <type_traits>
 #include <vector>
+
+#include <etl/optional.h>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>

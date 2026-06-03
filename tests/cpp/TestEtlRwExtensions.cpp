@@ -9,15 +9,14 @@
 #include <cstddef>
 #endif
 #include <cstdint>
+#include <numeric>
+#include <string>
+#include <type_traits>
 
 #include <etl/byte.h>
 #include <etl/byte_stream.h>
 #include <etl/string.h>
 #include <etl/vector.h>
-
-#include <numeric>
-#include <string>
-#include <type_traits>
 
 TEST(TestEtlRwExtensions, is_lrpc_optional)
 {

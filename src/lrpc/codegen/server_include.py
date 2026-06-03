@@ -45,6 +45,7 @@ class ServerIncludeVisitor(LrpcVisitor):
     def visit_lrpc_def_end(self) -> None:
         self._file.newline()
         optionally_in_namespace(self._file, self._write_server_class, self._namespace)
+        self._file.close()
 
     def _write_server_class(self) -> None:
         self._file.write(self._server_class)

@@ -1,7 +1,5 @@
-import os
 import re
 import tempfile
-from collections.abc import Generator
 from pathlib import Path
 
 import pydantic
@@ -11,10 +9,8 @@ from lrpc.tools.lrpcc import LrpccConfig, LrpccConfigDict
 
 
 @pytest.fixture(autouse=True)
-def change_test_dir(request: pytest.FixtureRequest) -> Generator[None, None, None]:
-    os.chdir(request.fspath.dirname)  # type: ignore[attr-defined]
-    yield
-    os.chdir(request.config.invocation_params.dir)
+def change_test_dir(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.chdir(request.fspath.dirname)  # type: ignore[attr-defined]
 
 
 def test_minimal_config() -> None:

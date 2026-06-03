@@ -64,6 +64,9 @@ class CppFile:
     def __enter__(self) -> Self:
         return self
 
+    def close(self) -> None:
+        self.__exit__(None, None, None)
+
     def __exit__(self, *_: object) -> None:
         if self._file is not None:
             self._file.close()

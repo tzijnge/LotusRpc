@@ -92,6 +92,9 @@ class EnumFileVisitor(LrpcVisitor):
             for f in self._descriptor.fields():
                 self._file.write(f"{f.name()} = {f.id()},")
 
+    def visit_lrpc_enum_end(self, _enum: LrpcEnum) -> None:
+        self._file.close()
+
     def _name(self) -> str:
         ns = self._namespace
         qn = self._qualified_name()

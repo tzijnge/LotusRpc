@@ -122,6 +122,12 @@ namespace lrpc
     };
 
     template <>
+    struct array_param_type<tags::array_n<tags::string_n>>
+    {
+        using type = lrpc::span<const lrpc::string_view>;
+    };
+
+    template <>
     struct array_param_type<tags::array_n<tags::bytearray_auto>>
     {
         using type = lrpc::span<const bytearray>;
@@ -140,6 +146,12 @@ namespace lrpc
 
     template <>
     struct array_outparam_type<tags::array_n<tags::string_auto>>
+    {
+        using type = lrpc::span<lrpc::string_view>;
+    };
+
+    template <>
+    struct array_outparam_type<tags::array_n<tags::string_n>>
     {
         using type = lrpc::span<lrpc::string_view>;
     };
@@ -325,7 +337,7 @@ namespace lrpc
         std::enable_if_t<is_array_n<T>::value && array_n_type_is_string_n<T>::value, void>;
 
     template <typename T>
-    enable_for_array_of_string_n<T> read_unchecked(etl::byte_stream_reader& reader, lrpc::span<lrpc::string_view> dest,
+    enable_for_array_of_string_n<T> read_unchecked(etl::byte_stream_reader& reader, typename array_outparam_type<T>::type dest,
                                                    const size_t definitionArraySize, const size_t definitionStringSize)
     {
         const auto size = std::min(dest.size(), definitionArraySize);
@@ -465,7 +477,7 @@ namespace lrpc
     // NOLINTBEGIN(bugprone-easily-swappable-parameters)
     template <typename ARR,
               typename std::enable_if_t<is_array_n<ARR>::value && array_n_type_is_string_n<ARR>::value, bool> = true>
-    void write_unchecked(etl::byte_stream_writer& writer, lrpc::span<const lrpc::string_view> value,
+    void write_unchecked(etl::byte_stream_writer& writer, typename array_param_type<ARR>::type value,
                          const size_t definitionArraySize, const size_t definitionStringSize)
     // NOLINTEND(bugprone-easily-swappable-parameters)
     {

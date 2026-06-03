@@ -83,7 +83,7 @@ TEST(TestEtlRwExtensions, array_param_type)
         (std::is_same<lrpc::span<const uint16_t>, lrpc::array_param_type<lrpc::tags::array_n<uint32_t>>::type>::value));
     EXPECT_TRUE((std::is_same<lrpc::span<const lrpc::string_view>,
                               lrpc::array_param_type<lrpc::tags::array_n<lrpc::tags::string_auto>>::type>::value));
-    EXPECT_TRUE((std::is_same<lrpc::span<const lrpc::tags::string_n>,
+    EXPECT_TRUE((std::is_same<lrpc::span<const lrpc::string_view>,
                               lrpc::array_param_type<lrpc::tags::array_n<lrpc::tags::string_n>>::type>::value));
     EXPECT_TRUE((std::is_same<lrpc::span<const lrpc::bytearray>,
                               lrpc::array_param_type<lrpc::tags::array_n<lrpc::tags::bytearray_auto>>::type>::value));
@@ -97,7 +97,7 @@ TEST(TestEtlRwExtensions, array_out_param_type)
         (std::is_same<lrpc::span<uint16_t>, lrpc::array_outparam_type<lrpc::tags::array_n<uint32_t>>::type>::value));
     EXPECT_TRUE((std::is_same<lrpc::span<lrpc::string_view>,
                               lrpc::array_outparam_type<lrpc::tags::array_n<lrpc::tags::string_auto>>::type>::value));
-    EXPECT_TRUE((std::is_same<lrpc::span<lrpc::tags::string_n>,
+    EXPECT_TRUE((std::is_same<lrpc::span<lrpc::string_view>,
                               lrpc::array_outparam_type<lrpc::tags::array_n<lrpc::tags::string_n>>::type>::value));
     EXPECT_TRUE(
         (std::is_same<lrpc::span<lrpc::bytearray>,

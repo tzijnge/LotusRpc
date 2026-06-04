@@ -10,7 +10,7 @@ from lrpc.tools.lrpcc import LrpccConfig, LrpccConfigDict
 
 @pytest.fixture(autouse=True)
 def change_test_dir(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.chdir(request.fspath.dirname)  # type: ignore[attr-defined]
+    monkeypatch.chdir(request.path.parent)
 
 
 def test_minimal_config() -> None:

@@ -28,7 +28,10 @@ def test_lrpcc(cli: str, response: str) -> None:
     runner = CliRunner()
     lrpcc = Lrpcc(LrpccConfig.load(Path("lrpcc.config.yaml")))
     click_group = lrpcc.make_cli()
-    args = shlex.split(cli)[1:]  # strip leading "lrpcc"
+
+    # strip leading "lrpcc"
+    args = shlex.split(cli)[1:]
+
     result = runner.invoke(click_group, args)
     assert result.exit_code == 0
     assert escape_ansi(result.output).strip() == response.replace("\r\n", "\n")

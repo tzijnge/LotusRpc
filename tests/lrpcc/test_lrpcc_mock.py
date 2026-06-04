@@ -352,7 +352,8 @@ def test_run() -> None:
 
 
 def test_run_cli_no_config(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    monkeypatch.chdir(tmp_path)  # empty dir — find_config() will raise
+    # empty dir — find_config() will raise
+    monkeypatch.chdir(tmp_path)
     with patch("lrpc.tools.lrpcc.lrpcc.run_lrpcc_config_creator") as mock_creator:
         run_cli()
     mock_creator.assert_called_once()
@@ -390,6 +391,7 @@ def test_make_transport_builtin(monkeypatch: pytest.MonkeyPatch, tmp_path: Path)
             return b""
 
         def write(self, _data: bytes) -> None:
+            # Dummy implementation
             pass
 
     fake_module = types.SimpleNamespace(Transport=FakeTransport)
@@ -401,7 +403,9 @@ def test_make_transport_builtin(monkeypatch: pytest.MonkeyPatch, tmp_path: Path)
 
 
 
-def test_run_cli_run_raises() -> None:
+def test_run_cli_run_raises(caplog: pytest.LogCaptureFixture) -> None:
     # change_test_dir autouse fixture puts CWD at tests/lrpcc/ where lrpcc.config.yaml lives
     with patch.object(Lrpcc, "run", side_effect=RuntimeError("simulated run failure")):
-        run_cli()  # exception is caught and logged; function returns normally
+        run_cli()
+    assert "Error running LRPCC" in caplog.text
+    assert "simulated run failure" in caplog.text

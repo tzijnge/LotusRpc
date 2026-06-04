@@ -109,7 +109,7 @@ jobs:
           fetch-depth: 0
 
       - name: SonarQube Install
-        uses: SonarSource/sonarqube-scan-action/install-build-wrapper@59db25f34e16620e48ab4bb9e4a5dce155cb5432
+        uses: SonarSource/sonarqube-scan-action/install-build-wrapper@7006c4492b2e0ee0f816d36501671557c97f5995
 
       - name: Install LLVM 19
         run: sudo apt-get install -y clang-19 clang-tidy-19
@@ -191,7 +191,7 @@ jobs:
           files: "testresults/*.xml"
 
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@59db25f34e16620e48ab4bb9e4a5dce155cb5432
+        uses: SonarSource/sonarqube-scan-action@7006c4492b2e0ee0f816d36501671557c97f5995
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_ROOT_CERT: ${{ secrets.SONAR_ROOT_CERT }}

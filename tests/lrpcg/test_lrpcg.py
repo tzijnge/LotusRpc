@@ -116,8 +116,7 @@ def test_cpp_warnings_as_errors(runner: CliRunner) -> None:
     with runner.isolated_filesystem():
         Path("test.lrpc.yaml").write_text(DEF_WITH_UNUSED_TYPE, encoding="utf-8")
         result = runner.invoke(run_cli, ["cpp", "-d", "test.lrpc.yaml", "-o", "output", "-w"])
-        assert result.exit_code == 0
-        # lrpc_def() raises before generate_rpc creates the output dir
+        assert result.exit_code == 1
         assert not Path("output").exists()
 
 
@@ -181,9 +180,7 @@ def test_merge_invalid_overlay(runner: CliRunner) -> None:
         result = runner.invoke(
             run_cli, ["merge", "-d", "base.yaml", "-ov", "bad_overlay.yaml", "-o", "merged.yaml"],
         )
-        assert result.exit_code == 0
-        # click.File("w") is lazy — the file is only created on first write.
-        # save_to() is never reached, so no output file is produced.
+        assert result.exit_code == 1
         assert not Path("merged.yaml").exists()
 
 

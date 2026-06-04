@@ -9,8 +9,7 @@ from lrpc.tools.lrpcc.lrpcc import LRPCC_CONFIG_ENV_VAR, find_config
 def test_find_config_in_cwd(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.chdir(tmp_path)
     (tmp_path / "lrpcc.config.yaml").touch()
-    config_path = find_config()
-    assert config_path.name == "lrpcc.config.yaml"
+    assert find_config() == tmp_path / "lrpcc.config.yaml"
 
 
 def test_find_config_in_cwd_subdir(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -18,8 +17,7 @@ def test_find_config_in_cwd_subdir(monkeypatch: pytest.MonkeyPatch, tmp_path: Pa
     subdir = tmp_path / "d1" / "d2" / "d3"
     subdir.mkdir(parents=True)
     (subdir / "lrpcc.config.yaml").touch()
-    config_path = find_config()
-    assert {"d1", "d2", "d3", "lrpcc.config.yaml"}.issubset(config_path.parts)
+    assert find_config() == subdir / "lrpcc.config.yaml"
 
 
 def test_find_first_config_in_cwd_subdir(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -27,9 +25,7 @@ def test_find_first_config_in_cwd_subdir(monkeypatch: pytest.MonkeyPatch, tmp_pa
     (tmp_path / "d1" / "d2" / "d3").mkdir(parents=True)
     (tmp_path / "d1" / "d2" / "d3" / "lrpcc.config.yaml").touch()
     (tmp_path / "d1" / "d2" / "lrpcc.config.yaml").touch()
-    config_path = find_config()
-    assert "d3" not in config_path.parts
-    assert {"d1", "d2", "lrpcc.config.yaml"}.issubset(config_path.parts)
+    assert find_config() == tmp_path / "d1" / "d2" / "lrpcc.config.yaml"
 
 
 def test_find_config_in_env_var(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -40,8 +36,7 @@ def test_find_config_in_env_var(monkeypatch: pytest.MonkeyPatch, tmp_path: Path)
     config_file.parent.mkdir(parents=True)
     config_file.touch()
     monkeypatch.setenv(LRPCC_CONFIG_ENV_VAR, str(config_file))
-    config_path = find_config()
-    assert {"d2", "lrpcc.config.yaml"}.issubset(config_path.parts)
+    assert find_config() == config_file
 
 
 def test_find_config_in_env_var_with_non_standard_name(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -52,8 +47,7 @@ def test_find_config_in_env_var_with_non_standard_name(monkeypatch: pytest.Monke
     config_file.parent.mkdir(parents=True)
     config_file.touch()
     monkeypatch.setenv(LRPCC_CONFIG_ENV_VAR, str(config_file))
-    config_path = find_config()
-    assert {"d2", "config_123.txt"}.issubset(config_path.parts)
+    assert find_config() == config_file
 
 
 def test_find_config_in_env_var_file_not_found(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:

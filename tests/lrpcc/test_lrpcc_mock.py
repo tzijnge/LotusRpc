@@ -347,8 +347,9 @@ def test_make_transport_no_write_method(monkeypatch: pytest.MonkeyPatch, tmp_pat
 
 def test_run() -> None:
     lrpcc = make_lrpcc("../testdata/TestServer1.lrpc.yaml")
-    with patch.object(sys, "argv", ["lrpcc", "--help"]), pytest.raises(SystemExit):
+    with patch.object(sys, "argv", ["lrpcc", "--help"]), pytest.raises(SystemExit) as exc_info:
         lrpcc.run()
+    assert exc_info.value.code == 0
 
 
 def test_run_cli_no_config(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -368,9 +369,10 @@ def test_run_cli_with_config() -> None:
 
 
 def test_version_check_passes() -> None:
-    with patch.object(LrpcClient, "check_server_version", return_value=True):
+    with patch.object(LrpcClient, "check_server_version", return_value=True) as mock_check:
         # version_ok=True → "if not version_ok:" is False → log.info NOT called
         make_lrpcc("../testdata/TestServer1.lrpc.yaml", "", check_server_version=True)
+    mock_check.assert_called_once()
 
 
 def test_make_transport_spec_is_none(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:

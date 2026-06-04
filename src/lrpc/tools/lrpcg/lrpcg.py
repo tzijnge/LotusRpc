@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 from collections.abc import Iterable
 from pathlib import Path
 from typing import TextIO, get_args
@@ -125,6 +126,7 @@ def cpp(
             more_info,
             exc_info=level_is_debug,
         )
+        sys.exit(1)
 
 
 @run_cli.command()
@@ -183,6 +185,7 @@ def merge(definition_file: TextIO, output: TextIO, overlays: Iterable[TextIO]) -
     # pylint: disable=broad-exception-caught
     except Exception:
         log.exception("Error while merging LRPC overlay into %s", definition_file.name)
+        sys.exit(1)
 
 
 @run_cli.command()

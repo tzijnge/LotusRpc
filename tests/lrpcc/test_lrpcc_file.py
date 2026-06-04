@@ -8,7 +8,7 @@ from click.testing import CliRunner
 
 from lrpc.tools.lrpcc import Lrpcc, LrpccConfig
 
-with Path("tests/lrpcc/server.yaml").open(encoding="utf-8") as server:
+with (Path(__file__).parent / "server.yaml").open(encoding="utf-8") as server:
     server_config = yaml.safe_load(server)
     test_params = [(config["cli"], config["response"]) for config in server_config]
 

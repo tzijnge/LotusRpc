@@ -1,7 +1,7 @@
 code-generation==2.3.0
 pyyaml==6.0.2
 jsonschema==4.26.0
-click==8.3.0
+click==8.4.1
 click-log==0.4.0
 pyserial==3.5  # optional for lrpcc serial transport
 typing-extensions==4.15.0

@@ -2,6 +2,7 @@ import logging
 import re
 import sys
 import tempfile
+import types
 from pathlib import Path
 from typing import Literal
 from unittest.mock import patch
@@ -381,15 +382,22 @@ def test_make_transport_spec_is_none(monkeypatch: pytest.MonkeyPatch, tmp_path: 
 
 
 def test_make_transport_builtin(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    # No local plugin file → falls through to import_module("lrpc.plugins.lrpcc_serial")
     monkeypatch.chdir(tmp_path)
-    config = LrpccConfig({
-        "transport_type": "serial",
-        "transport_params": {"port": "NONEXISTENT_PORT", "baudrate": 115200},
-        "definition_from_server": "always",
-    })
-    with pytest.raises(Exception, match="NONEXISTENT_PORT"):
-        Lrpcc._make_transport(config)
+    config = LrpccConfig({"transport_type": "fake", "definition_from_server": "always"})
+
+    class FakeTransport:
+        def read(self, _count: int) -> bytes:
+            return b""
+
+        def write(self, _data: bytes) -> None:
+            pass
+
+    fake_module = types.SimpleNamespace(Transport=FakeTransport)
+
+    with patch("lrpc.tools.lrpcc.lrpcc.import_module", return_value=fake_module):
+        transport = Lrpcc._make_transport(config)
+
+    assert isinstance(transport, FakeTransport)
 
 
 

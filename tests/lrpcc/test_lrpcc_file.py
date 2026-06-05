@@ -1,4 +1,3 @@
-import re
 import shlex
 from pathlib import Path
 
@@ -7,6 +6,7 @@ import yaml
 from click.testing import CliRunner
 
 from lrpc.tools.lrpcc import Lrpcc, LrpccConfig
+from tests.lrpcc.utilities import escape_ansi
 
 with (Path(__file__).parent / "server.yaml").open(encoding="utf-8") as server:
     server_config = yaml.safe_load(server)
@@ -16,11 +16,6 @@ with (Path(__file__).parent / "server.yaml").open(encoding="utf-8") as server:
 @pytest.fixture(autouse=True)
 def change_test_dir(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(request.path.parent)
-
-
-def escape_ansi(line: str) -> str:
-    ansi_escape = re.compile(r"(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]")
-    return ansi_escape.sub("", line)
 
 
 @pytest.mark.parametrize(("cli", "response"), test_params)

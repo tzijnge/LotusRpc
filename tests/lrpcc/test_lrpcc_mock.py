@@ -1,5 +1,4 @@
 import logging
-import re
 import sys
 import tempfile
 import types
@@ -13,6 +12,7 @@ from lrpc.client import LrpcClient
 from lrpc.tools.lrpcc import Lrpcc, LrpccConfig, LrpccConfigDict
 from lrpc.tools.lrpcc.lrpcc import run_cli
 from tests.embedded_definition import embedded_definition_for_testing
+from tests.lrpcc.utilities import escape_ansi
 
 # pylint: disable=protected-access
 # ruff: noqa: SLF001
@@ -21,11 +21,6 @@ from tests.embedded_definition import embedded_definition_for_testing
 @pytest.fixture(autouse=True)
 def change_test_dir(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(request.path.parent)
-
-
-def escape_ansi(line: str) -> str:
-    ansi_escape = re.compile(r"(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]")
-    return ansi_escape.sub("", line)
 
 
 def make_lrpcc(

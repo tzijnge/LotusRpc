@@ -40,6 +40,7 @@ class ConstantsFileVisitor(LrpcVisitor):
         self._write_includes()
         self._file.newline()
         optionally_in_namespace(self._file, self._write_constant_definitions, self._namespace)
+        self._file.close()
 
     def _write_include_guard(self) -> None:
         self._file.pragma_once()

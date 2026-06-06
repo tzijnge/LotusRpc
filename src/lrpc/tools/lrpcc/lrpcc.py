@@ -232,10 +232,13 @@ class Lrpcc:
             Lrpcc._print_error_line(f"p3={response['p3']}")
             Lrpcc._print_error_line(f"message='{response['message']}'")
 
-    def run(self) -> None:
+    def make_cli(self) -> click.Group:
         cli = ClientCliVisitor(self._command_handler)
         self.client.definition().accept(cli, visit_meta_service=False)
-        cli.root()
+        return cli.root
+
+    def run(self) -> None:
+        self.make_cli()()
 
 
 def run_cli() -> None:

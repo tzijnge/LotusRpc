@@ -13,7 +13,7 @@ from lrpc.visitors import LrpcVisitor
 NONE_ARG = "7bc9ddaa-b6c9-4afb-93c1-5240ec91ab9c"
 
 
-class YamlParamType(click.ParamType):
+class YamlParamType(click.ParamType[dict[str, Any]]):
     """Convert command line input to a struct. Command line
     input must be valid YAML with every key being a field
     and every value being the value of the field"""
@@ -36,7 +36,7 @@ class YamlParamType(click.ParamType):
         self.fail(f"{value} does not contain valid YAML", param, ctx)
 
 
-class OptionalParamType(click.ParamType):
+class OptionalParamType(click.ParamType[Any]):
     """Convert command line input to LRPC optional. "_" maps to None,
     any other input is converted to the underlying type. A string input
     which is a sequence of underscores must be escaped with an additional
@@ -44,8 +44,8 @@ class OptionalParamType(click.ParamType):
 
     name = "LRPC optional"
 
-    def __init__(self, contained_type: click.ParamType) -> None:
-        self.contained_type: click.ParamType = contained_type
+    def __init__(self, contained_type: click.ParamType[Any]) -> None:
+        self.contained_type: click.ParamType[Any] = contained_type
 
     def convert(self, value: Any, param: click.Parameter | None, ctx: click.Context | None) -> Any:
         if not isinstance(value, str):
@@ -234,8 +234,8 @@ class ClientCliVisitor(LrpcVisitor):
                 param=param,
             ) from e
 
-    def _click_type(self, param: LrpcVar) -> click.ParamType:
-        t: click.ParamType = click.UNPROCESSED
+    def _click_type(self, param: LrpcVar) -> click.ParamType[Any]:
+        t: click.ParamType[Any] = click.UNPROCESSED
 
         if param.base_type_is_integral():
             t = click.INT

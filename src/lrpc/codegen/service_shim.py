@@ -17,6 +17,9 @@ class ServiceShimVisitor(LrpcVisitor):
         self._output = output
         self._service: LrpcService
 
+    def visit_lrpc_service_end(self) -> None:
+        self._file.close()
+
     def visit_rpc_settings(self, settings: RpcSettings) -> None:
         self._namespace = settings.namespace()
 

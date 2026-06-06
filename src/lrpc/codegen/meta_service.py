@@ -42,6 +42,8 @@ class MetaServiceVisitor(LrpcVisitor):
 
         self._write_service_file()
         self._write_constants_file()
+        self._service_file.close()
+        self._constants_file.close()
 
     def _write_constants_file(self) -> None:
         write_file_banner(self._constants_file)

@@ -1,29 +1,26 @@
-import os
-import re
+import logging
+import sys
 import tempfile
-from collections.abc import Generator
+import types
 from pathlib import Path
 from typing import Literal
+from unittest.mock import patch
 
 import pytest
 
+from lrpc.client import LrpcClient
 from lrpc.tools.lrpcc import Lrpcc, LrpccConfig, LrpccConfigDict
+from lrpc.tools.lrpcc.lrpcc import run_cli
 from tests.embedded_definition import embedded_definition_for_testing
+from tests.lrpcc.utilities import escape_ansi
 
 # pylint: disable=protected-access
 # ruff: noqa: SLF001
 
 
 @pytest.fixture(autouse=True)
-def change_test_dir(request: pytest.FixtureRequest) -> Generator[None, None, None]:
-    os.chdir(request.fspath.dirname)  # type: ignore[attr-defined]
-    yield
-    os.chdir(request.config.invocation_params.dir)
-
-
-def escape_ansi(line: str) -> str:
-    ansi_escape = re.compile(r"(?:\x1B[@-_]|[\x80-\x9F])[0-?]*[ -/]*[@-~]")
-    return ansi_escape.sub("", line)
+def change_test_dir(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.chdir(request.path.parent)
 
 
 def make_lrpcc(
@@ -272,3 +269,140 @@ def test_definition_from_server_once(capsys: pytest.CaptureFixture[str]) -> None
 def test_definition_from_server_when_server_has_no_embedded_definition() -> None:
     with pytest.raises(ValueError, match="No embedded definition found on server"):
         make_lrpcc("", "04ff010001", check_server_version=False, definition_from_server="always")
+
+
+def test_definition_from_server_once_existing_file(capsys: pytest.CaptureFixture[str]) -> None:
+    # Step 1: "once" with no file — server provides the embedded definition and saves it
+    setup_response = (embedded_definition_for_testing() + b"\x02\x00\x00").hex()
+    with tempfile.TemporaryDirectory() as temp_dir:
+        definition_file = Path(temp_dir) / "saved.lrpc.yaml"
+        make_lrpcc(str(definition_file), setup_response, check_server_version=False, definition_from_server="once")
+        assert definition_file.exists()
+
+        # Step 2: "once" with the now-existing file — loads from disk (hits line 123)
+        lrpcc = make_lrpcc(
+            str(definition_file),
+            b"\x02\x00\x00".hex(),
+            check_server_version=False,
+            definition_from_server="once",
+        )
+        lrpcc._command_handler("srv0", "f0")
+        assert escape_ansi(capsys.readouterr().out) == ""
+
+
+def test_invalid_log_level(caplog: pytest.LogCaptureFixture) -> None:
+    caplog.set_level(logging.INFO, logger="lrpc.tools.lrpcc.lrpcc")
+    Lrpcc._set_log_level("NOT_A_LEVEL")
+    assert "Invalid log level: NOT_A_LEVEL" in caplog.text
+
+
+def test_error_response_unknown_type(capsys: pytest.CaptureFixture[str]) -> None:
+    # The decoder enforces the LrpcMetaError enum, so only the two known types
+    # can arrive via the normal protocol path. Call _print_error_response directly
+    # with a constructed dict to reach the else branch (lines 227-233).
+    Lrpcc._print_error_response({
+        "type": "FutureErrorType",
+        "p1": 42,
+        "p2": 99,
+        "p3": 7,
+        "message": "something went wrong",
+    })
+    output = escape_ansi(capsys.readouterr().out.strip())
+    assert "Server reported an unknown error (type='FutureErrorType')" in output
+    assert "p1=42" in output
+    assert "p2=99" in output
+    assert "p3=7" in output
+    assert "message='something went wrong'" in output
+
+
+def test_make_transport_no_transport_class(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    (tmp_path / "lrpcc_bad.py").write_text("# no Transport class\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    config = LrpccConfig({"transport_type": "bad", "definition_from_server": "always"})
+    with pytest.raises(AttributeError, match="No class named 'Transport'"):
+        Lrpcc._make_transport(config)
+
+
+def test_make_transport_no_read_method(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    (tmp_path / "lrpcc_noread.py").write_text("class Transport:\n    pass\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    config = LrpccConfig({"transport_type": "noread", "definition_from_server": "always"})
+    with pytest.raises(AttributeError, match="No method named 'read'"):
+        Lrpcc._make_transport(config)
+
+
+def test_make_transport_no_write_method(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    plugin = "class Transport:\n    def read(self): pass\n"
+    (tmp_path / "lrpcc_nowrite.py").write_text(plugin, encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    config = LrpccConfig({"transport_type": "nowrite", "definition_from_server": "always"})
+    with pytest.raises(AttributeError, match="No method named 'write'"):
+        Lrpcc._make_transport(config)
+
+
+def test_run() -> None:
+    lrpcc = make_lrpcc("../testdata/TestServer1.lrpc.yaml")
+    with patch.object(sys, "argv", ["lrpcc", "--help"]), pytest.raises(SystemExit) as exc_info:
+        lrpcc.run()
+    assert exc_info.value.code == 0
+
+
+def test_run_cli_no_config(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    # empty dir — find_config() will raise
+    monkeypatch.chdir(tmp_path)
+    with patch("lrpc.tools.lrpcc.lrpcc.run_lrpcc_config_creator") as mock_creator:
+        run_cli()
+    mock_creator.assert_called_once()
+
+
+def test_run_cli_with_config() -> None:
+    # change_test_dir autouse fixture puts CWD at tests/lrpcc/ where lrpcc.config.yaml lives
+    with patch("lrpc.tools.lrpcc.lrpcc.Lrpcc") as mock_lrpcc:
+        run_cli()
+    mock_lrpcc.assert_called_once()
+    mock_lrpcc.return_value.run.assert_called_once()
+
+
+def test_version_check_passes() -> None:
+    with patch.object(LrpcClient, "check_server_version", return_value=True) as mock_check:
+        # version_ok=True → "if not version_ok:" is False → log.info NOT called
+        make_lrpcc("../testdata/TestServer1.lrpc.yaml", "", check_server_version=True)
+    mock_check.assert_called_once()
+
+
+def test_make_transport_spec_is_none(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    (tmp_path / "lrpcc_badspec.py").write_text("# plugin\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    config = LrpccConfig({"transport_type": "badspec", "definition_from_server": "always"})
+    null_spec = patch("importlib.util.spec_from_file_location", return_value=None)
+    with null_spec, pytest.raises(ImportError, match="Unable to load transport plugin"):
+        Lrpcc._make_transport(config)
+
+
+def test_make_transport_builtin(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.chdir(tmp_path)
+    config = LrpccConfig({"transport_type": "fake", "definition_from_server": "always"})
+
+    class FakeTransport:
+        def read(self, _count: int) -> bytes:
+            return b""
+
+        def write(self, _data: bytes) -> None:
+            # Dummy implementation
+            pass
+
+    fake_module = types.SimpleNamespace(Transport=FakeTransport)
+
+    with patch("lrpc.tools.lrpcc.lrpcc.import_module", return_value=fake_module):
+        transport = Lrpcc._make_transport(config)
+
+    assert isinstance(transport, FakeTransport)
+
+
+
+def test_run_cli_run_raises(caplog: pytest.LogCaptureFixture) -> None:
+    # change_test_dir autouse fixture puts CWD at tests/lrpcc/ where lrpcc.config.yaml lives
+    with patch.object(Lrpcc, "run", side_effect=RuntimeError("simulated run failure")):
+        run_cli()
+    assert "Error running LRPCC" in caplog.text
+    assert "simulated run failure" in caplog.text

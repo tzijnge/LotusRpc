@@ -130,11 +130,11 @@ lrpc_def = load_lrpc_def("math.lrpc.yaml")
 port = serial.Serial(port="COM3", baudrate=115200, timeout=2)
 client = LrpcClient(lrpc_def, port)
 
-for resp in client.communicate("calc", "add", a=3, b=7):
-    print(resp["result"])   # 10
+for resp in client.communicate_all("calc", "add", a=3, b=7):
+    print(resp.payload["result"])   # 10
 
-for resp in client.communicate("calc", "multiply", a=6, b=7):
-    print(resp["result"])   # 42
+for resp in client.communicate_all("calc", "multiply", a=6, b=7):
+    print(resp.payload["result"])   # 42
 ```
 
 ---

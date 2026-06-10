@@ -177,7 +177,7 @@ class Lrpcc:
         return transport
 
     def _command_handler(self, service_name: str, function_or_stream_name: str, **kwargs: LrpcType) -> None:
-        for index, response in enumerate(self.client.communicate(service_name, function_or_stream_name, **kwargs)):
+        for index, response in enumerate(self.client.communicate_all(service_name, function_or_stream_name, **kwargs)):
             self._print_response(response, index)
 
     @staticmethod

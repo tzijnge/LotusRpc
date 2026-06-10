@@ -265,7 +265,7 @@ class TestLrpcClient:
 
     def test_communicate_function(self) -> None:
         response_bytes = b"\x03\x01\x00\xcd"
-        response = self.client(response_bytes).communicate_single("srv1", "add5", p0=0xAB)
+        response = self.client(response_bytes).communicate("srv1", "add5", p0=0xAB)
         payload = response.payload
 
         assert "r0" in payload
@@ -281,7 +281,7 @@ class TestLrpcClient:
 
     def test_communicate_function_bytearray(self) -> None:
         response_bytes = b"\x05\x01\x02\x02\x33\x44"
-        response = self.client(response_bytes).communicate_single("srv1", "bytearray", p0=b"\x11\x22")
+        response = self.client(response_bytes).communicate("srv1", "bytearray", p0=b"\x11\x22")
         payload = response.payload
 
         assert "r0" in payload
@@ -298,7 +298,7 @@ class TestLrpcClient:
     def test_communicate_function_wrong_response(self, caplog: pytest.LogCaptureFixture) -> None:
         # response belongs to srv0.f0
         response_bytes = b"\x02\x00\x00"
-        response = self.client(response_bytes).communicate_single("srv1", "add5", p0=0xAB)
+        response = self.client(response_bytes).communicate("srv1", "add5", p0=0xAB)
         payload = response.payload
 
         assert len(payload.items()) == 0
@@ -315,7 +315,7 @@ class TestLrpcClient:
 
     def test_communicate_function_error_response(self, caplog: pytest.LogCaptureFixture) -> None:
         response_bytes = b"\x0a\xff\x00\x00\x55\x66\x00\x00\x00\x77\x00"
-        response = self.client(response_bytes).communicate_single("srv1", "add5", p0=0xAB)
+        response = self.client(response_bytes).communicate("srv1", "add5", p0=0xAB)
 
         assert response.is_error_response
         assert response.is_expected_response is False
@@ -328,28 +328,28 @@ class TestLrpcClient:
         assert caplog.messages[0] == "Server reported error 'UnknownService' for call to srv1.add5"
 
     def test_communicate_stream_client_infinite(self) -> None:
-        communicator = self.client().communicate("srv2", "client_infinite", p0=0xAB, p1=0xCDEF)
+        communicator = self.client().communicate_all("srv2", "client_infinite", p0=0xAB, p1=0xCDEF)
         response = next(communicator, None)
         assert response is None
 
     def test_communicate_stream_client_finite(self) -> None:
-        communicator = self.client().communicate("srv2", "client_finite", p0=0xAB, p1=0xCDEF, final=True)
+        communicator = self.client().communicate_all("srv2", "client_finite", p0=0xAB, p1=0xCDEF, final=True)
         response = next(communicator, None)
         assert response is None
 
     def test_communicate_stream_server_infinite_stop(self) -> None:
-        communicator = self.client().communicate("srv2", "server_infinite", start=False)
+        communicator = self.client().communicate_all("srv2", "server_infinite", start=False)
         response = next(communicator, None)
         assert response is None
 
     def test_communicate_stream_server_finite_stop(self) -> None:
-        communicator = self.client().communicate("srv2", "server_finite", start=False)
+        communicator = self.client().communicate_all("srv2", "server_finite", start=False)
         response = next(communicator, None)
         assert response is None
 
     def test_communicate_stream_server_infinite_start(self) -> None:
         response_bytes = b"\x05\x02\x02\xcd\x01\x02"
-        response_generator = self.client(response_bytes).communicate("srv2", "server_infinite", start=True)
+        response_generator = self.client(response_bytes).communicate_all("srv2", "server_infinite", start=True)
         response = next(response_generator)
         payload = response.payload
 
@@ -373,7 +373,7 @@ class TestLrpcClient:
 
     def test_communicate_stream_server_finite_start(self) -> None:
         response_bytes = b"\x06\x02\x03\xcd\x01\x02\x01"
-        response = self.client(response_bytes).communicate_single("srv2", "server_finite", start=True)
+        response = self.client(response_bytes).communicate("srv2", "server_finite", start=True)
         payload = response.payload
 
         assert "p0" in payload

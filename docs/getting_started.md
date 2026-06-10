@@ -176,7 +176,7 @@ Run `lrpcc --help` for a full list of available services and functions.
 
 ### Custom Python client
 
-To communicate from your own Python code, create an `LrpcClient` and call `communicate_single`:
+To communicate from your own Python code, create an `LrpcClient` and call `communicate`:
 
 ``` python
 from lrpc.client import LrpcClient
@@ -188,11 +188,11 @@ transport = serial.Serial(port="COM3", baudrate=115200, timeout=2)
 
 client = LrpcClient(lrpc_def, transport)
 
-response = client.communicate_single("math", "add", a=3, b=7)
+response = client.communicate("math", "add", a=3, b=7)
 print(response.payload["result"])   # prints: 10
 ```
 
-`communicate_single` is a convenience wrapper around `communicate` that returns the first response directly. Use `communicate` when receiving stream response messages — it is a generator that yields one response per message received from the server.
+`communicate` returns the first response directly. Use `communicate_all` when receiving stream response messages — it is a generator that yields one response per message received from the server.
 
 For the full Python client API — streams, error responses, `encode`/`decode`, version checking — see the [Python client API reference](python-api/client.md).
 
@@ -259,11 +259,11 @@ services:
           - { name: value, type: int32_t }
 ```
 
-Receive all messages from the stream using `communicate`:
+Receive all messages from the stream using `communicate_all`:
 
 ``` python
 # print each value returned from the server
-for response in client.communicate("math", "results", start=True):
+for response in client.communicate_all("math", "results", start=True):
     print(response.payload["value"])
 ```
 

@@ -71,7 +71,7 @@ class LrpcClient:
         client_side_def_version = self._lrpc_def.settings().version() or disabled
 
         def get_server_version() -> MetaVersionResponseDict:
-            version_response = self.communicate_single("LrpcMeta", "version").payload
+            version_response = self.communicate("LrpcMeta", "version").payload
             MetaVersionResponseValidator.validate_python(version_response, strict=True, extra="forbid")
             return cast(MetaVersionResponseDict, version_response)
 
@@ -184,7 +184,7 @@ class LrpcClient:
 
         raise ValueError(f"Function or stream {function_or_stream_name} not found in service {service_name}")
 
-    def communicate(
+    def communicate_all(
         self,
         service_name: str,
         function_or_stream_name: str,
@@ -216,13 +216,13 @@ class LrpcClient:
 
             yield response
 
-    def communicate_single(
+    def communicate(
         self,
         service_name: str,
         function_or_stream_name: str,
         **kwargs: LrpcType,
     ) -> LrpcResponse:
-        return next(self.communicate(service_name, function_or_stream_name, **kwargs))
+        return next(self.communicate_all(service_name, function_or_stream_name, **kwargs))
 
     def _has_response(self, service_name: str, function_or_stream_name: str, *, start_param: bool) -> bool:
         function = self._lrpc_def.function(service_name, function_or_stream_name)
@@ -316,7 +316,7 @@ class LrpcClient:
 
     def _retrieve_definition(self, save_to: Path | None = None) -> LrpcDef | None:
         compressed_definition = b""
-        for response in self.communicate("LrpcMeta", "definition", start=True):
+        for response in self.communicate_all("LrpcMeta", "definition", start=True):
             chunk = response.payload.get("chunk")
             if not isinstance(chunk, bytes):
                 raise TypeError("Invalid response while retrieving definition from server")

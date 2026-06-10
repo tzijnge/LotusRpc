@@ -67,10 +67,23 @@ If `save_to` is given, the retrieved definition is written to that path as a YAM
 ### communicate
 
 ``` python
-communicate(service_name: str, function_or_stream_name: str, **kwargs) -> Generator[LrpcResponse, ...]
+communicate(service_name: str, function_or_stream_name: str, **kwargs) -> LrpcResponse
 ```
 
-The primary communication method. Encodes the call, writes it to the transport, then reads and yields responses. Pass function arguments or stream parameters as keyword arguments.
+Convenience wrapper around `communicate_all` that returns the first response directly. Use for regular function calls where exactly one response is expected.
+
+``` python
+response = client.communicate("math", "add", a=3, b=7)
+print(response.payload["result"])   # 10
+```
+
+### communicate_all
+
+``` python
+communicate_all(service_name: str, function_or_stream_name: str, **kwargs) -> Generator[LrpcResponse, ...]
+```
+
+Encodes the call, writes it to the transport, then reads and yields all responses. Pass function arguments or stream parameters as keyword arguments.
 
 Response behavior depends on the call type:
 
@@ -84,38 +97,21 @@ Response behavior depends on the call type:
 For **finite streams**, the implicit `final` field is automatically removed from each response payload before yielding. Reading continues as long as `final` was `False` on the last message.
 
 ``` python
-# Function call — yields exactly once
-for response in client.communicate("math", "add", a=3, b=7):
-    print(response.payload["result"])   # 10
-
 # Server stream — start it and collect messages
-for response in client.communicate("sensor", "readings", start=True):
+for response in client.communicate_all("sensor", "readings", start=True):
     print(response.payload["value"])
 
 # Stop a server stream
-next(client.communicate("sensor", "readings", start=False), None)
+next(client.communicate_all("sensor", "readings", start=False), None)
 
 # Client stream — fire and forget
-next(client.communicate("logger", "write", message="hello"), None)
+next(client.communicate_all("logger", "write", message="hello"), None)
 
 # Finite client stream — mark the last message
-next(client.communicate("logger", "write", message="last", final=True), None)
+next(client.communicate_all("logger", "write", message="last", final=True), None)
 ```
 
 Raises `TimeoutError` if the transport times out while waiting for a response.
-
-### communicate_single
-
-``` python
-communicate_single(service_name: str, function_or_stream_name: str, **kwargs) -> LrpcResponse
-```
-
-Convenience wrapper that calls `communicate` and returns the first response. Use for regular function calls where exactly one response is expected.
-
-``` python
-response = client.communicate_single("math", "add", a=3, b=7)
-print(response.payload["result"])   # 10
-```
 
 ### encode
 
@@ -151,7 +147,7 @@ Returns `True` if all three match. Logs a warning for each mismatch and returns 
 
 ## LrpcResponse
 
-`LrpcResponse` is a dataclass returned by `communicate` and `communicate_single`:
+`LrpcResponse` is a dataclass returned by `communicate` and `communicate_all`:
 
 ``` python
 @dataclass

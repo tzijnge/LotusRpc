@@ -105,16 +105,40 @@ TEST(TestEtlRwExtensions, array_out_param_type)
 }
 
 template <typename T>
-class ArithmeticRwTest : public ::testing::Test
+class TestEtlRwExtArithTypes : public ::testing::Test
 {
 };
 
 using ArithmeticTypes =
     ::testing::Types<bool, uint8_t, int8_t, uint16_t, int16_t, uint32_t, int32_t, uint64_t, int64_t, float, double>;
 
-TYPED_TEST_SUITE(ArithmeticRwTest, ArithmeticTypes);
+struct ArithmeticTypeNames
+{
+    template <typename T>
+    static std::string GetName(int /* index */)
+    {
+        static_assert(sizeof(T) == 0, "unknown type in ArithmeticTypes");
+        return "";
+    }
+};
 
-TYPED_TEST(ArithmeticRwTest, write)
+// clang-format off
+template <> std::string ArithmeticTypeNames::GetName<bool>(int)     { return "bool"; }
+template <> std::string ArithmeticTypeNames::GetName<uint8_t>(int)  { return "uint8_t"; }
+template <> std::string ArithmeticTypeNames::GetName<int8_t>(int)   { return "int8_t"; }
+template <> std::string ArithmeticTypeNames::GetName<uint16_t>(int) { return "uint16_t"; }
+template <> std::string ArithmeticTypeNames::GetName<int16_t>(int)  { return "int16_t"; }
+template <> std::string ArithmeticTypeNames::GetName<uint32_t>(int) { return "uint32_t"; }
+template <> std::string ArithmeticTypeNames::GetName<int32_t>(int)  { return "int32_t"; }
+template <> std::string ArithmeticTypeNames::GetName<uint64_t>(int) { return "uint64_t"; }
+template <> std::string ArithmeticTypeNames::GetName<int64_t>(int)  { return "int64_t"; }
+template <> std::string ArithmeticTypeNames::GetName<float>(int)    { return "float"; }
+template <> std::string ArithmeticTypeNames::GetName<double>(int)   { return "double"; }
+// clang-format on
+
+TYPED_TEST_SUITE(TestEtlRwExtArithTypes, ArithmeticTypes, ArithmeticTypeNames);
+
+TYPED_TEST(TestEtlRwExtArithTypes, write)
 {
     etl::vector<uint8_t, sizeof(TypeParam)> storage(sizeof(TypeParam));
     etl::byte_stream_writer writer(storage, etl::endian::little);
@@ -122,7 +146,7 @@ TYPED_TEST(ArithmeticRwTest, write)
     EXPECT_EQ(sizeof(TypeParam), writer.used_data().size());
 }
 
-TYPED_TEST(ArithmeticRwTest, read)
+TYPED_TEST(TestEtlRwExtArithTypes, read)
 {
     etl::vector<uint8_t, sizeof(TypeParam)> storage(sizeof(TypeParam));
     etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
@@ -130,7 +154,7 @@ TYPED_TEST(ArithmeticRwTest, read)
     EXPECT_EQ(0U, reader.available_bytes());
 }
 
-TYPED_TEST(ArithmeticRwTest, roundTrip)
+TYPED_TEST(TestEtlRwExtArithTypes, roundTrip)
 {
     const TypeParam value = static_cast<TypeParam>(42);
     etl::vector<uint8_t, sizeof(TypeParam)> storage(sizeof(TypeParam));
@@ -291,7 +315,7 @@ TEST(TestEtlRwExtensions, readArrayToInsufficientStorage)
     etl::vector<uint8_t, 10> storage{0x00, 0x01, 0x02, 0xAB};
     etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
 
-    // Read of array size 3 is requested, but storage is only 2
+    // Read of array size 3 is requested, but destination array has capacity 2
     lrpc::array<uint8_t, 2> dest{0xFF, 0xFF};
     lrpc::read_unchecked<lrpc::tags::array_n<uint8_t>>(reader, dest, 3);
     EXPECT_EQ(0x00, dest.at(0));
@@ -337,7 +361,7 @@ TEST(TestEtlRwExtensions, readArrayOfFixedSizeStringToInsufficientStorage)
     etl::vector<char, 10> storage{'t', '1', '\0', 't', '2', '\0', 't', '3', '\0', static_cast<char>(0xAB)};
     etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
 
-    // Read of array size 3 is requested, but storage is only 2
+    // Read of array size 3 is requested, but destination array has capacity 2
     lrpc::array<lrpc::string_view, 2> dest{"o1", "o2"};
     lrpc::read_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(reader, dest, 3, 2);
     EXPECT_EQ("t1", dest.at(0));
@@ -363,7 +387,7 @@ TEST(TestEtlRwExtensions, readArrayOfAutoStringToInsufficientStorage)
     etl::vector<char, 13> storage{'t', '1', '\0', 't', '2', '\0', 't', '3', '4', '5', '\0', static_cast<char>(0xAB)};
     etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
 
-    // Read of array size 3 is requested, but storage is only 2
+    // Read of array size 3 is requested, but destination array has capacity 2
     lrpc::array<lrpc::string_view, 2> dest{"o1", "o2"};
     lrpc::read_unchecked<lrpc::tags::array_n<lrpc::tags::string_auto>>(reader, dest, 3);
     EXPECT_EQ("t1", dest.at(0));

@@ -112,7 +112,7 @@ namespace lrpc
     template <typename T>
     struct array_param_type<tags::array_n<T>>
     {
-        using type = lrpc::span<const T>;
+        using type = lrpc::span<const typename array_n_type<tags::array_n<T>>::type>;
     };
 
     template <>
@@ -141,7 +141,7 @@ namespace lrpc
     template <typename T>
     struct array_outparam_type<tags::array_n<T>>
     {
-        using type = lrpc::span<T>;
+        using type = lrpc::span<typename array_n_type<tags::array_n<T>>::type>;
     };
 
     template <>

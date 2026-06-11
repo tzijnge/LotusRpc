@@ -244,6 +244,26 @@ TEST(TestEtlRwExtensions, readArrayToInsufficientStorage)
     EXPECT_EQ(0xAB, lrpc::read_unchecked<uint8_t>(reader));
 }
 
+TEST(TestEtlRwExtensions, readArrayOfEnumToInsufficientStorage)
+{
+    enum class Dummy : uint8_t
+    {
+        V1 = 0xAA,
+        V2 = 0xBB,
+        V3 = 0xCC
+    };
+
+    etl::vector<uint8_t, 4> storage{0xAA, 0xBB, 0xCC, 0xAB};
+    etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
+
+    // Read of array size 3 is requested, but destination array has capacity 2
+    lrpc::array<Dummy, 2> dest{Dummy::V1, Dummy::V1};
+    lrpc::read_unchecked<lrpc::tags::array_n<Dummy>>(reader, dest, 3);
+    EXPECT_EQ(Dummy::V1, dest.at(0));
+    EXPECT_EQ(Dummy::V2, dest.at(1));
+    EXPECT_EQ(0xAB, lrpc::read_unchecked<uint8_t>(reader));
+}
+
 TEST(TestEtlRwExtensions, readArrayOfFixedSizeString)
 {
     etl::vector<char, 10> storage{'t', '1', '\0', 't', '2', '\0', 't', '3', '\0'};

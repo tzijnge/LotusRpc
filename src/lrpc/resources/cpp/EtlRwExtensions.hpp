@@ -305,6 +305,28 @@ namespace lrpc
         return {};
     }
 
+    template <typename T>
+    std::enable_if_t<std::is_arithmetic<T>::value> skip_n_unchecked(etl::byte_stream_reader& reader, size_t n)
+    {
+        (void)reader.skip<T>(n);
+    }
+
+    template <typename T>
+    std::enable_if_t<std::is_enum<T>::value> skip_n_unchecked(etl::byte_stream_reader& reader, size_t n)
+    {
+        (void)reader.skip<uint8_t>(n);
+    }
+
+    template <typename T>
+    std::enable_if_t<!std::is_arithmetic<T>::value && !std::is_enum<T>::value>
+    skip_n_unchecked(etl::byte_stream_reader& reader, size_t n)
+    {
+        for (size_t i{0}; i < n; ++i)
+        {
+            (void)lrpc::read_unchecked<T>(reader);
+        }
+    }
+
     // Array, but not of fixed size string
     template <typename T>
     using enable_for_array = std::enable_if_t<is_array_n<T>::value && (!array_n_type_is_string_n<T>::value), void>;
@@ -319,16 +341,7 @@ namespace lrpc
             dest.at(i) = lrpc::read_unchecked<typename array_n_type<T>::type>(reader);
         }
 
-        if (size >= definitionArraySize)
-        {
-            return;
-        }
-
-        for (size_t i{0}; i < (definitionArraySize - size); ++i)
-        {
-            // discard elements that dont fit in the destination
-            (void)lrpc::read_unchecked<typename array_n_type<T>::type>(reader);
-        }
+        lrpc::skip_n_unchecked<typename array_n_type<T>::type>(reader, definitionArraySize - size);
     }
 
     // Array of fixed size string. Read as an array of lrpc::string_view

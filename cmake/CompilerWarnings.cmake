@@ -43,6 +43,7 @@ function(target_set_warnings target access)
     -Wimplicit-fallthrough
     -Wmisleading-indentation
     -Wundef
+    -Wextra-semi
     -fno-common
   )
 

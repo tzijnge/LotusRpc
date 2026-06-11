@@ -20,7 +20,7 @@ namespace lrpc
 
         template <typename T>
         struct array_n;
-    };
+    }
 
     template <typename T>
     struct is_optional : public std::false_type
@@ -185,7 +185,7 @@ namespace lrpc
     enable_for_arithmetic<T> read_unchecked(etl::byte_stream_reader& reader)
     {
         return reader.read_unchecked<T>();
-    };
+    }
 
     // Enum
     template <typename T>
@@ -224,7 +224,7 @@ namespace lrpc
         const lrpc::string_view readValue{reader.free_data().cbegin(), stringSize};
         (void)reader.skip<uint8_t>(skipSize);
         return readValue;
-    };
+    }
 
     // Fixed size string
     template <typename T>
@@ -269,7 +269,7 @@ namespace lrpc
         const auto ba = reader.free_data().take<const lrpc::byte>(readSize);
         (void)reader.skip<lrpc::byte>(readSize);
         return ba;
-    };
+    }
 
     // Optional, but not of fixed size string
     template <typename T>
@@ -286,7 +286,7 @@ namespace lrpc
         }
 
         return {};
-    };
+    }
 
     // Optional of fixed size string. Read as an optional of lrpc::string_view
     template <typename T>
@@ -303,7 +303,7 @@ namespace lrpc
         }
 
         return {};
-    };
+    }
 
     // Array, but not of fixed size string
     template <typename T>
@@ -329,7 +329,7 @@ namespace lrpc
             // discard elements that dont fit in the destination
             (void)lrpc::read_unchecked<typename array_n_type<T>::type>(reader);
         }
-    };
+    }
 
     // Array of fixed size string. Read as an array of lrpc::string_view
     template <typename T>
@@ -351,7 +351,7 @@ namespace lrpc
         {
             reader.skip<uint8_t>((definitionArraySize - size) * (definitionStringSize + 1));
         }
-    };
+    }
 
     // deleted write function to allow specializations for custom structs
     template <typename T,
@@ -367,14 +367,14 @@ namespace lrpc
     void write_unchecked(etl::byte_stream_writer& writer, const ARI& value)
     {
         writer.write_unchecked<ARI>(value);
-    };
+    }
 
     // Enum
     template <typename ENUM, typename std::enable_if_t<std::is_enum<ENUM>::value, bool> = true>
     void write_unchecked(etl::byte_stream_writer& writer, const ENUM& value)
     {
         writer.write_unchecked<uint8_t>(static_cast<uint8_t>(value));
-    };
+    }
 
     // auto string
     template <typename T, typename std::enable_if_t<std::is_same<T, tags::string_auto>::value, bool> = true>
@@ -387,7 +387,7 @@ namespace lrpc
 
         // final null terminator
         writer.write_unchecked<char>('\0');
-    };
+    }
 
     // fixed size string
     template <typename T, typename std::enable_if_t<std::is_same<T, tags::string_n>::value, bool> = true>
@@ -409,7 +409,7 @@ namespace lrpc
 
         // final null terminator
         writer.write_unchecked<char>('\0');
-    };
+    }
 
     // auto bytearray
     template <typename T, typename std::enable_if_t<std::is_same<T, tags::bytearray_auto>::value, bool> = true>
@@ -425,7 +425,7 @@ namespace lrpc
         {
             lrpc::write_unchecked<lrpc::byte>(writer, value.at(i));
         }
-    };
+    }
 
     // optional, but not of fixed size string
     template <typename OPT,
@@ -437,7 +437,7 @@ namespace lrpc
         {
             lrpc::write_unchecked<typename optional_type<OPT>::type>(writer, value.value());
         }
-    };
+    }
 
     // optional fixed size string
     template <typename OPT, typename std::enable_if_t<is_optional_string_n<OPT>::value, bool> = true>
@@ -449,7 +449,7 @@ namespace lrpc
         {
             lrpc::write_unchecked<tags::string_n>(writer, value.value(), definitionStringSize);
         }
-    };
+    }
 
     // array but not of fixed size string
     template <typename ARR,
@@ -472,7 +472,7 @@ namespace lrpc
         {
             lrpc::write_unchecked<typename array_n_type<ARR>::type>(writer, {});
         }
-    };
+    }
 
     // array of fixed size string
     // NOLINTBEGIN(bugprone-easily-swappable-parameters)
@@ -497,5 +497,5 @@ namespace lrpc
         {
             lrpc::write_unchecked<tags::string_n>(writer, {}, definitionStringSize);
         }
-    };
+    }
 }

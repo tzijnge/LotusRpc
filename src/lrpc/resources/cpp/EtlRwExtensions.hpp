@@ -221,7 +221,7 @@ namespace lrpc
             skipSize = stringSize;
         }
 
-        const lrpc::string_view readValue{reader.end(), stringSize};
+        const lrpc::string_view readValue{reader.free_data().cbegin(), stringSize};
         (void)reader.read_unchecked<uint8_t>(skipSize);
         return readValue;
     };
@@ -247,7 +247,7 @@ namespace lrpc
 
         const auto fixedSlotSize = definitionStringSize + 1;
         const auto skipSize = std::min(reader.available_bytes(), fixedSlotSize);
-        const lrpc::string_view readValue{reader.end(), actualStringSize};
+        const lrpc::string_view readValue{reader.free_data().cbegin(), actualStringSize};
 
         (void)reader.skip<uint8_t>(skipSize);
 

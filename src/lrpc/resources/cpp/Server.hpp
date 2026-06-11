@@ -20,14 +20,14 @@ namespace lrpc
         class ServiceNotFoundService : public Service
         {
         public:
-            uint8_t id() const override { return 0; };
+            uint8_t id() const override { return 0; }
             void invoke(Service::Reader& reader) override
             {
                 const auto data = reader.data();
                 const auto serviceId = static_cast<uint8_t>(data.at(1));
                 const auto functionOrStreamId = static_cast<uint8_t>(data.at(2));
                 server().error(LrpcMetaError::UnknownService, serviceId, functionOrStreamId);
-            };
+            }
         };
 
     public:

@@ -168,6 +168,25 @@ TEST(TestEtlRwExtensions, readAutoString)
     EXPECT_EQ("Test", lrpc::read_unchecked<lrpc::tags::string_auto>(reader));
 }
 
+TEST(TestEtlRwExtensions, readAutoStringEmpty)
+{
+    etl::vector<char, 3> storage{'\0', 'x', 'y'};
+    etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
+
+    EXPECT_EQ("", lrpc::read_unchecked<lrpc::tags::string_auto>(reader));
+    EXPECT_EQ(2U, reader.available_bytes());
+}
+
+TEST(TestEtlRwExtensions, readAutoStringNoNullTerminator)
+{
+    // No null in stream: all remaining bytes are returned as the string
+    etl::vector<char, 4> storage{'a', 'b', 'c', 'd'};
+    etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
+
+    EXPECT_EQ("abcd", lrpc::read_unchecked<lrpc::tags::string_auto>(reader));
+    EXPECT_EQ(0U, reader.available_bytes());
+}
+
 TEST(TestEtlRwExtensions, readFixedSizeString)
 {
     etl::vector<char, 10> storage{'T', 'e', 's', 't', '\0', '\0', 'q', '\0'};
@@ -178,6 +197,16 @@ TEST(TestEtlRwExtensions, readFixedSizeString)
     EXPECT_EQ("Test", lrpc::read_unchecked<lrpc::tags::string_n>(reader, 4));
     reader.restart();
     EXPECT_EQ("Test", lrpc::read_unchecked<lrpc::tags::string_n>(reader, 5));
+    EXPECT_EQ("q", lrpc::read_unchecked<lrpc::tags::string_n>(reader, 1));
+}
+
+TEST(TestEtlRwExtensions, readFixedSizeStringEmpty)
+{
+    // Slot starts with '\0': returns empty string, skips full slot
+    etl::vector<char, 6> storage{'\0', '\0', '\0', '\0', 'q', '\0'};
+    etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
+
+    EXPECT_EQ("", lrpc::read_unchecked<lrpc::tags::string_n>(reader, 3));
     EXPECT_EQ("q", lrpc::read_unchecked<lrpc::tags::string_n>(reader, 1));
 }
 
@@ -377,6 +406,16 @@ TEST(TestEtlRwExtensions, readBytearray)
     EXPECT_EQ(0x03, bytearray.at(2));
 }
 
+TEST(TestEtlRwExtensions, readBytearrayEmpty)
+{
+    etl::vector<uint8_t, 3> storage{0x00, 0xAB, 0xCD};
+    etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
+
+    const auto ba = lrpc::read_unchecked<lrpc::tags::bytearray_auto>(reader);
+    EXPECT_EQ(0U, ba.size());
+    EXPECT_EQ(lrpc::byte{0xAB}, lrpc::read_unchecked<lrpc::byte>(reader));
+}
+
 TEST(TestEtlRwExtensions, readEtlByte)
 {
     etl::vector<uint8_t, 4> storage{0x11, 0xAB};
@@ -465,6 +504,21 @@ TEST(TestEtlRwExtensions, writeFixedSizeStringOverflow)
     EXPECT_EQ('\0', written.at(4));
 }
 
+TEST(TestEtlRwExtensions, writeFixedSizeStringEmpty)
+{
+    lrpc::array<uint8_t, 10> storage;
+    etl::byte_stream_writer writer(storage, etl::endian::little);
+
+    lrpc::write_unchecked<lrpc::tags::string_n>(writer, "", 3);
+
+    const auto written = writer.used_data();
+    ASSERT_EQ(4, written.size());
+    EXPECT_EQ('\0', written.at(0));
+    EXPECT_EQ('\0', written.at(1));
+    EXPECT_EQ('\0', written.at(2));
+    EXPECT_EQ('\0', written.at(3));
+}
+
 TEST(TestEtlRwExtensions, writeAutoString)
 {
     lrpc::array<uint8_t, 10> storage;
@@ -482,6 +536,18 @@ TEST(TestEtlRwExtensions, writeAutoString)
     EXPECT_EQ('T', written.at(3));
     EXPECT_EQ('2', written.at(4));
     EXPECT_EQ('\0', written.at(5));
+}
+
+TEST(TestEtlRwExtensions, writeAutoStringEmpty)
+{
+    lrpc::array<uint8_t, 10> storage;
+    etl::byte_stream_writer writer(storage, etl::endian::little);
+
+    lrpc::write_unchecked<lrpc::tags::string_auto>(writer, "");
+
+    const auto written = writer.used_data();
+    ASSERT_EQ(1, written.size());
+    EXPECT_EQ('\0', written.at(0));
 }
 
 TEST(TestEtlRwExtensions, writeByteArray)

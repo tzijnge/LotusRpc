@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 
 #include "generated/core/lrpccore/EtlRwExtensions.hpp"
+#include "generated/core/lrpccore/LrpcByteTypes.hpp"
 #include "generated/core/lrpccore/LrpcTypes.hpp"
 #if (__cplusplus >= 201703L)
 // For std::byte
@@ -64,7 +65,6 @@ TEST(TestEtlRwExtensions, optional_pr_type)
                               lrpc::optional_pr_type<lrpc::optional<lrpc::tags::string_auto>>::type>::value));
     EXPECT_TRUE((std::is_same<lrpc::optional<lrpc::string_view>,
                               lrpc::optional_pr_type<lrpc::optional<lrpc::tags::string_n>>::type>::value));
-    // NOLINTNEXTLINE(misc-include-cleaner)
     EXPECT_TRUE((std::is_same<lrpc::optional<lrpc::bytearray>,
                               lrpc::optional_pr_type<lrpc::optional<lrpc::tags::bytearray_auto>>::type>::value));
 }
@@ -104,16 +104,47 @@ TEST(TestEtlRwExtensions, array_out_param_type)
                       lrpc::array_outparam_type<lrpc::tags::array_n<lrpc::tags::bytearray_auto>>::type>::value));
 }
 
-TEST(TestEtlRwExtensions, readArithmetic)
+template <typename T>
+class ArithmeticRwTest : public ::testing::Test
 {
-    etl::vector<uint8_t, 10> storage{0x00, 0x01, 0x02, 0x03, 0x04, 0x79, 0xE9, 0xF6, 0x42};
-    etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
+};
 
-    EXPECT_FALSE(lrpc::read_unchecked<bool>(reader));
-    EXPECT_TRUE(lrpc::read_unchecked<bool>(reader));
-    EXPECT_EQ(0x02, lrpc::read_unchecked<uint8_t>(reader));
-    EXPECT_EQ(0x0403, lrpc::read_unchecked<uint16_t>(reader));
-    EXPECT_FLOAT_EQ(123.456F, lrpc::read_unchecked<float>(reader));
+using ArithmeticTypes = ::testing::Types<
+    bool,
+    uint8_t, int8_t,
+    uint16_t, int16_t,
+    uint32_t, int32_t,
+    uint64_t, int64_t,
+    float, double>;
+
+TYPED_TEST_SUITE(ArithmeticRwTest, ArithmeticTypes);
+
+TYPED_TEST(ArithmeticRwTest, write)
+{
+    etl::vector<uint8_t, sizeof(TypeParam)> storage(sizeof(TypeParam));
+    etl::byte_stream_writer writer(storage, etl::endian::little);
+    lrpc::write_unchecked<TypeParam>(writer, TypeParam{1});
+    EXPECT_EQ(sizeof(TypeParam), writer.used_data().size());
+}
+
+TYPED_TEST(ArithmeticRwTest, read)
+{
+    etl::vector<uint8_t, sizeof(TypeParam)> storage(sizeof(TypeParam));
+    etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
+    EXPECT_EQ(TypeParam{0}, lrpc::read_unchecked<TypeParam>(reader));
+    EXPECT_EQ(0U, reader.available_bytes());
+}
+
+TYPED_TEST(ArithmeticRwTest, roundTrip)
+{
+    const TypeParam value = static_cast<TypeParam>(42);
+    etl::vector<uint8_t, sizeof(TypeParam)> storage(sizeof(TypeParam));
+    etl::byte_stream_writer writer(storage, etl::endian::little);
+    lrpc::write_unchecked<TypeParam>(writer, value);
+
+    etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
+    EXPECT_EQ(value, lrpc::read_unchecked<TypeParam>(reader));
+    EXPECT_EQ(0U, reader.available_bytes());
 }
 
 TEST(TestEtlRwExtensions, readEnum)
@@ -366,30 +397,6 @@ TEST(TestEtlRwExtensions, readStdByte)
 }
 #endif
 
-TEST(TestEtlRwExtensions, writeArithmetic)
-{
-    lrpc::array<uint8_t, 10> storage;
-    etl::byte_stream_writer writer(storage, etl::endian::little);
-
-    lrpc::write_unchecked<bool>(writer, false);
-    lrpc::write_unchecked<bool>(writer, true);
-    lrpc::write_unchecked<uint8_t>(writer, 0x02);
-    lrpc::write_unchecked<uint16_t>(writer, 0x0403);
-    lrpc::write_unchecked<float>(writer, 123.456F);
-
-    const auto written = writer.used_data();
-    ASSERT_EQ(9, written.size());
-    EXPECT_EQ(0x00, static_cast<uint8_t>(written.at(0)));
-    EXPECT_EQ(0x01, static_cast<uint8_t>(written.at(1)));
-    EXPECT_EQ(0x02, static_cast<uint8_t>(written.at(2)));
-    EXPECT_EQ(0x03, static_cast<uint8_t>(written.at(3)));
-    EXPECT_EQ(0x04, static_cast<uint8_t>(written.at(4)));
-    EXPECT_EQ(0x79, static_cast<uint8_t>(written.at(5)));
-    EXPECT_EQ(0xE9, static_cast<uint8_t>(written.at(6)));
-    EXPECT_EQ(0xF6, static_cast<uint8_t>(written.at(7)));
-    EXPECT_EQ(0x42, static_cast<uint8_t>(written.at(8)));
-}
-
 TEST(TestEtlRwExtensions, writeEnum)
 {
     enum class Dummy : uint8_t
@@ -482,7 +489,6 @@ TEST(TestEtlRwExtensions, writeByteArray)
     lrpc::array<uint8_t, 10> storage;
     etl::byte_stream_writer writer(storage, etl::endian::little);
 
-    // NOLINTNEXTLINE(misc-include-cleaner)
     const lrpc::array<lrpc::byte, 3> a0{0x11, 0x12, 0x13};
     const lrpc::array<lrpc::byte, 2> a1{0x14, 0x15};
     lrpc::write_unchecked<lrpc::tags::bytearray_auto>(writer, a0);
@@ -762,3 +768,144 @@ TEST(TestEtlRwExtensions, writeStdByte)
     EXPECT_EQ(0x56, written.at(1));
 }
 #endif
+
+TEST(TestEtlRwExtensions, roundTripEnum)
+{
+    enum class Color : uint8_t
+    {
+        Red = 0x01,
+        Green = 0x02,
+        Blue = 0x03
+    };
+
+    etl::vector<uint8_t, 3> storage(3);
+    etl::byte_stream_writer writer(storage, etl::endian::little);
+    lrpc::write_unchecked<Color>(writer, Color::Red);
+    lrpc::write_unchecked<Color>(writer, Color::Green);
+    lrpc::write_unchecked<Color>(writer, Color::Blue);
+
+    etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
+    EXPECT_EQ(Color::Red, lrpc::read_unchecked<Color>(reader));
+    EXPECT_EQ(Color::Green, lrpc::read_unchecked<Color>(reader));
+    EXPECT_EQ(Color::Blue, lrpc::read_unchecked<Color>(reader));
+    EXPECT_EQ(0U, reader.available_bytes());
+}
+
+TEST(TestEtlRwExtensions, roundTripAutoString)
+{
+    // "hello" + null = 6 bytes, "" + null = 1 byte
+    etl::vector<uint8_t, 7> storage(7);
+    etl::byte_stream_writer writer(storage, etl::endian::little);
+    lrpc::write_unchecked<lrpc::tags::string_auto>(writer, "hello");
+    lrpc::write_unchecked<lrpc::tags::string_auto>(writer, "");
+
+    etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
+    EXPECT_EQ("hello", lrpc::read_unchecked<lrpc::tags::string_auto>(reader));
+    EXPECT_EQ("", lrpc::read_unchecked<lrpc::tags::string_auto>(reader));
+    EXPECT_EQ(0U, reader.available_bytes());
+}
+
+TEST(TestEtlRwExtensions, roundTripFixedSizeString)
+{
+    // slot size 4: each element occupies exactly 5 bytes (definitionStringSize + 1)
+    // three cases: value shorter than slot, equal, longer (truncated)
+    etl::vector<uint8_t, 15> storage(15);
+    etl::byte_stream_writer writer(storage, etl::endian::little);
+    lrpc::write_unchecked<lrpc::tags::string_n>(writer, "hi", 4);
+    lrpc::write_unchecked<lrpc::tags::string_n>(writer, "abcd", 4);
+    lrpc::write_unchecked<lrpc::tags::string_n>(writer, "toolong", 4);
+
+    etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
+    EXPECT_EQ("hi", lrpc::read_unchecked<lrpc::tags::string_n>(reader, 4));
+    EXPECT_EQ("abcd", lrpc::read_unchecked<lrpc::tags::string_n>(reader, 4));
+    EXPECT_EQ("tool", lrpc::read_unchecked<lrpc::tags::string_n>(reader, 4));
+    EXPECT_EQ(0U, reader.available_bytes());
+}
+
+TEST(TestEtlRwExtensions, roundTripBytearray)
+{
+    const lrpc::array<lrpc::byte, 3> ba{0x11, 0x22, 0x33};
+    // ba: 1 size byte + 3 data = 4 bytes; empty: 1 size byte = 1 byte
+    etl::vector<uint8_t, 5> storage(5);
+    etl::byte_stream_writer writer(storage, etl::endian::little);
+    lrpc::write_unchecked<lrpc::tags::bytearray_auto>(writer, ba);
+    lrpc::write_unchecked<lrpc::tags::bytearray_auto>(writer, {});
+
+    etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
+    const auto result = lrpc::read_unchecked<lrpc::tags::bytearray_auto>(reader);
+    ASSERT_EQ(3U, result.size());
+    EXPECT_EQ(0x11, result.at(0));
+    EXPECT_EQ(0x22, result.at(1));
+    EXPECT_EQ(0x33, result.at(2));
+    const auto empty = lrpc::read_unchecked<lrpc::tags::bytearray_auto>(reader);
+    EXPECT_EQ(0U, empty.size());
+    EXPECT_EQ(0U, reader.available_bytes());
+}
+
+TEST(TestEtlRwExtensions, roundTripOptional)
+{
+    // absent: 1 byte; present uint16_t: 1 + 2 = 3 bytes
+    etl::vector<uint8_t, 4> storage(4);
+    etl::byte_stream_writer writer(storage, etl::endian::little);
+    lrpc::write_unchecked<lrpc::optional<uint16_t>>(writer, {});
+    lrpc::write_unchecked<lrpc::optional<uint16_t>>(writer, 0x1234U);
+
+    etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
+    const auto o1 = lrpc::read_unchecked<lrpc::optional<uint16_t>>(reader);
+    EXPECT_FALSE(o1.has_value());
+    const auto o2 = lrpc::read_unchecked<lrpc::optional<uint16_t>>(reader);
+    ASSERT_TRUE(o2.has_value());
+    EXPECT_EQ(0x1234U, o2.value());
+    EXPECT_EQ(0U, reader.available_bytes());
+}
+
+TEST(TestEtlRwExtensions, roundTripOptionalFixedSizeString)
+{
+    // absent: 1 byte; present "hi" in slot 3: 1 + 4 = 5 bytes
+    etl::vector<uint8_t, 6> storage(6);
+    etl::byte_stream_writer writer(storage, etl::endian::little);
+    const lrpc::optional<lrpc::string_view> absent{};
+    const lrpc::optional<lrpc::string_view> present{"hi"};
+    lrpc::write_unchecked<lrpc::optional<lrpc::tags::string_n>>(writer, absent, 3);
+    lrpc::write_unchecked<lrpc::optional<lrpc::tags::string_n>>(writer, present, 3);
+
+    etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
+    const auto o1 = lrpc::read_unchecked<lrpc::optional<lrpc::tags::string_n>>(reader, 3);
+    EXPECT_FALSE(o1.has_value());
+    const auto o2 = lrpc::read_unchecked<lrpc::optional<lrpc::tags::string_n>>(reader, 3);
+    ASSERT_TRUE(o2.has_value());
+    EXPECT_EQ("hi", o2.value());
+    EXPECT_EQ(0U, reader.available_bytes());
+}
+
+TEST(TestEtlRwExtensions, roundTripArray)
+{
+    etl::vector<uint8_t, 3> storage(3);
+    etl::byte_stream_writer writer(storage, etl::endian::little);
+    const lrpc::array<uint8_t, 3> values{0x0A, 0x0B, 0x0C};
+    lrpc::write_unchecked<lrpc::tags::array_n<uint8_t>>(writer, values, 3);
+
+    lrpc::array<uint8_t, 3> dest;
+    etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
+    lrpc::read_unchecked<lrpc::tags::array_n<uint8_t>>(reader, dest, 3);
+    EXPECT_EQ(0x0A, dest.at(0));
+    EXPECT_EQ(0x0B, dest.at(1));
+    EXPECT_EQ(0x0C, dest.at(2));
+    EXPECT_EQ(0U, reader.available_bytes());
+}
+
+TEST(TestEtlRwExtensions, roundTripArrayOfFixedSizeString)
+{
+    // 2 elements, slot size 3: each uses 4 bytes, total 8 bytes
+    etl::vector<uint8_t, 8> storage(8);
+    etl::byte_stream_writer writer(storage, etl::endian::little);
+    const lrpc::array<lrpc::string_view, 2> values{"ab", "cd"};
+    lrpc::write_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(writer, values, 2, 3);
+
+    lrpc::array<lrpc::string_view, 2> dest{"", ""};
+    etl::byte_stream_reader reader(storage.begin(), storage.end(), etl::endian::little);
+    lrpc::read_unchecked<lrpc::tags::array_n<lrpc::tags::string_n>>(reader, dest, 2, 3);
+    EXPECT_EQ("ab", dest.at(0));
+    EXPECT_EQ("cd", dest.at(1));
+    EXPECT_EQ(0U, reader.available_bytes());
+}

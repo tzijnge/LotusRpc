@@ -222,7 +222,7 @@ namespace lrpc
         }
 
         const lrpc::string_view readValue{reader.free_data().cbegin(), stringSize};
-        (void)reader.read_unchecked<uint8_t>(skipSize);
+        (void)reader.skip<uint8_t>(skipSize);
         return readValue;
     };
 

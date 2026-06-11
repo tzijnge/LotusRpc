@@ -402,7 +402,7 @@ namespace lrpc
         }
 
         // fill remainder with null terminators
-        for (auto i = value.size(); i < definitionStringSize; ++i)
+        for (size_t i = writeSize; i < definitionStringSize; ++i)
         {
             writer.write_unchecked<char>('\0');
         }

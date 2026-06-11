@@ -14,9 +14,8 @@ jobs:
           pip install -r requirements/dev.txt
           pip install -r requirements/package.txt
       - name: Linkspector
-        # action-linkspector is temporarily not working
-        if: 0
-        uses: umbrelladocs/action-linkspector@036f295d12b67b0c4b445bc83db0538afb78db69
+        # v1.5.3
+        uses: umbrelladocs/action-linkspector@15f97e56ba84c3f637f2b35035c159c871ae6bb3
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review

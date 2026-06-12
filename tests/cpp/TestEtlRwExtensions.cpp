@@ -116,7 +116,7 @@ using ArithmeticTypes =
 struct ArithmeticTypeNames
 {
     template <typename T>
-    static std::string GetName(int /* index */)
+    static std::string GetName(int64_t /* index */)
     {
         static_assert(sizeof(T) == 0, "unknown type in ArithmeticTypes");
         return "";
@@ -124,17 +124,17 @@ struct ArithmeticTypeNames
 };
 
 // clang-format off
-template <> std::string ArithmeticTypeNames::GetName<bool>(int /* index */)     { return "bool"; }
-template <> std::string ArithmeticTypeNames::GetName<uint8_t>(int /* index */)  { return "uint8_t"; }
-template <> std::string ArithmeticTypeNames::GetName<int8_t>(int /* index */)   { return "int8_t"; }
-template <> std::string ArithmeticTypeNames::GetName<uint16_t>(int /* index */) { return "uint16_t"; }
-template <> std::string ArithmeticTypeNames::GetName<int16_t>(int /* index */)  { return "int16_t"; }
-template <> std::string ArithmeticTypeNames::GetName<uint32_t>(int /* index */) { return "uint32_t"; }
-template <> std::string ArithmeticTypeNames::GetName<int32_t>(int /* index */)  { return "int32_t"; }
-template <> std::string ArithmeticTypeNames::GetName<uint64_t>(int /* index */) { return "uint64_t"; }
-template <> std::string ArithmeticTypeNames::GetName<int64_t>(int /* index */)  { return "int64_t"; }
-template <> std::string ArithmeticTypeNames::GetName<float>(int /* index */)    { return "float"; }
-template <> std::string ArithmeticTypeNames::GetName<double>(int /* index */)   { return "double"; }
+template <> std::string ArithmeticTypeNames::GetName<bool>(int64_t /* index */)     { return "bool"; }
+template <> std::string ArithmeticTypeNames::GetName<uint8_t>(int64_t /* index */)  { return "uint8_t"; }
+template <> std::string ArithmeticTypeNames::GetName<int8_t>(int64_t /* index */)   { return "int8_t"; }
+template <> std::string ArithmeticTypeNames::GetName<uint16_t>(int64_t /* index */) { return "uint16_t"; }
+template <> std::string ArithmeticTypeNames::GetName<int16_t>(int64_t /* index */)  { return "int16_t"; }
+template <> std::string ArithmeticTypeNames::GetName<uint32_t>(int64_t /* index */) { return "uint32_t"; }
+template <> std::string ArithmeticTypeNames::GetName<int32_t>(int64_t /* index */)  { return "int32_t"; }
+template <> std::string ArithmeticTypeNames::GetName<uint64_t>(int64_t /* index */) { return "uint64_t"; }
+template <> std::string ArithmeticTypeNames::GetName<int64_t>(int64_t /* index */)  { return "int64_t"; }
+template <> std::string ArithmeticTypeNames::GetName<float>(int64_t /* index */)    { return "float"; }
+template <> std::string ArithmeticTypeNames::GetName<double>(int64_t /* index */)   { return "double"; }
 // clang-format on
 
 TYPED_TEST_SUITE(TestEtlRwExtArithTypes, ArithmeticTypes, ArithmeticTypeNames);

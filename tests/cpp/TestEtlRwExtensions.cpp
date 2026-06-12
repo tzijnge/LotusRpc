@@ -157,7 +157,7 @@ TYPED_TEST(TestEtlRwExtArithTypes, read)
 
 TYPED_TEST(TestEtlRwExtArithTypes, roundTrip)
 {
-    const TypeParam value = static_cast<TypeParam>(42);
+    const auto value = static_cast<TypeParam>(42);
     etl::vector<uint8_t, sizeof(TypeParam)> storage(sizeof(TypeParam));
     etl::byte_stream_writer writer(storage, etl::endian::little);
     lrpc::write_unchecked<TypeParam>(writer, value);

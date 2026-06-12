@@ -16,6 +16,7 @@
 
 #include <etl/byte.h>
 #include <etl/byte_stream.h>
+#include <etl/endianness.h>
 #include <etl/string.h>
 #include <etl/vector.h>
 
@@ -123,17 +124,17 @@ struct ArithmeticTypeNames
 };
 
 // clang-format off
-template <> std::string ArithmeticTypeNames::GetName<bool>(int)     { return "bool"; }
-template <> std::string ArithmeticTypeNames::GetName<uint8_t>(int)  { return "uint8_t"; }
-template <> std::string ArithmeticTypeNames::GetName<int8_t>(int)   { return "int8_t"; }
-template <> std::string ArithmeticTypeNames::GetName<uint16_t>(int) { return "uint16_t"; }
-template <> std::string ArithmeticTypeNames::GetName<int16_t>(int)  { return "int16_t"; }
-template <> std::string ArithmeticTypeNames::GetName<uint32_t>(int) { return "uint32_t"; }
-template <> std::string ArithmeticTypeNames::GetName<int32_t>(int)  { return "int32_t"; }
-template <> std::string ArithmeticTypeNames::GetName<uint64_t>(int) { return "uint64_t"; }
-template <> std::string ArithmeticTypeNames::GetName<int64_t>(int)  { return "int64_t"; }
-template <> std::string ArithmeticTypeNames::GetName<float>(int)    { return "float"; }
-template <> std::string ArithmeticTypeNames::GetName<double>(int)   { return "double"; }
+template <> std::string ArithmeticTypeNames::GetName<bool>(int /* index */)     { return "bool"; }
+template <> std::string ArithmeticTypeNames::GetName<uint8_t>(int /* index */)  { return "uint8_t"; }
+template <> std::string ArithmeticTypeNames::GetName<int8_t>(int /* index */)   { return "int8_t"; }
+template <> std::string ArithmeticTypeNames::GetName<uint16_t>(int /* index */) { return "uint16_t"; }
+template <> std::string ArithmeticTypeNames::GetName<int16_t>(int /* index */)  { return "int16_t"; }
+template <> std::string ArithmeticTypeNames::GetName<uint32_t>(int /* index */) { return "uint32_t"; }
+template <> std::string ArithmeticTypeNames::GetName<int32_t>(int /* index */)  { return "int32_t"; }
+template <> std::string ArithmeticTypeNames::GetName<uint64_t>(int /* index */) { return "uint64_t"; }
+template <> std::string ArithmeticTypeNames::GetName<int64_t>(int /* index */)  { return "int64_t"; }
+template <> std::string ArithmeticTypeNames::GetName<float>(int /* index */)    { return "float"; }
+template <> std::string ArithmeticTypeNames::GetName<double>(int /* index */)   { return "double"; }
 // clang-format on
 
 TYPED_TEST_SUITE(TestEtlRwExtArithTypes, ArithmeticTypes, ArithmeticTypeNames);

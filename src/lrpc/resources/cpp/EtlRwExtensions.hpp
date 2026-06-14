@@ -20,7 +20,7 @@ namespace lrpc
 
         template <typename T>
         struct array_n;
-    };
+    }
 
     template <typename T>
     struct is_optional : public std::false_type
@@ -112,7 +112,7 @@ namespace lrpc
     template <typename T>
     struct array_param_type<tags::array_n<T>>
     {
-        using type = lrpc::span<const typename array_n_type<typename tags::array_n<T>>::type>;
+        using type = lrpc::span<const typename array_n_type<tags::array_n<T>>::type>;
     };
 
     template <>
@@ -141,7 +141,7 @@ namespace lrpc
     template <typename T>
     struct array_outparam_type<tags::array_n<T>>
     {
-        using type = lrpc::span<typename array_n_type<typename tags::array_n<T>>::type>;
+        using type = lrpc::span<typename array_n_type<tags::array_n<T>>::type>;
     };
 
     template <>
@@ -185,7 +185,7 @@ namespace lrpc
     enable_for_arithmetic<T> read_unchecked(etl::byte_stream_reader& reader)
     {
         return reader.read_unchecked<T>();
-    };
+    }
 
     // Enum
     template <typename T>
@@ -221,10 +221,10 @@ namespace lrpc
             skipSize = stringSize;
         }
 
-        const lrpc::string_view readValue{reader.end(), stringSize};
-        (void)reader.read_unchecked<uint8_t>(skipSize);
+        const lrpc::string_view readValue{reader.free_data().cbegin(), stringSize};
+        (void)reader.skip<uint8_t>(skipSize);
         return readValue;
-    };
+    }
 
     // Fixed size string
     template <typename T>
@@ -247,7 +247,7 @@ namespace lrpc
 
         const auto fixedSlotSize = definitionStringSize + 1;
         const auto skipSize = std::min(reader.available_bytes(), fixedSlotSize);
-        const lrpc::string_view readValue{reader.end(), actualStringSize};
+        const lrpc::string_view readValue{reader.free_data().cbegin(), actualStringSize};
 
         (void)reader.skip<uint8_t>(skipSize);
 
@@ -269,7 +269,7 @@ namespace lrpc
         const auto ba = reader.free_data().take<const lrpc::byte>(readSize);
         (void)reader.skip<lrpc::byte>(readSize);
         return ba;
-    };
+    }
 
     // Optional, but not of fixed size string
     template <typename T>
@@ -286,7 +286,7 @@ namespace lrpc
         }
 
         return {};
-    };
+    }
 
     // Optional of fixed size string. Read as an optional of lrpc::string_view
     template <typename T>
@@ -303,7 +303,29 @@ namespace lrpc
         }
 
         return {};
-    };
+    }
+
+    template <typename T>
+    std::enable_if_t<std::is_arithmetic<T>::value> skip_n_unchecked(etl::byte_stream_reader& reader, size_t n)
+    {
+        (void)reader.skip<T>(n);
+    }
+
+    template <typename T>
+    std::enable_if_t<std::is_enum<T>::value> skip_n_unchecked(etl::byte_stream_reader& reader, size_t n)
+    {
+        (void)reader.skip<uint8_t>(n);
+    }
+
+    template <typename T>
+    std::enable_if_t<!std::is_arithmetic<T>::value && !std::is_enum<T>::value>
+    skip_n_unchecked(etl::byte_stream_reader& reader, size_t n)
+    {
+        for (size_t i{0}; i < n; ++i)
+        {
+            (void)lrpc::read_unchecked<T>(reader);
+        }
+    }
 
     // Array, but not of fixed size string
     template <typename T>
@@ -319,17 +341,8 @@ namespace lrpc
             dest.at(i) = lrpc::read_unchecked<typename array_n_type<T>::type>(reader);
         }
 
-        if (size >= definitionArraySize)
-        {
-            return;
-        }
-
-        for (size_t i{0}; i < (definitionArraySize - size); ++i)
-        {
-            // discard elements that dont fit in the destination
-            (void)lrpc::read_unchecked<typename array_n_type<T>::type>(reader);
-        }
-    };
+        lrpc::skip_n_unchecked<typename array_n_type<T>::type>(reader, definitionArraySize - size);
+    }
 
     // Array of fixed size string. Read as an array of lrpc::string_view
     template <typename T>
@@ -351,7 +364,7 @@ namespace lrpc
         {
             reader.skip<uint8_t>((definitionArraySize - size) * (definitionStringSize + 1));
         }
-    };
+    }
 
     // deleted write function to allow specializations for custom structs
     template <typename T,
@@ -367,14 +380,14 @@ namespace lrpc
     void write_unchecked(etl::byte_stream_writer& writer, const ARI& value)
     {
         writer.write_unchecked<ARI>(value);
-    };
+    }
 
     // Enum
     template <typename ENUM, typename std::enable_if_t<std::is_enum<ENUM>::value, bool> = true>
     void write_unchecked(etl::byte_stream_writer& writer, const ENUM& value)
     {
         writer.write_unchecked<uint8_t>(static_cast<uint8_t>(value));
-    };
+    }
 
     // auto string
     template <typename T, typename std::enable_if_t<std::is_same<T, tags::string_auto>::value, bool> = true>
@@ -387,7 +400,7 @@ namespace lrpc
 
         // final null terminator
         writer.write_unchecked<char>('\0');
-    };
+    }
 
     // fixed size string
     template <typename T, typename std::enable_if_t<std::is_same<T, tags::string_n>::value, bool> = true>
@@ -402,14 +415,14 @@ namespace lrpc
         }
 
         // fill remainder with null terminators
-        for (auto i = value.size(); i < definitionStringSize; ++i)
+        for (size_t i = writeSize; i < definitionStringSize; ++i)
         {
             writer.write_unchecked<char>('\0');
         }
 
         // final null terminator
         writer.write_unchecked<char>('\0');
-    };
+    }
 
     // auto bytearray
     template <typename T, typename std::enable_if_t<std::is_same<T, tags::bytearray_auto>::value, bool> = true>
@@ -425,7 +438,7 @@ namespace lrpc
         {
             lrpc::write_unchecked<lrpc::byte>(writer, value.at(i));
         }
-    };
+    }
 
     // optional, but not of fixed size string
     template <typename OPT,
@@ -437,7 +450,7 @@ namespace lrpc
         {
             lrpc::write_unchecked<typename optional_type<OPT>::type>(writer, value.value());
         }
-    };
+    }
 
     // optional fixed size string
     template <typename OPT, typename std::enable_if_t<is_optional_string_n<OPT>::value, bool> = true>
@@ -449,7 +462,7 @@ namespace lrpc
         {
             lrpc::write_unchecked<tags::string_n>(writer, value.value(), definitionStringSize);
         }
-    };
+    }
 
     // array but not of fixed size string
     template <typename ARR,
@@ -472,7 +485,7 @@ namespace lrpc
         {
             lrpc::write_unchecked<typename array_n_type<ARR>::type>(writer, {});
         }
-    };
+    }
 
     // array of fixed size string
     // NOLINTBEGIN(bugprone-easily-swappable-parameters)
@@ -497,5 +510,5 @@ namespace lrpc
         {
             lrpc::write_unchecked<tags::string_n>(writer, {}, definitionStringSize);
         }
-    };
+    }
 }

@@ -68,7 +68,7 @@ namespace lrpc
         void linkServer(IServer& server) { linkedServer = &server; }
 
     protected:
-        IServer& server() const { return *linkedServer; };
+        IServer& server() const { return *linkedServer; }
 
         void requestStop(const uint8_t streamId) const { server().transmit(id(), streamId); }
 

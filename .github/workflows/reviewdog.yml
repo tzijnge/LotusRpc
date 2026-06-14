@@ -1,4 +1,4 @@
-name: Reviewdog
+name: Linting
 on: [pull_request] # yamllint disable-line rule:truthy
 jobs:
   Reviewdog:

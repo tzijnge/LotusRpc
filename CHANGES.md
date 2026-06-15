@@ -8,6 +8,27 @@ LotusRPC is an RPC framework for embedded systems. Here are the release notes.
 
 <!-- towncrier release notes start -->
 
+## lotusrpc 1.0.0 (2026-06-15)
+
+### Features
+
+- Added function on LrpcDef to retrieve constant value by name ([#122](https://github.com/tzijnge/LotusRpc/issues/122))
+- Option to define an alias for complex return types ([#127](https://github.com/tzijnge/LotusRpc/issues/127))
+- Support 'etl::byte' and 'std::byte' as LotusRPC byte type. Support for definition file overlays ([#195](https://github.com/tzijnge/LotusRpc/issues/195))
+- Rename optional dependency to transport_serial. Better error message when it is not installed ([#204](https://github.com/tzijnge/LotusRpc/issues/204))
+- Added section `user_settings` to definition file for free-format user settings.
+
+  > ⚠ Breaking change: It is no longer allowed to add user settings to the top level of the definition file. They must be under `user_settings`. ([#229](https://github.com/tzijnge/LotusRpc/issues/229))
+
+### Bugfixes
+
+- Disallow same name parameter and return in single function ([#208](https://github.com/tzijnge/LotusRpc/issues/208))
+
+### Misc
+
+- [#18](https://github.com/tzijnge/LotusRpc/issues/18), [#19](https://github.com/tzijnge/LotusRpc/issues/19), [#132](https://github.com/tzijnge/LotusRpc/issues/132), [#136](https://github.com/tzijnge/LotusRpc/issues/136), [#168](https://github.com/tzijnge/LotusRpc/issues/168), [#171](https://github.com/tzijnge/LotusRpc/issues/171), [#172](https://github.com/tzijnge/LotusRpc/issues/172), [#194](https://github.com/tzijnge/LotusRpc/issues/194), [#196](https://github.com/tzijnge/LotusRpc/issues/196), [#252](https://github.com/tzijnge/LotusRpc/issues/252), [#256](https://github.com/tzijnge/LotusRpc/issues/256), [#294](https://github.com/tzijnge/LotusRpc/issues/294)
+
+
 ## lotusrpc 0.10.0 (2026-02-27)
 
 ### Features

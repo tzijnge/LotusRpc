@@ -16,9 +16,13 @@ LotusRPC is an RPC framework for embedded systems. Here are the release notes.
 - Option to define an alias for complex return types ([#127](https://github.com/tzijnge/LotusRpc/issues/127))
 - Support 'etl::byte' and 'std::byte' as LotusRPC byte type. Support for definition file overlays ([#195](https://github.com/tzijnge/LotusRpc/issues/195))
 - Rename optional dependency to transport_serial. Better error message when it is not installed ([#204](https://github.com/tzijnge/LotusRpc/issues/204))
-- Added section `user_settings` to definition file for free-format user settings.
+- Added section `user_settings` to definition file for free-format user settings ([#229](https://github.com/tzijnge/LotusRpc/issues/229))
 
-  > ⚠ Breaking change: It is no longer allowed to add user settings to the top level of the definition file. They must be under `user_settings`. ([#229](https://github.com/tzijnge/LotusRpc/issues/229))
+⚠ **Breaking change**: It is no longer allowed to add user settings to the top level of the definition file. They must be under `user_settings`.
+{: .notice--warning}
+
+⚠ **Breaking change**: LotusRPC settings are not allowed at the definition top-level anymore. They should be moved to the new 'settings' section.
+{: .notice--warning}
 
 ### Bugfixes
 
@@ -28,6 +32,8 @@ LotusRPC is an RPC framework for embedded systems. Here are the release notes.
 
 - [#18](https://github.com/tzijnge/LotusRpc/issues/18), [#19](https://github.com/tzijnge/LotusRpc/issues/19), [#132](https://github.com/tzijnge/LotusRpc/issues/132), [#136](https://github.com/tzijnge/LotusRpc/issues/136), [#168](https://github.com/tzijnge/LotusRpc/issues/168), [#171](https://github.com/tzijnge/LotusRpc/issues/171), [#172](https://github.com/tzijnge/LotusRpc/issues/172), [#194](https://github.com/tzijnge/LotusRpc/issues/194), [#196](https://github.com/tzijnge/LotusRpc/issues/196), [#252](https://github.com/tzijnge/LotusRpc/issues/252), [#256](https://github.com/tzijnge/LotusRpc/issues/256), [#294](https://github.com/tzijnge/LotusRpc/issues/294)
 
+⚠ **Breaking change**: Function `LrpcClient.communicate` still exists but has different functionality. Migration guide: replace existing calls to `LrpcClient.communicate` with `LrpcClient.communicate_all` and existing calls to `LrpcClient.communicate_single` with `LrpcClient.communicate`
+{: .notice--warning}
 
 ## lotusrpc 0.10.0 (2026-02-27)
 

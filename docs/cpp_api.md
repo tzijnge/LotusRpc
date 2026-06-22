@@ -141,21 +141,28 @@ functions:
       - { name: message, type: string }
 ```
 
-Generated shim method:
+Generated shim class (the `using` declaration is scoped to the shim class):
 
 ``` cpp
-using Status = std::tuple<uint8_t, lrpc::string_view>;
-virtual Status get_status() = 0;
+class sensor_shim : public lrpc::Service
+{
+public:
+    using Status = std::tuple<uint8_t, lrpc::string_view>;
+    virtual Status get_status() = 0;
+    // ...
+};
 ```
 
 Implementation:
 
 ``` cpp
-Status get_status() override
+ex::sensor_shim::Status get_status() override
 {
     return {0, "OK"};
 }
 ```
+
+`returns_alias` names must be unique within a service, but the same name may be used in different services without conflict.
 
 ### Client stream
 

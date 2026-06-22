@@ -24,7 +24,10 @@ namespace testutils
     class InvalidHexString : public std::runtime_error
     {
     public:
-        InvalidHexString() : runtime_error("Invalid hex string") {}
+        InvalidHexString()
+            : runtime_error("Invalid hex string")
+        {
+        }
     };
 
 #ifdef _MSC_VER

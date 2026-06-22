@@ -88,7 +88,7 @@ namespace lrpc
     class ServiceForwarder : public Service
     {
     public:
-        uint8_t id() const override { return ServiceId; };
+        uint8_t id() const override { return ServiceId; }
         void invoke(Reader& reader) override { forwardToServer(reader.data()); }
 
         virtual void forwardToServer(etl::span<const char> data) = 0;

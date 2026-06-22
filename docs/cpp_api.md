@@ -252,6 +252,14 @@ void sensor_data_response(uint16_t value, bool final);
 
 Pass `final = true` with the last message to signal end of stream.
 
+### Service forwarding
+
+Sometimes not all RPC services are implemented on the same processor. For example, a device may have two processors for specific tasks but only a single communication interface to the outside world. In such a setup, LotusRPC supports service forwarding in order to implement different services on different processors.
+
+During code generation, `lrpcg` generates an abstract service shim class (`*_shim`) that must normally be implemented with the desired service functionality. An abstract service forwarder class (`*_forwarder`) is also generated. When a service forwarder is needed, this class must be implemented instead of the service shim. The implementation typically only has an interface to a secondary transport.
+
+Consider a device with a display, a motor controller and a USB connection to a client. A main processor in the device handles USB communication and drives the display. The motor control has very strict timing requirements and is therefore handled by a secondary processor, connected to the main processor by UART. Both the display and the motor control have settings that need to be controlled with LotusRPC over the USB connection. The LotusRPC definition file can simply define a `display` service and a `motor` service. The main processor implements the RPC server from the generated code and registers the `display` service to it. The display service does its work on the main processor when it is called from the client over USB. The `motor` service forwarder is also registered to the server on the main processor. This doesn't do anything except forward bytes between the UART connection to the secondary processor and the server on the main processor (that knows how to communicate over USB). On the secondary processor the same generated server code runs, but with a UART transport layer. Only the `motor` service is registered to the server as the `display` service is not handled here.
+
 ## Type mapping
 
 The table below shows how LotusRPC definition types map to C++ types in function parameters and return values.

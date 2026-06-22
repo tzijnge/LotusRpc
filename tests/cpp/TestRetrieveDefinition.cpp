@@ -7,7 +7,6 @@
 #include "TestUtils.hpp"
 #include "generated/RetrieveDefinition/RetrieveDefinition.hpp"
 
-// NOLINTNEXTLINE(misc-use-anonymous-namespace)
 class MockRetrieveDefinitionS0 : public test_rd::srv0_shim
 {
 public:

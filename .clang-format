@@ -9,6 +9,8 @@ TabWidth: 4
 ContinuationIndentWidth: 4
 
 BreakBeforeBraces: Allman
+BreakConstructorInitializers: BeforeComma
+PackConstructorInitializers: Never
 
 NamespaceIndentation: All
 CompactNamespaces: false

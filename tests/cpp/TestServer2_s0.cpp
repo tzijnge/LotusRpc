@@ -6,7 +6,6 @@
 #include "TestUtils.hpp"
 #include "generated/Server2/Server2.hpp"
 
-// NOLINTNEXTLINE(misc-use-anonymous-namespace)
 class MockServer2S00 : public srv0_shim
 {
 public:

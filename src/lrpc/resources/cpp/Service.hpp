@@ -26,6 +26,8 @@ namespace lrpc
         virtual void error(const LrpcMetaError type, const uint8_t p1 = 0, const uint8_t p2 = 0, const int32_t p3 = 0,
                            const lrpc::string_view& message = {}) = 0;
         // NOLINTEND(readability-avoid-const-params-in-decls)
+
+        virtual void lrpcTransmit(lrpc::span<const uint8_t> bytes) = 0;
     };
 
     class NullServer : public IServer
@@ -52,6 +54,11 @@ namespace lrpc
             // TODO: #206 Add LRPC_ASSERT
             // LRPC_ASSERT();
         }
+
+        void lrpcTransmit(lrpc::span<const uint8_t> /* bytes */) final
+        {
+            // intentionally not implemented
+        }
     };
 
     class Service
@@ -75,5 +82,16 @@ namespace lrpc
     private:
         NullServer nullServer;
         IServer* linkedServer{&nullServer};
+    };
+
+    template <uint8_t ServiceId>
+    class ServiceForwarder : public Service
+    {
+    public:
+        uint8_t id() const override { return ServiceId; };
+        void invoke(Reader& reader) override { forwardToServer(reader.data()); }
+
+        virtual void forwardToServer(etl::span<const char> data) = 0;
+        void forwardToClient(lrpc::span<const uint8_t> data) { server().lrpcTransmit(data); }
     };
 }

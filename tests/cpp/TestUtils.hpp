@@ -32,7 +32,7 @@ namespace testutils
 #pragma warning(disable : 4100)
 #endif
 
-    // NOLINTBEGIN(cppcoreguidelines-avoid-const-or-ref-data-members, misc-non-private-member-variables-in-classes)
+    // NOLINTBEGIN(cppcoreguidelines-avoid-const-or-ref-data-members)
     MATCHER_P(SPAN_EQ, ex, "Equality matcher for lrpc::span")
     {
         if (ex.size() != arg.size())
@@ -50,9 +50,9 @@ namespace testutils
         }
         return true;
     }
-    // NOLINTEND(cppcoreguidelines-avoid-const-or-ref-data-members, misc-non-private-member-variables-in-classes)
+    // NOLINTEND(cppcoreguidelines-avoid-const-or-ref-data-members)
 
-    // NOLINTBEGIN(cppcoreguidelines-avoid-const-or-ref-data-members, misc-non-private-member-variables-in-classes)
+    // NOLINTBEGIN(cppcoreguidelines-avoid-const-or-ref-data-members)
     MATCHER_P(OPT_SPAN_EQ, ex, "Equality matcher for lrpc::optional of lrpc::span")
     {
         if (ex.has_value() != arg.has_value())
@@ -80,7 +80,7 @@ namespace testutils
         }
         return true;
     }
-    // NOLINTEND(cppcoreguidelines-avoid-const-or-ref-data-members, misc-non-private-member-variables-in-classes)
+    // NOLINTEND(cppcoreguidelines-avoid-const-or-ref-data-members)
 
 #ifdef _MSC_VER
 #pragma warning(pop)
@@ -148,9 +148,7 @@ namespace testutils
 
         std::string response() const { return testutils::bytesToHex(responseBuffer); }
 
-        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         std::vector<uint8_t> responseBuffer;
-        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         Service service;
 
     protected:

@@ -141,7 +141,8 @@ add_executable(UnitTests
                 TestServer4.cpp                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server4/Server4.hpp
                 TestServer5.cpp                 ${CMAKE_CURRENT_SOURCE_DIR}/generated/Server5/Server5.hpp
                 TestRetrieveDefinition.cpp      ${CMAKE_CURRENT_SOURCE_DIR}/generated/RetrieveDefinition/RetrieveDefinition.hpp
-                TestServerErrors.cpp)
+                TestServerErrors.cpp
+                TestForwarder.cpp)
 
 target_link_libraries(
   UnitTests

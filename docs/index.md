@@ -46,6 +46,7 @@ Define your interface once in YAML. LotusRPC generates all serialization, framin
 - **Code generation** — `lrpcg` produces all C++ server code in one command
 - **CLI client** — `lrpcc` lets any team member call remote functions without writing code
 - **Streams** — client-to-server and server-to-client data streams, finite or infinite
+- **Service forwarding** — transparently route a service to a secondary processor over any transport
 - **C++11 compatible** — works on any platform with a modern C++ compiler
 
 ## Quick example

@@ -258,7 +258,41 @@ Sometimes not all RPC services are implemented on the same processor. For exampl
 
 During code generation, `lrpcg` generates an abstract service shim class (`*_shim`) that must normally be implemented with the desired service functionality. An abstract service forwarder class (`*_forwarder`) is also generated. When a service forwarder is needed, this class must be implemented instead of the service shim. The implementation typically only has an interface to a secondary transport.
 
+Override `forwardToServer` to send bytes to the secondary server. Call `forwardToClient` from the transport layer when the secondary server sends a response back. Three overloads are available, matching the `lrpcReceive` interface on the server:
+
+``` cpp
+void forwardToClient(uint8_t byte);                    // single byte
+void forwardToClient(lrpc::span<const uint8_t> bytes); // span of bytes
+template <typename TContainer>
+void forwardToClient(const TContainer& bytes);         // container of bytes
+```
+
+``` cpp
+class MotorForwarder : public ex::motor_forwarder
+{
+    void forwardToServer(etl::span<const char> bytes) override
+    {
+        uart_transmit(bytes.data(), bytes.size());
+    }
+};
+
+// In the UART receive handler (byte by byte):
+void on_uart_receive(uint8_t byte)
+{
+    motorForwarder.forwardToClient(byte);
+}
+```
+
 Consider a device with a display, a motor controller and a USB connection to a client. A main processor in the device handles USB communication and drives the display. The motor control has very strict timing requirements and is therefore handled by a secondary processor, connected to the main processor by UART. Both the display and the motor control have settings that need to be controlled with LotusRPC over the USB connection. The LotusRPC definition file can simply define a `display` service and a `motor` service. The main processor implements the RPC server from the generated code and registers the `display` service to it. The display service does its work on the main processor when it is called from the client over USB. The `motor` service forwarder is also registered to the server on the main processor. This doesn't do anything except forward bytes between the UART connection to the secondary processor and the server on the main processor (that knows how to communicate over USB). On the secondary processor the same generated server code runs, but with a UART transport layer. Only the `motor` service is registered to the server as the `display` service is not handled here.
+
+``` mermaid
+graph LR
+    Client -->|USB| MainServer[Main\nServer]
+    MainServer --> DisplayService[Display\nService]
+    MainServer --> MotorForwarder[Motor\nForwarder]
+    MotorForwarder <-->|UART| SecondaryServer[Secondary\nServer]
+    SecondaryServer --> MotorService[Motor\nService]
+```
 
 ## Type mapping
 

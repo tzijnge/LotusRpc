@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <utility>
 
 #include <etl/byte_stream.h>
 #include <etl/delegate.h>
@@ -92,6 +93,15 @@ namespace lrpc
         void invoke(Reader& reader) override { forwardToServer(reader.data()); }
 
         virtual void forwardToServer(etl::span<const char> data) = 0;
+
+        void forwardToClient(const uint8_t byte) { server().lrpcTransmit(lrpc::span<const uint8_t>(&byte, 1)); }
         void forwardToClient(lrpc::span<const uint8_t> data) { server().lrpcTransmit(data); }
+
+        template <typename TContainer,
+                  typename = decltype(std::declval<TContainer>().data(), std::declval<TContainer>().size(), void())>
+        void forwardToClient(const TContainer& data)
+        {
+            forwardToClient(lrpc::span<const uint8_t>(data.data(), data.size()));
+        }
     };
 }

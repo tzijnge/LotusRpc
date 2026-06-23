@@ -11,7 +11,10 @@ class TestServer : public srv3::Server3
 {
 public:
     // NOLINTNEXTLINE(misc-include-cleaner)
-    void lrpcTransmit(lrpc::span<const uint8_t> bytes) override { capturedBytes.assign(bytes.begin(), bytes.end()); }
+    void lrpcTransmit(const lrpc::span<const uint8_t> bytes) override
+    {
+        capturedBytes.assign(bytes.begin(), bytes.end());
+    }
 
     std::vector<uint8_t> capturedBytes;
 };
@@ -19,7 +22,10 @@ public:
 class Forwarder : public srv3::srv0_forwarder
 {
 public:
-    void forwardToServer(lrpc::span<const uint8_t> data) override { capturedBytes.assign(data.begin(), data.end()); }
+    void forwardToServer(const lrpc::span<const uint8_t> data) override
+    {
+        capturedBytes.assign(data.begin(), data.end());
+    }
 
     std::vector<uint8_t> capturedBytes;
 };

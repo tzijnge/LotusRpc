@@ -17,7 +17,7 @@ public:
 class Forwarder : public srv3::srv0_forwarder
 {
 public:
-    void forwardToServer(lrpc::span<const char> data) override { capturedBytes.assign(data.begin(), data.end()); }
+    void forwardToServer(lrpc::span<const uint8_t> data) override { capturedBytes.assign(data.begin(), data.end()); }
 
     std::vector<uint8_t> capturedBytes;
 };
@@ -48,7 +48,22 @@ TEST_F(TestForwarder, forwardCompleteMessage)
     EXPECT_EQ(forwarder.capturedBytes, (std::vector<uint8_t>{0x03, 0x00, 0x00, 0xBB}));
 }
 
-TEST_F(TestForwarder, forwardToClientThroughForwarder)
+TEST_F(TestForwarder, forwardToClientSingleByte)
+{
+    forwarder.forwardToClient(uint8_t{0xAA});
+
+    EXPECT_EQ(server.capturedBytes, (std::vector<uint8_t>{0xAA}));
+}
+
+TEST_F(TestForwarder, forwardToClientSpan)
+{
+    const lrpc::array<uint8_t, 4> data{0xAA, 0xBB, 0xCC, 0xDD};
+    forwarder.forwardToClient(lrpc::span<const uint8_t>{data});
+
+    EXPECT_EQ(server.capturedBytes, (std::vector<uint8_t>{0xAA, 0xBB, 0xCC, 0xDD}));
+}
+
+TEST_F(TestForwarder, forwardToClientContainer)
 {
     const auto data = std::vector<uint8_t>{0xAA, 0xBB, 0xCC, 0xDD};
     forwarder.forwardToClient(data);

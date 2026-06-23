@@ -92,8 +92,8 @@ namespace lrpc
         uint8_t id() const override { return ServiceId; }
         void invoke(Reader& reader) override
         {
-            const auto d = reader.data().reinterpret_as<const uint8_t>();
-            forwardToServer({d.data(), d.size()});
+            const auto data = reader.data().reinterpret_as<const uint8_t>();
+            forwardToServer({data.data(), data.size()});
         }
 
         virtual void forwardToServer(lrpc::span<const uint8_t> data) = 0;

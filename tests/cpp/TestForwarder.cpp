@@ -5,10 +5,12 @@
 
 #include "TestUtils.hpp"
 #include "generated/Server3/Server3.hpp"
+#include "generated/core/lrpccore/LrpcTypes.hpp"
 
 class TestServer : public srv3::Server3
 {
 public:
+    // NOLINTNEXTLINE(misc-include-cleaner)
     void lrpcTransmit(lrpc::span<const uint8_t> bytes) override { capturedBytes.assign(bytes.begin(), bytes.end()); }
 
     std::vector<uint8_t> capturedBytes;
@@ -57,6 +59,7 @@ TEST_F(TestForwarder, forwardToClientSingleByte)
 
 TEST_F(TestForwarder, forwardToClientSpan)
 {
+    // NOLINTNEXTLINE(misc-include-cleaner)
     const lrpc::array<uint8_t, 4> data{0xAA, 0xBB, 0xCC, 0xDD};
     forwarder.forwardToClient(lrpc::span<const uint8_t>{data});
 

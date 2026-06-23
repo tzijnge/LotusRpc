@@ -1,4 +1,4 @@
 InheritParentConfig: true
 Checks: >-
-  -misc-use-anonymous-namespace
+  -misc-use-anonymous-namespace,
   -misc-non-private-member-variables-in-classes

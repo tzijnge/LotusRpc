@@ -90,9 +90,13 @@ namespace lrpc
     {
     public:
         uint8_t id() const override { return ServiceId; }
-        void invoke(Reader& reader) override { forwardToServer(reader.data()); }
+        void invoke(Reader& reader) override
+        {
+            const auto d = reader.data().reinterpret_as<const uint8_t>();
+            forwardToServer({d.data(), d.size()});
+        }
 
-        virtual void forwardToServer(etl::span<const char> data) = 0;
+        virtual void forwardToServer(lrpc::span<const uint8_t> data) = 0;
 
         void forwardToClient(const uint8_t byte) { server().lrpcTransmit(lrpc::span<const uint8_t>(&byte, 1)); }
         void forwardToClient(lrpc::span<const uint8_t> data) { server().lrpcTransmit(data); }

@@ -258,9 +258,13 @@ Sometimes not all RPC services are implemented on the same processor. For exampl
 
 During code generation, `lrpcg` generates an abstract service shim class (`*_shim`) that must normally be implemented with the desired service functionality. An abstract service forwarder class (`*_forwarder`) is also generated. When a service forwarder is needed, this class must be implemented instead of the service shim. The implementation typically only has an interface to a secondary transport.
 
-Override `forwardToServer` to send bytes to the secondary server. Call `forwardToClient` from the transport layer when the secondary server sends a response back. Three overloads are available, matching the `lrpcReceive` interface on the server:
+Override `forwardToServer` to send bytes to the secondary server. Call `forwardToClient` from the transport layer when the secondary server sends a response back. Three overloads of `forwardToClient` are available, matching the `lrpcReceive` interface on the server:
 
 ``` cpp
+// Override this — called when the primary server receives a message for this service
+virtual void forwardToServer(lrpc::span<const uint8_t> bytes) = 0;
+
+// Call these from the transport layer when the secondary server sends a response
 void forwardToClient(uint8_t byte);                    // single byte
 void forwardToClient(lrpc::span<const uint8_t> bytes); // span of bytes
 template <typename TContainer>
@@ -270,7 +274,7 @@ void forwardToClient(const TContainer& bytes);         // container of bytes
 ``` cpp
 class MotorForwarder : public ex::motor_forwarder
 {
-    void forwardToServer(etl::span<const char> bytes) override
+    void forwardToServer(lrpc::span<const uint8_t> bytes) override
     {
         uart_transmit(bytes.data(), bytes.size());
     }

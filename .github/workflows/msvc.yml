@@ -34,7 +34,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 #v6.2.0
         with:
           python-version: "3.10"
 
@@ -54,7 +54,7 @@ jobs:
         run: cmake --build ${{ env.build }} --config ${{env.BUILD_TYPE}}
 
       - name: Initialize MSVC Code Analysis
-        uses: microsoft/msvc-code-analysis-action@v0.1.1
+        uses: microsoft/msvc-code-analysis-action@24c285ab36952c9e9182f4b78dfafbac38a7e5ee # v0.1.1
         # Provide a unique ID to access the sarif output path
         id: run-analysis
         with:

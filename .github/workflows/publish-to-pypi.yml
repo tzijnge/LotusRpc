@@ -47,7 +47,7 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
-          persist-credentials: true
+          persist-credentials: false
           fetch-depth: 0
           ref: main
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
@@ -66,9 +66,12 @@ jobs:
           name: release-notes
           path: CHANGES.md
       - name: Push release notes
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY"
           git add CHANGES.md changes/
           git diff --staged --quiet || git commit -m "Release notes"
           git push origin main

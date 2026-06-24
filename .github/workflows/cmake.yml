@@ -92,20 +92,20 @@ jobs:
           CXX_COMPILER: ${{ matrix.config.cpp_compiler }}
         run: |
           cmake -B cmake_build \
-          -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-          -DCMAKE_C_COMPILER=$C_COMPILER \
-          -DCMAKE_CXX_COMPILER=$CXX_COMPILER \
-          -DCMAKE_CXX_STANDARD=$CXX_STANDARD \
+          -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
+          -DCMAKE_C_COMPILER="$C_COMPILER" \
+          -DCMAKE_CXX_COMPILER="$CXX_COMPILER" \
+          -DCMAKE_CXX_STANDARD="$CXX_STANDARD" \
           -G Ninja
 
       - name: Build unit tests
         shell: bash
-        run: cmake --build cmake_build --config $BUILD_TYPE --parallel
+        run: cmake --build cmake_build --config "$BUILD_TYPE" --parallel
 
       - name: C++ unit tests
         shell: bash
         working-directory: cmake_build
-        run: ctest -C $BUILD_TYPE --output-on-failure
+        run: ctest -C "$BUILD_TYPE" --output-on-failure
 
   quality_analysis:
     name: Quality analysis
@@ -145,26 +145,26 @@ jobs:
 
       - name: Install ARM GCC
         working-directory: scripts
-        run: python install_arm_gcc.py --destination $RUNNER_TEMP/lrpc-tools/arm-gcc
+        run: python install_arm_gcc.py --destination "$RUNNER_TEMP/lrpc-tools/arm-gcc"
 
       - name: Build examples
         run: |
           set -e
           cmake \
-          -DTOOLCHAIN_PATH=$RUNNER_TEMP/lrpc-tools/arm-gcc/bin/ \
-          -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
-          -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/examples/stm32_nucleo_l496/cmake/gcc-arm-none-eabi.cmake \
-          -S $GITHUB_WORKSPACE/examples/stm32_nucleo_l496 \
-          -B $GITHUB_WORKSPACE/examples/stm32_nucleo_l496/build/Release \
+          -DTOOLCHAIN_PATH="$RUNNER_TEMP/lrpc-tools/arm-gcc/bin/" \
+          -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
+          -DCMAKE_TOOLCHAIN_FILE="$GITHUB_WORKSPACE/examples/stm32_nucleo_l496/cmake/gcc-arm-none-eabi.cmake" \
+          -S "$GITHUB_WORKSPACE/examples/stm32_nucleo_l496" \
+          -B "$GITHUB_WORKSPACE/examples/stm32_nucleo_l496/build/Release" \
           -G Ninja
           cmake \
-          --build $GITHUB_WORKSPACE/examples/stm32_nucleo_l496/build/Release \
+          --build "$GITHUB_WORKSPACE/examples/stm32_nucleo_l496/build/Release" \
           --parallel 10
 
       - name: Configure unit tests
         run: >
-          cmake -B $GITHUB_WORKSPACE/cmake_build
-          -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+          cmake -B "$GITHUB_WORKSPACE/cmake_build"
+          -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
           -DCMAKE_C_COMPILER=clang-19
           -DCMAKE_CXX_COMPILER=clang++-19
           -DCMAKE_CXX_STANDARD=11
@@ -173,13 +173,13 @@ jobs:
 
       - name: Build unit tests with SQ and Clang-tidy
         run: >
-          build-wrapper-linux-x86-64 --out-dir $BUILD_WRAPPER_OUT_DIR cmake --build
-          $GITHUB_WORKSPACE/cmake_build --config $BUILD_TYPE --parallel
+          build-wrapper-linux-x86-64 --out-dir "$BUILD_WRAPPER_OUT_DIR" cmake --build
+          "$GITHUB_WORKSPACE/cmake_build" --config "$BUILD_TYPE" --parallel
 
       - name: Run C++ unit tests
         working-directory: ${{github.workspace}}/cmake_build
         run: >
-          ctest -C $BUILD_TYPE --output-junit ../testresults/cpptestresults.xml --output-on-failure
+          ctest -C "$BUILD_TYPE" --output-junit ../testresults/cpptestresults.xml --output-on-failure
 
       - name: Python unit tests
         run: pytest -v --junitxml=testresults/pytestresults.xml

@@ -31,7 +31,7 @@ jobs:
           fail_level: any
           changed_files: false
       - name: MyPy
-        uses: tsuyoshicho/action-mypy@v5
+        uses: tsuyoshicho/action-mypy@c3615998c006f1dee3b5c6f7ec99edace2575687 # v5.1.2
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review
@@ -46,13 +46,13 @@ jobs:
           glob_pattern: src
           fail_on_error: true
       - name: yamllint
-        uses: reviewdog/action-yamllint@v1.21.0
+        uses: reviewdog/action-yamllint@b5f7217d8c815ae374d1d55840d5e569d82f01f0 # v1.22.0
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review
           fail_level: any
       - name: markdownlint
-        uses: reviewdog/action-markdownlint@v0.26.2
+        uses: reviewdog/action-markdownlint@844fd04b127b0d78328653f182d32988ad41d3d7 # v0.27.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
@@ -73,7 +73,7 @@ jobs:
           fail_level: any
           exclude: cmake_build
       - name: github-actions-lint
-        uses: ne-sachirou/lint-gha-reviewdog@v0.0.6
+        uses: ne-sachirou/lint-gha-reviewdog@21e9e3be880468f3fceff09b97e02094eb000a43 # v0.0.6
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review

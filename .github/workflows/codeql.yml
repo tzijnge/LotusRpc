@@ -13,6 +13,7 @@ jobs:
   analyze:
     name: Analyze (c-cpp)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     permissions:
       security-events: write
@@ -27,7 +28,7 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
         with:
-          languages: c-cpp
+          languages: c-cpp, python, actions
           build-mode: manual
 
       - name: Set up Python

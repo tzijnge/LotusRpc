@@ -6,6 +6,7 @@ jobs:
   build:
     name: Build LotusRPC 🌼 distribution 📦
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -32,6 +33,7 @@ jobs:
     needs:
       - build
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: write
     steps:
@@ -69,6 +71,7 @@ jobs:
       - build
       - release-notes
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     environment:
       name: pypi
       url: https://pypi.org/p/lotusrpc
@@ -90,6 +93,7 @@ jobs:
       - publish-to-pypi
       - release-notes
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     permissions:
       contents: write # IMPORTANT: mandatory for making GitHub Releases
@@ -131,6 +135,7 @@ jobs:
     needs:
       - build
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     environment:
       name: testpypi

@@ -13,6 +13,7 @@ env:
 jobs:
   python_unit_tests:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     permissions:
       contents: read
     strategy:
@@ -43,6 +44,7 @@ jobs:
 
   cpp_unit_tests:
     runs-on: ${{ matrix.config.os }}
+    timeout-minutes: 30
     permissions:
       contents: read
     strategy:
@@ -93,6 +95,7 @@ jobs:
 
   quality_analysis:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     env:
       BUILD_WRAPPER_OUT_DIR: bw_out
 

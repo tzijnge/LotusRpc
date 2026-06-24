@@ -88,5 +88,5 @@ jobs:
         uses: ne-sachirou/lint-gha-reviewdog@21e9e3be880468f3fceff09b97e02094eb000a43 # v0.0.6
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
+          reporter: github-pr-check
           fail_on_error: true

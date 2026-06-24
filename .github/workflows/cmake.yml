@@ -10,8 +10,15 @@ on:
 env:
   BUILD_TYPE: Debug
 
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   python_unit_tests:
+    name: Python unit tests (${{ matrix.os }}, Python ${{ matrix.python-version }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     permissions:
@@ -43,6 +50,7 @@ jobs:
         run: pytest -v
 
   cpp_unit_tests:
+    name: C++ unit tests (${{ matrix.config.c_compiler }}, C++${{ matrix.cxx_standard }})
     runs-on: ${{ matrix.config.os }}
     timeout-minutes: 30
     permissions:
@@ -78,22 +86,29 @@ jobs:
 
       - name: Configure unit tests
         shell: bash
+        env:
+          CXX_STANDARD: ${{ matrix.cxx_standard }}
+          C_COMPILER: ${{ matrix.config.c_compiler }}
+          CXX_COMPILER: ${{ matrix.config.cpp_compiler }}
         run: |
           cmake -B cmake_build \
-          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
-          -DCMAKE_C_COMPILER=${{ matrix.config.c_compiler }} \
-          -DCMAKE_CXX_COMPILER=${{ matrix.config.cpp_compiler }} \
-          -DCMAKE_CXX_STANDARD=${{ matrix.cxx_standard }} \
+          -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+          -DCMAKE_C_COMPILER=$C_COMPILER \
+          -DCMAKE_CXX_COMPILER=$CXX_COMPILER \
+          -DCMAKE_CXX_STANDARD=$CXX_STANDARD \
           -G Ninja
 
       - name: Build unit tests
-        run: cmake --build cmake_build --config ${{env.BUILD_TYPE}} --parallel
+        shell: bash
+        run: cmake --build cmake_build --config $BUILD_TYPE --parallel
 
       - name: C++ unit tests
+        shell: bash
         working-directory: cmake_build
-        run: ctest -C ${{env.BUILD_TYPE}} --output-on-failure
+        run: ctest -C $BUILD_TYPE --output-on-failure
 
   quality_analysis:
+    name: Quality analysis
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
@@ -101,8 +116,8 @@ jobs:
 
     permissions:
       contents: read
-      checks: write
-      pull-requests: write
+      checks: write # for EnricoMi/publish-unit-test-result-action
+      pull-requests: write # for EnricoMi/publish-unit-test-result-action
 
     steps:
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
@@ -113,6 +128,7 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: SonarQube Install
         uses: SonarSource/sonarqube-scan-action/install-build-wrapper@7006c4492b2e0ee0f816d36501671557c97f5995
@@ -129,26 +145,26 @@ jobs:
 
       - name: Install ARM GCC
         working-directory: scripts
-        run: python install_arm_gcc.py --destination ${{runner.temp}}/lrpc-tools/arm-gcc
+        run: python install_arm_gcc.py --destination $RUNNER_TEMP/lrpc-tools/arm-gcc
 
       - name: Build examples
         run: |
           set -e
           cmake \
-          -DTOOLCHAIN_PATH=${{runner.temp}}/lrpc-tools/arm-gcc/bin/ \
-          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
-          -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/examples/stm32_nucleo_l496/cmake/gcc-arm-none-eabi.cmake \
-          -S ${{github.workspace}}/examples/stm32_nucleo_l496 \
-          -B ${{github.workspace}}/examples/stm32_nucleo_l496/build/Release \
+          -DTOOLCHAIN_PATH=$RUNNER_TEMP/lrpc-tools/arm-gcc/bin/ \
+          -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
+          -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/examples/stm32_nucleo_l496/cmake/gcc-arm-none-eabi.cmake \
+          -S $GITHUB_WORKSPACE/examples/stm32_nucleo_l496 \
+          -B $GITHUB_WORKSPACE/examples/stm32_nucleo_l496/build/Release \
           -G Ninja
           cmake \
-          --build ${{github.workspace}}/examples/stm32_nucleo_l496/build/Release \
+          --build $GITHUB_WORKSPACE/examples/stm32_nucleo_l496/build/Release \
           --parallel 10
 
       - name: Configure unit tests
         run: >
-          cmake -B ${{github.workspace}}/cmake_build
-          -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+          cmake -B $GITHUB_WORKSPACE/cmake_build
+          -DCMAKE_BUILD_TYPE=$BUILD_TYPE
           -DCMAKE_C_COMPILER=clang-19
           -DCMAKE_CXX_COMPILER=clang++-19
           -DCMAKE_CXX_STANDARD=11
@@ -157,13 +173,13 @@ jobs:
 
       - name: Build unit tests with SQ and Clang-tidy
         run: >
-          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build
-          ${{github.workspace}}/cmake_build --config ${{env.BUILD_TYPE}} --parallel
+          build-wrapper-linux-x86-64 --out-dir $BUILD_WRAPPER_OUT_DIR cmake --build
+          $GITHUB_WORKSPACE/cmake_build --config $BUILD_TYPE --parallel
 
       - name: Run C++ unit tests
         working-directory: ${{github.workspace}}/cmake_build
         run: >
-          ctest -C ${{env.BUILD_TYPE}} --output-junit ../testresults/cpptestresults.xml --output-on-failure
+          ctest -C $BUILD_TYPE --output-junit ../testresults/cpptestresults.xml --output-on-failure
 
       - name: Python unit tests
         run: pytest -v --junitxml=testresults/pytestresults.xml

@@ -9,6 +9,12 @@ on:
   schedule:
     - cron: "23 4 * * 3"
 
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'schedule' }}
+
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
@@ -16,7 +22,7 @@ jobs:
     timeout-minutes: 30
 
     permissions:
-      security-events: write
+      security-events: write # for uploading CodeQL SARIF results
       contents: read
 
     strategy:

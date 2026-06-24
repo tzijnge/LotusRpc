@@ -16,6 +16,10 @@ on: # yamllint disable-line rule:truthy
   schedule:
     - cron: "32 21 * * 0"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'schedule' }}
+
 env:
   # Path to the CMake build directory.
   build: "${{ github.workspace }}/build"
@@ -41,6 +45,8 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
 
       - name: Install Python requirements
         run: |
@@ -48,11 +54,15 @@ jobs:
           pip install -r requirements/dev.txt
 
       - name: Configure CMake
-        run: cmake -B ${{ env.build }}
+        env:
+          BUILD_DIR: ${{ env.build }}
+        run: cmake -B "$env:BUILD_DIR"
 
       # Build is not required unless generated source files are used
       - name: Build CMake
-        run: cmake --build ${{ env.build }} --config ${{env.BUILD_TYPE}}
+        env:
+          BUILD_DIR: ${{ env.build }}
+        run: cmake --build "$env:BUILD_DIR" --config "$env:BUILD_TYPE"
 
       - name: Initialize MSVC Code Analysis
         uses: microsoft/msvc-code-analysis-action@24c285ab36952c9e9182f4b78dfafbac38a7e5ee # v0.1.1
@@ -68,6 +78,6 @@ jobs:
 
       # Upload SARIF file to GitHub Code Scanning Alerts
       - name: Upload SARIF to GitHub
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
         with:
           sarif_file: ${{ steps.run-analysis.outputs.sarif }}

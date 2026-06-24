@@ -2,11 +2,19 @@ name: Publish LotusRPC 🌼 to PyPI and TestPyPI
 
 on: push # yamllint disable-line rule:truthy
 
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build:
     name: Build LotusRPC 🌼 distribution 📦
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    permissions:
+      contents: read
 
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -35,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
-      contents: write
+      contents: write # for committing release notes to main
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
@@ -58,11 +66,12 @@ jobs:
           name: release-notes
           path: CHANGES.md
       - name: Push release notes
-        uses: stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9 # v7.1.0
-        with:
-          commit_message: Release notes
-          branch: main
-          file_pattern: "CHANGES.md changes/*"
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CHANGES.md changes/
+          git diff --staged --quiet || git commit -m "Release notes"
+          git push origin main
 
   publish-to-pypi:
     name: Publish LotusRPC 🌼 to PyPI
@@ -85,7 +94,7 @@ jobs:
           name: python-package-distributions
           path: dist/
       - name: Publish distribution 📦 to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+        uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # v1.14.0
 
   github-release:
     name: Sign LotusRPC 🌼 with Sigstore and upload them to GitHub Release
@@ -151,7 +160,7 @@ jobs:
           name: python-package-distributions
           path: dist/
       - name: Publish distribution 📦 to TestPyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+        uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # v1.14.0
         with:
           verbose: true
           repository-url: https://test.pypi.org/legacy/

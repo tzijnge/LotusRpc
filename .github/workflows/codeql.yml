@@ -11,13 +11,24 @@ on:
 
 jobs:
   analyze:
-    name: Analyze (c-cpp)
+    name: Analyze (${{ matrix.language }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
     permissions:
       security-events: write
       contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: c-cpp
+            build-mode: manual
+          - language: python
+            build-mode: none
+          - language: actions
+            build-mode: none
 
     steps:
       - name: Checkout
@@ -28,18 +39,21 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
         with:
-          languages: c-cpp, python, actions
-          build-mode: manual
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
 
       - name: Set up Python
+        if: matrix.language == 'c-cpp'
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
         with:
           python-version: "3.14"
 
       - name: Install LRPC Python package
+        if: matrix.language == 'c-cpp'
         run: pip install .
 
       - name: Configure
+        if: matrix.language == 'c-cpp'
         run: |
           cmake -B cmake_build \
             -DCMAKE_BUILD_TYPE=Debug \
@@ -49,9 +63,10 @@ jobs:
             -G Ninja
 
       - name: Build
+        if: matrix.language == 'c-cpp'
         run: cmake --build cmake_build --config Debug --parallel
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
         with:
-          category: "/language:c-cpp"
+          category: "/language:${{ matrix.language }}"

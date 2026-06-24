@@ -3,6 +3,7 @@ on: [pull_request] # yamllint disable-line rule:truthy
 permissions:
   contents: read
   pull-requests: write
+  checks: write
 jobs:
   Reviewdog:
     name: Reviewdog
@@ -80,5 +81,5 @@ jobs:
         uses: ne-sachirou/lint-gha-reviewdog@21e9e3be880468f3fceff09b97e02094eb000a43 # v0.0.6
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-review
-          fail_on_error: false
+          reporter: github-check
+          fail_on_error: true

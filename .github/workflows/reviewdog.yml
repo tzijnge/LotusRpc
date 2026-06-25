@@ -1,14 +1,26 @@
 name: Linting
 on: [pull_request] # yamllint disable-line rule:truthy
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   Reviewdog:
     name: Reviewdog
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write # for posting review comments
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Install requirements
         run: |
           pip install -r requirements/dev.txt
@@ -21,7 +33,7 @@ jobs:
           reporter: github-pr-review
           fail_level: any
           fail_on_error: true
-          config_file: .github/workflows/config/.linkspector.yml
+          config_file: .github/config/.linkspector.yml
       - name: Ruff
         uses: benny123tw/action-ruff@226d241bdf7205e6e048f1407d21bd69a64b7298
         with:
@@ -31,14 +43,14 @@ jobs:
           fail_level: any
           changed_files: false
       - name: MyPy
-        uses: tsuyoshicho/action-mypy@v5
+        uses: tsuyoshicho/action-mypy@c3615998c006f1dee3b5c6f7ec99edace2575687 # v5.1.2
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review
           level: error
           fail_on_error: true
       - name: PyLint
-        uses: dciborow/action-pylint@0.1.0
+        uses: dciborow/action-pylint@cf6c9bcd79e4aa70e2fbeaf6332d741eb1e0bff8 # v0.1.1
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review
@@ -46,20 +58,20 @@ jobs:
           glob_pattern: src
           fail_on_error: true
       - name: yamllint
-        uses: reviewdog/action-yamllint@v1.21.0
+        uses: reviewdog/action-yamllint@b5f7217d8c815ae374d1d55840d5e569d82f01f0 # v1.22.0
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review
           fail_level: any
       - name: markdownlint
-        uses: reviewdog/action-markdownlint@v0.26.2
+        uses: reviewdog/action-markdownlint@844fd04b127b0d78328653f182d32988ad41d3d7 # v0.27.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
           fail_level: any
           markdownlint_flags: ". -i external -i changes -i examples/stm32_nucleo_l496/**/License.md"
       - name: towncrier
-        uses: tzijnge/action-towncrier@0.9.3
+        uses: tzijnge/action-towncrier@c946b056364a654eb012caec5b547239abfba01d # v0.9.3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
@@ -72,3 +84,9 @@ jobs:
           reporter: github-pr-review
           fail_level: any
           exclude: cmake_build
+      - name: github-actions-lint
+        uses: ne-sachirou/lint-gha-reviewdog@21e9e3be880468f3fceff09b97e02094eb000a43 # v0.0.6
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          fail_on_error: true

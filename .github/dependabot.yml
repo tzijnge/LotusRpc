@@ -13,6 +13,8 @@ updates:
           - version-update:semver-patch
     schedule:
       interval: monthly
+    cooldown:
+      default-days: 14
   - package-ecosystem: "github-actions"
     directory: "/" # Location of package manifests
     ignore:
@@ -21,3 +23,5 @@ updates:
           - version-update:semver-patch
     schedule:
       interval: "monthly"
+    cooldown:
+      default-days: 14

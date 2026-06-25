@@ -53,11 +53,11 @@ The following table shows the meaning of the error parameters for each error typ
 
 The `version` function takes no arguments and returns three fields that together identify the exact state of the server:
 
-| Field             | Type   | Content                                                                                                                                                                                                                    |
-|-------------------|--------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Field             | Type   | Content                                                                                                                                                                                                                          |
+|-------------------|--------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `definition`      | string | User-supplied version string from [`settings.version`](../reference/settings.md#version). Empty string if not set.                                                                                                               |
 | `definition_hash` | string | SHA3-256 of the rendered YAML definition file (UTF-8), as a 64-character hex string. Optionally truncated — see [`definition_hash_length`](../reference/settings.md#definition_hash_length). Empty string if length is set to 0. |
-| `lrpc`            | string | Version of the LotusRPC package used to run `lrpcg` when generating the server code.                                                                                                                                       |
+| `lrpc`            | string | Version of the LotusRPC package used to run `lrpcg` when generating the server code.                                                                                                                                             |
 
 `definition_hash` is the strongest signal: it changes whenever any part of the definition changes, regardless of whether the user set a `version` string. The hash is computed from the complete YAML as LotusRPC parses it, so whitespace-only edits that don't change the parsed content do not change the hash.
 

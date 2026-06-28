@@ -15,7 +15,6 @@ jobs:
     permissions:
       contents: read
       pull-requests: write # for posting review comments
-      checks: write # for languagetool github-pr-check reporter
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -95,7 +94,7 @@ jobs:
         uses: reviewdog/action-languagetool@ea19c757470ce0dbfcbc34aec090317cef1ff0b5 # v1.23.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: github-pr-check
+          reporter: github-pr-review
           level: info
           language: en-US
           patterns: "README.md CHANGES.md docs/**/*.md docs/**/*.txt changes/**/*.md changes/**/*.txt"

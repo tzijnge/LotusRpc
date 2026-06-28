@@ -2,7 +2,6 @@
 
 using ::testing::Return;
 
-// NOLINTNEXTLINE(misc-use-anonymous-namespace)
 class MockBytearray : public test_ba::bytearray_shim
 {
 public:

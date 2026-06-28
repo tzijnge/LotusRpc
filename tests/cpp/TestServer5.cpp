@@ -7,7 +7,6 @@
 #include "TestUtils.hpp"
 #include "generated/Server5/Server5.hpp"
 
-// NOLINTNEXTLINE(misc-use-anonymous-namespace)
 class MockServer5Srv0 : public srv5::srv0_shim
 {
 public:
@@ -15,7 +14,6 @@ public:
     MOCK_METHOD(void, client_finite, (bool, srv5::DoorState, bool), (override));
 };
 
-// NOLINTNEXTLINE(misc-use-anonymous-namespace)
 class MockServer5Srv1 : public srv5::srv1_shim
 {
 public:
@@ -25,7 +23,6 @@ public:
     MOCK_METHOD(void, server_finite_stop, (), (override));
 };
 
-// NOLINTNEXTLINE(misc-use-anonymous-namespace)
 class MockServer5Srv2 : public srv5::srv2_shim
 {
 public:
@@ -35,7 +32,6 @@ public:
     MOCK_METHOD(void, f0, (srv5::DoorState), (override));
 };
 
-// NOLINTNEXTLINE(misc-use-anonymous-namespace)
 class MockServer5Srv3 : public srv5::srv3_shim
 {
 public:

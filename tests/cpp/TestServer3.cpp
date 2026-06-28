@@ -9,21 +9,18 @@
 #include "TestUtils.hpp"
 #include "generated/Server3/Server3.hpp"
 
-// NOLINTNEXTLINE(misc-use-anonymous-namespace)
 class MockServer3S00 : public srv3::srv0_shim
 {
 public:
     uint8_t f0(const uint8_t p0) override { return p0; }
 };
 
-// NOLINTNEXTLINE(misc-use-anonymous-namespace)
 class MockServer3S01 : public srv3::srv1_shim
 {
 public:
     uint16_t f0(const uint16_t p0) override { return p0; }
 };
 
-// NOLINTNEXTLINE(misc-use-anonymous-namespace)
 // NOLINTNEXTLINE(misc-multiple-inheritance)
 class TestServer3 : public ::testing::Test, public srv3::Server3
 {
@@ -48,11 +45,8 @@ public:
         transmitted += stream.str();
     }
 
-    // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
     std::string transmitted;
-    // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
     MockServer3S00 service00;
-    // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
     MockServer3S01 service01;
 };
 

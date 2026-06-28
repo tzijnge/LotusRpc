@@ -76,7 +76,7 @@ This creates a set of header files in _generated/example/_. The most important o
 | `example.hpp`   | Top-level include — pulls in everything    |
 | `math_shim.hpp` | Abstract base class for the `math` service |
 
-**Tip:** Since code generation is a single shell command it integrates naturally into any build system. See [the CMake snippet below](#cmake-integration).
+☝ **Tip:** Since code generation is a single shell command it integrates naturally into any build system. See [the CMake snippet below](#cmake-integration).
 {: .notice--info}
 
 ## Implement the server (C++)

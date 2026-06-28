@@ -4,7 +4,6 @@
 struct MyStruct1
 {
     // Goal of this test is to verify that an additional member function is accepted by LotusRPC
-    // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
     double f1;
 
     // Additional static members and functions are ok in an external struct, but they are ignored by LRPC

@@ -26,8 +26,7 @@ jobs:
           pip install -r requirements/dev.txt
           pip install -r requirements/package.txt
       - name: Linkspector
-        # v1.5.3
-        uses: umbrelladocs/action-linkspector@15f97e56ba84c3f637f2b35035c159c871ae6bb3
+        uses: umbrelladocs/action-linkspector@15f97e56ba84c3f637f2b35035c159c871ae6bb3 # v1.5.3
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review
@@ -91,3 +90,13 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
           fail_on_error: true
+      - name: languagetool
+        uses: reviewdog/action-languagetool@ea19c757470ce0dbfcbc34aec090317cef1ff0b5 # v1.23.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          level: info
+          language: en-US
+          patterns: "README.md CHANGES.md docs/**/*.md docs/**/*.txt changes/**/*.md changes/**/*.txt"
+          disabled_rules: ""
+          disabled_categories: ""

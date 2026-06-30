@@ -213,6 +213,7 @@ jobs:
           files: "testresults/*.xml"
 
       - name: SonarQube Scan
+        if: ${{ github.triggering_actor != 'dependabot[bot]' }}
         uses: SonarSource/sonarqube-scan-action@713881670b6b3676cda39549040e2d88c70d582e
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

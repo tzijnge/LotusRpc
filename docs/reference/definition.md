@@ -47,7 +47,7 @@ Although [`functions`](#functions) and [`streams`](#streams) are both optional, 
 
 Every LotusRPC service has an identifier that is needed for proper transfer of information between two endpoints. If the service identifier is not specified, LotusRPC will generate one. When starting out with a fresh RPC, it's usually not necessary to specify service IDs. Later on it may be useful to explicitly specify a service ID for backwards compatibility.
 
-**Note:** The most efficient code is generated when service IDs are contiguous and start at 0. This is the default when no IDs are specified.
+📝 **Note:** The most efficient code is generated when service IDs are contiguous and start at 0. This is the default when no IDs are specified.
 {: .notice--info}
 
 The service ID is [encoded](../advanced/internals.md#uintx_t) in an 8-bit field and ID 255 is reserved for the [LotusRPC meta service](../advanced/meta.md). This means that a user service can have any ID in the range of 0 to 254.

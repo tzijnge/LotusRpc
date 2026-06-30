@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <utility>
 
 #include <etl/byte_stream.h>
 #include <etl/delegate.h>
@@ -26,6 +27,8 @@ namespace lrpc
         virtual void error(const LrpcMetaError type, const uint8_t p1 = 0, const uint8_t p2 = 0, const int32_t p3 = 0,
                            const lrpc::string_view& message = {}) = 0;
         // NOLINTEND(readability-avoid-const-params-in-decls)
+
+        virtual void lrpcTransmit(lrpc::span<const uint8_t> bytes) = 0;
     };
 
     class NullServer : public IServer
@@ -52,6 +55,11 @@ namespace lrpc
             // TODO: #206 Add LRPC_ASSERT
             // LRPC_ASSERT();
         }
+
+        void lrpcTransmit(lrpc::span<const uint8_t> /* bytes */) final
+        {
+            // intentionally not implemented
+        }
     };
 
     class Service
@@ -75,5 +83,29 @@ namespace lrpc
     private:
         NullServer nullServer;
         IServer* linkedServer{&nullServer};
+    };
+
+    template <uint8_t ServiceId>
+    class ServiceForwarder : public Service
+    {
+    public:
+        uint8_t id() const override { return ServiceId; }
+        void invoke(Reader& reader) override
+        {
+            const auto data = reader.data().reinterpret_as<const uint8_t>();
+            forwardToServer({data.data(), data.size()});
+        }
+
+        virtual void forwardToServer(lrpc::span<const uint8_t> data) = 0;
+
+        void forwardToClient(const uint8_t byte) { server().lrpcTransmit(lrpc::span<const uint8_t>(&byte, 1)); }
+        void forwardToClient(lrpc::span<const uint8_t> data) { server().lrpcTransmit(data); }
+
+        template <typename TContainer,
+                  typename = decltype(std::declval<TContainer>().data(), std::declval<TContainer>().size(), void())>
+        void forwardToClient(const TContainer& data)
+        {
+            forwardToClient(lrpc::span<const uint8_t>(data.data(), data.size()));
+        }
     };
 }

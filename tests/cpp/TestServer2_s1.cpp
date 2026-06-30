@@ -8,7 +8,6 @@
 
 using ::testing::Return;
 
-// NOLINTNEXTLINE(misc-use-anonymous-namespace)
 class MockServer2S01 : public srv1_shim
 {
 public:

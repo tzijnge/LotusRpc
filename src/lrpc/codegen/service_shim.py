@@ -33,7 +33,8 @@ class ServiceShimVisitor(LrpcVisitor):
         optionally_in_namespace(self._file, self._write_aliases_and_service_shim, self._namespace)
 
     def _write_aliases_and_service_shim(self) -> None:
-        self._write_aliases()
+        self._write_service_id()
+        self._write_forwarder_alias()
         self._write_service_shim()
 
     def _write_service_shim(self) -> None:
@@ -41,11 +42,12 @@ class ServiceShimVisitor(LrpcVisitor):
         client_streams = [s for s in self._service.streams() if s.origin() == LrpcStream.Origin.CLIENT]
         server_streams = [s for s in self._service.streams() if s.origin() == LrpcStream.Origin.SERVER]
 
-        with self._file.block(f"class {self._class_name()} : public lrpc::Service", ";"):
+        with self._file.block(f"class {self._shim_name()} : public lrpc::Service", ";"):
             self._file.label("public")
-            self._file(f"~{self._class_name()}() override = default;")
+            self._write_return_type_aliases(functions)
+            self._file(f"~{self._shim_name()}() override = default;")
             self._file.newline()
-            self._file(f"uint8_t id() const override {{ return {self._service_id()}; }}")
+            self._file(f"uint8_t id() const override {{ return {self._id_name()}; }}")
             self._file.newline()
 
             with self._file.block("void invoke(Reader &reader) override"):
@@ -137,7 +139,8 @@ class ServiceShimVisitor(LrpcVisitor):
 
         for stream in server_streams:
             with self._file.block(
-                f"void {stream.name()}_start_stop_shim(Reader& reader)", trailing_newline=True,
+                f"void {stream.name()}_start_stop_shim(Reader& reader)",
+                trailing_newline=True,
             ):
                 self._file.write("const auto start = reader.read_unchecked<bool>();")
                 with self._file.block("if (start)"):
@@ -161,7 +164,7 @@ class ServiceShimVisitor(LrpcVisitor):
     ) -> None:
         max_function_or_stream_id = self._max_function_or_stream_id(functions, client_streams, server_streams)
 
-        self._file.write(f"using ShimType = void ({self._class_name()}::*)(Reader &);")
+        self._file.write(f"using ShimType = void ({self._shim_name()}::*)(Reader &);")
         with self._file.block("void missingFunction_shim(Reader& reader)", trailing_newline=True):
             self._file.write("const auto data = reader.data();")
             self._file.write("const auto functionOrStreamId = static_cast<uint8_t>(data.at(2));")
@@ -182,10 +185,10 @@ class ServiceShimVisitor(LrpcVisitor):
                     name = function_info.get(fid, name)
                     name = client_stream_info.get(fid, name)
                     name = server_stream_info.get(fid, name)
-                    self._file(f"&{self._class_name()}::{name}_shim,")
+                    self._file(f"&{self._shim_name()}::{name}_shim,")
 
             with self._file.block("if (functionId >= shims.size())", trailing_newline=True):
-                self._file.write(f"return &{self._class_name()}::missingFunction_shim;")
+                self._file.write(f"return &{self._shim_name()}::missingFunction_shim;")
 
             self._file.write("return shims.at(functionId);")
 
@@ -225,16 +228,26 @@ class ServiceShimVisitor(LrpcVisitor):
 
         self._file.newline()
 
-    def _write_aliases(self) -> None:
-        for f in self._service.functions():
+    def _write_service_id(self) -> None:
+        self._file.write(f"static constexpr uint8_t {self._id_name()} = {self._service.id()};")
+        self._file.newline()
+
+    def _write_forwarder_alias(self) -> None:
+        self._file.write(f"using {self._forwarder_name()} = lrpc::ServiceForwarder<{self._id_name()}>;")
+        self._file.newline()
+
+    def _write_return_type_aliases(self, functions: list[LrpcFun]) -> None:
+        for f in functions:
             if f.returns_alias() is not None:
                 returns = self._returns_string(f.returns())
                 self._file.write(f"using {f.returns_alias()} = {returns};")
+                self._file.newline()
 
-        self._file.newline()
-
-    def _class_name(self) -> str:
+    def _shim_name(self) -> str:
         return self._service.name() + "_shim"
 
-    def _service_id(self) -> int:
-        return self._service.id()
+    def _forwarder_name(self) -> str:
+        return self._service.name() + "_forwarder"
+
+    def _id_name(self) -> str:
+        return self._service.name() + "_id"

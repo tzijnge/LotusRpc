@@ -103,8 +103,6 @@ namespace lrpc
             metaService.error_response(type, p1, p2, p3, message);
         }
 
-        virtual void lrpcTransmit(lrpc::span<const uint8_t> bytes) = 0;
-
     private:
         etl::vector<uint8_t, RX_SIZE> receiveBuffer;
         lrpc::array<uint8_t, TX_SIZE> sendBuffer;

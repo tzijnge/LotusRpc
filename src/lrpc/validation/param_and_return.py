@@ -12,6 +12,7 @@ class ParamAndReturnValidator(LrpcValidator):
         self._param_return_names: set[str] = set()
         self._return_names: list[str] = []
         self._returns_alias: str | None = None
+        self._returns_aliases: set[str] = set()
 
     def visit_lrpc_def(self, _: LrpcDef) -> None:
         self.reset()
@@ -21,15 +22,20 @@ class ParamAndReturnValidator(LrpcValidator):
         self._param_return_names.clear()
         self._return_names.clear()
         self._returns_alias = None
+        self._returns_aliases.clear()
 
     def visit_lrpc_function(self, function: LrpcFun) -> None:
         self._current_function = function.name()
         self._returns_alias = function.returns_alias()
         if self._returns_alias is not None:
+            if self._returns_alias in self._returns_aliases:
+                self.add_error(f"Duplicate returns_alias in {self._current_service}: {self._returns_alias}")
+            self._returns_aliases.add(self._returns_alias)
             self._param_return_names.add(self._returns_alias)
 
     def visit_lrpc_service(self, service: LrpcService) -> None:
         self._current_service = service.name()
+        self._returns_aliases.clear()
 
     def visit_lrpc_function_param(self, param: LrpcVar) -> None:
         name = param.name()

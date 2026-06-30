@@ -12,7 +12,6 @@
 
 using ::testing::Return;
 
-// NOLINTNEXTLINE(misc-use-anonymous-namespace)
 class MockServer1S0 : public srv1::srv0_shim
 {
 public:
@@ -47,7 +46,7 @@ public:
     MOCK_METHOD((std::tuple<lrpc::string_view, lrpc::string_view>), f24, (), (override));
     MOCK_METHOD((lrpc::optional<lrpc::string_view>), f25, (), (override));
     MOCK_METHOD((lrpc::span<const lrpc::string_view>), f26, (), (override));
-    MOCK_METHOD((srv1::complex_return), f27, (), (override));
+    MOCK_METHOD((srv1::srv0_shim::complex_return), f27, (), (override));
     MOCK_METHOD(void, f28, (const srv1::CompositeData4&), (override));
     MOCK_METHOD(lrpc::bytearray, f29, (lrpc::bytearray), (override));
     MOCK_METHOD(void, f30, (lrpc::span<const lrpc::bytearray>), (override));
@@ -325,7 +324,7 @@ TEST_F(TestServer1, decodef27)
     const lrpc::array<uint8_t, 2> r0{0x01, 0x02};
     const lrpc::array<lrpc::string_view, 2> r1{"t1", "t2"};
     const lrpc::array<lrpc::string_view, 2> r2{"t3", "t4"};
-    const srv1::complex_return ret{r0, r1, r2};
+    const srv1::srv0_shim::complex_return ret{r0, r1, r2};
     EXPECT_CALL(service, f27()).WillOnce(Return(ret));
     const auto response = receive("02001B");
     EXPECT_EQ("10001B0102743100743200743300743400", response);

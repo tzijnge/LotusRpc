@@ -960,6 +960,55 @@ services:
     assert_log_entries(["returns_alias specified for function without returns: srv0.f0"], caplog.text)
 
 
+def test_duplicate_returns_alias_in_same_service(caplog: pytest.LogCaptureFixture) -> None:
+    rpc_def = """name: test
+services:
+  - name: s1
+    functions:
+      - name: f1
+        returns:
+          - { name: a, type: uint8_t }
+          - { name: b, type: uint16_t }
+        returns_alias: my_alias
+      - name: f2
+        returns:
+          - { name: c, type: uint8_t }
+          - { name: d, type: uint16_t }
+        returns_alias: my_alias
+"""
+
+    caplog.set_level(logging.ERROR)
+    with pytest.raises(LrpcDefinitionError, match=re.escape("Errors detected in LRPC definition")):
+        load_lrpc_def(rpc_def)
+
+    assert_log_entries(["Duplicate returns_alias in s1: my_alias"], caplog.text)
+
+
+def test_same_returns_alias_in_different_services() -> None:
+    rpc_def = """name: test
+services:
+  - name: s1
+    functions:
+      - name: f1
+        returns:
+          - { name: a, type: uint8_t }
+          - { name: b, type: uint16_t }
+        returns_alias: my_alias
+  - name: s2
+    id: 1
+    functions:
+      - name: f1
+        returns:
+          - { name: a, type: uint8_t }
+          - { name: b, type: uint16_t }
+        returns_alias: my_alias
+"""
+
+    lrpc_def = load_lrpc_def(rpc_def)
+    assert lrpc_def.services()[0].functions()[0].returns_alias() == "my_alias"
+    assert lrpc_def.services()[1].functions()[0].returns_alias() == "my_alias"
+
+
 def test_additional_properties_not_allowed() -> None:
     rpc_def = """name: test
 services:

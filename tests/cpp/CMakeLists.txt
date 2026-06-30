@@ -18,6 +18,17 @@ if(ENABLE_ASAN)
   endif()
 endif()
 
+option(ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer" ON)
+
+if(ENABLE_UBSAN AND NOT MSVC)
+  add_compile_options(-fsanitize=undefined -fno-omit-frame-pointer)
+  add_link_options(-fsanitize=undefined)
+
+  if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    add_link_options(-static-libubsan)
+  endif()
+endif()
+
 set(BUILD_GMOCK ON)
 set(gtest_force_shared_crt ON)
 

@@ -26,8 +26,7 @@ jobs:
           pip install -r requirements/dev.txt
           pip install -r requirements/package.txt
       - name: Linkspector
-        # v1.5.3
-        uses: umbrelladocs/action-linkspector@15f97e56ba84c3f637f2b35035c159c871ae6bb3
+        uses: umbrelladocs/action-linkspector@15f97e56ba84c3f637f2b35035c159c871ae6bb3 # v1.5.3
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review

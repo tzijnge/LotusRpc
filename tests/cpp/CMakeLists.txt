@@ -31,8 +31,8 @@ FetchContent_Declare(
 
 FetchContent_Declare(
   etl
-  URL      https://github.com/ETLCPP/etl/archive/refs/tags/20.47.1.tar.gz
-  URL_HASH SHA256=ea4cff73a18106c2fbae35b9200f8099d1a08ed70ffcca392c4264c3825eedb3
+  URL      https://github.com/ETLCPP/etl/archive/refs/tags/20.48.0.tar.gz
+  URL_HASH SHA256=BCA826074B5C29D86533B1D08356E126AF7D9D70ABB1A46C1A856B0C77958E37
 )
 
 FetchContent_MakeAvailable(googletest etl)

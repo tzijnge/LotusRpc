@@ -133,21 +133,28 @@ jobs:
       - name: SonarQube Install
         uses: SonarSource/sonarqube-scan-action/install-build-wrapper@713881670b6b3676cda39549040e2d88c70d582e
 
-      - name: Install LLVM 19
-        run: sudo apt-get install -y clang-19 clang-tidy-19 llvm-19-dev libclang-19-dev
+      - name: Install LLVM tools
+        run: |
+          DISTRO=$(lsb_release -cs)
+          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key \
+            | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc > /dev/null
+          echo "deb http://apt.llvm.org/${DISTRO}/ llvm-toolchain-${DISTRO}-22 main" \
+            | sudo tee /etc/apt/sources.list.d/llvm-22.list
+          sudo apt-get update -q
+          sudo apt-get install -y clang-22 clang-tidy-22 llvm-22-dev libclang-22-dev
 
       - name: Get IWYU cache key
         id: iwyu-key
         run: |
           url="https://github.com/include-what-you-use/include-what-you-use.git"
-          echo "sha=$(git ls-remote "$url" clang_19 | cut -f1)" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git ls-remote "$url" clang_22 | cut -f1)" >> "$GITHUB_OUTPUT"
 
       - name: Cache IWYU
         id: cache-iwyu
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: ${{ github.workspace }}/iwyu-install
-          key: iwyu-clang19-${{ runner.os }}-${{ steps.iwyu-key.outputs.sha }}
+          key: iwyu-clang22-${{ runner.os }}-${{ steps.iwyu-key.outputs.sha }}
 
       - name: Build IWYU
         if: steps.cache-iwyu.outputs.cache-hit != 'true'
@@ -155,9 +162,9 @@ jobs:
           IWYU_INSTALL: ${{ github.workspace }}/iwyu-install
         run: |
           git clone https://github.com/include-what-you-use/include-what-you-use.git \
-            --branch clang_19 --depth 1
+            --branch clang_22 --depth 1
           cmake -S include-what-you-use -B iwyu_build \
-            -DCMAKE_PREFIX_PATH=/usr/lib/llvm-19 \
+            -DCMAKE_PREFIX_PATH=/usr/lib/llvm-22 \
             -DCMAKE_INSTALL_PREFIX="$IWYU_INSTALL" \
             -G Ninja
           cmake --build iwyu_build --target install
@@ -196,8 +203,8 @@ jobs:
         run: >
           cmake -B "$GITHUB_WORKSPACE/cmake_build"
           -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
-          -DCMAKE_C_COMPILER=clang-19
-          -DCMAKE_CXX_COMPILER=clang++-19
+          -DCMAKE_C_COMPILER=clang-22
+          -DCMAKE_CXX_COMPILER=clang++-22
           -DCMAKE_CXX_STANDARD=11
           -DENABLE_CLANG_TIDY=ON
           -G Ninja

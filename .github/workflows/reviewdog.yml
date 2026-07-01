@@ -78,7 +78,7 @@ jobs:
           fail_level: any
           compare_with: "origin/${{ github.base_ref }}"
       - name: clang-format
-        uses: tzijnge/action-clang-format@ee6cac964c4e78625ed76c17dd614503880447d0
+        uses: tzijnge/action-clang-format@517e3d6133536a31854e1cd82c579dafffa197f5
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review

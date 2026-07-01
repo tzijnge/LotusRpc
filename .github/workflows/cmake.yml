@@ -178,7 +178,8 @@ jobs:
 
       - name: Run IWYU
         run: |
-          iwyu_tool.py -p cmake_build 2>&1 | tee iwyu_output.txt
+          set -euo pipefail
+          python3 /usr/lib/iwyu/iwyu_tool.py -p cmake_build 2>&1 | tee iwyu_output.txt
           if grep -qE "should (add|remove)" iwyu_output.txt; then
             echo "IWYU found include issues (see above)"
             exit 1

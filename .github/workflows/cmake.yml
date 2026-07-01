@@ -133,8 +133,33 @@ jobs:
       - name: SonarQube Install
         uses: SonarSource/sonarqube-scan-action/install-build-wrapper@713881670b6b3676cda39549040e2d88c70d582e
 
-      - name: Install LLVM 19 and IWYU
-        run: sudo apt-get install -y clang-19 clang-tidy-19 iwyu
+      - name: Install LLVM 19
+        run: sudo apt-get install -y clang-19 clang-tidy-19 llvm-19-dev libclang-19-dev
+
+      - name: Get IWYU cache key
+        id: iwyu-key
+        run: echo "sha=$(git ls-remote https://github.com/include-what-you-use/include-what-you-use.git clang_19 | cut -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache IWYU
+        id: cache-iwyu
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        with:
+          path: ${{ github.workspace }}/iwyu-install
+          key: iwyu-clang19-${{ runner.os }}-${{ steps.iwyu-key.outputs.sha }}
+
+      - name: Build IWYU
+        if: steps.cache-iwyu.outputs.cache-hit != 'true'
+        run: |
+          git clone https://github.com/include-what-you-use/include-what-you-use.git \
+            --branch clang_19 --depth 1
+          cmake -S include-what-you-use -B iwyu_build \
+            -DCMAKE_PREFIX_PATH=/usr/lib/llvm-19 \
+            -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/iwyu-install \
+            -G Ninja
+          cmake --build iwyu_build --target install
+
+      - name: Add IWYU to PATH
+        run: echo "${{ github.workspace }}/iwyu-install/bin" >> "$GITHUB_PATH"
 
       - name: Install Python requirements
         run: pip install -r requirements/dev.txt
@@ -179,7 +204,7 @@ jobs:
       - name: Run IWYU
         run: |
           set -euo pipefail
-          python3 /usr/lib/iwyu/iwyu_tool.py -p cmake_build 2>&1 | tee iwyu_output.txt
+          iwyu_tool.py -p cmake_build 2>&1 | tee iwyu_output.txt
           if grep -qE "should (add|remove)" iwyu_output.txt; then
             echo "IWYU found include issues (see above)"
             exit 1

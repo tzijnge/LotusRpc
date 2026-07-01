@@ -1,12 +1,16 @@
-#include <cstdint>
+#include <array>
+#include <string>
 #include <type_traits>
 #include <vector>
 
 #include <etl/optional.h>
+#include <etl/span.h>
+#include <etl/string_view.h>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "MetaError.hpp"
 #include "TestUtils.hpp"
 #include "generated/Server1/Server1.hpp"
 

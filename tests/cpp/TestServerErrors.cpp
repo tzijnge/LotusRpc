@@ -1,11 +1,12 @@
-#include <cstdint>
 #include <iomanip>
-#include <ios>
 #include <sstream>
+#include <string>
 #include <type_traits>
+#include <vector>
 
 #include <gtest/gtest.h>
 
+#include "LrpcTypes.hpp"
 #include "TestUtils.hpp"
 #include "generated/Server3/Server3.hpp"
 

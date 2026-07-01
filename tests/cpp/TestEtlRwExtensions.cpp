@@ -14,11 +14,20 @@
 #include <string>
 #include <type_traits>
 
-#include <etl/byte.h>
 #include <etl/byte_stream.h>
 #include <etl/endianness.h>
-#include <etl/string.h>
+#include <etl/optional.h>
+#include <etl/span.h>
+#include <etl/string_view.h>
 #include <etl/vector.h>
+
+namespace etl { class string_ext; }
+namespace etl { enum class byte : unsigned char; }
+namespace etl { template <size_t MAX_SIZE_> class string; }
+namespace lrpc { namespace tags { struct bytearray_auto; } }
+namespace lrpc { namespace tags { struct string_auto; } }
+namespace lrpc { namespace tags { struct string_n; } }
+namespace lrpc { namespace tags { template <typename T> struct array_n; } }
 
 TEST(TestEtlRwExtensions, is_lrpc_optional)
 {

@@ -1,8 +1,16 @@
+#include <array>
+#include <string>
 #include <vector>
+
+#include <etl/char_traits.h>
+#include <etl/optional.h>
+#include <etl/span.h>
+#include <etl/string_view.h>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "MetaError.hpp"
 #include "TestUtils.hpp"
 #include "generated/Server2/Server2.hpp"
 

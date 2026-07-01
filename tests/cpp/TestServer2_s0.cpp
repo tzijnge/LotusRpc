@@ -1,4 +1,8 @@
+#include <string>
+#include <tuple>
 #include <type_traits>
+
+#include <etl/string_view.h>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>

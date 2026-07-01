@@ -1,10 +1,10 @@
+// IWYU pragma: no_include <etl/string_view.h>
+// IWYU pragma: no_include <vector>
 #include <iomanip>
+#include <ios>  // IWYU pragma: keep
 #include <sstream>
 #include <string>
 #include <type_traits>
-#include <vector>
-
-#include <etl/string_view.h>
 
 #include <gtest/gtest.h>
 

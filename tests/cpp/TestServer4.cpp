@@ -1,8 +1,7 @@
-#include <string>
+// IWYU pragma: no_include <string>
+// IWYU pragma: no_include <etl/char_traits.h>
+// IWYU pragma: no_include <etl/string_view.h>
 #include <type_traits>
-
-#include <etl/char_traits.h>
-#include <etl/string_view.h>
 
 #include <gtest/gtest.h>
 

@@ -1,3 +1,4 @@
+// IWYU pragma: no_include <etl/string_view.h>
 #include <array>
 
 #include <gtest/gtest.h>
@@ -18,7 +19,6 @@
 #include <etl/endianness.h>
 #include <etl/optional.h>
 #include <etl/span.h>
-#include <etl/string_view.h>
 #include <etl/vector.h>
 
 namespace etl { class string_ext; }

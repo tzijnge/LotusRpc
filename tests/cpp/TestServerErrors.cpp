@@ -1,8 +1,9 @@
+// IWYU pragma: no_include <vector>
 #include <iomanip>
+#include <ios>  // IWYU pragma: keep
 #include <sstream>
 #include <string>
 #include <type_traits>
-#include <vector>
 
 #include <gtest/gtest.h>
 

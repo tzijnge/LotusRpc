@@ -138,7 +138,9 @@ jobs:
 
       - name: Get IWYU cache key
         id: iwyu-key
-        run: echo "sha=$(git ls-remote https://github.com/include-what-you-use/include-what-you-use.git clang_19 | cut -f1)" >> "$GITHUB_OUTPUT"
+        run: |
+          url="https://github.com/include-what-you-use/include-what-you-use.git"
+          echo "sha=$(git ls-remote "$url" clang_19 | cut -f1)" >> "$GITHUB_OUTPUT"
 
       - name: Cache IWYU
         id: cache-iwyu

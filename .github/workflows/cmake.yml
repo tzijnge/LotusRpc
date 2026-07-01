@@ -151,17 +151,21 @@ jobs:
 
       - name: Build IWYU
         if: steps.cache-iwyu.outputs.cache-hit != 'true'
+        env:
+          IWYU_INSTALL: ${{ github.workspace }}/iwyu-install
         run: |
           git clone https://github.com/include-what-you-use/include-what-you-use.git \
             --branch clang_19 --depth 1
           cmake -S include-what-you-use -B iwyu_build \
             -DCMAKE_PREFIX_PATH=/usr/lib/llvm-19 \
-            -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/iwyu-install \
+            -DCMAKE_INSTALL_PREFIX="$IWYU_INSTALL" \
             -G Ninja
           cmake --build iwyu_build --target install
 
       - name: Add IWYU to PATH
-        run: echo "${{ github.workspace }}/iwyu-install/bin" >> "$GITHUB_PATH"
+        env:
+          IWYU_INSTALL: ${{ github.workspace }}/iwyu-install
+        run: echo "$IWYU_INSTALL/bin" >> "$GITHUB_PATH"
 
       - name: Install Python requirements
         run: pip install -r requirements/dev.txt

@@ -1,3 +1,4 @@
+#include <cstdint> // IWYU pragma: keep
 #include <string>
 #include <type_traits>
 

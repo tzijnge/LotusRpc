@@ -1,7 +1,7 @@
 // IWYU pragma: no_include <vector>
-#include <cstdint>  // IWYU pragma: keep
+#include <cstdint> // IWYU pragma: keep
 #include <iomanip>
-#include <ios>  // IWYU pragma: keep
+#include <ios> // IWYU pragma: keep
 #include <sstream>
 #include <string>
 #include <type_traits>

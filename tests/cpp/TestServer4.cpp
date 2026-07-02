@@ -1,9 +1,12 @@
-#include <cstdint>
+// IWYU pragma: no_include <string>
+// IWYU pragma: no_include <etl/char_traits.h>
+// IWYU pragma: no_include <etl/string_view.h>
 #include <type_traits>
 
 #include <gtest/gtest.h>
 
 #include "TestUtils.hpp"
+#include "generated/Server4/LrpcMeta_includes.hpp"
 #include "generated/Server4/Server4.hpp"
 
 static_assert(srv4::c0 == 111, "");

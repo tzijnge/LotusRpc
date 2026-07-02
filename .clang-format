@@ -15,6 +15,7 @@ PackConstructorInitializers: Never
 NamespaceIndentation: All
 CompactNamespaces: false
 FixNamespaceComments: false
+AllowShortNamespacesOnASingleLine: true
 
 AccessModifierOffset: -4
 IndentAccessModifiers: false

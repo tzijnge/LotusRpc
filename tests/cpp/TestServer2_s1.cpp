@@ -1,4 +1,12 @@
+// IWYU pragma: no_include <string>
+// IWYU pragma: no_include <etl/char_traits.h>
+// IWYU pragma: no_include <etl/span.h>
+// IWYU pragma: no_include "MetaError.hpp"
+#include <array>
 #include <vector>
+
+#include <etl/optional.h>
+#include <etl/string_view.h>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>

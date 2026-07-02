@@ -1,3 +1,7 @@
+// IWYU pragma: no_include <string>
+// IWYU pragma: no_include <tuple>
+// IWYU pragma: no_include <etl/string_view.h>
+// IWYU pragma: no_include "MetaError.hpp"
 #include <type_traits>
 
 #include <gmock/gmock.h>

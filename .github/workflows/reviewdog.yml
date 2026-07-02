@@ -92,7 +92,7 @@ jobs:
           reporter: github-pr-review
           fail_on_error: true
       - name: languagetool
-        uses: reviewdog/action-languagetool@ea19c757470ce0dbfcbc34aec090317cef1ff0b5 # v1.23.0
+        uses: reviewdog/action-languagetool@afd06e9b0f782c9562c92efffb66a49c09b2b4f4 # v1.23.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review

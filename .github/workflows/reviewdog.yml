@@ -78,12 +78,13 @@ jobs:
           fail_level: any
           compare_with: "origin/${{ github.base_ref }}"
       - name: clang-format
-        uses: tzijnge/action-clang-format@b2c1471287bc355e3968a808a6fb1390c5025ba5
+        uses: tzijnge/action-clang-format@517e3d6133536a31854e1cd82c579dafffa197f5
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
           fail_level: any
           exclude: cmake_build
+          clang_format_version: 22
       - name: github-actions-lint
         uses: ne-sachirou/lint-gha-reviewdog@21e9e3be880468f3fceff09b97e02094eb000a43 # v0.0.6
         with:

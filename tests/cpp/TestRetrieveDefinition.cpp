@@ -1,4 +1,6 @@
+// IWYU pragma: no_include "MetaError.hpp"
 #include <cstddef>
+#include <string>
 #include <type_traits>
 
 #include <gmock/gmock.h>

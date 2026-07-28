@@ -1,11 +1,14 @@
-#include <cstdint>
+// IWYU pragma: no_include <vector>
+#include <cstdint> // IWYU pragma: keep
 #include <iomanip>
-#include <ios>
+#include <ios> // IWYU pragma: keep
 #include <sstream>
+#include <string>
 #include <type_traits>
 
 #include <gtest/gtest.h>
 
+#include "LrpcTypes.hpp"
 #include "TestUtils.hpp"
 #include "generated/Server3/Server3.hpp"
 

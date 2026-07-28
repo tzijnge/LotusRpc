@@ -98,7 +98,7 @@ namespace lrpc
 
         virtual void forwardToServer(lrpc::span<const uint8_t> data) = 0;
 
-        void forwardToClient(const uint8_t byte) { server().lrpcTransmit(lrpc::span<const uint8_t>(&byte, 1)); }
+        void forwardToClient(const uint8_t byte_) { server().lrpcTransmit(lrpc::span<const uint8_t>(&byte_, 1)); }
         void forwardToClient(lrpc::span<const uint8_t> data) { server().lrpcTransmit(data); }
 
         template <typename TContainer,

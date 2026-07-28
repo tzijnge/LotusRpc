@@ -1,12 +1,15 @@
-#include <cstdint>
+// IWYU pragma: no_include <etl/string_view.h>
+// IWYU pragma: no_include <vector>
 #include <iomanip>
-#include <ios>
+#include <ios> // IWYU pragma: keep
 #include <sstream>
+#include <string>
 #include <type_traits>
 
 #include <gtest/gtest.h>
 
 #include "TestUtils.hpp"
+#include "generated/Server3/LrpcMeta_includes.hpp"
 #include "generated/Server3/Server3.hpp"
 
 class MockServer3S00 : public srv3::srv0_shim

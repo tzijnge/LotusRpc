@@ -1,4 +1,5 @@
 // IWYU pragma: no_include <etl/span.h>
+// IWYU pragma: no_include <variant>
 // IWYU pragma: no_include "MetaError.hpp"
 #include <array>
 #include <cstdint> // IWYU pragma: keep

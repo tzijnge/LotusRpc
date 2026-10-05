@@ -57,7 +57,7 @@ jobs:
           glob_pattern: src
           fail_on_error: true
       - name: yamllint
-        uses: reviewdog/action-yamllint@de68272fdca5f2a961fb309e0d2e13c2eb186d9e # v1.23.1
+        uses: reviewdog/action-yamllint@6803b0dc8f295034a6156b924814053acb2e6f5a # v1.24.0
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review

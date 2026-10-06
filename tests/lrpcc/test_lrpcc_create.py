@@ -2,14 +2,19 @@ import re
 from importlib.metadata import version
 from pathlib import Path
 
+import pytest
 import yaml
 from click.testing import CliRunner
 
 from lrpc.tools.lrpcc.lrpcc import run_lrpcc_config_creator
 
 EXPECTED_CONFIG_KEYS = {
-    "definition_url", "definition_from_server", "transport_type",
-    "transport_params", "log_level", "check_server_version",
+    "definition_url",
+    "definition_from_server",
+    "transport_type",
+    "transport_params",
+    "log_level",
+    "check_server_version",
 }
 
 
@@ -35,22 +40,23 @@ def test_no_subcommand_shows_help() -> None:
     assert "create" in result.output
 
 
-def test_create_serial() -> None:
+def test_create_serial(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # lrpcc create always writes to the current working directory
+    monkeypatch.chdir(tmp_path)
     runner = CliRunner()
-    with runner.isolated_filesystem():
-        result = runner.invoke(run_lrpcc_config_creator, ["create", "-d", "my.lrpc.yaml", "-t", "serial"])
-        assert result.exit_code == 0
-        config_path = Path("lrpcc.config.yaml")
-        assert config_path.exists()
-        config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
-        assert set(config.keys()) == EXPECTED_CONFIG_KEYS
-        assert config["transport_type"] == "serial"
-        assert config["definition_url"] == "my.lrpc.yaml"
-        assert config["definition_from_server"] == "once"
-        assert config["log_level"] == "INFO"
-        assert config["check_server_version"] is True
-        assert config["transport_params"]["port"] == "<PORT>"
-        assert config["transport_params"]["baudrate"] == "<BAUDRATE>"
+    result = runner.invoke(run_lrpcc_config_creator, ["create", "-d", "my.lrpc.yaml", "-t", "serial"])
+    assert result.exit_code == 0
+    config_path = tmp_path / "lrpcc.config.yaml"
+    assert config_path.exists()
+    config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    assert set(config.keys()) == EXPECTED_CONFIG_KEYS
+    assert config["transport_type"] == "serial"
+    assert config["definition_url"] == "my.lrpc.yaml"
+    assert config["definition_from_server"] == "once"
+    assert config["log_level"] == "INFO"
+    assert config["check_server_version"] is True
+    assert config["transport_params"]["port"] == "<PORT>"
+    assert config["transport_params"]["baudrate"] == "<BAUDRATE>"
 
 
 def test_create_no_args() -> None:

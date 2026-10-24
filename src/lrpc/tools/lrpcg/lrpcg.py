@@ -58,18 +58,17 @@ def generate_puml(lrpc_def: LrpcDef, output: Path) -> None:
 @click_log.simple_verbosity_option()
 @click.version_option(package_name="lotusrpc", message="%(version)s")
 def run_cli() -> None:
-    """\b
-        __          __             ____  ____  ______
-       / /   ____  / /___  _______/ __ \\/ __ \\/ ____/
-      / /   / __ \\/ __/ / / / ___/ /_/ / /_/ / /
-     / /___/ /_/ / /_/ /_/ (__  ) _, _/ ____/ /___
-    /_____/\\____/\\__/\\__,_/____/_/ |_/_/    \\____/
+    """
+        ╷  ╭─╮╶┬╴╷ ╷╭─╮╭─╮╭─╮╭─╴
+        │  │ │ │ │ │╰─╮├┬╯├─╯│
+        ╰─╴╰─╯ ╵ ╰─╯╰─╯╵╰╴╵  ╰─╴
 
     lrpcg is the LotusRPC generator tool. See
     https://tzijnge.github.io/LotusRpc/tools/#lrpcg for
     more information.
     """
     # All functionality provided by Click decorators
+    # Font: https://patorjk.com/software/taag/#p=display&f=Future+Smooth&t=LotusRPC
 
 
 @run_cli.command()

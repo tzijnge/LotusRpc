@@ -63,12 +63,10 @@ def find_config() -> Path:
 @click.group()
 @click.version_option(package_name="lotusrpc", message="%(version)s")
 def run_lrpcc_config_creator() -> None:
-    """\b
-        __          __             ____  ____  ______
-       / /   ____  / /___  _______/ __ \\/ __ \\/ ____/
-      / /   / __ \\/ __/ / / / ___/ /_/ / /_/ / /
-     / /___/ /_/ / /_/ /_/ (__  ) _, _/ ____/ /___
-    /_____/\\____/\\__/\\__,_/____/_/ |_/_/    \\____/
+    """
+        ╷  ╭─╮╶┬╴╷ ╷╭─╮╭─╮╭─╮╭─╴
+        │  │ │ │ │ │╰─╮├┬╯├─╯│
+        ╰─╴╰─╯ ╵ ╰─╯╰─╯╵╰╴╵  ╰─╴
 
     lrpcc is the LotusRPC client CLI tool.
 
@@ -81,6 +79,8 @@ def run_lrpcc_config_creator() -> None:
     found, lrpcc tries to use the configuration file specified
     by the LRPCC_CONFIG environment variable.
     """
+    # All functionality provided by Click decorators
+    # Font: https://patorjk.com/software/taag/#p=display&f=Future+Smooth&t=LotusRPC
 
 
 @run_lrpcc_config_creator.command()

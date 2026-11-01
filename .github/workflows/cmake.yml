@@ -131,7 +131,7 @@ jobs:
           persist-credentials: false
 
       - name: SonarQube Install
-        uses: SonarSource/sonarqube-scan-action/install-build-wrapper@713881670b6b3676cda39549040e2d88c70d582e
+        uses: SonarSource/sonarqube-scan-action/install-build-wrapper@d209202bc7d53ff1cc128f7f907dac145c9d6ae9
 
       - name: Install LLVM tools
         run: |

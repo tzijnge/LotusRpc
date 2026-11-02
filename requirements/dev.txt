@@ -2,7 +2,7 @@ pytest==9.1.0
 pytest-cov==7.1.0
 mypy==2.3.0
 ruff==0.17.1
-pylint==4.0.2
+pylint==4.1.3
 types-click-log==0.4.0.20250413
 types-jsonschema==4.26.0.20260109
 types-pyyaml==6.0.12.20241230
